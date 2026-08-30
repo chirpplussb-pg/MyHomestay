@@ -1213,6 +1213,14 @@ body {
   border-color: var(--border-focus);
 }
 
+.form-control:disabled, .form-select:disabled {
+  background: var(--bg-surface-subtle) !important;
+  color: var(--text-subtle) !important;
+  border-color: var(--border-color) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
 .pricing-calc-box {
   background: var(--bg-surface-subtle);
   border-radius: var(--radius-md);
@@ -1765,4 +1773,114 @@ body.theme-dark .banner-text {
   color: var(--primary);
   box-shadow: var(--shadow-sm);
 }
+
+/* ==========================================================================
+   APP UPDATE BANNER & VERSION MANAGEMENT STYLES
+   ========================================================================== */
+.app-update-banner {
+  display: none;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: #ffffff;
+  padding: 10px 14px;
+  border-bottom: 2px solid #f59e0b;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  animation: slideDownUpdate 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.app-update-banner.active {
+  display: flex;
+}
+
+@keyframes slideDownUpdate {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.update-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.update-banner-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f59e0b;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.update-banner-info h4 {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1px;
+}
+
+.update-banner-info p {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.2;
+}
+
+.update-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-update-now {
+  background: #f59e0b;
+  color: #0f172a;
+  font-weight: 800;
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 11.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+}
+
+.btn-update-now:hover {
+  background: #d97706;
+  color: #ffffff;
+}
+
+.btn-dismiss-update {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.btn-dismiss-update:hover {
+  color: #ffffff;
+}
+
 

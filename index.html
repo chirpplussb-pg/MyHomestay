@@ -21,6 +21,27 @@
 <body class="theme-light">
   <div class="app-container" id="app">
     
+    <!-- SEAMLESS LIVE APP UPDATE BANNER -->
+    <div class="app-update-banner" id="appUpdateBanner">
+      <div class="update-banner-left">
+        <div class="update-banner-icon">
+          <i class="fa-solid fa-sparkles"></i>
+        </div>
+        <div class="update-banner-info">
+          <h4 data-i18n="update_banner_title">New Update Available!</h4>
+          <p data-i18n="update_banner_desc">Improvements & features ready. Your data is 100% preserved.</p>
+        </div>
+      </div>
+      <div class="update-banner-actions">
+        <button class="btn-update-now" id="btnApplyAppUpdate">
+          <i class="fa-solid fa-rotate"></i> <span data-i18n="btn_update_now">Update</span>
+        </button>
+        <button class="btn-dismiss-update" id="btnDismissUpdate" title="Dismiss">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
     <!-- TOP HEADER -->
     <header class="app-header">
       <div class="header-top">
@@ -56,22 +77,22 @@
           <!-- Dynamically populated -->
         </div>
         <button class="add-property-pill" id="btnAddPropertyPill" title="Add New Homestay">
-          <i class="fa-solid fa-plus"></i> Add
+          <i class="fa-solid fa-plus"></i> <span data-i18n="add_unit">+ Add</span>
         </button>
       </div>
 
       <!-- DEMO SALES BANNER (Shown when not activated) -->
       <div class="demo-sales-banner" id="demoSalesBanner">
         <div class="banner-content">
-          <span class="banner-badge"><i class="fa-solid fa-sparkles"></i> DEMO MODE</span>
-          <p class="banner-text">Loving this app for your homestays?</p>
+          <span class="banner-badge"><i class="fa-solid fa-sparkles"></i> <span data-i18n="demo_badge">DEMO MODE</span></span>
+          <p class="banner-text" data-i18n="demo_banner_text">Loving this app for your homestays?</p>
         </div>
         <div class="banner-actions">
           <button class="btn btn-warning btn-xs" id="btnBuyLicense">
-            <i class="fa-solid fa-cart-shopping"></i> Buy App
+            <i class="fa-solid fa-cart-shopping"></i> <span data-i18n="buy_app">Buy App</span>
           </button>
           <button class="btn btn-outline btn-xs" id="btnOpenActivateModal">
-            <i class="fa-solid fa-key"></i> Activate
+            <i class="fa-solid fa-key"></i> <span data-i18n="activate">Activate</span>
           </button>
         </div>
       </div>
@@ -87,28 +108,28 @@
           <div class="kpi-card highlight-blue" id="kpiCheckInsCard">
             <div class="kpi-icon"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
             <div class="kpi-content">
-              <span class="kpi-label">Today Check-In</span>
+              <span class="kpi-label" data-i18n="kpi_checkin">Today Check-In</span>
               <h3 class="kpi-val" id="kpiCheckInsCount">0</h3>
             </div>
           </div>
           <div class="kpi-card highlight-amber" id="kpiCheckOutsCard">
             <div class="kpi-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
             <div class="kpi-content">
-              <span class="kpi-label">Today Check-Out</span>
+              <span class="kpi-label" data-i18n="kpi_checkout">Today Check-Out</span>
               <h3 class="kpi-val" id="kpiCheckOutsCount">0</h3>
             </div>
           </div>
           <div class="kpi-card highlight-emerald" id="kpiOccupiedCard">
             <div class="kpi-icon"><i class="fa-solid fa-user-group"></i></div>
             <div class="kpi-content">
-              <span class="kpi-label">In-House Guests</span>
+              <span class="kpi-label" data-i18n="kpi_inhouse">In-House Guests</span>
               <h3 class="kpi-val" id="kpiInHouseCount">0</h3>
             </div>
           </div>
           <div class="kpi-card highlight-rose" id="kpiTurnoverCard">
             <div class="kpi-icon"><i class="fa-solid fa-broom"></i></div>
             <div class="kpi-content">
-              <span class="kpi-label">Turnovers Needed</span>
+              <span class="kpi-label" data-i18n="kpi_turnovers">Turnovers Needed</span>
               <h3 class="kpi-val" id="kpiTurnoversCount">0</h3>
             </div>
           </div>
@@ -118,11 +139,11 @@
         <div class="card performance-mini-card">
           <div class="perf-header">
             <div>
-              <span class="card-subtitle">This Month</span>
+              <span class="card-subtitle" data-i18n="this_month">This Month</span>
               <h3 class="card-title" id="dashMonthRevenue">RM 0.00</h3>
             </div>
             <div class="perf-badge" id="dashOccupancyBadge">
-              <i class="fa-solid fa-chart-pie"></i> <span id="dashOccupancyRate">0%</span> Occupancy
+              <i class="fa-solid fa-chart-pie"></i> <span id="dashOccupancyRate">0%</span> <span data-i18n="occupancy">Occupancy</span>
             </div>
           </div>
           <div class="progress-bar-bg">
@@ -136,8 +157,8 @@
 
         <!-- Today & Upcoming Priority Action Feed -->
         <div class="section-heading">
-          <h2 class="section-title">Today's Schedule & Actions</h2>
-          <span class="section-action" id="btnSeeAllBookings">See All</span>
+          <h2 class="section-title" data-i18n="today_actions">Today's Schedule & Actions</h2>
+          <span class="section-action" id="btnSeeAllBookings" data-i18n="see_all">See All</span>
         </div>
 
         <div class="action-feed" id="dashboardActionFeed">
@@ -146,8 +167,8 @@
 
         <!-- Property Status Overview Cards -->
         <div class="section-heading">
-          <h2 class="section-title">Homestay Units Overview</h2>
-          <span class="section-action" id="btnManageProperties">Manage</span>
+          <h2 class="section-title" data-i18n="homestay_units_title">Homestay Units Overview</h2>
+          <span class="section-action" id="btnManageProperties" data-i18n="manage_btn">Manage</span>
         </div>
         <div class="property-overview-list" id="dashboardPropertyStatusList">
           <!-- Populated dynamically -->
@@ -180,15 +201,15 @@
         <div class="card selected-day-card" id="selectedDayDetails">
           <div class="day-details-header">
             <div>
-              <span class="card-subtitle">Selected Date</span>
+              <span class="card-subtitle" data-i18n="selected_date">Selected Date</span>
               <h3 class="card-title" id="selectedDayTitle">Select a date</h3>
             </div>
             <button class="btn btn-primary btn-sm" id="btnQuickBookForDate">
-              <i class="fa-solid fa-plus"></i> Book Date
+              <i class="fa-solid fa-plus"></i> <span data-i18n="book_date_btn">Book Date</span>
             </button>
           </div>
           <div class="selected-day-bookings" id="selectedDayBookingsList">
-            <p class="empty-hint">Tap on any date above to view bookings or check availability.</p>
+            <p class="empty-hint" data-i18n="cal_tap_hint">Tap on any date above to view bookings or check availability.</p>
           </div>
         </div>
       </section>
@@ -199,16 +220,16 @@
         <div class="filter-controls">
           <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="bookingSearchInput" placeholder="Search guest name, phone, ref...">
+            <input type="text" id="bookingSearchInput" data-i18n-placeholder="search_placeholder" placeholder="Search guest name, phone, ref...">
           </div>
           <div class="filter-pills" id="bookingStatusFilters">
-            <button class="filter-pill active" data-filter="all">All</button>
-            <button class="filter-pill" data-filter="quotation">📋 Quotations</button>
-            <button class="filter-pill" data-filter="booked">🟡 Booked (Deposit)</button>
-            <button class="filter-pill" data-filter="confirmed">🟢 Confirmed (Full)</button>
-            <button class="filter-pill" data-filter="active">In-House</button>
-            <button class="filter-pill" data-filter="completed">Completed</button>
-            <button class="filter-pill" data-filter="blocked">Blocked</button>
+            <button class="filter-pill active" data-filter="all" data-i18n="filter_all">All</button>
+            <button class="filter-pill" data-filter="quotation" data-i18n="filter_quotations">📋 Quotations</button>
+            <button class="filter-pill" data-filter="booked" data-i18n="filter_booked">🟡 Booked (Deposit)</button>
+            <button class="filter-pill" data-filter="confirmed" data-i18n="filter_confirmed">🟢 Confirmed (Full)</button>
+            <button class="filter-pill" data-filter="active" data-i18n="filter_inhouse">In-House</button>
+            <button class="filter-pill" data-filter="completed" data-i18n="filter_completed">Completed</button>
+            <button class="filter-pill" data-filter="blocked" data-i18n="filter_blocked">Blocked</button>
           </div>
         </div>
 
@@ -225,8 +246,8 @@
               <i class="fa-solid fa-sparkles"></i>
             </div>
             <div>
-              <h3 class="card-title">Turnover & Cleaning</h3>
-              <p class="card-subtitle">Prep your homestay for the next guest</p>
+              <h3 class="card-title" data-i18n="turnover_title">Turnover & Cleaning</h3>
+              <p class="card-subtitle" data-i18n="turnover_subtitle">Prep your homestay for the next guest</p>
             </div>
           </div>
         </div>
@@ -243,7 +264,7 @@
           <select id="financeMonthSelect" class="form-select"></select>
           <select id="financeYearSelect" class="form-select"></select>
           <button class="btn btn-outline btn-sm" id="btnAddExpenseBtn">
-            <i class="fa-solid fa-receipt"></i> + Expense
+            <i class="fa-solid fa-receipt"></i> <span data-i18n="add_expense_btn">+ Expense</span>
           </button>
         </div>
 
@@ -252,21 +273,21 @@
           <div class="card stat-card stat-revenue">
             <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
             <div>
-              <span class="stat-label">Total Revenue</span>
+              <span class="stat-label" data-i18n="total_rev">Total Revenue</span>
               <h3 class="stat-val" id="finTotalRevenue">RM 0.00</h3>
             </div>
           </div>
           <div class="card stat-card stat-expenses">
             <div class="stat-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
             <div>
-              <span class="stat-label">Total Expenses</span>
+              <span class="stat-label" data-i18n="total_exp">Total Expenses</span>
               <h3 class="stat-val" id="finTotalExpenses">RM 0.00</h3>
             </div>
           </div>
           <div class="card stat-card stat-profit full-width">
             <div class="stat-icon"><i class="fa-solid fa-piggy-bank"></i></div>
             <div>
-              <span class="stat-label">Net Profit</span>
+              <span class="stat-label" data-i18n="net_profit">Net Profit</span>
               <h2 class="stat-val profit-highlight" id="finNetProfit">RM 0.00</h2>
             </div>
           </div>
@@ -274,7 +295,7 @@
 
         <!-- Revenue by Property -->
         <div class="card">
-          <h3 class="card-title mb-3">Revenue by Homestay</h3>
+          <h3 class="card-title mb-3" data-i18n="rev_by_homestay">Revenue by Homestay</h3>
           <div class="property-revenue-list" id="finPropertyRevenueList">
             <!-- Populated dynamically -->
           </div>
@@ -283,8 +304,8 @@
         <!-- Expenses Log -->
         <div class="card">
           <div class="card-header-flex">
-            <h3 class="card-title">Expense Breakdown</h3>
-            <button class="btn btn-primary btn-xs" id="btnAddExpenseBtn2">+ Add</button>
+            <h3 class="card-title" data-i18n="expense_breakdown">Expense Breakdown</h3>
+            <button class="btn btn-primary btn-xs" id="btnAddExpenseBtn2" data-i18n="add_btn">+ Add</button>
           </div>
           <div class="expense-list" id="finExpenseList">
             <!-- Populated dynamically -->
@@ -298,11 +319,11 @@
         <div class="card">
           <div class="card-header-flex">
             <div>
-              <h3 class="card-title">Your Homestays</h3>
-              <p class="card-subtitle">Manage names, WiFi, smart locks & rates</p>
+              <h3 class="card-title" data-i18n="your_homestays">Your Homestays</h3>
+              <p class="card-subtitle" data-i18n="manage_homestays_sub">Manage names, WiFi, smart locks & rates</p>
             </div>
             <button class="btn btn-primary btn-sm" id="btnAddNewPropertyModal">
-              <i class="fa-solid fa-plus"></i> Add Unit
+              <i class="fa-solid fa-plus"></i> <span data-i18n="add_unit_btn">+ Add Unit</span>
             </button>
           </div>
           <div class="settings-property-list" id="settingsPropertyList">
@@ -312,18 +333,18 @@
 
         <!-- General App Settings -->
         <div class="card">
-          <h3 class="card-title mb-3">App Preferences & Seller Info</h3>
+          <h3 class="card-title mb-3" data-i18n="app_pref_title">App Preferences & Seller Info</h3>
           <div class="form-group">
-            <label class="form-label">Business / Brand Name</label>
+            <label class="form-label" data-i18n="business_name_label">Business / Brand Name</label>
             <input type="text" id="settingBusinessNameInput" class="form-control" placeholder="e.g. Cozy Stay Management">
           </div>
           <div class="form-group">
-            <label class="form-label">Seller Support / Order WhatsApp Number</label>
+            <label class="form-label" data-i18n="seller_phone_label">Seller Support / Order WhatsApp Number</label>
             <input type="tel" id="settingSellerPhoneInput" class="form-control" placeholder="e.g. +60123456789">
-            <span class="card-subtitle" style="font-size: 11px;">Buyers will contact this WhatsApp number when clicking "Buy License".</span>
+            <span class="card-subtitle" style="font-size: 11px;" data-i18n="seller_phone_hint">Buyers will contact this WhatsApp number when clicking "Buy License".</span>
           </div>
           <div class="form-group">
-            <label class="form-label">Currency Symbol</label>
+            <label class="form-label" data-i18n="currency_label">Currency Symbol</label>
             <select id="settingCurrencySelect" class="form-select">
               <option value="RM">RM (Malaysian Ringgit)</option>
               <option value="$">$ (USD / SGD / AUD / CAD)</option>
@@ -337,55 +358,55 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label required">Owner WhatsApp Phone Number (Bound to License)</label>
+            <label class="form-label required" data-i18n="owner_phone_label">Owner WhatsApp Phone Number (Bound to License)</label>
             <input type="tel" id="settingOwnerPhoneInput" class="form-control" placeholder="e.g. +60123456789" required>
-            <span class="card-subtitle" style="font-size: 11px;">Your official WhatsApp number. Used in quotations and permanently bound to your app license.</span>
+            <span class="card-subtitle" style="font-size: 11px;" data-i18n="owner_phone_hint">Your official WhatsApp number. Used in quotations and permanently bound to your app license.</span>
           </div>
           <div class="form-group">
-            <label class="form-label">App Language / Bahasa</label>
+            <label class="form-label" data-i18n="app_language_label">App Language / Bahasa</label>
             <select id="settingLanguageSelect" class="form-select">
               <option value="en">🇬🇧 English</option>
               <option value="bm">🇲🇾 Bahasa Melayu</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Standard Deposit Percentage (%)</label>
+            <label class="form-label" data-i18n="deposit_pct_label">Standard Deposit Percentage (%)</label>
             <input type="number" id="settingDefaultDepositPctInput" class="form-control" placeholder="30" min="0" max="100" value="30">
-            <span class="card-subtitle" style="font-size: 11px;">Default deposit requested upon booking (e.g. 30%).</span>
+            <span class="card-subtitle" style="font-size: 11px;" data-i18n="deposit_pct_hint">Default deposit requested upon booking (e.g. 30%).</span>
           </div>
-          <button class="btn btn-primary btn-block" id="btnSavePreferences">Save Preferences</button>
+          <button class="btn btn-primary btn-block" id="btnSavePreferences" data-i18n="btn_save_pref">Save Preferences</button>
         </div>
 
         <!-- Bank Account & Payment Info (for Quotations & Invoices) -->
         <div class="card">
-          <h3 class="card-title mb-1">Bank & Payment Details</h3>
-          <p class="card-subtitle mb-3">Auto-included in Quotations, Invoices, and Payment Receipts sent to guests.</p>
+          <h3 class="card-title mb-1" data-i18n="bank_title">Bank & Payment Details</h3>
+          <p class="card-subtitle mb-3" data-i18n="bank_sub">Auto-included in Quotations, Invoices, and Payment Receipts sent to guests.</p>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Bank Name</label>
+              <label class="form-label" data-i18n="bank_name_label">Bank Name</label>
               <input type="text" id="settingBankNameInput" class="form-control" placeholder="e.g. Maybank / CIMB / Chase">
             </div>
             <div class="form-group">
-              <label class="form-label">Account Number</label>
+              <label class="form-label" data-i18n="acc_num_label">Account Number</label>
               <input type="text" id="settingBankAccNumInput" class="form-control" placeholder="e.g. 5123 4567 8901">
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Account Holder Name</label>
+            <label class="form-label" data-i18n="acc_holder_label">Account Holder Name</label>
             <input type="text" id="settingBankAccHolderInput" class="form-control" placeholder="e.g. Mohd Salleh Bin Ali">
           </div>
           <div class="form-group">
-            <label class="form-label">DuitNow ID / QR / Transfer Note</label>
+            <label class="form-label" data-i18n="duitnow_label">DuitNow ID / QR / Transfer Note</label>
             <input type="text" id="settingDuitNowInput" class="form-control" placeholder="e.g. DuitNow: 0123456789 or Reference: Homestay">
           </div>
-          <button class="btn btn-primary btn-block" id="btnSaveBankDetails">Save Payment Details</button>
+          <button class="btn btn-primary btn-block" id="btnSaveBankDetails" data-i18n="btn_save_bank">Save Payment Details</button>
         </div>
 
         <!-- App License Status Card -->
         <div class="card">
           <div class="card-header-flex">
             <div>
-              <h3 class="card-title">App License</h3>
+              <h3 class="card-title" data-i18n="app_license_title">App License</h3>
               <p class="card-subtitle" id="settingsLicenseSubtitle">Status: Checking...</p>
             </div>
             <span id="settingsLicenseBadge" style="font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px;"></span>
@@ -399,21 +420,21 @@
         <div class="card hidden" id="adminLicenseGenCard" style="border: 2px solid var(--primary); background: rgba(59, 130, 246, 0.04);">
           <div class="card-header-flex mb-2">
             <div>
-              <h3 class="card-title" style="color:var(--primary);"><i class="fa-solid fa-key"></i> Admin License Generator</h3>
-              <p class="card-subtitle">Generate phone-bound licenses and 1-click WhatsApp onboarding links for buyers.</p>
+              <h3 class="card-title" style="color:var(--primary);"><i class="fa-solid fa-key"></i> <span data-i18n="admin_gen_title">Admin License Generator</span></h3>
+              <p class="card-subtitle" data-i18n="admin_gen_sub">Generate phone-bound licenses and 1-click WhatsApp onboarding links for buyers.</p>
             </div>
             <span style="background:var(--primary); color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:999px;">SELLER TOOL</span>
           </div>
           <form id="adminGenForm">
             <div class="form-group">
-              <label class="form-label required">Buyer's WhatsApp Phone Number</label>
+              <label class="form-label required" data-i18n="buyer_phone_label">Buyer's WhatsApp Phone Number</label>
               <input type="tel" id="adminBuyerPhoneInput" class="form-control" placeholder="e.g. +60123456789 or 0123456789" required>
             </div>
             <div class="form-group">
-              <label class="form-label">Buyer Name / Homestay Name (Optional)</label>
+              <label class="form-label" data-i18n="buyer_name_label">Buyer Name / Homestay Name (Optional)</label>
               <input type="text" id="adminBuyerNameInput" class="form-control" placeholder="e.g. Puan Rosnah / D'Impian Homestay">
             </div>
-            <button type="submit" class="btn btn-primary btn-block" id="btnGenerateLicense">
+            <button type="submit" class="btn btn-primary btn-block" id="btnGenerateLicense" data-i18n="btn_gen_license">
               <i class="fa-solid fa-wand-magic-sparkles"></i> Generate License & Magic Link
             </button>
           </form>
@@ -443,24 +464,50 @@
           </div>
         </div>
 
+        <!-- App Version & Seamless Updates -->
+        <div class="card">
+          <div class="card-header-flex mb-2">
+            <div>
+              <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
+              <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
+            </div>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.1.0</span>
+          </div>
+
+          <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
+            <p style="font-size:11.5px; color:var(--text-main); margin-bottom:0;">
+              <i class="fa-solid fa-shield-halved" style="color:var(--success);"></i> <strong data-i18n="safe_update_guarantee_title">Zero Data Loss Guarantee:</strong> <span data-i18n="safe_update_guarantee_desc">Your homestays, tenant records, financials, and license key stay privately stored on this device during updates.</span>
+            </p>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn btn-primary btn-sm" id="btnCheckForUpdates" style="flex:1;">
+              <i class="fa-solid fa-rotate"></i> <span data-i18n="btn_check_updates">Check for Updates</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="btnDownloadSafetySnapshot" title="Download Safety Snapshot">
+              <i class="fa-solid fa-download"></i> <span data-i18n="btn_safety_backup">Safety Snapshot</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Data Backup & Offline Storage -->
         <div class="card">
-          <h3 class="card-title mb-2">Data & Backup</h3>
-          <p class="card-subtitle mb-3">All your data is saved privately on your device. Export a backup anytime.</p>
+          <h3 class="card-title mb-2" data-i18n="data_backup_title">Data & Backup</h3>
+          <p class="card-subtitle mb-3" data-i18n="data_backup_sub">All your data is saved privately on your device. Export a backup anytime.</p>
           
           <div class="settings-btn-grid">
             <button class="btn btn-outline" id="btnExportData">
-              <i class="fa-solid fa-download"></i> Export Backup (.json)
+              <i class="fa-solid fa-download"></i> <span data-i18n="btn_export">Export Backup (.json)</span>
             </button>
             <label class="btn btn-outline file-upload-btn">
-              <i class="fa-solid fa-upload"></i> Restore Backup
+              <i class="fa-solid fa-upload"></i> <span data-i18n="btn_restore">Restore Backup</span>
               <input type="file" id="btnImportDataInput" accept=".json" style="display:none;">
             </label>
             <button class="btn btn-outline" id="btnLoadDemoData">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> Load Rich Demo Data
+              <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_load_demo">Load Rich Demo Data</span>
             </button>
             <button class="btn btn-danger-outline" id="btnResetAllData">
-              <i class="fa-solid fa-trash-can"></i> Clear All Data
+              <i class="fa-solid fa-trash-can"></i> <span data-i18n="btn_clear_data">Clear All Data</span>
             </button>
           </div>
         </div>
@@ -471,8 +518,8 @@
             <i class="fa-solid fa-mobile-screen-button"></i>
           </div>
           <div>
-            <h3 class="card-title">Install on Mobile</h3>
-            <p class="card-subtitle">To install like a native app: Open in Safari (iOS) and tap <strong>Share > Add to Home Screen</strong>, or in Chrome (Android) tap <strong>Menu > Install App</strong>.</p>
+            <h3 class="card-title" data-i18n="install_mobile_title">Install on Mobile</h3>
+            <p class="card-subtitle" data-i18n="install_mobile_sub">To install like a native app: Open in Safari (iOS) and tap <strong>Share > Add to Home Screen</strong>, or in Chrome (Android) tap <strong>Menu > Install App</strong>.</p>
           </div>
         </div>
       </section>
@@ -519,26 +566,26 @@
       <div class="bottom-sheet">
         <div class="sheet-handle"></div>
         <div class="modal-header">
-          <h2 class="modal-title" id="bookingModalTitle">New Booking</h2>
+          <h2 class="modal-title" id="bookingModalTitle" data-i18n="booking_modal_new">New Quotation / Booking</h2>
           <button class="modal-close" id="btnCloseBookingModal">&times;</button>
         </div>
         <form id="bookingForm" class="modal-body">
           <input type="hidden" id="bookingIdInput">
 
           <div class="form-group">
-            <label class="form-label required">Select Homestay Property</label>
+            <label class="form-label required" data-i18n="select_property">Select Homestay Property</label>
             <select id="bookingPropertySelect" class="form-select" required></select>
           </div>
 
           <!-- Rental Type Switcher -->
           <div class="form-group">
-            <label class="form-label required">Rental Type / Jenis Sewaan</label>
+            <label class="form-label required" data-i18n="rental_type">Rental Type / Jenis Sewaan</label>
             <div class="segmented-control" id="rentalTypeSegmented">
               <button type="button" class="segment-btn active" data-type="daily">
-                <i class="fa-solid fa-sun"></i> Daily / Short-Term
+                <i class="fa-solid fa-sun"></i> <span data-i18n="type_daily">Daily / Short-Term</span>
               </button>
               <button type="button" class="segment-btn" data-type="monthly">
-                <i class="fa-solid fa-calendar-days"></i> Monthly Tenancy
+                <i class="fa-solid fa-calendar-days"></i> <span data-i18n="type_monthly">Monthly Tenancy</span>
               </button>
             </div>
             <input type="hidden" id="bookingRentalType" value="daily">
@@ -547,33 +594,33 @@
           <!-- Tenant / Guest Particulars -->
           <div style="background:var(--bg-surface-subtle); padding:10px; border-radius:var(--radius-md); border:1px solid var(--border-color); margin-bottom:12px;">
             <div style="font-size:12px; font-weight:800; color:var(--text-main); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-              <i class="fa-solid fa-id-card" style="color:var(--primary);"></i> Tenant & Guest Particulars / Butiran Tetamu
+              <i class="fa-solid fa-id-card" style="color:var(--primary);"></i> <span data-i18n="tenant_particulars_title">Tenant & Guest Particulars / Butiran Tetamu</span>
             </div>
             
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label required">Full Name / Nama Penuh</label>
+                <label class="form-label required" data-i18n="full_name">Full Name / Nama Penuh</label>
                 <input type="text" id="bookingGuestName" class="form-control" placeholder="e.g. Sarah Tan / Ahmad bin Ali" required>
               </div>
               <div class="form-group">
-                <label class="form-label">Phone / WhatsApp</label>
+                <label class="form-label" data-i18n="phone_wa">Phone / WhatsApp</label>
                 <input type="tel" id="bookingGuestPhone" class="form-control" placeholder="+60 12-345 6789">
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">NRIC / Passport No. / No. KP</label>
+                <label class="form-label" data-i18n="nric_passport">NRIC / Passport No. / No. KP</label>
                 <input type="text" id="bookingGuestNric" class="form-control" placeholder="e.g. 901020-01-5678 / A12345678">
               </div>
               <div class="form-group">
-                <label class="form-label">Email Address / Emel</label>
+                <label class="form-label" data-i18n="email">Email Address / Emel</label>
                 <input type="email" id="bookingGuestEmail" class="form-control" placeholder="e.g. sarah@example.com">
               </div>
             </div>
 
             <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label">Residential / Home Address / Alamat Surat Menyurat</label>
+              <label class="form-label" data-i18n="address">Residential / Home Address / Alamat Surat Menyurat</label>
               <input type="text" id="bookingGuestAddress" class="form-control" placeholder="e.g. No. 12, Jalan Kemboja, Taman Melati, 53100 KL">
             </div>
           </div>
@@ -582,36 +629,36 @@
           <div id="sectionDailyPricing">
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label required">Check-In Date</label>
+                <label class="form-label required" data-i18n="checkin_date">Check-In Date</label>
                 <input type="date" id="bookingCheckIn" class="form-control">
               </div>
               <div class="form-group">
-                <label class="form-label required">Check-Out Date</label>
+                <label class="form-label required" data-i18n="checkout_date">Check-Out Date</label>
                 <input type="date" id="bookingCheckOut" class="form-control">
               </div>
             </div>
 
             <div class="pricing-calc-box">
               <div class="calc-row">
-                <span>Nights: <strong id="calcNightsCount">0</strong></span>
-                <span>Rate/Night:</span>
+                <span><span data-i18n="nights">Nights</span>: <strong id="calcNightsCount">0</strong></span>
+                <span data-i18n="rate_night">Rate/Night:</span>
                 <input type="number" id="bookingNightlyRate" class="form-control form-control-sm inline-input" placeholder="Rate" step="any">
               </div>
               <div class="calc-row">
-                <span>Cleaning Fee:</span>
+                <span data-i18n="cleaning_fee">Cleaning Fee:</span>
                 <input type="number" id="bookingCleaningFee" class="form-control form-control-sm inline-input" placeholder="Fee" value="0" step="any">
               </div>
               <div class="calc-row">
-                <span>Security Deposit (Refundable):</span>
+                <span data-i18n="sec_deposit">Security Deposit (Refundable):</span>
                 <input type="number" id="bookingSecurityDeposit" class="form-control form-control-sm inline-input" placeholder="e.g. 100" value="0" step="any">
               </div>
               <div class="calc-total-row">
-                <span>Total Rental:</span>
+                <span data-i18n="total_rental">Total Rental:</span>
                 <strong class="total-amount-badge" id="calcTotalAmount">RM 0.00</strong>
               </div>
               <!-- Quick Deposit Presets -->
               <div class="deposit-presets-row" style="display:flex; align-items:center; gap:6px; margin-top:6px; padding-top:6px; border-top:1px dashed var(--border-color);">
-                <span style="font-size:11px; color:var(--text-muted);">Quick Booking Fee:</span>
+                <span style="font-size:11px; color:var(--text-muted);" data-i18n="quick_deposit">Quick Booking Fee:</span>
                 <button type="button" class="btn btn-outline btn-xs" id="btnPresetDep30">30% (<span id="txtPreset30">0</span>)</button>
                 <button type="button" class="btn btn-outline btn-xs" id="btnPresetDep50">50%</button>
                 <button type="button" class="btn btn-outline btn-xs" id="btnPresetDepFull">100% Full</button>
@@ -624,34 +671,34 @@
           <div id="sectionMonthlyPricing" class="hidden">
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label required">Tenancy Start Date</label>
+                <label class="form-label required" data-i18n="monthly_start">Tenancy Start Date</label>
                 <input type="date" id="bookingMonthlyStart" class="form-control">
               </div>
               <div class="form-group">
-                <label class="form-label required">Duration (Months)</label>
+                <label class="form-label required" data-i18n="duration_months">Duration (Months)</label>
                 <input type="number" id="bookingMonthlyDuration" class="form-control" min="1" max="60" value="6">
               </div>
             </div>
 
             <div class="pricing-calc-box">
               <div class="calc-row">
-                <span>Monthly Rent:</span>
+                <span data-i18n="monthly_rent">Monthly Rent:</span>
                 <input type="number" id="bookingMonthlyRate" class="form-control form-control-sm inline-input" placeholder="e.g. 1200" step="any">
               </div>
               <div class="calc-row">
-                <span>Rental Deposit (Refundable):</span>
+                <span data-i18n="rental_dep">Rental Deposit (Refundable):</span>
                 <input type="number" id="bookingRentalDeposit" class="form-control form-control-sm inline-input" placeholder="e.g. 1200" step="any">
               </div>
               <div class="calc-row">
-                <span>Utilities Deposit (Refundable):</span>
+                <span data-i18n="util_dep">Utilities Deposit (Refundable):</span>
                 <input type="number" id="bookingUtilitiesDeposit" class="form-control form-control-sm inline-input" placeholder="e.g. 300" step="any">
               </div>
               <div class="calc-row">
-                <span>Agreement & Admin Fee:</span>
+                <span data-i18n="agreement_fee">Agreement & Admin Fee:</span>
                 <input type="number" id="bookingAgreementFee" class="form-control form-control-sm inline-input" placeholder="e.g. 150" value="150" step="any">
               </div>
               <div class="calc-total-row">
-                <span>Initial Move-In Total:</span>
+                <span data-i18n="initial_movein">Initial Move-In Total:</span>
                 <strong class="total-amount-badge" id="calcMonthlyTotalAmount">RM 0.00</strong>
               </div>
             </div>
@@ -659,11 +706,11 @@
 
           <div class="form-row mt-2">
             <div class="form-group">
-              <label class="form-label">Guests / Occupants</label>
+              <label class="form-label" data-i18n="guests_occupants">Guests / Occupants</label>
               <input type="number" id="bookingGuestCount" class="form-control" min="1" max="50" value="2">
             </div>
             <div class="form-group">
-              <label class="form-label">Booking Channel</label>
+              <label class="form-label" data-i18n="booking_channel">Booking Channel</label>
               <select id="bookingChannel" class="form-select">
                 <option value="whatsapp">💬 WhatsApp / Direct</option>
                 <option value="airbnb">🔴 Airbnb</option>
@@ -678,11 +725,11 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Advance / Deposit Paid</label>
+              <label class="form-label" data-i18n="deposit_paid">Advance / Deposit Paid</label>
               <input type="number" id="bookingDepositPaid" class="form-control" placeholder="0.00" value="0" step="any">
             </div>
             <div class="form-group">
-              <label class="form-label">Booking Stage / Status</label>
+              <label class="form-label" data-i18n="booking_stage">Booking Stage / Status</label>
               <select id="bookingStatusSelect" class="form-select">
                 <option value="quotation">📋 Quotation / Sebut Harga</option>
                 <option value="booked">🟡 Booked (Deposit Paid)</option>
@@ -696,13 +743,13 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Special Requests / Notes</label>
+            <label class="form-label" data-i18n="special_notes">Special Requests / Notes</label>
             <textarea id="bookingNotes" class="form-control" rows="2" placeholder="e.g. Extra mattress requested, arriving late at 8 PM"></textarea>
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline" id="btnCancelBookingModal">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btnSaveBooking">Save Booking</button>
+            <button type="button" class="btn btn-outline" id="btnCancelBookingModal" data-i18n="cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btnSaveBooking" data-i18n="btn_save_booking">Save Booking</button>
           </div>
         </form>
       </div>
@@ -713,7 +760,7 @@
       <div class="bottom-sheet">
         <div class="sheet-handle"></div>
         <div class="modal-header">
-          <h2 class="modal-title" id="propertyModalTitle">Add Homestay Unit</h2>
+          <h2 class="modal-title" id="propertyModalTitle" data-i18n="prop_modal_add">Add Homestay Unit</h2>
           <button class="modal-close" id="btnClosePropertyModal">&times;</button>
         </div>
         <form id="propertyForm" class="modal-body">
@@ -721,17 +768,17 @@
 
           <div class="form-row">
             <div class="form-group" style="flex:2;">
-              <label class="form-label required">Property / Homestay Name</label>
+              <label class="form-label required" data-i18n="prop_name">Property / Homestay Name</label>
               <input type="text" id="propertyNameInput" class="form-control" placeholder="e.g. Sunset Seaview Villa" required>
             </div>
             <div class="form-group" style="flex:1;">
-              <label class="form-label">Room / Unit No.</label>
+              <label class="form-label" data-i18n="room_no">Room / Unit No.</label>
               <input type="text" id="propertyRoomNoInput" class="form-control" placeholder="e.g. Bilik Master / Unit 3A">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label required">Rental Category / Jenis Unit</label>
+            <label class="form-label required" data-i18n="rental_cat">Rental Category / Jenis Unit</label>
             <select id="propertyTypeSelect" class="form-select">
               <option value="entire">🏡 Entire House / Whole Unit (Seluruh Rumah / Villa / Homestay)</option>
               <option value="room_master">🚪 Room Rental - Master Bedroom (Sewa Bilik Master)</option>
@@ -742,28 +789,28 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Address / Location</label>
+            <label class="form-label" data-i18n="address_loc">Address / Location</label>
             <input type="text" id="propertyAddressInput" class="form-control" placeholder="Full address or building & unit number">
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">WiFi Name (SSID)</label>
+              <label class="form-label" data-i18n="wifi_name">WiFi Name (SSID)</label>
               <input type="text" id="propertyWifiNameInput" class="form-control" placeholder="e.g. SunsetVilla_5G">
             </div>
             <div class="form-group">
-              <label class="form-label">WiFi Password</label>
+              <label class="form-label" data-i18n="wifi_pass">WiFi Password</label>
               <input type="text" id="propertyWifiPassInput" class="form-control" placeholder="e.g. holiday2026">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Door / Smart Lock PIN</label>
+              <label class="form-label" data-i18n="door_pin">Door / Smart Lock PIN</label>
               <input type="text" id="propertyDoorPinInput" class="form-control" placeholder="e.g. 123456# or Keybox 8899">
             </div>
             <div class="form-group">
-              <label class="form-label">Theme Color</label>
+              <label class="form-label" data-i18n="theme_color">Theme Color</label>
               <div class="color-picker-row" id="propertyColorPicker">
                 <label class="color-swatch"><input type="radio" name="propColor" value="#0284c7" checked><span style="background:#0284c7;"></span></label>
                 <label class="color-swatch"><input type="radio" name="propColor" value="#059669"><span style="background:#059669;"></span></label>
@@ -777,34 +824,34 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Default Nightly Rate</label>
+              <label class="form-label" data-i18n="default_rate">Default Nightly Rate</label>
               <input type="number" id="propertyDefaultRateInput" class="form-control" placeholder="250" step="any">
             </div>
             <div class="form-group">
-              <label class="form-label">Cleaning Fee</label>
+              <label class="form-label" data-i18n="default_clean_fee">Cleaning Fee</label>
               <input type="number" id="propertyCleaningFeeInput" class="form-control" placeholder="50" step="any">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Check-in Time</label>
+              <label class="form-label" data-i18n="checkin_time">Check-in Time</label>
               <input type="time" id="propertyCheckInTimeInput" class="form-control" value="15:00">
             </div>
             <div class="form-group">
-              <label class="form-label">Check-out Time</label>
+              <label class="form-label" data-i18n="checkout_time">Check-out Time</label>
               <input type="time" id="propertyCheckOutTimeInput" class="form-control" value="12:00">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">House Rules & Notes</label>
+            <label class="form-label" data-i18n="house_rules">House Rules & Notes</label>
             <textarea id="propertyRulesInput" class="form-control" rows="2" placeholder="e.g. No smoking indoors, quiet hours after 10 PM, shoes off inside."></textarea>
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline" id="btnCancelPropertyModal">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btnSaveProperty">Save Property</button>
+            <button type="button" class="btn btn-outline" id="btnCancelPropertyModal" data-i18n="cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btnSaveProperty" data-i18n="btn_save_prop">Save Property</button>
           </div>
         </form>
       </div>
@@ -818,8 +865,8 @@
           <div class="wa-header-brand">
             <i class="fa-brands fa-whatsapp wa-icon-brand"></i>
             <div>
-              <h2 class="modal-title">Send WhatsApp Message</h2>
-              <span class="modal-subtitle" id="waGuestRecipient">To: Guest</span>
+              <h2 class="modal-title" data-i18n="wa_modal_title">Send WhatsApp Message</h2>
+              <span class="modal-subtitle" id="waGuestRecipient" data-i18n="wa_to">To: Guest</span>
             </div>
           </div>
           <button class="modal-close" id="btnCloseWaModal">&times;</button>
@@ -830,10 +877,23 @@
             <button class="wa-tab-btn" data-template="deposit_receipt">🧾 Deposit Receipt (Booked)</button>
             <button class="wa-tab-btn" data-template="full_receipt">🔑 Full Receipt & Keys</button>
             <button class="wa-tab-btn" data-template="monthly_invoice">📑 Monthly Rent Invoice</button>
+            <button class="wa-tab-btn" data-template="monthly_rent_receipt">🧾 Monthly Rent Receipt</button>
             <button class="wa-tab-btn" data-template="refund_receipt">💰 Deposit Refund Statement</button>
             <button class="wa-tab-btn" data-template="checkout">🏁 Check-Out Reminder</button>
             <button class="wa-tab-btn" data-template="cleaner">🧹 Cleaner Job</button>
             <button class="wa-tab-btn" data-template="payment">💳 Balance Due</button>
+          </div>
+
+          <!-- Dynamic Controls for Monthly Invoicing / Surcharges -->
+          <div id="waMonthlyControls" class="form-row mb-2 hidden" style="background:var(--bg-surface-subtle); padding:8px 10px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+            <div class="form-group mb-0">
+              <label class="form-label" style="font-size:11px;" data-i18n="select_billing_month">Select Billing Month</label>
+              <select id="waInvoiceMonthSelect" class="form-select form-select-sm"></select>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" style="font-size:11px;" data-i18n="extra_utility_surcharge">Utility / Extra (RM)</label>
+              <input type="number" id="waInvoiceExtraInput" class="form-control form-control-sm" placeholder="0.00" value="0" step="any">
+            </div>
           </div>
 
           <div class="wa-preview-card">
@@ -845,10 +905,10 @@
 
           <div class="modal-footer">
             <button type="button" class="btn btn-outline" id="btnCopyWaText">
-              <i class="fa-solid fa-copy"></i> Copy Text
+              <i class="fa-solid fa-copy"></i> <span data-i18n="btn_copy_text">Copy Text</span>
             </button>
             <button type="button" class="btn btn-whatsapp" id="btnSendWaDirect">
-              <i class="fa-brands fa-whatsapp"></i> Open WhatsApp
+              <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_open_wa">Open WhatsApp</span>
             </button>
           </div>
         </div>
@@ -860,7 +920,7 @@
       <div class="bottom-sheet">
         <div class="sheet-handle"></div>
         <div class="modal-header">
-          <h2 class="modal-title">Tenancy Deposit Refund</h2>
+          <h2 class="modal-title" data-i18n="refund_modal_title">Tenancy Deposit Refund</h2>
           <button class="modal-close" id="btnCloseRefundModal">&times;</button>
         </div>
         <form id="depositRefundForm" class="modal-body">
@@ -870,39 +930,74 @@
 
           <div class="pricing-calc-box mb-3">
             <div class="calc-row">
-              <span>Rental Deposit Held:</span>
+              <span data-i18n="rental_dep_held">Rental Deposit Held:</span>
               <input type="number" id="refundRentalDepInput" class="form-control form-control-sm inline-input" placeholder="0.00" step="any">
             </div>
             <div class="calc-row">
-              <span>Utilities Deposit Held:</span>
+              <span data-i18n="util_dep_held">Utilities Deposit Held:</span>
               <input type="number" id="refundUtilitiesDepInput" class="form-control form-control-sm inline-input" placeholder="0.00" step="any">
             </div>
             <div class="calc-row">
-              <span style="color:var(--danger);">Less: Utility Arrears (TNB/Water):</span>
+              <span style="color:var(--danger);" data-i18n="deduct_util">Less: Utility Arrears (TNB/Water):</span>
               <input type="number" id="refundDeductUtilitiesInput" class="form-control form-control-sm inline-input" placeholder="0.00" value="0" step="any">
             </div>
             <div class="calc-row">
-              <span style="color:var(--danger);">Less: Repairs & Damage / Cleaning:</span>
+              <span style="color:var(--danger);" data-i18n="deduct_repair">Less: Repairs & Damage / Cleaning:</span>
               <input type="number" id="refundDeductRepairsInput" class="form-control form-control-sm inline-input" placeholder="0.00" value="0" step="any">
             </div>
             <div class="calc-total-row">
-              <span>Net Refund to Tenant:</span>
+              <span data-i18n="net_refund">Net Refund to Tenant:</span>
               <strong class="total-amount-badge" id="calcNetRefundAmount" style="color:var(--success);">RM 0.00</strong>
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Deduction Notes & Bank Account for Transfer</label>
+            <label class="form-label" data-i18n="deduct_notes">Deduction Notes & Bank Account for Transfer</label>
             <textarea id="refundNotesInput" class="form-control" rows="2" placeholder="e.g. TNB bill deduction RM 85.20. Balance refunded to Maybank 123456789."></textarea>
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline" id="btnCancelRefundModal">Cancel</button>
+            <button type="button" class="btn btn-outline" id="btnCancelRefundModal" data-i18n="cancel">Cancel</button>
             <button type="submit" class="btn btn-whatsapp" id="btnSendRefundWa">
-              <i class="fa-brands fa-whatsapp"></i> Send Refund Statement
+              <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_send_refund_wa">Send Refund Statement</span>
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- 3C. MONTHLY TENANCY INVOICES MODAL -->
+    <div class="modal-backdrop" id="monthlyInvoicesModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title" data-i18n="monthly_invoices_modal_title">Monthly Rental Invoices</h2>
+            <span class="modal-subtitle" id="monthlyInvoicesTenantSubtitle">Tenant: -</span>
+          </div>
+          <button class="modal-close" id="btnCloseMonthlyInvoicesModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="pricing-calc-box mb-2">
+            <div class="calc-row">
+              <span data-i18n="monthly_rent">Monthly Rent:</span>
+              <strong id="mInvRateDisplay">RM 0.00</strong>
+            </div>
+            <div class="calc-row">
+              <span data-i18n="tenancy_period">Tenancy Period:</span>
+              <strong id="mInvPeriodDisplay">-</strong>
+            </div>
+          </div>
+
+          <div style="font-size:12px; font-weight:700; color:var(--text-main); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span data-i18n="monthly_schedule_title">Billing Cycles & Invoice Status</span>
+            <span id="mInvPaidProgressBadge" style="font-size:10.5px; padding:2px 8px; border-radius:999px; background:var(--primary-light); color:var(--primary-text); font-weight:800;">0/0 PAID</span>
+          </div>
+
+          <div id="monthlyInvoicesList" style="display:flex; flex-direction:column; gap:8px;">
+            <!-- Dynamically populated monthly invoice cards -->
+          </div>
+        </div>
       </div>
     </div>
 
@@ -911,26 +1006,26 @@
       <div class="bottom-sheet">
         <div class="sheet-handle"></div>
         <div class="modal-header">
-          <h2 class="modal-title">Log Homestay Expense</h2>
+          <h2 class="modal-title" data-i18n="exp_modal_title">Log Homestay Expense</h2>
           <button class="modal-close" id="btnCloseExpenseModal">&times;</button>
         </div>
         <form id="expenseForm" class="modal-body">
           <div class="form-group">
-            <label class="form-label required">Property</label>
+            <label class="form-label required" data-i18n="exp_property">Property</label>
             <select id="expensePropertySelect" class="form-select" required></select>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label required">Amount</label>
+              <label class="form-label required" data-i18n="exp_amount">Amount</label>
               <input type="number" id="expenseAmountInput" class="form-control" placeholder="0.00" step="any" required>
             </div>
             <div class="form-group">
-              <label class="form-label required">Date</label>
+              <label class="form-label required" data-i18n="exp_date">Date</label>
               <input type="date" id="expenseDateInput" class="form-control" required>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label required">Category</label>
+            <label class="form-label required" data-i18n="exp_category">Category</label>
             <select id="expenseCategorySelect" class="form-select" required>
               <option value="cleaning">🧹 Cleaning / Laundry</option>
               <option value="utilities">💡 Utilities (Electricity, Water, WiFi)</option>
@@ -941,12 +1036,12 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Description / Receipt Note</label>
+            <label class="form-label" data-i18n="exp_desc">Description / Receipt Note</label>
             <input type="text" id="expenseDescInput" class="form-control" placeholder="e.g. Air conditioning service & gas top-up">
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline" id="btnCancelExpenseModal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save Expense</button>
+            <button type="button" class="btn btn-outline" id="btnCancelExpenseModal" data-i18n="cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary" data-i18n="btn_save_expense">Save Expense</button>
           </div>
         </form>
       </div>
@@ -957,7 +1052,7 @@
       <div class="bottom-sheet">
         <div class="sheet-handle"></div>
         <div class="modal-header">
-          <h2 class="modal-title">Digital Guest Welcome Kit</h2>
+          <h2 class="modal-title" data-i18n="guide_modal_title">Digital Guest Welcome Kit</h2>
           <button class="modal-close" id="btnCloseGuestGuideModal">&times;</button>
         </div>
         <div class="modal-body" id="guestGuideContent">
@@ -974,8 +1069,8 @@
           <div class="wa-header-brand">
             <i class="fa-solid fa-crown" style="font-size: 26px; color: var(--warning);"></i>
             <div>
-              <h2 class="modal-title">Unlock Lifetime License</h2>
-              <span class="modal-subtitle">One-time purchase • Zero monthly fees</span>
+              <h2 class="modal-title" data-i18n="lic_modal_title">Unlock Lifetime License</h2>
+              <span class="modal-subtitle" data-i18n="lic_modal_sub">One-time purchase • Zero monthly fees</span>
             </div>
           </div>
           <button class="modal-close" id="btnCloseLicenseModal">&times;</button>
@@ -995,17 +1090,17 @@
 
           <form id="licenseForm" style="margin-top: 14px;">
             <div class="form-group">
-              <label class="form-label required">Your Registered WhatsApp Phone Number</label>
+              <label class="form-label required" data-i18n="lic_phone">Your Registered WhatsApp Phone Number</label>
               <input type="tel" id="licensePhoneInput" class="form-control" placeholder="e.g. +60123456789" required>
             </div>
             <div class="form-group">
-              <label class="form-label required">Enter Your Activation License Key</label>
+              <label class="form-label required" data-i18n="lic_key">Enter Your Activation License Key</label>
               <input type="text" id="licenseKeyInput" class="form-control" placeholder="e.g. STAY-60123456789-XXXX-YYYY" style="text-transform: uppercase; font-family: monospace; font-weight: 700; letter-spacing: 1px;" required>
               <span class="card-subtitle" style="font-size: 11px; display:block; margin-top:4px; color:var(--text-muted);">
                 💡 <strong>Device Upgrade Friendly:</strong> Your license is locked to your WhatsApp number. If you change or upgrade phones in the future, simply reinstall the app and enter this same number & key!
               </span>
             </div>
-            <button type="submit" class="btn btn-primary btn-block" id="btnActivateLicenseSubmit">
+            <button type="submit" class="btn btn-primary btn-block" id="btnActivateLicenseSubmit" data-i18n="btn_activate_app">
               <i class="fa-solid fa-key"></i> Activate Full App
             </button>
           </form>

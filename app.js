@@ -7,13 +7,16 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
+const APP_VERSION = '2.1.0';
+
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
   BOOKINGS: 'staymanager_bookings_v2',
   TURNOVERS: 'staymanager_turnovers_v2',
   EXPENSES: 'staymanager_expenses_v2',
   SETTINGS: 'staymanager_settings_v2',
-  LICENSE: 'staymanager_license_v2'
+  LICENSE: 'staymanager_license_v2',
+  VERSION: 'staymanager_app_version'
 };
 
 const LICENSE_SECRET_SALT = 'HOMESTAY_PRO_SALT_2026_SECURE_AUTH';
@@ -42,6 +45,7 @@ const DEFAULT_SETTINGS = {
 
 const TRANSLATIONS = {
   en: {
+    // Navigation
     nav_today: 'Today',
     nav_calendar: 'Calendar',
     nav_bookings: 'Bookings',
@@ -49,6 +53,21 @@ const TRANSLATIONS = {
     nav_finances: 'Finances',
     nav_settings: 'Settings',
 
+    // Header & Global
+    all_units: 'All Units',
+    add_unit: '+ Add',
+    demo_badge: 'DEMO MODE',
+    demo_banner_text: 'Loving this app for your homestays?',
+    buy_app: 'Buy App',
+    activate: 'Activate',
+    today: 'Today',
+    cancel: 'Cancel',
+    save: 'Save',
+    edit: 'Edit',
+    delete: 'Delete',
+    close: 'Close',
+
+    // Dashboard
     kpi_checkin: 'Today Check-In',
     kpi_checkout: 'Today Check-Out',
     kpi_inhouse: 'In-House Guests',
@@ -56,25 +75,252 @@ const TRANSLATIONS = {
     this_month: 'This Month',
     occupancy: 'Occupancy',
     nights_booked: 'nights booked',
+    homestay_units_title: 'Homestay Units Overview',
     today_actions: "Today's Schedule & Actions",
     see_all: 'See All',
-    manage_units: 'Homestay Units Overview',
     manage_btn: 'Manage',
+    vacant_ready: 'Vacant & Ready',
+    turnover_required: 'Turnover / Cleaning Required',
+    occupied_by: 'Occupied by',
+    available: 'Available',
+    occupied: 'Occupied',
+    turnover: 'Turnover',
+    no_actions_today: 'No urgent check-ins, check-outs, or turnovers today.',
 
-    all_units: 'All Units',
-    add_unit: 'Add Unit',
+    // Calendar
+    cal_title: 'Calendar',
+    sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
     selected_date: 'Selected Date',
+    select_a_date: 'Select a date',
     book_date_btn: 'Book Date',
+    cal_tap_hint: 'Tap on any date above to view bookings or check availability.',
+    no_bookings_date: 'No bookings for this date. Unit is vacant & available.',
 
+    // Bookings & Filters
     filter_all: 'All',
     filter_quotations: '📋 Quotations',
     filter_booked: '🟡 Booked (Deposit)',
     filter_confirmed: '🟢 Confirmed (Full)',
-    filter_inhouse: 'In-House',
-    filter_completed: 'Completed',
-    filter_blocked: 'Blocked',
+    filter_inhouse: '🔑 In-House',
+    filter_completed: '🏁 Completed',
+    filter_blocked: '🚫 Blocked',
     search_placeholder: 'Search guest name, phone, ref...',
+    no_bookings_found: 'No Bookings Found',
+    no_bookings_hint: 'Try adjusting your search or tap + to create a new quotation / booking.',
+    nights: 'nights',
+    months: 'months',
+    guests: 'Guests',
+    total: 'Total',
+    balance: 'Balance',
+    btn_wa: 'WhatsApp',
+    btn_edit: 'Edit',
 
+    // Turnovers
+    turnover_title: 'Turnover & Cleaning',
+    turnover_subtitle: 'Prep your homestay for the next guest',
+    no_turnovers: 'No Turnovers Needed',
+    all_clean_hint: 'All homestays are clean, sanitized and ready for check-in.',
+    checklist: 'Checklist',
+    assign_cleaner: 'Assign Cleaner',
+    mark_clean_ready: 'Mark as Clean & Ready',
+    cleaning_in_progress: 'Cleaning in Progress',
+    ready_for_checkin: 'Ready for Check-In',
+    btn_wa_cleaner: 'WhatsApp Cleaner',
+
+    // Finances
+    total_rev: 'Total Revenue',
+    total_exp: 'Total Expenses',
+    net_profit: 'Net Profit',
+    rev_by_homestay: 'Revenue by Homestay',
+    expense_breakdown: 'Expense Breakdown',
+    add_expense_btn: '+ Expense',
+    add_btn: '+ Add',
+    no_expenses: 'No expenses logged for this month.',
+    cat_cleaning: '🧹 Cleaning / Laundry',
+    cat_utilities: '💡 Utilities (Electricity, Water, WiFi)',
+    cat_supplies: '🧻 Supplies & Amenities',
+    cat_maintenance: '🔧 Maintenance & Repairs',
+    cat_commission: '🏷️ Platform Commission',
+    cat_other: '📦 Other Expenses',
+
+    // Settings
+    your_homestays: 'Your Homestays',
+    manage_homestays_sub: 'Manage names, WiFi, smart locks & rates',
+    add_unit_btn: '+ Add Unit',
+    app_pref_title: 'App Preferences & Seller Info',
+    business_name_label: 'Business / Brand Name',
+    seller_phone_label: 'Seller Support / Order WhatsApp Number',
+    seller_phone_hint: 'Buyers will contact this WhatsApp number when clicking "Buy License".',
+    currency_label: 'Currency Symbol',
+    owner_phone_label: 'Owner WhatsApp Phone Number (Bound to License)',
+    owner_phone_hint: 'Your official WhatsApp number. Used in quotations and permanently bound to your app license.',
+    app_language_label: 'App Language / Bahasa',
+    deposit_pct_label: 'Standard Deposit Percentage (%)',
+    deposit_pct_hint: 'Default deposit requested upon booking (e.g. 30%).',
+    btn_save_pref: 'Save Preferences',
+    bank_title: 'Bank & Payment Details',
+    bank_sub: 'Auto-included in Quotations, Invoices, and Payment Receipts sent to guests.',
+    bank_name_label: 'Bank Name',
+    acc_num_label: 'Account Number',
+    acc_holder_label: 'Account Holder Name',
+    duitnow_label: 'DuitNow ID / QR / Transfer Note',
+    btn_save_bank: 'Save Payment Details',
+    app_license_title: 'App License',
+    admin_gen_title: 'Admin License Generator',
+    admin_gen_sub: 'Generate phone-bound licenses and 1-click WhatsApp onboarding links for buyers.',
+    buyer_phone_label: "Buyer's WhatsApp Phone Number",
+    buyer_name_label: 'Buyer Name / Homestay Name (Optional)',
+    btn_gen_license: 'Generate License & Magic Link',
+    // App Updates & Version
+    app_version_title: 'App Version & Updates',
+    app_version_sub: 'Update to the latest version anytime without losing your homestay or booking data.',
+    safe_update_guarantee_title: 'Zero Data Loss Guarantee:',
+    safe_update_guarantee_desc: 'Your homestays, tenant records, financials, and license key stay privately stored on this device during updates.',
+    btn_check_updates: 'Check for Updates',
+    btn_safety_backup: 'Safety Snapshot',
+    update_banner_title: 'New Update Available!',
+    update_banner_desc: 'New improvements & features ready. Your data is 100% preserved.',
+    btn_update_now: 'Update Now',
+    toast_app_updated: '🎉 App successfully updated to v2.1.0! All data is intact.',
+    toast_up_to_date: '✨ You are already using the latest version (v2.1.0)!',
+    toast_checking_updates: 'Checking for new updates...',
+    toast_safety_saved: 'Safety backup snapshot downloaded!',
+
+    data_backup_title: 'Data & Backup',
+    data_backup_sub: 'All your data is saved privately on your device. Export a backup anytime.',
+    btn_export: 'Export Backup (.json)',
+    btn_restore: 'Restore Backup',
+    btn_load_demo: 'Load Rich Demo Data',
+    btn_clear_data: 'Clear All Data',
+    install_mobile_title: 'Install on Mobile',
+    install_mobile_sub: 'To install like a native app: Open in Safari (iOS) and tap Share > Add to Home Screen, or in Chrome (Android) tap Menu > Install App.',
+
+    // Modals - Booking
+    booking_modal_new: 'New Quotation / Booking',
+    booking_modal_edit: 'Edit Booking / Tenancy',
+    select_property: 'Select Homestay Property',
+    rental_type: 'Rental Type / Jenis Sewaan',
+    type_daily: 'Daily / Short-Term',
+    type_monthly: 'Monthly Tenancy',
+    tenant_particulars_title: 'Tenant & Guest Particulars / Butiran Tetamu',
+    full_name: 'Full Name / Nama Penuh',
+    phone_wa: 'Phone / WhatsApp',
+    nric_passport: 'NRIC / Passport No. / No. KP',
+    email: 'Email Address / Emel',
+    address: 'Residential / Home Address / Alamat Surat Menyurat',
+    checkin_date: 'Check-In Date',
+    checkout_date: 'Check-Out Date',
+    rate_night: 'Rate/Night',
+    cleaning_fee: 'Cleaning Fee',
+    sec_deposit: 'Security Deposit (Refundable)',
+    total_rental: 'Total Rental:',
+    quick_deposit: 'Quick Booking Fee:',
+    monthly_start: 'Tenancy Start Date',
+    duration_months: 'Duration (Months)',
+    monthly_rent: 'Monthly Rent:',
+    rental_dep: 'Rental Deposit (Refundable):',
+    util_dep: 'Utilities Deposit (Refundable):',
+    agreement_fee: 'Agreement & Admin Fee:',
+    initial_movein: 'Initial Move-In Total:',
+    guests_occupants: 'Guests / Occupants',
+    booking_channel: 'Booking Channel',
+    deposit_paid: 'Advance / Deposit Paid',
+    booking_stage: 'Booking Stage / Status',
+    special_notes: 'Special Requests / Notes',
+    btn_save_booking: 'Save Booking',
+
+    // Modals - Property
+    prop_modal_add: 'Add Homestay Unit',
+    prop_modal_edit: 'Edit Homestay Unit',
+    prop_name: 'Property / Homestay Name',
+    room_no: 'Room / Unit No.',
+    rental_cat: 'Rental Category / Jenis Unit',
+    cat_entire: '🏡 Entire House / Whole Unit (Seluruh Rumah / Villa / Homestay)',
+    cat_master: '🚪 Room Rental - Master Bedroom (Sewa Bilik Master)',
+    cat_medium: '🚪 Room Rental - Medium Room (Sewa Bilik Medium)',
+    cat_single: '🚪 Room Rental - Single Room (Sewa Bilik Single / Standard)',
+    cat_studio: '🏢 Studio Apartment / Suite',
+    address_loc: 'Address / Location',
+    wifi_name: 'WiFi Name (SSID)',
+    wifi_pass: 'WiFi Password',
+    door_pin: 'Door / Smart Lock PIN',
+    theme_color: 'Theme Color',
+    default_rate: 'Default Nightly Rate',
+    default_clean_fee: 'Cleaning Fee',
+    checkin_time: 'Check-in Time',
+    checkout_time: 'Check-out Time',
+    house_rules: 'House Rules & Notes',
+    btn_save_prop: 'Save Property',
+
+    // Modals - WhatsApp
+    wa_modal_title: 'Send WhatsApp Message',
+    wa_to: 'To: Guest',
+    wa_tab_quotation: '📄 Quotation',
+    wa_tab_deposit: '🧾 Deposit Receipt (Booked)',
+    wa_tab_full: '🔑 Full Receipt & Keys',
+    wa_tab_invoice: '📑 Monthly Rent Invoice',
+    wa_tab_rent_receipt: '🧾 Monthly Rent Receipt',
+    wa_tab_refund: '💰 Deposit Refund Statement',
+    wa_tab_checkout: '🏁 Check-Out Reminder',
+    wa_tab_cleaner: '🧹 Cleaner Job',
+    wa_tab_payment: '💳 Balance Due',
+    btn_copy_text: 'Copy Text',
+    btn_open_wa: 'Open WhatsApp',
+
+    // Modals - Monthly Tenancy Invoices
+    monthly_invoices_modal_title: 'Monthly Rental Invoices',
+    select_billing_month: 'Select Billing Month',
+    extra_utility_surcharge: 'Utility / Extra (RM)',
+    tenancy_period: 'Tenancy Period',
+    monthly_schedule_title: 'Billing Cycles & Invoice Status',
+    month_num: 'Month',
+    due_date_label: 'Due Date',
+    btn_send_month_inv: 'Send Invoice',
+    btn_send_month_rec: 'Send Receipt',
+    btn_mark_month_paid: 'Mark Paid',
+    btn_unmark_month_paid: 'Unmark',
+    paid_movein: 'Paid (Move-In)',
+    pending: 'Pending',
+    paid: 'Paid',
+    btn_view_invoices: 'Monthly Invoices',
+
+    // Modals - Refund
+    refund_modal_title: 'Tenancy Deposit Refund',
+    rental_dep_held: 'Rental Deposit Held:',
+    util_dep_held: 'Utilities Deposit Held:',
+    deduct_util: 'Less: Utility Arrears (TNB/Water):',
+    deduct_repair: 'Less: Repairs & Damage / Cleaning:',
+    net_refund: 'Net Refund to Tenant:',
+    deduct_notes: 'Deduction Notes & Bank Account for Transfer',
+    btn_send_refund_wa: 'Send Refund Statement',
+
+    // Modals - Expense
+    exp_modal_title: 'Log Homestay Expense',
+    exp_property: 'Property',
+    exp_amount: 'Amount',
+    exp_date: 'Date',
+    exp_category: 'Category',
+    exp_desc: 'Description / Receipt Note',
+    btn_save_expense: 'Save Expense',
+
+    // Modals - Guest Kit
+    guide_modal_title: 'Digital Guest Welcome Kit',
+    guide_wifi: 'WiFi Credentials',
+    guide_smart_lock: 'Smart Lock / Access',
+    guide_rules: 'House Rules',
+    guide_share_btn: 'Share Guide with Guest via WhatsApp',
+
+    // Modals - License
+    lic_modal_title: 'Unlock Lifetime License',
+    lic_modal_sub: 'One-time purchase • Zero monthly fees',
+    lic_phone: 'Your Registered WhatsApp Phone Number',
+    lic_key: 'Enter Your Activation License Key',
+    btn_activate_app: 'Activate Full App',
+
+    // Action Feed Tags & Buttons
+    tag_checkin_today: 'Check-In Today',
+    tag_checkout_today: 'Check-Out Today',
+    tag_turnover_needed: 'Turnover Needed',
     btn_send_quotation: 'Send Quotation',
     btn_mark_booked: 'Mark Deposit Paid (Book)',
     btn_send_deposit_receipt: 'Send Deposit Receipt',
@@ -83,20 +329,10 @@ const TRANSLATIONS = {
     btn_send_full_receipt: 'Send Full Receipt & Key',
     btn_checkin: 'Check In',
     btn_checkout_reminder: 'Check-Out Reminder',
-    btn_complete_checkout: 'Complete Check-Out',
-
-    total_rev: 'Total Revenue',
-    total_exp: 'Total Expenses',
-    net_profit: 'Net Profit',
-    rev_by_homestay: 'Revenue by Homestay',
-    expense_breakdown: 'Expense Breakdown',
-
-    demo_badge: 'DEMO MODE',
-    demo_banner_text: 'Loving this app for your homestays?',
-    buy_app: 'Buy App',
-    activate: 'Activate'
+    btn_complete_checkout: 'Complete Check-Out'
   },
   bm: {
+    // Navigation
     nav_today: 'Hari Ini',
     nav_calendar: 'Kalendar',
     nav_bookings: 'Tempahan',
@@ -104,32 +340,256 @@ const TRANSLATIONS = {
     nav_finances: 'Kewangan',
     nav_settings: 'Tetapan',
 
+    // Header & Global
+    all_units: 'Semua Unit',
+    add_unit: '+ Tambah',
+    demo_badge: 'MOD DEMO',
+    demo_banner_text: 'Suka aplikasi ini untuk homestay anda?',
+    buy_app: 'Beli App',
+    activate: 'Aktifkan',
+    today: 'Hari Ini',
+    cancel: 'Batal',
+    save: 'Simpan',
+    edit: 'Kemas Kini',
+    delete: 'Padam',
+    close: 'Tutup',
+
+    // Dashboard
     kpi_checkin: 'Daftar Masuk Hari Ini',
     kpi_checkout: 'Daftar Keluar Hari Ini',
     kpi_inhouse: 'Tetamu Menginap',
     kpi_turnovers: 'Perlu Dibersihkan',
     this_month: 'Bulan Ini',
-    occupancy: 'Penghunian',
+    occupancy: 'Kadar Penghunian',
     nights_booked: 'malam ditempah',
+    homestay_units_title: 'Ringkasan Unit Homestay',
     today_actions: 'Jadual & Tindakan Hari Ini',
     see_all: 'Lihat Semua',
-    manage_units: 'Ringkasan Unit Homestay',
     manage_btn: 'Urus',
+    vacant_ready: 'Kosong & Sedia',
+    turnover_required: 'Perlu Pembersihan / Turnover',
+    occupied_by: 'Diduduki oleh',
+    available: 'Kosong',
+    occupied: 'Diduduki',
+    turnover: 'Pembersihan',
+    no_actions_today: 'Tiada daftar masuk, keluar atau pembersihan mendesak hari ini.',
 
-    all_units: 'Semua Unit',
-    add_unit: 'Tambah Unit',
+    // Calendar
+    cal_title: 'Kalendar',
+    sun: 'Ahd', mon: 'Isn', tue: 'Sel', wed: 'Rab', thu: 'Kha', fri: 'Jum', sat: 'Sab',
     selected_date: 'Tarikh Dipilih',
+    select_a_date: 'Pilih tarikh',
     book_date_btn: 'Tempah Tarikh',
+    cal_tap_hint: 'Tekan mana-mana tarikh di atas untuk melihat tempahan atau kekosongan.',
+    no_bookings_date: 'Tiada tempahan pada tarikh ini. Unit kosong & sedia ditempah.',
 
+    // Bookings & Filters
     filter_all: 'Semua',
     filter_quotations: '📋 Sebut Harga',
     filter_booked: '🟡 Ditempah (Deposit)',
     filter_confirmed: '🟢 Disahkan (Penuh)',
-    filter_inhouse: 'Sedang Menginap',
-    filter_completed: 'Selesai',
-    filter_blocked: 'Disekat',
+    filter_inhouse: '🔑 Sedang Menginap',
+    filter_completed: '🏁 Selesai',
+    filter_blocked: '🚫 Disekat',
     search_placeholder: 'Cari nama tetamu, telefon, rujukan...',
+    no_bookings_found: 'Tiada Tempahan Dijumpai',
+    no_bookings_hint: 'Cuba tukar carian atau tekan + untuk mencipta sebut harga / tempahan baru.',
+    nights: 'malam',
+    months: 'bulan',
+    guests: 'Tetamu',
+    total: 'Jumlah',
+    balance: 'Baki',
+    btn_wa: 'WhatsApp',
+    btn_edit: 'Kemas Kini',
 
+    // Turnovers
+    turnover_title: 'Pembersihan & Turnover',
+    turnover_subtitle: 'Sediakan unit homestay anda untuk tetamu seterusnya',
+    no_turnovers: 'Tiada Pembersihan Diperlukan',
+    all_clean_hint: 'Semua unit bersih, disanitasi dan sedia untuk tetamu.',
+    checklist: 'Senarai Semak',
+    assign_cleaner: 'Tugaskan Pencuci',
+    mark_clean_ready: 'Tanda Bersih & Sedia',
+    cleaning_in_progress: 'Sedang Dibersihkan',
+    ready_for_checkin: 'Sedia Untuk Daftar Masuk',
+    btn_wa_cleaner: 'WhatsApp Pencuci',
+
+    // Finances
+    total_rev: 'Jumlah Pendapatan',
+    total_exp: 'Jumlah Perbelanjaan',
+    net_profit: 'Keuntungan Bersih',
+    rev_by_homestay: 'Pendapatan Mengikut Unit',
+    expense_breakdown: 'Pecahan Perbelanjaan',
+    add_expense_btn: '+ Belanja',
+    add_btn: '+ Tambah',
+    no_expenses: 'Tiada rekod perbelanjaan untuk bulan ini.',
+    cat_cleaning: '🧹 Pembersihan / Dobi',
+    cat_utilities: '💡 Utiliti (Elektrik, Air, WiFi)',
+    cat_supplies: '🧻 Barangan & Kelengkapan',
+    cat_maintenance: '🔧 Penyelenggaraan & Baiki',
+    cat_commission: '🏷️ Komisen Platform',
+    cat_other: '📦 Perbelanjaan Lain',
+
+    // Settings
+    your_homestays: 'Unit Homestay & Bilik Anda',
+    manage_homestays_sub: 'Urus nama, WiFi, kunci pintar & kadar sewa',
+    add_unit_btn: '+ Tambah Unit',
+    app_pref_title: 'Pilihan Aplikasi & Maklumat Penjual',
+    business_name_label: 'Nama Homestay / Perniagaan',
+    seller_phone_label: 'Nombor WhatsApp Sokongan / Tempahan',
+    seller_phone_hint: 'Pembeli akan menghubungi nombor WhatsApp ini apabila menekan "Beli Lesen".',
+    currency_label: 'Simbol Mata Wang',
+    owner_phone_label: 'Nombor WhatsApp Pemilik (Terkunci ke Lesen)',
+    owner_phone_hint: 'Nombor WhatsApp rasmi anda. Digunakan dalam sebut harga dan diikat secara kekal pada lesen aplikasi anda.',
+    app_language_label: 'Bahasa Aplikasi',
+    deposit_pct_label: 'Peratusan Deposit Booking Standard (%)',
+    deposit_pct_hint: 'Deposit standard yang diminta semasa tempahan (contoh: 30%).',
+    btn_save_pref: 'Simpan Tetapan',
+    bank_title: 'Maklumat Akaun Bank & DuitNow',
+    bank_sub: 'Dimasukkan secara automatik dalam Sebut Harga, Invois, dan Resit Bayaran tetamu.',
+    bank_name_label: 'Nama Bank',
+    acc_num_label: 'Nombor Akaun',
+    acc_holder_label: 'Nama Pemegang Akaun',
+    duitnow_label: 'ID DuitNow / QR / Nota Rujukan',
+    btn_save_bank: 'Simpan Maklumat Pembayaran',
+    app_license_title: 'Lesen Aplikasi',
+    admin_gen_title: 'Penjana Kunci Lesen (Admin)',
+    admin_gen_sub: 'Jana lesen terikat nombor telefon dan pautan aktivasi 1-klik WhatsApp untuk pembeli.',
+    buyer_phone_label: 'Nombor WhatsApp Pembeli',
+    buyer_name_label: 'Nama Pembeli / Nama Homestay (Pilihan)',
+    btn_gen_license: 'Jana Kunci Lesen & Pautan Pintar',
+    // App Updates & Version
+    app_version_title: 'Versi Aplikasi & Kemas Kini',
+    app_version_sub: 'Kemas kini ke versi terkini pada bila-bila masa tanpa kehilangan data homestay atau tempahan anda.',
+    safe_update_guarantee_title: 'Jaminan Sifar Kehilangan Data:',
+    safe_update_guarantee_desc: 'Data unit homestay, rekod penyewa, kewangan dan lesen anda kekal tersimpan secara peribadi di peranti ini semasa kemas kini.',
+    btn_check_updates: 'Semak Kemas Kini',
+    btn_safety_backup: 'Salinan Keselamatan',
+    update_banner_title: 'Kemas Kini Baharu Tersedia!',
+    update_banner_desc: 'Ciri baharu & penambahbaikan sedia dipasang. Data anda kekal 100% selamat.',
+    btn_update_now: 'Kemas Kini Sekarang',
+    toast_app_updated: '🎉 Aplikasi berjaya dikemas kini ke v2.1.0! Semua data kekal selamat.',
+    toast_up_to_date: '✨ Anda sedang menggunakan versi terkini (v2.1.0)!',
+    toast_checking_updates: 'Menyemak kemas kini terkini...',
+    toast_safety_saved: 'Salinan sandaran keselamatan berjaya dimuat turun!',
+
+    data_backup_title: 'Data & Salinan Sandaran',
+    data_backup_sub: 'Semua data disimpan secara peribadi pada peranti anda. Eksport salinan sandaran bila-bila masa.',
+    btn_export: 'Eksport Salinan (.json)',
+    btn_restore: 'Pulihkan Salinan',
+    btn_load_demo: 'Muat Data Demo Penuh',
+    btn_clear_data: 'Padam Semua Data',
+    install_mobile_title: 'Pasang Pada Telefon Pintar',
+    install_mobile_sub: 'Untuk pasang seperti app biasa: Buka di Safari (iOS) dan tekan Share > Add to Home Screen, atau di Chrome (Android) tekan Menu > Install App.',
+
+    // Modals - Booking
+    booking_modal_new: 'Tempahan & Sebut Harga Baru',
+    booking_modal_edit: 'Kemas Kini Tempahan / Sewaan',
+    select_property: 'Pilih Unit Homestay',
+    rental_type: 'Jenis Sewaan / Rental Type',
+    type_daily: 'Sewaan Harian / Jangka Pendek',
+    type_monthly: 'Sewaan Bulanan / Tenancy',
+    tenant_particulars_title: 'Butiran Tetamu & Penyewa',
+    full_name: 'Nama Penuh',
+    phone_wa: 'No. Telefon / WhatsApp',
+    nric_passport: 'No. Kad Pengenalan / Pasport',
+    email: 'Alamat Emel',
+    address: 'Alamat Rumah / Surat Menyurat',
+    checkin_date: 'Tarikh Daftar Masuk',
+    checkout_date: 'Tarikh Daftar Keluar',
+    rate_night: 'Kadar/Malam',
+    cleaning_fee: 'Yuran Pembersihan',
+    sec_deposit: 'Deposit Keselamatan (Dipulangkan)',
+    total_rental: 'Jumlah Sewaan:',
+    quick_deposit: 'Pilihan Pantas Deposit:',
+    monthly_start: 'Tarikh Mula Sewaan',
+    duration_months: 'Tempoh (Bulan)',
+    monthly_rent: 'Sewa Bulanan:',
+    rental_dep: 'Deposit Sewa (Dipulangkan):',
+    util_dep: 'Deposit Utiliti (Dipulangkan):',
+    agreement_fee: 'Yuran Perjanjian & Duti Setem:',
+    initial_movein: 'Jumlah Bayaran Kemasukan:',
+    guests_occupants: 'Bilangan Tetamu / Penghuni',
+    booking_channel: 'Saluran Tempahan',
+    deposit_paid: 'Bayaran Deposit / Pendahuluan',
+    booking_stage: 'Status / Peringkat Tempahan',
+    special_notes: 'Permintaan Khas / Catatan',
+    btn_save_booking: 'Simpan Tempahan',
+
+    // Modals - Property
+    prop_modal_add: 'Tambah Unit Homestay / Bilik',
+    prop_modal_edit: 'Kemas Kini Unit Homestay / Bilik',
+    prop_name: 'Nama Homestay / Hartanah',
+    room_no: 'No. Bilik / Unit',
+    rental_cat: 'Kategori Sewaan / Jenis Unit',
+    cat_entire: '🏡 Seluruh Rumah / Villa / Homestay (Whole Unit)',
+    cat_master: '🚪 Sewa Bilik - Bilik Master',
+    cat_medium: '🚪 Sewa Bilik - Bilik Medium',
+    cat_single: '🚪 Sewa Bilik - Bilik Single',
+    cat_studio: '🏢 Studio Apartmen / Suite',
+    address_loc: 'Alamat / Lokasi',
+    wifi_name: 'Nama WiFi (SSID)',
+    wifi_pass: 'Kata Laluan WiFi',
+    door_pin: 'PIN Kunci Pintu / Smart Lock',
+    theme_color: 'Warna Tema',
+    default_rate: 'Kadar Sewa Harian Standard',
+    default_clean_fee: 'Yuran Pembersihan',
+    checkin_time: 'Waktu Daftar Masuk',
+    checkout_time: 'Waktu Daftar Keluar',
+    house_rules: 'Peraturan Rumah & Catatan',
+    btn_save_prop: 'Simpan Unit',
+
+    // Modals - WhatsApp
+    wa_modal_title: 'Hantar Mesej WhatsApp',
+    wa_to: 'Kepada: Tetamu',
+    wa_tab_quotation: '📄 Sebut Harga',
+    wa_tab_deposit: '🧾 Resit Booking & Deposit',
+    wa_tab_full: '🔑 Resit Penuh & Kunci PIN',
+    wa_tab_invoice: '📑 Invois Bulanan',
+    wa_tab_refund: '💰 Penyata Pemulangan Deposit',
+    wa_tab_checkout: '🏁 Peringatan Daftar Keluar',
+    wa_tab_cleaner: '🧹 Tugasan Pembersihan',
+    wa_tab_payment: '💳 Peringatan Baki Bayaran',
+    btn_copy_text: 'Salin Teks',
+    btn_open_wa: 'Buka WhatsApp Terus',
+
+    // Modals - Refund
+    refund_modal_title: 'Penyata Pemulangan Deposit Sewaan',
+    rental_dep_held: 'Deposit Sewa Dipegang:',
+    util_dep_held: 'Deposit Utiliti Dipegang:',
+    deduct_util: 'Tolak: Tunggakan Utiliti (TNB/Air):',
+    deduct_repair: 'Tolak: Pembaikan & Pembersihan:',
+    net_refund: 'Jumlah Bersih Dipulangkan:',
+    deduct_notes: 'Catatan Tolakan & Akaun Bank Pemulangan',
+    btn_send_refund_wa: 'Hantar Penyata Pemulangan',
+
+    // Modals - Expense
+    exp_modal_title: 'Rekod Perbelanjaan Homestay',
+    exp_property: 'Unit Homestay',
+    exp_amount: 'Jumlah',
+    exp_date: 'Tarikh',
+    exp_category: 'Kategori',
+    exp_desc: 'Penerangan / Catatan Resit',
+    btn_save_expense: 'Simpan Perbelanjaan',
+
+    // Modals - Guest Kit
+    guide_modal_title: 'Kit Panduan Digital Tetamu',
+    guide_wifi: 'Maklumat Sambungan WiFi',
+    guide_smart_lock: 'Akses Kunci Pintu Pintar',
+    guide_rules: 'Peraturan Rumah',
+    guide_share_btn: 'Kongsi Panduan ke WhatsApp Tetamu',
+
+    // Modals - License
+    lic_modal_title: 'Buka Kunci Lesen Seumur Hidup',
+    lic_modal_sub: 'Pembelian sekali • Tiada yuran bulanan',
+    lic_phone: 'Nombor WhatsApp Berdaftar Anda',
+    lic_key: 'Masukkan Kunci Lesen Aktivasi Anda',
+    btn_activate_app: 'Aktifkan Aplikasi Penuh',
+
+    // Action Feed Tags & Buttons
+    tag_checkin_today: 'Daftar Masuk Hari Ini',
+    tag_checkout_today: 'Daftar Keluar Hari Ini',
+    tag_turnover_needed: 'Perlu Pembersihan',
     btn_send_quotation: 'Hantar Sebut Harga',
     btn_mark_booked: 'Tanda Deposit Dibayar (Kunci)',
     btn_send_deposit_receipt: 'Hantar Resit Deposit',
@@ -140,16 +600,22 @@ const TRANSLATIONS = {
     btn_checkout_reminder: 'Peringatan Daftar Keluar',
     btn_complete_checkout: 'Selesaikan Daftar Keluar',
 
-    total_rev: 'Jumlah Pendapatan',
-    total_exp: 'Jumlah Perbelanjaan',
-    net_profit: 'Keuntungan Bersih',
-    rev_by_homestay: 'Pendapatan Mengikut Homestay',
-    expense_breakdown: 'Pecahan Perbelanjaan',
-
-    demo_badge: 'MOD DEMO',
-    demo_banner_text: 'Suka aplikasi ini untuk homestay anda?',
-    buy_app: 'Beli App',
-    activate: 'Aktifkan'
+    // Modals - Monthly Tenancy Invoices
+    monthly_invoices_modal_title: 'Jadual Invois Sewaan Bulanan',
+    select_billing_month: 'Pilih Bulan Invois',
+    extra_utility_surcharge: 'Caj Utiliti / Tambahan (RM)',
+    tenancy_period: 'Tempoh Sewaan',
+    monthly_schedule_title: 'Kitaran Sewaan & Status Bayaran',
+    month_num: 'Bulan ke-',
+    due_date_label: 'Tarikh Akhir Bayaran',
+    btn_send_month_inv: 'Hantar Invois',
+    btn_send_month_rec: 'Hantar Resit',
+    btn_mark_month_paid: 'Tanda Bayar',
+    btn_unmark_month_paid: 'Batal Tanda',
+    paid_movein: 'Dibayar (Kemasukan)',
+    pending: 'Belum Bayar',
+    paid: 'Telah Dibayar',
+    btn_view_invoices: 'Jadual Invois'
   }
 };
 
@@ -271,13 +737,10 @@ function initApp() {
   }
 
   applyTheme(appState.settings.theme);
+  applyLanguageUI();
   setupEventListeners();
   renderApp();
-
-  // Register PWA Service Worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration note:', err));
-  }
+  initPWAUpdateService();
 }
 
 function loadFromStorage() {
@@ -306,8 +769,70 @@ function loadFromStorage() {
         }
       }
     }
+
+    // Run schema migrations and auto-safety snapshot
+    runDataMigrations();
   } catch (e) {
     console.error('Error loading localStorage:', e);
+  }
+}
+
+function runDataMigrations() {
+  try {
+    const savedVersion = localStorage.getItem(STORAGE_KEYS.VERSION) || '1.0.0';
+    if (savedVersion !== APP_VERSION) {
+      // 1. Pre-update safety snapshot stored locally in localStorage
+      const autoSnapshot = {
+        properties: appState.properties,
+        bookings: appState.bookings,
+        turnovers: appState.turnovers,
+        expenses: appState.expenses,
+        settings: appState.settings,
+        licenseKey: appState.licenseKey,
+        isLicensed: appState.isLicensed,
+        isMasterAdmin: appState.isMasterAdmin,
+        version: savedVersion,
+        backupDate: new Date().toISOString()
+      };
+      localStorage.setItem('staymanager_auto_backup', JSON.stringify(autoSnapshot));
+
+      // 2. Backward-compatible field safety migrations:
+      // Ensure all properties have valid property types and room numbers
+      if (Array.isArray(appState.properties)) {
+        appState.properties.forEach(p => {
+          if (!p.propType) p.propType = 'entire';
+          if (p.roomNo === undefined) p.roomNo = '';
+        });
+      }
+
+      // Ensure all bookings have rental types and tenant particulars
+      if (Array.isArray(appState.bookings)) {
+        appState.bookings.forEach(b => {
+          if (!b.rentalType) b.rentalType = 'daily';
+          if (b.guestNric === undefined) b.guestNric = '';
+          if (b.guestEmail === undefined) b.guestEmail = '';
+          if (b.guestAddress === undefined) b.guestAddress = '';
+        });
+      }
+
+      // Ensure settings have default language
+      if (!appState.settings.language) {
+        appState.settings.language = 'en';
+      }
+
+      // Save updated version
+      localStorage.setItem(STORAGE_KEYS.VERSION, APP_VERSION);
+      saveToStorage();
+
+      // Show toast if upgrading from a previous version
+      if (savedVersion !== '1.0.0' && savedVersion !== APP_VERSION) {
+        setTimeout(() => {
+          showToast(t('toast_app_updated'));
+        }, 1000);
+      }
+    }
+  } catch (err) {
+    console.error('Data migration note:', err);
   }
 }
 
@@ -320,6 +845,117 @@ function saveToStorage() {
   if (appState.isLicensed && appState.licenseKey) {
     localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: appState.licenseKey, activatedAt: new Date().toISOString() }));
   }
+}
+
+// ==========================================================================
+// 2B. PWA LIVE UPDATE ENGINE & SEAMLESS MIGRATIONS
+// ==========================================================================
+
+let swRegistration = null;
+let newWorkerWaiting = null;
+
+function initPWAUpdateService() {
+  if (!('serviceWorker' in navigator)) return;
+
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    swRegistration = reg;
+
+    // Check if there is already a worker waiting to activate
+    if (reg.waiting) {
+      newWorkerWaiting = reg.waiting;
+      showUpdateBanner();
+    }
+
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      if (!newWorker) return;
+
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          newWorkerWaiting = newWorker;
+          showUpdateBanner();
+        }
+      });
+    });
+  }).catch(err => {
+    console.log('SW registration note:', err);
+  });
+
+  // When the new worker takes control, reload smoothly
+  let isRefreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (isRefreshing) return;
+    isRefreshing = true;
+    window.location.reload();
+  });
+
+  // Check for updates automatically in background every 30 minutes
+  setInterval(() => checkForAppUpdates(false), 30 * 60 * 1000);
+}
+
+function showUpdateBanner() {
+  const banner = document.getElementById('appUpdateBanner');
+  if (banner) {
+    banner.classList.add('active');
+  }
+}
+
+function dismissUpdateBanner() {
+  const banner = document.getElementById('appUpdateBanner');
+  if (banner) {
+    banner.classList.remove('active');
+  }
+}
+
+function applyAppUpdate() {
+  showToast(t('toast_checking_updates'));
+  if (newWorkerWaiting) {
+    newWorkerWaiting.postMessage({ type: 'SKIP_WAITING' });
+  } else {
+    // If running as regular browser tab, force a hard reload
+    window.location.reload();
+  }
+}
+
+async function checkForAppUpdates(isManual = false) {
+  if (isManual) {
+    showToast(t('toast_checking_updates'));
+  }
+
+  try {
+    // 1. Tell the service worker registration to check the server for new sw.js
+    if (swRegistration) {
+      await swRegistration.update();
+    }
+
+    // 2. Fetch version.json directly with cache-busting timestamp
+    const res = await fetch(`./version.json?t=${Date.now()}`);
+    if (res.ok) {
+      const verData = await res.json();
+      if (verData && verData.version && verData.version !== APP_VERSION) {
+        showUpdateBanner();
+        if (isManual) {
+          showToast(`${t('update_banner_title')} (v${verData.version})`);
+        }
+        return;
+      }
+    }
+
+    if (isManual) {
+      setTimeout(() => {
+        showToast(t('toast_up_to_date'));
+      }, 400);
+    }
+  } catch (e) {
+    if (isManual) {
+      showToast(t('toast_up_to_date'));
+    }
+  }
+}
+
+function downloadSafetySnapshot() {
+  exportDataBackup();
+  showToast(t('toast_safety_saved'));
 }
 
 function seedDemoData() {
@@ -589,6 +1225,24 @@ function setupEventListeners() {
   const cancelRefund = document.getElementById('btnCancelRefundModal');
   if (cancelRefund) cancelRefund.addEventListener('click', closeAllModals);
 
+  // Monthly Invoices Modal Close
+  const closeMInv = document.getElementById('btnCloseMonthlyInvoicesModal');
+  if (closeMInv) closeMInv.addEventListener('click', closeAllModals);
+
+  // WhatsApp Monthly Controls dynamic triggers
+  const waMonthSel = document.getElementById('waInvoiceMonthSelect');
+  if (waMonthSel) {
+    waMonthSel.addEventListener('change', (e) => {
+      appState.activeWaMonthIndex = parseInt(e.target.value) || 1;
+      renderWhatsAppPreview();
+    });
+  }
+
+  const waExtraInp = document.getElementById('waInvoiceExtraInput');
+  if (waExtraInp) {
+    waExtraInp.addEventListener('input', renderWhatsAppPreview);
+  }
+
   // License & Sales Event Handlers
   document.getElementById('btnOpenActivateModal').addEventListener('click', openLicenseModal);
   document.getElementById('btnBuyLicense').addEventListener('click', handleBuyLicenseRedirect);
@@ -678,6 +1332,19 @@ function setupEventListeners() {
   document.getElementById('btnLoadDemoData').addEventListener('click', seedDemoData);
   document.getElementById('btnResetAllData').addEventListener('click', resetAllData);
 
+  // App Update System Event Listeners
+  const btnApplyUpdate = document.getElementById('btnApplyAppUpdate');
+  if (btnApplyUpdate) btnApplyUpdate.addEventListener('click', applyAppUpdate);
+
+  const btnDismissUp = document.getElementById('btnDismissUpdate');
+  if (btnDismissUp) btnDismissUp.addEventListener('click', dismissUpdateBanner);
+
+  const btnCheckUp = document.getElementById('btnCheckForUpdates');
+  if (btnCheckUp) btnCheckUp.addEventListener('click', () => checkForAppUpdates(true));
+
+  const btnSafetySnap = document.getElementById('btnDownloadSafetySnapshot');
+  if (btnSafetySnap) btnSafetySnap.addEventListener('click', downloadSafetySnapshot);
+
   // Finance Selectors
   document.getElementById('financeMonthSelect').addEventListener('change', renderFinancesTab);
   document.getElementById('financeYearSelect').addEventListener('change', renderFinancesTab);
@@ -736,11 +1403,40 @@ function setLanguage(lang) {
 function applyLanguageUI() {
   const lang = appState.settings.language || 'en';
 
-  // Header language pill
+  // 1. Scan and translate all elements with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (key) {
+      el.textContent = t(key);
+    }
+  });
+
+  // 2. Scan and translate all elements with data-i18n-placeholder
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (key) {
+      el.placeholder = t(key);
+    }
+  });
+
+  // 3. Header language pill
   const langLabel = document.getElementById('currentLangLabel');
   if (langLabel) langLabel.textContent = lang.toUpperCase();
 
-  // Bottom Navigation item labels
+  // 4. Update language dropdown in settings
+  const langSelect = document.getElementById('settingLanguageSelect');
+  if (langSelect && langSelect.value !== lang) {
+    langSelect.value = lang;
+  }
+
+  // 5. Header Subtitle
+  const dateSub = document.getElementById('currentDateStr');
+  if (dateSub) {
+    const locale = lang === 'bm' ? 'ms-MY' : 'en-US';
+    dateSub.textContent = new Date().toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  // 6. Navigation items
   const navItems = document.querySelectorAll('.bottom-nav .nav-item');
   if (navItems.length >= 6) {
     navItems[0].querySelector('span').textContent = t('nav_today');
@@ -751,31 +1447,80 @@ function applyLanguageUI() {
     navItems[5].querySelector('span').textContent = t('nav_settings');
   }
 
-  // Dashboard KPI labels
-  const kpiCheckin = document.querySelector('#kpiCheckInsCard .kpi-label');
-  const kpiCheckout = document.querySelector('#kpiCheckOutsCard .kpi-label');
-  const kpiInhouse = document.querySelector('#kpiOccupiedCard .kpi-label');
-  const kpiTurnovers = document.querySelector('#kpiTurnoverCard .kpi-label');
+  // 7. Booking status filter pills
+  const filterPills = document.querySelectorAll('#bookingStatusFilters .filter-pill');
+  if (filterPills.length >= 7) {
+    filterPills[0].textContent = t('filter_all');
+    filterPills[1].textContent = t('filter_quotations');
+    filterPills[2].textContent = t('filter_booked');
+    filterPills[3].textContent = t('filter_confirmed');
+    filterPills[4].textContent = t('filter_inhouse');
+    filterPills[5].textContent = t('filter_completed');
+    filterPills[6].textContent = t('filter_blocked');
+  }
 
-  if (kpiCheckin) kpiCheckin.textContent = t('kpi_checkin');
-  if (kpiCheckout) kpiCheckout.textContent = t('kpi_checkout');
-  if (kpiInhouse) kpiInhouse.textContent = t('kpi_inhouse');
-  if (kpiTurnovers) kpiTurnovers.textContent = t('kpi_turnovers');
+  // 8. Calendar Weekdays
+  const calWeekdays = document.querySelectorAll('.cal-weekdays span');
+  if (calWeekdays.length === 7) {
+    const dayKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    calWeekdays.forEach((span, idx) => {
+      span.textContent = t(dayKeys[idx]);
+    });
+  }
 
-  // Search input placeholder
-  const searchInput = document.getElementById('bookingSearchInput');
-  if (searchInput) searchInput.placeholder = t('search_placeholder');
+  // 9. WhatsApp Template tabs
+  const waTabs = document.querySelectorAll('.wa-template-selector .wa-tab-btn');
+  waTabs.forEach(btn => {
+    const template = btn.getAttribute('data-template');
+    if (template === 'quotation') btn.textContent = t('wa_tab_quotation');
+    else if (template === 'deposit_receipt') btn.textContent = t('wa_tab_deposit');
+    else if (template === 'full_receipt') btn.textContent = t('wa_tab_full');
+    else if (template === 'monthly_invoice') btn.textContent = t('wa_tab_invoice');
+    else if (template === 'monthly_rent_receipt') btn.textContent = t('wa_tab_rent_receipt');
+    else if (template === 'refund_receipt') btn.textContent = t('wa_tab_refund');
+    else if (template === 'checkout') btn.textContent = t('wa_tab_checkout');
+    else if (template === 'cleaner') btn.textContent = t('wa_tab_cleaner');
+    else if (template === 'payment') btn.textContent = t('wa_tab_payment');
+  });
 
-  // Demo Sales banner
-  const demoBadge = document.querySelector('.demo-sales-banner .banner-badge');
-  const demoText = document.querySelector('.demo-sales-banner .banner-text');
-  const btnBuy = document.getElementById('btnBuyLicense');
-  const btnAct = document.getElementById('btnOpenActivateModal');
+  // 10. Rental Type segment buttons
+  const dailySeg = document.querySelector('#rentalTypeSegmented [data-type="daily"]');
+  const monthlySeg = document.querySelector('#rentalTypeSegmented [data-type="monthly"]');
+  if (dailySeg) dailySeg.innerHTML = `<i class="fa-solid fa-sun"></i> ${t('type_daily')}`;
+  if (monthlySeg) monthlySeg.innerHTML = `<i class="fa-solid fa-calendar-days"></i> ${t('type_monthly')}`;
 
-  if (demoBadge) demoBadge.innerHTML = `<i class="fa-solid fa-sparkles"></i> ${t('demo_badge')}`;
-  if (demoText) demoText.textContent = t('demo_banner_text');
-  if (btnBuy) btnBuy.innerHTML = `<i class="fa-solid fa-cart-shopping"></i> ${t('buy_app')}`;
-  if (btnAct) btnAct.innerHTML = `<i class="fa-solid fa-key"></i> ${t('activate')}`;
+  // 11. Booking status dropdown options
+  const statusSelect = document.getElementById('bookingStatusSelect');
+  if (statusSelect && statusSelect.options.length >= 7) {
+    statusSelect.options[0].text = lang === 'bm' ? '📋 Sebut Harga / Quotation' : '📋 Quotation / Sebut Harga';
+    statusSelect.options[1].text = lang === 'bm' ? '🟡 Ditempah (Deposit Dibayar)' : '🟡 Booked (Deposit Paid)';
+    statusSelect.options[2].text = lang === 'bm' ? '🟢 Disahkan (Bayar Penuh)' : '🟢 Confirmed (Fully Paid)';
+    statusSelect.options[3].text = lang === 'bm' ? '🔑 Sedang Menginap (Check-In)' : '🔑 In-House (Checked In)';
+    statusSelect.options[4].text = lang === 'bm' ? '🏁 Selesai / Tamat Sewaan' : '🏁 Checked Out / Tenancy Ended';
+    statusSelect.options[5].text = lang === 'bm' ? '🚫 Disekat / Penyelenggaraan' : '🚫 Blocked / Maintenance';
+    statusSelect.options[6].text = lang === 'bm' ? '❌ Dibatalkan' : '❌ Cancelled';
+  }
+
+  // 12. Property Type dropdown options
+  const propTypeSelect = document.getElementById('propertyTypeSelect');
+  if (propTypeSelect && propTypeSelect.options.length >= 5) {
+    propTypeSelect.options[0].text = t('cat_entire');
+    propTypeSelect.options[1].text = t('cat_master');
+    propTypeSelect.options[2].text = t('cat_medium');
+    propTypeSelect.options[3].text = t('cat_single');
+    propTypeSelect.options[4].text = t('cat_studio');
+  }
+
+  // 13. Expense Category dropdown options
+  const expCatSelect = document.getElementById('expenseCategorySelect');
+  if (expCatSelect && expCatSelect.options.length >= 6) {
+    expCatSelect.options[0].text = t('cat_cleaning');
+    expCatSelect.options[1].text = t('cat_utilities');
+    expCatSelect.options[2].text = t('cat_supplies');
+    expCatSelect.options[3].text = t('cat_maintenance');
+    expCatSelect.options[4].text = t('cat_commission');
+    expCatSelect.options[5].text = t('cat_other');
+  }
 }
 
 // ==========================================================================
@@ -998,6 +1743,7 @@ function switchTab(tabId) {
 }
 
 function renderApp() {
+  applyLanguageUI();
   renderHeader();
   renderPropertyPills();
   switchTab(appState.activeTab);
@@ -1152,9 +1898,9 @@ function renderDashboardTab() {
     const prop = getPropertyById(b.propertyId);
     actionItems.push({
       type: 'checkin',
-      tag: 'Check-In Today',
+      tag: t('tag_checkin_today'),
       title: `${b.guestName} → ${prop.name}`,
-      detail: `${b.guestCount} Guests • Check-in at ${prop.checkInTime || '3:00 PM'}`,
+      detail: `${b.guestCount} ${t('guests')} • ${t('checkin_time')}: ${prop.checkInTime || '3:00 PM'}`,
       booking: b,
       prop: prop
     });
@@ -1164,22 +1910,22 @@ function renderDashboardTab() {
     const prop = getPropertyById(b.propertyId);
     actionItems.push({
       type: 'checkout',
-      tag: 'Check-Out Today',
-      title: `${b.guestName} from ${prop.name}`,
-      detail: `Check-out at ${prop.checkOutTime || '12:00 PM'} • Prep Turnover`,
+      tag: t('tag_checkout_today'),
+      title: `${b.guestName} ← ${prop.name}`,
+      detail: `${t('checkout_time')}: ${prop.checkOutTime || '12:00 PM'} • ${t('turnover_required')}`,
       booking: b,
       prop: prop
     });
   });
 
-  pendingTurnovers.forEach(t => {
-    const prop = getPropertyById(t.propertyId);
+  pendingTurnovers.forEach(tItem => {
+    const prop = getPropertyById(tItem.propertyId);
     actionItems.push({
       type: 'cleaning',
-      tag: 'Turnover Needed',
-      title: `Cleaning: ${prop.name}`,
-      detail: `Date: ${t.date} • ${t.cleanerName || 'Assign Cleaner'}`,
-      turnover: t,
+      tag: t('tag_turnover_needed'),
+      title: `${t('turnover')}: ${prop.name}`,
+      detail: `${t('exp_date')}: ${tItem.date} • ${tItem.cleanerName || t('assign_cleaner')}`,
+      turnover: tItem,
       prop: prop
     });
   });
@@ -1188,8 +1934,8 @@ function renderDashboardTab() {
     actionFeed.innerHTML = `
       <div class="card" style="text-align:center; padding: 24px 16px;">
         <i class="fa-solid fa-circle-check" style="font-size: 32px; color: var(--success); margin-bottom: 8px;"></i>
-        <h4 style="font-size: 14px; font-weight:700;">All Clear for Today!</h4>
-        <p class="card-subtitle">No urgent check-ins or pending turnovers scheduled right now.</p>
+        <h4 style="font-size: 14px; font-weight:700;">${appState.settings.language === 'bm' ? 'Semua Urusan Hari Ini Selesai!' : 'All Clear for Today!'}</h4>
+        <p class="card-subtitle">${t('no_actions_today')}</p>
       </div>
     `;
   } else {
@@ -1205,22 +1951,22 @@ function renderDashboardTab() {
       card.innerHTML = `
         <div class="action-card-header">
           <span class="action-card-tag ${tagClass}">${item.tag}</span>
-          <span class="card-subtitle"><i class="fa-solid fa-clock"></i> Today</span>
+          <span class="card-subtitle"><i class="fa-solid fa-clock"></i> ${t('today')}</span>
         </div>
         <h3 class="action-card-title">${item.title}</h3>
         <p class="action-card-detail"><i class="fa-solid fa-info-circle"></i> ${item.detail}</p>
         <div class="action-card-btns">
           ${item.booking ? `
             <button class="btn btn-whatsapp btn-xs btn-wa-trigger" data-bid="${item.booking.id}" data-type="${item.type}">
-              <i class="fa-brands fa-whatsapp"></i> ${item.type === 'checkin' ? 'Send Door Code & WiFi' : 'Send Check-Out Remind'}
+              <i class="fa-brands fa-whatsapp"></i> ${item.type === 'checkin' ? t('btn_send_full_receipt') : t('btn_checkout_reminder')}
             </button>
           ` : ''}
           ${item.turnover ? `
             <button class="btn btn-whatsapp btn-xs btn-wa-cleaner" data-tid="${item.turnover.id}">
-              <i class="fa-brands fa-whatsapp"></i> WhatsApp Cleaner
+              <i class="fa-brands fa-whatsapp"></i> ${t('btn_wa_cleaner')}
             </button>
             <button class="btn btn-outline btn-xs btn-view-turnovers">
-              <i class="fa-solid fa-list-check"></i> Checklist
+              <i class="fa-solid fa-list-check"></i> ${t('checklist')}
             </button>
           ` : ''}
         </div>
@@ -1236,7 +1982,7 @@ function renderDashboardTab() {
         const type = e.currentTarget.getAttribute('data-type');
         const booking = appState.bookings.find(b => b.id === bid);
         if (booking) {
-          openWhatsAppModal(booking, type === 'checkin' ? 'checkin' : 'checkout');
+          openWhatsAppModal(booking, type === 'checkin' ? 'full_receipt' : 'checkout');
         }
       });
     });
@@ -1244,7 +1990,7 @@ function renderDashboardTab() {
     actionFeed.querySelectorAll('.btn-wa-cleaner').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const tid = e.currentTarget.getAttribute('data-tid');
-        const turnover = appState.turnovers.find(t => t.id === tid);
+        const turnover = appState.turnovers.find(tItem => tItem.id === tid);
         if (turnover) {
           openWhatsAppCleanerJob(turnover);
         }
@@ -1267,8 +2013,8 @@ function renderDashboardTab() {
   if (displayProps.length === 0) {
     propList.innerHTML = `
       <div style="text-align:center; padding:20px; background:var(--bg-surface-subtle); border-radius:var(--radius-md); border:1px dashed var(--border-color);">
-        <p style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">No homestay units added yet.</p>
-        <button class="btn btn-primary btn-xs" onclick="openPropertyModal()"><i class="fa-solid fa-plus"></i> Add Homestay Unit</button>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">${appState.settings.language === 'bm' ? 'Tiada unit homestay didaftarkan lagi.' : 'No homestay units added yet.'}</p>
+        <button class="btn btn-primary btn-xs" onclick="openPropertyModal()"><i class="fa-solid fa-plus"></i> ${t('add_unit_btn')}</button>
       </div>
     `;
   } else {
@@ -1281,16 +2027,16 @@ function renderDashboardTab() {
         b.status !== 'cancelled'
       );
 
-      const hasTurnover = appState.turnovers.some(t => t.propertyId === prop.id && t.status !== 'completed');
+      const hasTurnover = appState.turnovers.some(tItem => tItem.propertyId === prop.id && tItem.status !== 'completed');
 
-      let statusText = 'Vacant & Ready';
+      let statusText = t('vacant_ready');
       let badgeClass = 'badge-vacant';
 
       if (currentStay) {
-        statusText = `Occupied by ${currentStay.guestName}`;
+        statusText = `${t('occupied_by')} ${currentStay.guestName}`;
         badgeClass = 'badge-occupied';
       } else if (hasTurnover) {
-        statusText = 'Turnover / Cleaning Required';
+        statusText = t('turnover_required');
         badgeClass = 'badge-turnover';
       }
 
@@ -1304,7 +2050,7 @@ function renderDashboardTab() {
           </h4>
           <p>${statusText}</p>
         </div>
-        <span class="prop-status-badge ${badgeClass}">${currentStay ? 'Occupied' : (hasTurnover ? 'Turnover' : 'Available')}</span>
+        <span class="prop-status-badge ${badgeClass}">${currentStay ? t('occupied') : (hasTurnover ? t('turnover') : t('available'))}</span>
       `;
       propList.appendChild(card);
     });
@@ -1434,7 +2180,7 @@ function renderSelectedDayDetails() {
     list.innerHTML = `
       <div class="empty-hint">
         <i class="fa-solid fa-calendar-check" style="font-size: 20px; color: var(--success); margin-bottom:4px; display:block;"></i>
-        All homestays are available on this date.
+        ${t('no_bookings_date')}
       </div>
     `;
     return;
@@ -1445,9 +2191,9 @@ function renderSelectedDayDetails() {
     const isCheckInDay = b.checkIn === dateStr;
     const isCheckOutDay = b.checkOut === dateStr;
 
-    let badgeText = 'In-Stay';
-    if (isCheckInDay) badgeText = 'Check-In Day';
-    if (isCheckOutDay) badgeText = 'Check-Out Day';
+    let badgeText = appState.settings.language === 'bm' ? 'Sedang Menginap' : 'In-Stay';
+    if (isCheckInDay) badgeText = appState.settings.language === 'bm' ? 'Daftar Masuk' : 'Check-In Day';
+    if (isCheckOutDay) badgeText = appState.settings.language === 'bm' ? 'Daftar Keluar' : 'Check-Out Day';
 
     const card = document.createElement('div');
     card.className = 'booking-card';
@@ -1459,18 +2205,18 @@ function renderSelectedDayDetails() {
         </span>
         <span class="booking-channel-badge">${badgeText}</span>
       </div>
-      <h3 class="booking-guest-title">${b.guestName} (${b.guestCount} Guests)</h3>
-      <p class="booking-dates-row"><i class="fa-regular fa-calendar"></i> ${b.checkIn} to ${b.checkOut} (${b.nights} nights)</p>
+      <h3 class="booking-guest-title">${b.guestName} (${b.guestCount} ${t('guests')})</h3>
+      <p class="booking-dates-row"><i class="fa-regular fa-calendar"></i> ${b.checkIn} → ${b.checkOut} (${b.nights} ${t('nights')})</p>
       <div class="booking-financial-pill">
-        <span>Total: <strong>${formatCurrency(b.totalAmount)}</strong></span>
-        <span>Balance: <strong style="color:${b.balance > 0 ? 'var(--danger)' : 'var(--success)'};">${formatCurrency(b.balance)}</strong></span>
+        <span>${t('total')}: <strong>${formatCurrency(b.totalAmount)}</strong></span>
+        <span>${t('balance')}: <strong style="color:${b.balance > 0 ? 'var(--danger)' : 'var(--success)'};">${formatCurrency(b.balance)}</strong></span>
       </div>
       <div class="booking-actions-row">
         <button class="btn btn-whatsapp btn-xs btn-open-wa" data-bid="${b.id}">
-          <i class="fa-brands fa-whatsapp"></i> WhatsApp
+          <i class="fa-brands fa-whatsapp"></i> ${t('btn_wa')}
         </button>
         <button class="btn btn-outline btn-xs btn-edit-booking" data-bid="${b.id}">
-          <i class="fa-solid fa-pen"></i> Edit
+          <i class="fa-solid fa-pen"></i> ${t('btn_edit')}
         </button>
       </div>
     `;
@@ -1540,12 +2286,14 @@ function renderBookingsTab() {
     container.innerHTML = `
       <div class="card" style="text-align:center; padding:32px 16px;">
         <i class="fa-solid fa-address-book" style="font-size:32px; color:var(--text-subtle); margin-bottom:8px;"></i>
-        <h4 style="font-size:14px; font-weight:700;">No Bookings Found</h4>
-        <p class="card-subtitle">Try adjusting your search or tap + to create a new quotation / booking.</p>
+        <h4 style="font-size:14px; font-weight:700;">${t('no_bookings_found')}</h4>
+        <p class="card-subtitle">${t('no_bookings_hint')}</p>
       </div>
     `;
     return;
   }
+
+  const isBM = appState.settings.language === 'bm';
 
   bookings.forEach(b => {
     const prop = getPropertyById(b.propertyId);
@@ -1563,7 +2311,15 @@ function renderBookingsTab() {
       'cancelled': 'background: var(--danger-light); color: var(--danger-text);'
     };
 
-    const statusLabels = {
+    const statusLabels = isBM ? {
+      'quotation': '📋 SEBUT HARGA',
+      'booked': '🟡 DITEMPAH (DEPOSIT)',
+      'confirmed': '🟢 DISAHKAN (PENUH)',
+      'checked-in': '🔑 MENGINAP (CHECK-IN)',
+      'checked-out': '🏁 SELESAI',
+      'blocked': '🚫 DISEKAT',
+      'cancelled': '❌ DIBATALKAN'
+    } : {
       'quotation': '📋 QUOTATION',
       'booked': '🟡 BOOKED (DEPOSIT PAID)',
       'confirmed': '🟢 CONFIRMED (PAID FULL)',
@@ -1594,62 +2350,75 @@ function renderBookingsTab() {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
         <h3 class="booking-guest-title">${b.guestName}</h3>
         <div style="display:flex; gap:4px; align-items:center;">
-          ${b.rentalType === 'monthly' ? `<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:999px; background:#e0e7ff; color:#3730a3;"><i class="fa-solid fa-calendar-days"></i> ${b.monthlyDuration || 6}M</span>` : ''}
+          ${b.rentalType === 'monthly' ? `<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:999px; background:#e0e7ff; color:#3730a3;"><i class="fa-solid fa-calendar-days"></i> ${b.monthlyDuration || 6} ${t('months')}</span>` : ''}
+          ${b.rentalType === 'monthly' ? (() => {
+            const invs = getOrInitMonthlyInvoices(b);
+            const paidCnt = invs.filter(x => x.status === 'paid').length;
+            const totalCnt = invs.length;
+            const allPaid = paidCnt === totalCnt;
+            return `<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:999px; background:${allPaid ? '#dcfce7; color:#166534;' : '#fef3c7; color:#92400e;'}"><i class="fa-solid fa-file-invoice-dollar"></i> ${paidCnt}/${totalCnt} ${isBM ? 'Invois' : 'Invoices'}</span>`;
+          })() : ''}
           <span style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:999px; ${statusBadgeColors[b.status] || ''}">${statusLabels[b.status] || b.status.toUpperCase()}</span>
         </div>
       </div>
 
       <p class="booking-dates-row">
-        <i class="fa-regular fa-calendar"></i> ${b.checkIn} → ${b.checkOut} (${b.rentalType === 'monthly' ? `${b.monthlyDuration || 6} Months` : `${b.nights} nights`}) • ${b.guestCount} guests
+        <i class="fa-regular fa-calendar"></i> ${b.checkIn} → ${b.checkOut} (${b.rentalType === 'monthly' ? `${b.monthlyDuration || 6} ${t('months')}` : `${b.nights} ${t('nights')}`}) • ${b.guestCount} ${t('guests')}
       </p>
 
       ${b.notes ? `<p style="font-size:12px; color:var(--text-muted); font-style:italic;"><i class="fa-regular fa-note-sticky"></i> "${b.notes}"</p>` : ''}
 
       <div class="booking-financial-pill">
-        <span>Total: <strong>${formatCurrency(b.totalAmount)}</strong></span>
-        <span>Paid: <strong style="color:var(--success);">${formatCurrency(b.depositPaid)}</strong></span>
-        <span>Due: <strong style="color:${b.balance > 0 ? 'var(--danger)' : 'var(--success)'};">${formatCurrency(b.balance)}</strong></span>
+        <span>${t('total')}: <strong>${formatCurrency(b.totalAmount)}</strong></span>
+        <span>${isBM ? 'Dibayar' : 'Paid'}: <strong style="color:var(--success);">${formatCurrency(b.depositPaid)}</strong></span>
+        <span>${isBM ? 'Baki' : 'Due'}: <strong style="color:${b.balance > 0 ? 'var(--danger)' : 'var(--success)'};">${formatCurrency(b.balance)}</strong></span>
       </div>
 
       <!-- Contextual Quick Action Workflow Bar -->
       <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;">
+        ${b.rentalType === 'monthly' ? `
+          <button class="btn btn-outline btn-xs btn-open-monthly-invoices" data-bid="${b.id}" style="color:var(--primary); font-weight:700; border-color:var(--primary);">
+            <i class="fa-solid fa-file-invoice-dollar"></i> ${t('btn_view_invoices')}
+          </button>
+        ` : ''}
+
         ${b.status === 'quotation' ? `
           <button class="btn btn-whatsapp btn-xs btn-open-wa" data-bid="${b.id}" data-wa="quotation">
-            <i class="fa-solid fa-file-lines"></i> Send Quotation
+            <i class="fa-solid fa-file-lines"></i> ${t('btn_send_quotation')}
           </button>
           <button class="btn btn-outline btn-xs btn-mark-booked" data-bid="${b.id}">
-            <i class="fa-solid fa-hand-holding-dollar" style="color:var(--warning);"></i> Mark Deposit Paid (Book)
+            <i class="fa-solid fa-hand-holding-dollar" style="color:var(--warning);"></i> ${t('btn_mark_booked')}
           </button>
         ` : ''}
 
         ${b.status === 'booked' ? `
           <button class="btn btn-whatsapp btn-xs btn-open-wa" data-bid="${b.id}" data-wa="deposit_receipt">
-            <i class="fa-solid fa-receipt"></i> Send Deposit Receipt
+            <i class="fa-solid fa-receipt"></i> ${t('btn_send_deposit_receipt')}
           </button>
           ${b.rentalType === 'monthly' ? `
             <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="monthly_invoice">
-              <i class="fa-solid fa-file-invoice"></i> Send Rent Invoice
+              <i class="fa-solid fa-file-invoice"></i> ${t('btn_send_invoice')}
             </button>
           ` : `
             <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="invoice">
-              <i class="fa-solid fa-file-invoice"></i> Send Invoice
+              <i class="fa-solid fa-file-invoice"></i> ${t('btn_send_invoice')}
             </button>
           `}
           <button class="btn btn-outline btn-xs btn-mark-confirmed" data-bid="${b.id}">
-            <i class="fa-solid fa-key" style="color:var(--success);"></i> Mark Fully Paid (Confirm)
+            <i class="fa-solid fa-key" style="color:var(--success);"></i> ${t('btn_mark_confirmed')}
           </button>
         ` : ''}
 
         ${b.status === 'confirmed' ? `
           <button class="btn btn-whatsapp btn-xs btn-open-wa" data-bid="${b.id}" data-wa="full_receipt">
-            <i class="fa-solid fa-key"></i> Send Full Receipt & Key
+            <i class="fa-solid fa-key"></i> ${t('btn_send_full_receipt')}
           </button>
           <button class="btn btn-outline btn-xs btn-mark-checkin" data-bid="${b.id}">
-            <i class="fa-solid fa-door-open" style="color:var(--primary);"></i> Check In
+            <i class="fa-solid fa-door-open" style="color:var(--primary);"></i> ${t('btn_checkin')}
           </button>
           ${b.rentalType === 'monthly' ? `
             <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="monthly_invoice">
-              <i class="fa-solid fa-file-invoice"></i> Monthly Invoice
+              <i class="fa-solid fa-file-invoice"></i> ${t('btn_send_invoice')}
             </button>
           ` : ''}
         ` : ''}
@@ -1657,39 +2426,39 @@ function renderBookingsTab() {
         ${b.status === 'checked-in' ? `
           ${b.rentalType === 'monthly' ? `
             <button class="btn btn-whatsapp btn-xs btn-open-wa" data-bid="${b.id}" data-wa="monthly_invoice">
-              <i class="fa-solid fa-file-invoice"></i> Send Monthly Rent Invoice
+              <i class="fa-solid fa-file-invoice"></i> ${t('btn_send_invoice')}
             </button>
             <button class="btn btn-outline btn-xs btn-open-refund" data-bid="${b.id}">
-              <i class="fa-solid fa-money-bill-transfer" style="color:var(--success);"></i> End Tenancy & Refund Deposit
+              <i class="fa-solid fa-money-bill-transfer" style="color:var(--success);"></i> ${isBM ? 'Tamat Sewa & Pulang Deposit' : 'End Tenancy & Refund Deposit'}
             </button>
           ` : `
             <button class="btn btn-whatsapp btn-xs btn-open-wa" data-bid="${b.id}" data-wa="checkout">
-              <i class="fa-solid fa-flag-checkered"></i> Check-Out Reminder
+              <i class="fa-solid fa-flag-checkered"></i> ${t('btn_checkout_reminder')}
             </button>
             ${b.securityDeposit > 0 ? `
               <button class="btn btn-outline btn-xs btn-open-refund" data-bid="${b.id}">
-                <i class="fa-solid fa-money-bill-transfer" style="color:var(--success);"></i> Refund Security Deposit
+                <i class="fa-solid fa-money-bill-transfer" style="color:var(--success);"></i> ${isBM ? 'Pulang Deposit Keselamatan' : 'Refund Security Deposit'}
               </button>
             ` : ''}
             <button class="btn btn-outline btn-xs btn-mark-checkout" data-bid="${b.id}">
-              <i class="fa-solid fa-check"></i> Complete Check-Out
+              <i class="fa-solid fa-check"></i> ${t('btn_complete_checkout')}
             </button>
           `}
         ` : ''}
 
         ${b.status === 'checked-out' && (b.rentalDeposit || b.securityDeposit) ? `
           <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="refund_receipt">
-            <i class="fa-solid fa-file-invoice-dollar"></i> View Refund Statement
+            <i class="fa-solid fa-file-invoice-dollar"></i> ${isBM ? 'Lihat Penyata Pulangan' : 'View Refund Statement'}
           </button>
         ` : ''}
 
-        <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="payment" title="Send WhatsApp">
+        <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="payment" title="${t('btn_wa')}">
           <i class="fa-brands fa-whatsapp"></i>
         </button>
-        <button class="btn btn-outline btn-xs btn-edit-booking" data-bid="${b.id}" title="Edit Booking">
-          <i class="fa-solid fa-pen"></i> Edit
+        <button class="btn btn-outline btn-xs btn-edit-booking" data-bid="${b.id}" title="${t('edit')}">
+          <i class="fa-solid fa-pen"></i> ${t('edit')}
         </button>
-        <button class="btn btn-danger-outline btn-xs btn-delete-booking" data-bid="${b.id}" title="Delete">
+        <button class="btn btn-danger-outline btn-xs btn-delete-booking" data-bid="${b.id}" title="${t('delete')}">
           <i class="fa-solid fa-trash-can"></i>
         </button>
       </div>
@@ -1699,12 +2468,30 @@ function renderBookingsTab() {
   });
 
   // Attach event handlers
+  container.querySelectorAll('.btn-open-monthly-invoices').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) openMonthlyInvoicesModal(b);
+    });
+  });
+
   container.querySelectorAll('.btn-open-wa').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const bid = e.currentTarget.getAttribute('data-bid');
       const waTemplate = e.currentTarget.getAttribute('data-wa') || 'quotation';
       const b = appState.bookings.find(x => x.id === bid);
-      if (b) openWhatsAppModal(b, waTemplate);
+      if (b) {
+        // If monthly invoice template, pick first pending month
+        if (b.rentalType === 'monthly' && waTemplate === 'monthly_invoice') {
+          const invs = getOrInitMonthlyInvoices(b);
+          const firstPending = invs.find(x => x.status === 'pending');
+          const mIdx = firstPending ? firstPending.monthIndex : 1;
+          openWhatsAppModal(b, waTemplate, mIdx);
+        } else {
+          openWhatsAppModal(b, waTemplate);
+        }
+      }
     });
   });
 
@@ -1724,7 +2511,8 @@ function renderBookingsTab() {
         // Prompt for deposit paid if not set
         if (b.depositPaid === 0) {
           const defaultDep = Math.round(b.totalAmount * 0.30 * 100) / 100;
-          const entered = prompt(`Enter deposit amount received (${appState.settings.currency || 'RM'}):`, defaultDep);
+          const promptText = isBM ? `Masukkan jumlah deposit yang diterima (${appState.settings.currency || 'RM'}):` : `Enter deposit amount received (${appState.settings.currency || 'RM'}):`;
+          const entered = prompt(promptText, defaultDep);
           if (entered !== null) {
             b.depositPaid = parseFloat(entered) || defaultDep;
             b.balance = Math.max(0, b.totalAmount - b.depositPaid);
@@ -1733,7 +2521,7 @@ function renderBookingsTab() {
         b.status = 'booked';
         saveToStorage();
         renderBookingsTab();
-        showToast(`Unit marked as "BOOKED"! Opening Deposit Receipt...`);
+        showToast(isBM ? 'Unit ditanda "DITEMPAH"! Membuka Resit Deposit...' : 'Unit marked as "BOOKED"! Opening Deposit Receipt...');
         openWhatsAppModal(b, 'deposit_receipt');
       }
     });
@@ -1749,7 +2537,7 @@ function renderBookingsTab() {
         b.status = 'confirmed';
         saveToStorage();
         renderBookingsTab();
-        showToast(`Unit marked as "CONFIRMED"! Opening Full Payment Receipt & Key guide...`);
+        showToast(isBM ? 'Unit ditanda "DISAHKAN"! Membuka Resit Bayaran Penuh & Panduan Kunci...' : 'Unit marked as "CONFIRMED"! Opening Full Payment Receipt & Key guide...');
         openWhatsAppModal(b, 'full_receipt');
       }
     });
@@ -1763,7 +2551,7 @@ function renderBookingsTab() {
         b.status = 'checked-in';
         saveToStorage();
         renderBookingsTab();
-        showToast(`Guest checked in!`);
+        showToast(isBM ? 'Tetamu didaftar masuk!' : 'Guest checked in!');
       }
     });
   });
@@ -1776,7 +2564,7 @@ function renderBookingsTab() {
         b.status = 'checked-out';
         saveToStorage();
         renderBookingsTab();
-        showToast(`Booking marked as completed.`);
+        showToast(isBM ? 'Tempahan selesai.' : 'Booking marked as completed.');
       }
     });
   });
@@ -1792,12 +2580,13 @@ function renderBookingsTab() {
   container.querySelectorAll('.btn-delete-booking').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const bid = e.currentTarget.getAttribute('data-bid');
-      if (confirm('Are you sure you want to delete this booking?')) {
+      const confirmText = isBM ? 'Adakah anda pasti mahu memadamkan tempahan ini?' : 'Are you sure you want to delete this booking?';
+      if (confirm(confirmText)) {
         appState.bookings = appState.bookings.filter(x => x.id !== bid);
-        appState.turnovers = appState.turnovers.filter(t => t.bookingId !== bid);
+        appState.turnovers = appState.turnovers.filter(tItem => tItem.bookingId !== bid);
         saveToStorage();
         renderBookingsTab();
-        showToast('Booking deleted successfully.');
+        showToast(isBM ? 'Tempahan dipadamkan.' : 'Booking deleted successfully.');
       }
     });
   });
@@ -1818,18 +2607,20 @@ function renderTurnoversTab() {
     container.innerHTML = `
       <div class="card" style="text-align:center; padding:32px 16px;">
         <i class="fa-solid fa-broom" style="font-size:32px; color:var(--text-subtle); margin-bottom:8px;"></i>
-        <h4 style="font-size:14px; font-weight:700;">No Turnovers Scheduled</h4>
-        <p class="card-subtitle">Turnover cleaning tasks are automatically scheduled when bookings check out.</p>
+        <h4 style="font-size:14px; font-weight:700;">${t('no_turnovers')}</h4>
+        <p class="card-subtitle">${t('all_clean_hint')}</p>
       </div>
     `;
     return;
   }
 
-  turnovers.forEach(t => {
-    const prop = getPropertyById(t.propertyId);
-    const booking = appState.bookings.find(b => b.id === t.bookingId);
-    const completedCount = t.checklist.filter(c => c.done).length;
-    const isAllDone = completedCount === t.checklist.length && t.checklist.length > 0;
+  const isBM = appState.settings.language === 'bm';
+
+  turnovers.forEach(tItem => {
+    const prop = getPropertyById(tItem.propertyId);
+    const booking = appState.bookings.find(b => b.id === tItem.bookingId);
+    const completedCount = tItem.checklist.filter(c => c.done).length;
+    const isAllDone = completedCount === tItem.checklist.length && tItem.checklist.length > 0;
 
     const card = document.createElement('div');
     card.className = 'turnover-card';
@@ -1841,29 +2632,29 @@ function renderTurnoversTab() {
           <span class="booking-prop-badge" style="background:${prop.color}20; color:${prop.color};">
             <span class="property-dot" style="background:${prop.color};"></span> ${prop.name}
           </span>
-          <h4 style="font-size:15px; font-weight:700; margin-top:4px;">Turnover for ${t.date}</h4>
-          <p class="card-subtitle">${booking ? `After guest: ${booking.guestName}` : 'Routine Deep Clean'}</p>
+          <h4 style="font-size:15px; font-weight:700; margin-top:4px;">${t('turnover')}: ${tItem.date}</h4>
+          <p class="card-subtitle">${booking ? `${isBM ? 'Selepas tetamu' : 'After guest'}: ${booking.guestName}` : (isBM ? 'Pembersihan Menyeluruh Rutin' : 'Routine Deep Clean')}</p>
         </div>
         <span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:999px; ${isAllDone ? 'background:var(--success-light);color:var(--success-text);' : 'background:var(--warning-light);color:var(--warning-text);'}">
-          ${isAllDone ? 'READY FOR GUEST' : `${completedCount}/${t.checklist.length} DONE`}
+          ${isAllDone ? (isBM ? 'SEDIA UNTUK TETAMU' : 'READY FOR GUEST') : `${completedCount}/${tItem.checklist.length} ${isBM ? 'SIAP' : 'DONE'}`}
         </span>
       </div>
 
       <div class="turnover-checklist">
-        ${t.checklist.map((item, idx) => `
+        ${tItem.checklist.map((item, idx) => `
           <label class="checklist-item">
-            <input type="checkbox" data-tid="${t.id}" data-idx="${idx}" ${item.done ? 'checked' : ''}>
+            <input type="checkbox" data-tid="${tItem.id}" data-idx="${idx}" ${item.done ? 'checked' : ''}>
             <span style="${item.done ? 'text-decoration:line-through; opacity:0.6;' : ''}">${item.text}</span>
           </label>
         `).join('')}
       </div>
 
       <div class="card-header-flex" style="margin-top:8px; margin-bottom:0;">
-        <button class="btn btn-whatsapp btn-xs btn-wa-cleaner" data-tid="${t.id}">
-          <i class="fa-brands fa-whatsapp"></i> Notify Cleaner
+        <button class="btn btn-whatsapp btn-xs btn-wa-cleaner" data-tid="${tItem.id}">
+          <i class="fa-brands fa-whatsapp"></i> ${t('btn_wa_cleaner')}
         </button>
-        <button class="btn btn-outline btn-xs btn-toggle-turnover" data-tid="${t.id}">
-          ${isAllDone ? '<i class="fa-solid fa-rotate-left"></i> Reopen' : '<i class="fa-solid fa-check"></i> Mark Complete'}
+        <button class="btn btn-outline btn-xs btn-toggle-turnover" data-tid="${tItem.id}">
+          ${isAllDone ? `<i class="fa-solid fa-rotate-left"></i> ${isBM ? 'Buka Semula' : 'Reopen'}` : `<i class="fa-solid fa-check"></i> ${isBM ? 'Tanda Selesai' : 'Mark Complete'}`}
         </button>
       </div>
     `;
@@ -1876,7 +2667,7 @@ function renderTurnoversTab() {
     chk.addEventListener('change', (e) => {
       const tid = e.target.getAttribute('data-tid');
       const idx = parseInt(e.target.getAttribute('data-idx'));
-      const turnover = appState.turnovers.find(t => t.id === tid);
+      const turnover = appState.turnovers.find(tItem => tItem.id === tid);
       if (turnover && turnover.checklist[idx]) {
         turnover.checklist[idx].done = e.target.checked;
         const allDone = turnover.checklist.every(c => c.done);
@@ -1891,22 +2682,22 @@ function renderTurnoversTab() {
   container.querySelectorAll('.btn-wa-cleaner').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const tid = e.currentTarget.getAttribute('data-tid');
-      const t = appState.turnovers.find(x => x.id === tid);
-      if (t) openWhatsAppCleanerJob(t);
+      const tItem = appState.turnovers.find(x => x.id === tid);
+      if (tItem) openWhatsAppCleanerJob(tItem);
     });
   });
 
   container.querySelectorAll('.btn-toggle-turnover').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const tid = e.currentTarget.getAttribute('data-tid');
-      const t = appState.turnovers.find(x => x.id === tid);
-      if (t) {
-        const setDone = t.status !== 'completed';
-        t.checklist.forEach(c => c.done = setDone);
-        t.status = setDone ? 'completed' : 'pending';
+      const tItem = appState.turnovers.find(x => x.id === tid);
+      if (tItem) {
+        const setDone = tItem.status !== 'completed';
+        tItem.checklist.forEach(c => c.done = setDone);
+        tItem.status = setDone ? 'completed' : 'pending';
         saveToStorage();
         renderTurnoversTab();
-        showToast(setDone ? 'Turnover marked as ready!' : 'Turnover reopened.');
+        showToast(setDone ? (isBM ? 'Pembersihan ditanda siap & sedia!' : 'Turnover marked as ready!') : (isBM ? 'Pembersihan dibuka semula.' : 'Turnover reopened.'));
       }
     });
   });
@@ -1919,31 +2710,39 @@ function renderTurnoversTab() {
 function populateFinanceDateSelectors() {
   const monthSelect = document.getElementById('financeMonthSelect');
   const yearSelect = document.getElementById('financeYearSelect');
+  if (!monthSelect || !yearSelect) return;
   
+  const currentVal = monthSelect.value !== '' ? parseInt(monthSelect.value) : new Date().getMonth();
   monthSelect.innerHTML = '';
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const currentMonth = new Date().getMonth();
+
+  const isBM = appState.settings.language === 'bm';
+  const months = isBM 
+    ? ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember']
+    : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   
   months.forEach((m, idx) => {
     const opt = document.createElement('option');
     opt.value = idx;
     opt.textContent = m;
-    if (idx === currentMonth) opt.selected = true;
+    if (idx === currentVal) opt.selected = true;
     monthSelect.appendChild(opt);
   });
 
+  const yearVal = yearSelect.value !== '' ? parseInt(yearSelect.value) : new Date().getFullYear();
   yearSelect.innerHTML = '';
   const currentYear = new Date().getFullYear();
   for (let y = currentYear - 2; y <= currentYear + 2; y++) {
     const opt = document.createElement('option');
     opt.value = y;
     opt.textContent = y;
-    if (y === currentYear) opt.selected = true;
+    if (y === yearVal) opt.selected = true;
     yearSelect.appendChild(opt);
   }
 }
 
 function renderFinancesTab() {
+  populateFinanceDateSelectors();
+  
   const selMonth = parseInt(document.getElementById('financeMonthSelect').value);
   const selYear = parseInt(document.getElementById('financeYearSelect').value);
 
@@ -2005,7 +2804,7 @@ function renderFinancesTab() {
   expList.innerHTML = '';
 
   if (monthExpenses.length === 0) {
-    expList.innerHTML = '<p class="empty-hint">No expenses recorded for this month.</p>';
+    expList.innerHTML = `<p class="empty-hint">${t('no_expenses')}</p>`;
   } else {
     monthExpenses.forEach(exp => {
       const prop = getPropertyById(exp.propertyId);
@@ -2032,7 +2831,7 @@ function renderFinancesTab() {
         appState.expenses = appState.expenses.filter(x => x.id !== eid);
         saveToStorage();
         renderFinancesTab();
-        showToast('Expense removed.');
+        showToast(appState.settings.language === 'bm' ? 'Perbelanjaan dipadamkan.' : 'Expense removed.');
       });
     });
   }
@@ -2063,13 +2862,15 @@ function renderSettingsTab() {
   const propList = document.getElementById('settingsPropertyList');
   propList.innerHTML = '';
 
+  const isBM = appState.settings.language === 'bm';
+
   if (appState.properties.length === 0) {
     propList.innerHTML = `
       <div style="text-align:center; padding:24px 16px; background:var(--bg-surface-subtle); border-radius:var(--radius-md); border:1px dashed var(--border-color);">
         <i class="fa-solid fa-house-chimney" style="font-size:28px; color:var(--text-muted); margin-bottom:8px;"></i>
-        <p style="font-size:13px; font-weight:700; color:var(--text-main); margin-bottom:4px;">No homestay units added yet</p>
-        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Add your own homestays or room rentals to start recording real bookings.</p>
-        <button class="btn btn-primary btn-sm" id="btnSettingsAddFirstProp"><i class="fa-solid fa-plus"></i> Add Your First Unit</button>
+        <p style="font-size:13px; font-weight:700; color:var(--text-main); margin-bottom:4px;">${isBM ? 'Tiada unit homestay didaftarkan lagi' : 'No homestay units added yet'}</p>
+        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">${isBM ? 'Tambah unit homestay atau bilik anda sendiri untuk mula merekod tempahan sebenar.' : 'Add your own homestays or room rentals to start recording real bookings.'}</p>
+        <button class="btn btn-primary btn-sm" id="btnSettingsAddFirstProp"><i class="fa-solid fa-plus"></i> ${isBM ? 'Tambah Unit Pertama Anda' : 'Add Your First Unit'}</button>
       </div>
     `;
     const addFirstBtn = document.getElementById('btnSettingsAddFirstProp');
@@ -2078,10 +2879,10 @@ function renderSettingsTab() {
     appState.properties.forEach(prop => {
       const card = document.createElement('div');
       card.className = 'settings-prop-card';
-      const typeLabel = prop.propType === 'room_master' ? '🚪 Master Room' :
-                        prop.propType === 'room_medium' ? '🚪 Medium Room' :
-                        prop.propType === 'room_single' ? '🚪 Single Room' :
-                        prop.propType === 'studio' ? '🏢 Studio' : '🏡 Whole Unit';
+      const typeLabel = prop.propType === 'room_master' ? (isBM ? '🚪 Bilik Master' : '🚪 Master Room') :
+                        prop.propType === 'room_medium' ? (isBM ? '🚪 Bilik Medium' : '🚪 Medium Room') :
+                        prop.propType === 'room_single' ? (isBM ? '🚪 Bilik Single' : '🚪 Single Room') :
+                        prop.propType === 'studio' ? '🏢 Studio' : (isBM ? '🏡 Seluruh Unit' : '🏡 Whole Unit');
 
       card.innerHTML = `
         <div class="settings-prop-details">
@@ -2090,12 +2891,12 @@ function renderSettingsTab() {
             ${prop.name}
             <span style="font-size:10px; font-weight:700; background:var(--bg-surface-subtle); padding:2px 6px; border-radius:999px; color:var(--primary);">${typeLabel}</span>
           </h4>
-          <p>🔑 Lock PIN: <strong>${prop.doorCode || 'None'}</strong> • 📶 WiFi: <strong>${prop.wifiName || 'None'}</strong></p>
-          <p>Rate: ${formatCurrency(prop.defaultRate)}/night • Clean fee: ${formatCurrency(prop.cleaningFee)}</p>
+          <p>🔑 PIN: <strong>${prop.doorCode || (isBM ? 'Tiada' : 'None')}</strong> • 📶 WiFi: <strong>${prop.wifiName || (isBM ? 'Tiada' : 'None')}</strong></p>
+          <p>${isBM ? 'Kadar' : 'Rate'}: ${formatCurrency(prop.defaultRate)}/${isBM ? 'malam' : 'night'} • ${isBM ? 'Pembersihan' : 'Clean fee'}: ${formatCurrency(prop.cleaningFee)}</p>
         </div>
         <div style="display:flex; gap:6px;">
           <button class="btn btn-outline btn-xs btn-edit-prop" data-pid="${prop.id}"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn btn-danger-outline btn-xs btn-delete-prop" data-pid="${prop.id}" title="Delete unit"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-danger-outline btn-xs btn-delete-prop" data-pid="${prop.id}" title="${t('delete')}"><i class="fa-solid fa-trash"></i></button>
         </div>
       `;
       propList.appendChild(card);
@@ -2112,12 +2913,13 @@ function renderSettingsTab() {
     propList.querySelectorAll('.btn-delete-prop').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const pid = e.currentTarget.getAttribute('data-pid');
-        if (confirm('Delete this homestay unit? All associated bookings will remain.')) {
+        const confirmDelete = isBM ? 'Padamkan unit ini? Rekod tempahan sedia ada akan kekal.' : 'Delete this homestay unit? All associated bookings will remain.';
+        if (confirm(confirmDelete)) {
           appState.properties = appState.properties.filter(x => x.id !== pid);
           if (appState.selectedPropertyId === pid) appState.selectedPropertyId = 'all';
           saveToStorage();
           renderApp();
-          showToast('Homestay removed.');
+          showToast(isBM ? 'Unit homestay dipadamkan.' : 'Homestay removed.');
         }
       });
     });
@@ -2140,8 +2942,8 @@ function renderSettingsTab() {
       if (adminGenCard) adminGenCard.classList.remove('hidden');
     } else {
       const boundPhone = appState.licenseKey.split('-')[1] || appState.settings.ownerPhone;
-      subTitle.textContent = `Key: ${appState.licenseKey} (Tied to +${boundPhone})`;
-      badge.textContent = '✨ LIFETIME ACTIVE';
+      subTitle.textContent = `Key: ${appState.licenseKey} (${isBM ? 'Terkunci ke' : 'Tied to'} +${boundPhone})`;
+      badge.textContent = isBM ? '✨ LESEN AKTIF' : '✨ LIFETIME ACTIVE';
       badge.style.background = 'var(--success-light)';
       badge.style.color = 'var(--success-text)';
       if (adminGenCard) adminGenCard.classList.add('hidden');
@@ -2149,16 +2951,16 @@ function renderSettingsTab() {
 
     actions.innerHTML = `
       <p style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
-        <i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Unlimited homestays & offline private data unlocked.
+        <i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${isBM ? 'Unit tanpa had & data peribadi luar talian aktif.' : 'Unlimited homestays & offline private data unlocked.'}
       </p>
       <button class="btn btn-outline btn-xs" id="btnChangeLicenseKey">
-        <i class="fa-solid fa-arrows-rotate"></i> Change / Re-enter License Key
+        <i class="fa-solid fa-arrows-rotate"></i> ${isBM ? 'Tukar / Masukkan Kunci Lesen' : 'Change / Re-enter License Key'}
       </button>
     `;
     document.getElementById('btnChangeLicenseKey').addEventListener('click', openLicenseModal);
   } else {
-    subTitle.textContent = 'Unlicensed (Demo Mode)';
-    badge.textContent = 'DEMO';
+    subTitle.textContent = isBM ? 'Tiada Lesen (Mod Demo)' : 'Unlicensed (Demo Mode)';
+    badge.textContent = isBM ? 'DEMO' : 'DEMO';
     badge.style.background = 'var(--warning-light)';
     badge.style.color = 'var(--warning-text)';
     if (adminGenCard) adminGenCard.classList.add('hidden');
@@ -2166,16 +2968,19 @@ function renderSettingsTab() {
     actions.innerHTML = `
       <div style="display:flex; gap:8px;">
         <button class="btn btn-primary btn-sm" id="btnActivateFromSettings">
-          <i class="fa-solid fa-key"></i> Enter License Key
+          <i class="fa-solid fa-key"></i> ${isBM ? 'Masukkan Kunci Lesen' : 'Enter License Key'}
         </button>
         <button class="btn btn-whatsapp btn-sm" id="btnBuyFromSettings">
-          <i class="fa-brands fa-whatsapp"></i> Buy License
+          <i class="fa-brands fa-whatsapp"></i> ${isBM ? 'Beli Lesen' : 'Buy License'}
         </button>
       </div>
     `;
     document.getElementById('btnActivateFromSettings').addEventListener('click', openLicenseModal);
     document.getElementById('btnBuyFromSettings').addEventListener('click', handleBuyLicenseRedirect);
   }
+
+  const verBadge = document.getElementById('appCurrentVersionBadge');
+  if (verBadge) verBadge.textContent = `v${APP_VERSION}`;
 }
 
 function handleSavePreferences() {
@@ -2213,9 +3018,83 @@ function handleSavePreferences() {
 function setBookingFormRentalType(type) {
   const isMonthly = type === 'monthly';
   document.getElementById('bookingRentalType').value = type;
-  document.getElementById('sectionDailyPricing').classList.toggle('hidden', isMonthly);
-  document.getElementById('sectionMonthlyPricing').classList.toggle('hidden', !isMonthly);
 
+  // Toggle Section Visibility
+  const dailySection = document.getElementById('sectionDailyPricing');
+  const monthlySection = document.getElementById('sectionMonthlyPricing');
+  
+  if (dailySection) dailySection.classList.toggle('hidden', isMonthly);
+  if (monthlySection) monthlySection.classList.toggle('hidden', !isMonthly);
+
+  // Daily input elements to enable/disable
+  const dailyInputs = [
+    'bookingCheckIn', 'bookingCheckOut', 'bookingNightlyRate', 
+    'bookingCleaningFee', 'bookingSecurityDeposit',
+    'btnPresetDep30', 'btnPresetDep50', 'btnPresetDepFull', 'btnPresetDepZero'
+  ];
+
+  // Monthly input elements to enable/disable
+  const monthlyInputs = [
+    'bookingMonthlyStart', 'bookingMonthlyDuration', 'bookingMonthlyRate', 
+    'bookingRentalDeposit', 'bookingUtilitiesDeposit', 'bookingAgreementFee'
+  ];
+
+  if (isMonthly) {
+    // Completely BLOCK / DISABLE all Daily inputs
+    dailyInputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.disabled = true;
+        el.required = false;
+        el.setAttribute('tabindex', '-1');
+        el.style.pointerEvents = 'none';
+      }
+    });
+
+    // UNBLOCK / ENABLE all Monthly inputs
+    monthlyInputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.disabled = false;
+        el.removeAttribute('tabindex');
+        el.style.pointerEvents = 'auto';
+      }
+    });
+
+    const mStart = document.getElementById('bookingMonthlyStart');
+    if (mStart) mStart.required = true;
+    const mRate = document.getElementById('bookingMonthlyRate');
+    if (mRate) mRate.required = true;
+
+  } else {
+    // Completely BLOCK / DISABLE all Monthly inputs
+    monthlyInputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.disabled = true;
+        el.required = false;
+        el.setAttribute('tabindex', '-1');
+        el.style.pointerEvents = 'none';
+      }
+    });
+
+    // UNBLOCK / ENABLE all Daily inputs
+    dailyInputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.disabled = false;
+        el.removeAttribute('tabindex');
+        el.style.pointerEvents = 'auto';
+      }
+    });
+
+    const bCheckIn = document.getElementById('bookingCheckIn');
+    if (bCheckIn) bCheckIn.required = true;
+    const bCheckOut = document.getElementById('bookingCheckOut');
+    if (bCheckOut) bCheckOut.required = true;
+  }
+
+  // Update segmented control buttons UI
   document.querySelectorAll('#rentalTypeSegmented .segment-btn').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-type') === type);
   });
@@ -2579,6 +3458,176 @@ function handleProcessDepositRefund(e) {
 }
 
 // ==========================================================================
+// 11C. MULTI-MONTH TENANCY INVOICING ENGINE
+// ==========================================================================
+
+function getOrInitMonthlyInvoices(booking) {
+  const duration = booking.monthlyDuration || 1;
+  if (!booking.monthlyInvoices || !Array.isArray(booking.monthlyInvoices) || booking.monthlyInvoices.length === 0) {
+    const invoices = [];
+    const startD = new Date(booking.checkIn + 'T00:00:00');
+    
+    for (let i = 1; i <= duration; i++) {
+      const curStart = new Date(startD);
+      curStart.setMonth(curStart.getMonth() + (i - 1));
+      const curEnd = new Date(curStart);
+      curEnd.setMonth(curEnd.getMonth() + 1);
+      curEnd.setDate(curEnd.getDate() - 1);
+
+      const dueDate = new Date(curStart);
+      dueDate.setDate(dueDate.getDate() + 6); // 7th day of cycle
+
+      // Month 1 is marked paid if booking is confirmed / checked-in or depositPaid >= monthlyRate
+      const isFirstMonthPaid = (i === 1 && (booking.status === 'confirmed' || booking.status === 'checked-in' || booking.status === 'checked-out' || (booking.depositPaid && booking.depositPaid >= (booking.monthlyRate || 0))));
+
+      invoices.push({
+        monthIndex: i,
+        invoiceNo: `INV-M${i}-${booking.id.slice(-5).toUpperCase()}`,
+        periodStart: curStart.toISOString().split('T')[0],
+        periodEnd: curEnd.toISOString().split('T')[0],
+        dueDate: dueDate.toISOString().split('T')[0],
+        rentAmount: booking.monthlyRate || 0,
+        utilityCharges: 0,
+        totalAmount: booking.monthlyRate || 0,
+        status: isFirstMonthPaid ? 'paid' : 'pending',
+        paidAt: isFirstMonthPaid ? (booking.createdAt || new Date().toISOString()) : null,
+        notes: isFirstMonthPaid ? 'Settled in move-in package' : ''
+      });
+    }
+    booking.monthlyInvoices = invoices;
+    saveToStorage();
+  }
+  return booking.monthlyInvoices;
+}
+
+function openMonthlyInvoicesModal(booking) {
+  appState.activeWaBooking = booking;
+  const prop = getPropertyById(booking.propertyId);
+  const isBM = appState.settings.language === 'bm';
+
+  document.getElementById('monthlyInvoicesTenantSubtitle').textContent = `${isBM ? 'Penyewa' : 'Tenant'}: ${booking.guestName} (${booking.guestPhone || '-'}) • ${prop.name}`;
+  document.getElementById('mInvRateDisplay').textContent = `${formatCurrency(booking.monthlyRate || 0)} / ${isBM ? 'bulan' : 'month'}`;
+  document.getElementById('mInvPeriodDisplay').textContent = `${booking.checkIn} → ${booking.checkOut} (${booking.monthlyDuration || 6} ${t('months')})`;
+
+  renderMonthlyInvoicesList(booking);
+  document.getElementById('monthlyInvoicesModal').classList.add('active');
+}
+
+function renderMonthlyInvoicesList(booking) {
+  const container = document.getElementById('monthlyInvoicesList');
+  container.innerHTML = '';
+
+  const invoices = getOrInitMonthlyInvoices(booking);
+  const isBM = appState.settings.language === 'bm';
+
+  const paidCount = invoices.filter(x => x.status === 'paid').length;
+  const totalMonths = invoices.length;
+  const badge = document.getElementById('mInvPaidProgressBadge');
+  if (badge) {
+    badge.textContent = `${paidCount}/${totalMonths} ${isBM ? 'DIBAYAR' : 'PAID'}`;
+    badge.style.background = paidCount === totalMonths ? 'var(--success-light)' : 'var(--primary-light)';
+    badge.style.color = paidCount === totalMonths ? 'var(--success-text)' : 'var(--primary-text)';
+  }
+
+  invoices.forEach(inv => {
+    const isPaid = inv.status === 'paid';
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.padding = '10px 12px';
+    card.style.marginBottom = '0';
+    card.style.borderLeft = `4px solid ${isPaid ? 'var(--success)' : 'var(--warning)'}`;
+    card.style.background = 'var(--bg-surface-subtle)';
+
+    card.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+        <div>
+          <strong style="font-size:13px; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-calendar-check" style="color:${isPaid ? 'var(--success)' : 'var(--warning)'};"></i>
+            ${isBM ? `Bulan ke-${inv.monthIndex}` : `Month ${inv.monthIndex}`} (${inv.periodStart} → ${inv.periodEnd})
+          </strong>
+          <p style="font-size:11px; color:var(--text-muted); margin-top:2px; margin-bottom:0;">
+            No: <code style="font-weight:700; color:var(--primary);">${inv.invoiceNo}</code> • ${isBM ? 'Tarikh Akhir' : 'Due'}: <strong>${inv.dueDate}</strong>
+            ${inv.paidAt ? ` • <span style="color:var(--success);">Paid: ${inv.paidAt.split('T')[0]}</span>` : ''}
+          </p>
+        </div>
+        <span style="font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px; ${isPaid ? 'background:var(--success-light);color:var(--success-text);' : 'background:var(--warning-light);color:var(--warning-text);'}">
+          ${isPaid ? (isBM ? 'DIBAYAR' : 'PAID') : (isBM ? 'BELUM BAYAR' : 'PENDING')}
+        </span>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border-color); flex-wrap:wrap; gap:6px;">
+        <div style="font-size:12px; font-weight:800; color:var(--primary);">
+          ${formatCurrency(inv.totalAmount || inv.rentAmount)}
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn btn-whatsapp btn-xs btn-send-month-inv" data-m="${inv.monthIndex}">
+            <i class="fa-brands fa-whatsapp"></i> ${isBM ? 'Invois' : 'Invoice'}
+          </button>
+          ${isPaid ? `
+            <button class="btn btn-whatsapp btn-xs btn-send-month-rec" data-m="${inv.monthIndex}" title="${isBM ? 'Hantar Resit Bayaran' : 'Send Payment Receipt'}">
+              <i class="fa-solid fa-receipt"></i> ${isBM ? 'Resit' : 'Receipt'}
+            </button>
+          ` : ''}
+          <button class="btn btn-outline btn-xs btn-toggle-month-paid" data-m="${inv.monthIndex}">
+            <i class="fa-solid fa-${isPaid ? 'rotate-left' : 'check'}" style="color:${isPaid ? 'var(--warning)' : 'var(--success)'};"></i>
+            ${isPaid ? (isBM ? 'Batal Tanda' : 'Unmark') : (isBM ? 'Tanda Bayar' : 'Mark Paid')}
+          </button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+
+  // Attach handlers
+  container.querySelectorAll('.btn-send-month-inv').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const mIdx = parseInt(e.currentTarget.getAttribute('data-m')) || 1;
+      openWhatsAppModal(booking, 'monthly_invoice', mIdx);
+    });
+  });
+
+  container.querySelectorAll('.btn-send-month-rec').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const mIdx = parseInt(e.currentTarget.getAttribute('data-m')) || 1;
+      openWhatsAppModal(booking, 'monthly_rent_receipt', mIdx);
+    });
+  });
+
+  container.querySelectorAll('.btn-toggle-month-paid').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const mIdx = parseInt(e.currentTarget.getAttribute('data-m')) || 1;
+      toggleMonthlyInvoicePaid(booking.id, mIdx);
+    });
+  });
+}
+
+function toggleMonthlyInvoicePaid(bookingId, monthIndex) {
+  const booking = appState.bookings.find(b => b.id === bookingId);
+  if (!booking) return;
+
+  const invoices = getOrInitMonthlyInvoices(booking);
+  const inv = invoices.find(x => x.monthIndex === monthIndex);
+  if (!inv) return;
+
+  const isBM = appState.settings.language === 'bm';
+
+  if (inv.status === 'paid') {
+    inv.status = 'pending';
+    inv.paidAt = null;
+    showToast(isBM ? `Bulan ke-${monthIndex} ditanda sebagai belum dibayar.` : `Month ${monthIndex} marked as pending.`);
+  } else {
+    inv.status = 'paid';
+    inv.paidAt = new Date().toISOString();
+    showToast(isBM ? `Bulan ke-${monthIndex} berjaya ditanda telah dibayar!` : `Month ${monthIndex} successfully marked as paid!`);
+  }
+
+  saveToStorage();
+  renderMonthlyInvoicesList(booking);
+  if (appState.activeTab === 'bookings') renderBookingsTab();
+}
+
+// ==========================================================================
 // 12. PROPERTY MODAL LOGIC
 // ==========================================================================
 
@@ -2712,16 +3761,50 @@ function handleSaveExpense(e) {
 // 14. 1-TAP WHATSAPP AUTOMATION ENGINE
 // ==========================================================================
 
-function openWhatsAppModal(booking, templateType = 'confirm') {
+function openWhatsAppModal(booking, templateType = 'quotation', monthIndex = 1) {
   appState.activeWaBooking = booking;
   appState.activeWaTemplate = templateType;
+  appState.activeWaMonthIndex = monthIndex || 1;
 
   const prop = getPropertyById(booking.propertyId);
-  document.getElementById('waGuestRecipient').textContent = `To: ${booking.guestName} (${booking.guestPhone || 'No Phone Entered'})`;
+  document.getElementById('waGuestRecipient').textContent = `${t('wa_to')}: ${booking.guestName} (${booking.guestPhone || 'No Phone Entered'})`;
 
+  const isMonthly = booking.rentalType === 'monthly';
+
+  // Toggle visible tabs based on rental type
   document.querySelectorAll('.wa-tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('data-template') === templateType);
+    const tmpl = btn.getAttribute('data-template');
+    btn.classList.toggle('active', tmpl === templateType);
+    if (tmpl === 'monthly_invoice' || tmpl === 'monthly_rent_receipt') {
+      btn.style.display = isMonthly ? 'inline-flex' : 'none';
+    } else if (tmpl === 'refund_receipt') {
+      btn.style.display = (isMonthly || booking.securityDeposit > 0) ? 'inline-flex' : 'none';
+    } else {
+      btn.style.display = 'inline-flex';
+    }
   });
+
+  // Setup monthly dropdown if monthly booking
+  const monthlyControls = document.getElementById('waMonthlyControls');
+  const monthSelect = document.getElementById('waInvoiceMonthSelect');
+  
+  if (isMonthly && (templateType === 'monthly_invoice' || templateType === 'monthly_rent_receipt')) {
+    if (monthlyControls) monthlyControls.classList.remove('hidden');
+    if (monthSelect) {
+      monthSelect.innerHTML = '';
+      const invs = getOrInitMonthlyInvoices(booking);
+      invs.forEach(inv => {
+        const opt = document.createElement('option');
+        opt.value = inv.monthIndex;
+        const isBM = appState.settings.language === 'bm';
+        opt.textContent = `${isBM ? 'Bulan ke-' : 'Month '}${inv.monthIndex} (${inv.periodStart} → ${inv.periodEnd}) [${inv.status === 'paid' ? (isBM ? 'DIBAYAR' : 'PAID') : (isBM ? 'BELUM' : 'DUE')}]`;
+        if (inv.monthIndex === appState.activeWaMonthIndex) opt.selected = true;
+        monthSelect.appendChild(opt);
+      });
+    }
+  } else {
+    if (monthlyControls) monthlyControls.classList.add('hidden');
+  }
 
   renderWhatsAppPreview();
   document.getElementById('whatsappModal').classList.add('active');
@@ -2790,6 +3873,28 @@ function generateWhatsAppMessage(booking, templateType) {
   const uDep = booking.utilitiesDeposit || 0;
   const aFee = booking.agreementFee || 0;
   const totalMoveIn = mRate + rDep + uDep + aFee;
+
+  // Dynamic multi-month period calculation
+  const mIndex = appState.activeWaMonthIndex || 1;
+  const startD = new Date(booking.checkIn + 'T00:00:00');
+  const curMonthStart = new Date(startD);
+  curMonthStart.setMonth(curMonthStart.getMonth() + (mIndex - 1));
+  const curMonthEnd = new Date(curMonthStart);
+  curMonthEnd.setMonth(curMonthEnd.getMonth() + 1);
+  curMonthEnd.setDate(curMonthEnd.getDate() - 1);
+
+  const startStr = curMonthStart.toISOString().split('T')[0];
+  const endStr = curMonthEnd.toISOString().split('T')[0];
+
+  const dueDate = new Date(curMonthStart);
+  dueDate.setDate(dueDate.getDate() + 6);
+  const dueStr = dueDate.toISOString().split('T')[0];
+
+  const extraUtility = parseFloat(document.getElementById('waInvoiceExtraInput')?.value) || 0;
+  const rentAmt = booking.monthlyRate || 0;
+  const totalMonthDue = rentAmt + extraUtility;
+  const invNo = `INV-M${mIndex}-${booking.id.slice(-5).toUpperCase()}`;
+  const recNo = `REC-RENT-M${mIndex}-${booking.id.slice(-5).toUpperCase()}`;
 
   if (isBM) {
     switch (templateType) {
@@ -2887,18 +3992,34 @@ function generateWhatsAppMessage(booking, templateType) {
           `Selamat menikmati penginapan anda! Sila hubungi kami bila-bila masa jika memerlukan bantuan. ✨🏡`;
 
       case 'monthly_invoice':
-        return `📑 *INVOIS SEWAAN BULANAN - ${prop.name.toUpperCase()}*\n` +
-          `No Invois: INV-M-${booking.id.slice(-6).toUpperCase()}\n\n` +
+        return `📑 *INVOIS SEWAAN BULANAN (BULAN KE-${mIndex} DRPD ${booking.monthlyDuration || 6})*\n` +
+          `No. Invois: *${invNo}*\n` +
+          `Tarikh Invois: *${todayStr}*\n` +
+          `Tarikh Akhir Bayaran: *${dueStr}*\n\n` +
           tenantParticularsBM +
           `${unitTitleBM}\n` +
           `📍 *Lokasi:* ${prop.address || 'Alamat Unit'}\n\n` +
-          `💵 *MAKLUMAT BIL SEWA:* \n` +
-          `• Sewaan Bulanan: *${currency} ${(booking.monthlyRate || 0).toFixed(2)}*\n` +
-          `• Tempoh Sewaan: ${booking.checkIn} hingga ${booking.checkOut}\n` +
+          `📅 *TEMPOH BIL SEWAAN:*\n` +
+          `• Dari: *${startStr}* Hingga: *${endStr}* (Bulan ke-${mIndex})\n\n` +
+          `💵 *PERINCIAN BAYARAN:*\n` +
+          `• Sewa Bulanan: *${currency} ${rentAmt.toFixed(2)}*\n` +
+          (extraUtility > 0 ? `• Caj Utiliti / Tambahan: *${currency} ${extraUtility.toFixed(2)}*\n` : '') +
           `----------------------------------------\n` +
-          `💳 *JUMLAH PERLU DIBAYAR:* *${currency} ${(booking.monthlyRate || 0).toFixed(2)}*\n` +
+          `💳 *JUMLAH PERLU DIBAYAR:* *${currency} ${totalMonthDue.toFixed(2)}*\n` +
           bankInfoBM +
-          `\nSila lakukan pembayaran sebelum tarikh akhir dan hantar salinan slip bayaran. Terima kasih atas kerjasama anda! 🙏`;
+          `\n📌 *Nota:* Sila jelaskan bayaran sebelum *${dueStr}* dan hantar salinan resit transaksi ke WhatsApp ini. Terima kasih atas kerjasama anda! 🙏✨`;
+
+      case 'monthly_rent_receipt':
+        return `🧾 *RESIT RASMI BAYARAN SEWA (BULAN KE-${mIndex})*\n` +
+          `No. Resit: *${recNo}*\n` +
+          `Tarikh: *${todayStr}*\n\n` +
+          `Salam *${booking.guestName}*, bayaran sewa bulanan anda bagi *Bulan ke-${mIndex}* telah diterima dan disahkan! 🎉\n\n` +
+          tenantParticularsBM +
+          `${unitTitleBM}\n` +
+          `📅 *Tempoh Sewaan:* ${startStr} hingga ${endStr} (Bulan ke-${mIndex})\n` +
+          `💰 *Jumlah Diterima:* *${currency} ${totalMonthDue.toFixed(2)}*\n` +
+          `✅ *Status Bayaran:* SELESAI DIBAYAR (PAID)\n\n` +
+          `Terima kasih atas pembayaran anda yang tepat pada masanya! 🙏✨`;
 
       case 'refund_receipt':
         const ref = booking.refundDetails || {
@@ -3052,18 +4173,34 @@ function generateWhatsAppMessage(booking, templateType) {
         `Have a wonderful stay with us! If you need anything, message us anytime. ✨🏡`;
 
     case 'monthly_invoice':
-      return `📑 *MONTHLY RENT INVOICE - ${prop.name.toUpperCase()}*\n` +
-        `Invoice No: INV-M-${booking.id.slice(-6).toUpperCase()}\n\n` +
+      return `📑 *MONTHLY RENTAL INVOICE (MONTH ${mIndex} OF ${booking.monthlyDuration || 6})*\n` +
+        `Invoice No: *${invNo}*\n` +
+        `Invoice Date: *${todayStr}*\n` +
+        `Payment Due Date: *${dueStr}*\n\n` +
         tenantParticularsEN +
         `${unitTitleEN}\n` +
         `📍 *Location:* ${prop.address || 'Standard Address'}\n\n` +
-        `💵 *BILLING DETAILS:*\n` +
-        `• Monthly Rent: *${currency} ${(booking.monthlyRate || 0).toFixed(2)}*\n` +
-        `• Period: ${booking.checkIn} to ${booking.checkOut}\n` +
+        `📅 *BILLING PERIOD:*\n` +
+        `• Period: *${startStr} to ${endStr}* (Month ${mIndex})\n\n` +
+        `💵 *PAYMENT BREAKDOWN:*\n` +
+        `• Monthly Rental: *${currency} ${rentAmt.toFixed(2)}*\n` +
+        (extraUtility > 0 ? `• Utilities / Extra Surcharge: *${currency} ${extraUtility.toFixed(2)}*\n` : '') +
         `----------------------------------------\n` +
-        `💳 *TOTAL AMOUNT DUE:* *${currency} ${(booking.monthlyRate || 0).toFixed(2)}*\n` +
+        `💳 *TOTAL AMOUNT DUE:* *${currency} ${totalMonthDue.toFixed(2)}*\n` +
         bankInfoEN +
-        `\nKindly settle the rental on or before the due date and forward the transfer receipt. Thank you! 🙏`;
+        `\n📌 *Note:* Please settle payment on or before *${dueStr}* and forward the transfer receipt. Thank you for your cooperation! 🙏✨`;
+
+    case 'monthly_rent_receipt':
+      return `🧾 *OFFICIAL RENT PAYMENT RECEIPT (MONTH ${mIndex})*\n` +
+        `Receipt No: *${recNo}*\n` +
+        `Date: *${todayStr}*\n\n` +
+        `Dear *${booking.guestName}*, your monthly rent payment for *Month ${mIndex}* has been received and verified! 🎉\n\n` +
+        tenantParticularsEN +
+        `${unitTitleEN}\n` +
+        `📅 *Rental Period:* ${startStr} to ${endStr} (Month ${mIndex})\n` +
+        `💰 *Amount Received:* *${currency} ${totalMonthDue.toFixed(2)}*\n` +
+        `✅ *Status:* PAID IN FULL\n\n` +
+        `Thank you for your prompt payment! 🙏✨`;
 
     case 'refund_receipt':
       const refEN = booking.refundDetails || {
