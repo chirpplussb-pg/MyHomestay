@@ -1,0 +1,19 @@
+{
+  "name": "Homestay Manager - Smart Property & Booking Hub",
+  "short_name": "StayManager",
+  "description": "Mobile-first property, booking, turnover, and revenue manager for homestay owners.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0284c7",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%230284c7'/%3E%3Cpath d='M256 96L96 240v176h112V288h96v128h112V240L256 96z' fill='%23ffffff'/%3E%3Ccircle cx='380' cy='150' r='36' fill='%2338bdf8'/%3E%3C/svg%3E",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"]
+}
