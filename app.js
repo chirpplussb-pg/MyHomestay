@@ -284,6 +284,14 @@ const TRANSLATIONS = {
     paid: 'Paid',
     btn_view_invoices: 'Monthly Invoices',
 
+    // In-App User Guide
+    user_guide_title: 'User Manual & Operational Guide',
+    user_guide_sub: 'Step-by-step instructions on mobile setup, bookings, invoicing, WhatsApp, and finances.',
+    btn_open_guide: 'Read In-App User Guide (EN / BM)',
+    user_guide_modal_title: 'User Guide & Manual',
+    user_guide_modal_sub: 'Interactive guide & operational walkthrough',
+    guide_lang_label: 'Select Guide Language:',
+
     // Modals - Refund
     refund_modal_title: 'Tenancy Deposit Refund',
     rental_dep_held: 'Rental Deposit Held:',
@@ -615,7 +623,15 @@ const TRANSLATIONS = {
     paid_movein: 'Dibayar (Kemasukan)',
     pending: 'Belum Bayar',
     paid: 'Telah Dibayar',
-    btn_view_invoices: 'Jadual Invois'
+    btn_view_invoices: 'Jadual Invois',
+
+    // In-App User Guide
+    user_guide_title: 'Panduan Pengguna & Manual Operasi',
+    user_guide_sub: 'Panduan langkah demi langkah pemasangan telefon, tempahan, invois, WhatsApp, dan kewangan.',
+    btn_open_guide: 'Buka Panduan Pengguna (BM / EN)',
+    user_guide_modal_title: 'Panduan Pengguna & Manual',
+    user_guide_modal_sub: 'Panduan lengkap & panduan operasi sistem',
+    guide_lang_label: 'Pilihan Bahasa Panduan:'
   }
 };
 
@@ -1228,6 +1244,26 @@ function setupEventListeners() {
   // Monthly Invoices Modal Close
   const closeMInv = document.getElementById('btnCloseMonthlyInvoicesModal');
   if (closeMInv) closeMInv.addEventListener('click', closeAllModals);
+
+  // In-App User Guide Modal Handlers
+  const btnOpenGuideHeader = document.getElementById('btnOpenUserGuide');
+  if (btnOpenGuideHeader) btnOpenGuideHeader.addEventListener('click', () => openUserGuideModal());
+
+  const btnOpenGuideSettings = document.getElementById('btnOpenUserGuideSettings');
+  if (btnOpenGuideSettings) btnOpenGuideSettings.addEventListener('click', () => openUserGuideModal());
+
+  const closeGuideModal = document.getElementById('btnCloseUserGuideModal');
+  if (closeGuideModal) closeGuideModal.addEventListener('click', closeAllModals);
+
+  // Guide Language Segment Buttons
+  document.querySelectorAll('#guideLangSegmented .segment-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#guideLangSegmented .segment-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const glang = btn.getAttribute('data-glang') || 'en';
+      renderUserGuideAccordion(glang);
+    });
+  });
 
   // WhatsApp Monthly Controls dynamic triggers
   const waMonthSel = document.getElementById('waInvoiceMonthSelect');
@@ -4469,6 +4505,462 @@ function showToast(message) {
     toast.style.transition = 'all 0.2s ease';
     setTimeout(() => toast.remove(), 200);
   }, 2800);
+}
+
+// ==========================================================================
+// 18. IN-APP USER MANUAL & INTERACTIVE GUIDE ENGINE
+// ==========================================================================
+
+const USER_GUIDE_DATA = {
+  en: [
+    {
+      id: 'guide-install',
+      icon: 'fa-mobile-screen-button',
+      title: '1. How to Install on Your Phone (iOS & Android)',
+      content: `
+        <p>You do not need to download anything from the App Store or Google Play. The app installs directly from your web browser as a fast, lightweight mobile app.</p>
+        <div class="guide-callout success">
+          <strong>🍏 iPhone / iPad (Safari):</strong><br>
+          1. Open the app link in <strong>Safari</strong>.<br>
+          2. Tap the <strong>Share</strong> button (box with an arrow pointing up at the bottom).<br>
+          3. Scroll down and tap <strong>"Add to Home Screen"</strong>.<br>
+          4. Tap <strong>Add</strong> in the top-right corner. The app icon will appear on your home screen!
+        </div>
+        <div class="guide-callout">
+          <strong>🤖 Android (Chrome / Samsung Internet):</strong><br>
+          1. Open the app link in <strong>Google Chrome</strong>.<br>
+          2. Tap the <strong>Three Dots Menu (⋮)</strong> at the top right.<br>
+          3. Tap <strong>"Install App"</strong> or <strong>"Add to Home screen"</strong>.<br>
+          4. Confirm by tapping <strong>Install</strong>.
+        </div>
+        <p style="font-size:11.5px; color:var(--text-muted);"><i class="fa-solid fa-bolt"></i> <strong>Offline Ready:</strong> Once installed, the app opens full-screen like a native app and works even with no internet connection.</p>
+      `
+    },
+    {
+      id: 'guide-license',
+      icon: 'fa-key',
+      title: '2. Activating Your License Key',
+      content: `
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text">Go to the <strong>Settings (⚙️)</strong> tab (or tap the <strong>DEMO</strong> badge in the header).</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text">Tap <strong>"Enter License Key"</strong>.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text">Enter your registered <strong>WhatsApp Phone Number</strong> (e.g. <code>+60123456789</code>) and paste your <strong>License Key</strong>.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text">Tap <strong>"Activate Full App"</strong>. You now have lifetime access with unlimited homestays!</div>
+        </div>
+      `
+    },
+    {
+      id: 'guide-props',
+      icon: 'fa-house-chimney',
+      title: '3. Adding Homestays & Room Rentals',
+      content: `
+        <p>You can manage entire houses, villas, apartments, or individual room rentals:</p>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text">Tap <strong>Settings (⚙️)</strong> > Tap <strong>"+ Add Homestay Unit"</strong> (or tap <strong>"+ Add"</strong> in the top header).</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text">
+            <strong>Fill in Unit Particulars:</strong><br>
+            • <strong>Category:</strong> Entire House, Master Room, Medium Room, Single Room, or Studio.<br>
+            • <strong>Access:</strong> Smart Lock Door PIN (e.g. <code>5829#</code>) and WiFi Name/Password.<br>
+            • <strong>Pricing:</strong> Standard nightly rate and cleaning fee.
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text">Tap <strong>"Save Property"</strong>.</div>
+        </div>
+      `
+    },
+    {
+      id: 'guide-bookings',
+      icon: 'fa-calendar-plus',
+      title: '4. Creating Bookings (Daily vs. Monthly)',
+      content: `
+        <p>Tap the floating <strong><code>+</code> (Add)</strong> button on the bottom-right to create a booking:</p>
+        <div class="guide-callout success">
+          <strong>☀️ Daily / Short-Term Stays:</strong><br>
+          • Select <strong>"Daily / Short-Term"</strong> (monthly fields are automatically blocked).<br>
+          • Enter Check-In/Out dates, Nightly Rate, and Cleaning Fee.<br>
+          • Tap quick deposit presets: <code>30%</code>, <code>50%</code>, or <code>100% Full</code>.<br>
+          • Enter guest particulars: Name, WhatsApp Phone, NRIC/Passport, and Address.
+        </div>
+        <div class="guide-callout">
+          <strong>📅 Monthly Tenancy:</strong><br>
+          • Select <strong>"Monthly Tenancy"</strong> (daily fields are automatically blocked).<br>
+          • Enter Start Date, Duration (e.g. 6 Months), and Monthly Rental.<br>
+          • Enter Rental Deposit, Utilities Deposit, and Tenancy Agreement Fee.<br>
+          • The system automatically calculates the <strong>Total Move-In Package</strong>.
+        </div>
+      `
+    },
+    {
+      id: 'guide-invoicing',
+      icon: 'fa-file-invoice-dollar',
+      title: '5. Multi-Month Rental Invoices & Receipts',
+      content: `
+        <p>For monthly tenancies, the app provides a sequential monthly billing schedule:</p>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text">Go to the <strong>Bookings</strong> tab and tap <strong>"📑 Monthly Invoices (X/Y)"</strong> on any monthly booking card.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text"><strong>Send Invoice:</strong> Tap <code>Invoice</code> next to any month (e.g. Month 2). You can enter optional utility arrears (TNB/Water) before opening WhatsApp.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text"><strong>Mark Paid:</strong> Tap <code>Mark Paid</code> when the tenant transfers rent.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text"><strong>Send Receipt:</strong> Tap <code>Receipt</code> to send an official WhatsApp payment confirmation (<code>REC-RENT-M2-XXXX</code>).</div>
+        </div>
+      `
+    },
+    {
+      id: 'guide-wa',
+      icon: 'fa-brands fa-whatsapp',
+      title: '6. 1-Tap WhatsApp Automation (8 Templates)',
+      content: `
+        <p>Tap the WhatsApp button on any booking card to choose from 8 pre-formatted templates with zero manual typing:</p>
+        <ul style="padding-left:18px; margin:6px 0;">
+          <li><strong>📄 Quotation:</strong> Send price breakdown & deposit request.</li>
+          <li><strong>🧾 Deposit Receipt:</strong> Confirm booking & lock calendar dates.</li>
+          <li><strong>🔑 Full Receipt & Keys:</strong> Send Door Lock PIN, WiFi credentials & directions.</li>
+          <li><strong>📑 Monthly Invoice:</strong> Send monthly rent bill with due date & bank account.</li>
+          <li><strong>🧾 Monthly Rent Receipt:</strong> Send official rent payment confirmation.</li>
+          <li><strong>🏁 Check-Out Reminder:</strong> Reminder on check-out time & key return.</li>
+          <li><strong>💰 Deposit Refund Statement:</strong> Itemized statement with utility deductions.</li>
+          <li><strong>🧹 Cleaner Notice:</strong> Job alert with unit address, check-out time & PIN code.</li>
+        </ul>
+      `
+    },
+    {
+      id: 'guide-refunds',
+      icon: 'fa-money-bill-transfer',
+      title: '7. End of Tenancy & Deposit Refunds',
+      content: `
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text">Tap <strong>"End Tenancy & Refund Deposit"</strong> on the booking card.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text">Enter any deductions for <strong>Unpaid Utilities (TNB/Water)</strong> or <strong>Repairs/Cleaning</strong>.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text">Tap <strong>"Send Refund Statement"</strong> — opens an itemized, transparent statement in WhatsApp for your tenant!</div>
+        </div>
+      `
+    },
+    {
+      id: 'guide-cleaning',
+      icon: 'fa-broom',
+      title: '8. Turnovers & Cleaning Management',
+      content: `
+        <p>Every check-out automatically creates a turnover task in the <strong>Turnovers (🧹)</strong> tab:</p>
+        <ul style="padding-left:18px; margin:6px 0;">
+          <li>Check off standard tasks (bedsheets, bathroom, amenities, AC, PIN reset).</li>
+          <li>Tap <strong>"Send to Cleaner"</strong> to dispatch the turnover schedule to your cleaner via WhatsApp with 1 tap.</li>
+        </ul>
+      `
+    },
+    {
+      id: 'guide-finances',
+      icon: 'fa-chart-line',
+      title: '9. Financial Reports & Monthly Profit',
+      content: `
+        <p>Tap the <strong>Finances (📈)</strong> tab to see your business performance:</p>
+        <ul style="padding-left:18px; margin:6px 0;">
+          <li>💵 <strong>Total Revenue:</strong> Total booking income collected.</li>
+          <li>📉 <strong>Total Expenses:</strong> Operational costs logged (tap <em>+ Add Expense</em>).</li>
+          <li>🏆 <strong>Net Profit:</strong> Actual profit in green (<em>Revenue minus Expenses</em>).</li>
+          <li>📊 <strong>Property Share:</strong> Percentage bars showing which unit earns the most.</li>
+        </ul>
+      `
+    },
+    {
+      id: 'guide-backup',
+      icon: 'fa-shield-halved',
+      title: '10. Zero-Data-Loss Updates & Backups',
+      content: `
+        <div class="guide-callout success">
+          <strong>🔒 100% Data Preservation Guarantee:</strong><br>
+          All your homestays, bookings, tenant records, invoices, and license keys are stored privately on your device. Updating the app will <strong>never delete or erase your data</strong>.
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text"><strong>Updating:</strong> When an update is released, tap <strong>"Update Now"</strong> on the top banner.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text"><strong>Manual Backup:</strong> Go to <strong>Settings (⚙️) > Data & Backup</strong> and tap <strong>"Export Backup (.json)"</strong> anytime to save a copy.</div>
+        </div>
+      `
+    }
+  ],
+  bm: [
+    {
+      id: 'guide-install',
+      icon: 'fa-mobile-screen-button',
+      title: '1. Cara Pasang di Telefon Pintar (iOS & Android)',
+      content: `
+        <p>Anda tidak perlu memuat turun apa-apa dari App Store atau Google Play. Aplikasi ini dipasang terus dari pelayar web anda sebagai aplikasi telefon pintar yang pantas dan ringan.</p>
+        <div class="guide-callout success">
+          <strong>🍏 Pengguna iPhone / iPad (Safari):</strong><br>
+          1. Buka pautan aplikasi di <strong>Safari</strong>.<br>
+          2. Tekan butang <strong>Kongsi (Share)</strong> (ikon petak dengan anak panah ke atas di bahagian bawah).<br>
+          3. Skrol ke bawah dan tekan <strong>"Add to Home Screen" (Tambah ke Skrin Utama)</strong>.<br>
+          4. Tekan <strong>Add</strong> di penjuru kanan atas. Ikon aplikasi akan muncul di skrin utama telefon anda!
+        </div>
+        <div class="guide-callout">
+          <strong>🤖 Pengguna Android (Chrome / Samsung Internet):</strong><br>
+          1. Buka pautan aplikasi di <strong>Google Chrome</strong>.<br>
+          2. Tekan ikon <strong>Tiga Titik (⋮)</strong> di penjuru kanan atas.<br>
+          3. Tekan <strong>"Install App" (Pasang Aplikasi)</strong> atau <strong>"Add to Home screen"</strong>.<br>
+          4. Sahkan dengan menekan <strong>Install</strong>.
+        </div>
+        <p style="font-size:11.5px; color:var(--text-muted);"><i class="fa-solid fa-bolt"></i> <strong>Sedia Luar Talian:</strong> Selepas dipasang, aplikasi dibuka skrin penuh dan berfungsi walaupun tiada sambungan internet.</p>
+      `
+    },
+    {
+      id: 'guide-license',
+      icon: 'fa-key',
+      title: '2. Mengaktifkan Kunci Lesen Anda',
+      content: `
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text">Pergi ke tab <strong>Tetapan (⚙️)</strong> (atau tekan lencana <strong>DEMO</strong> di bar atas).</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text">Tekan <strong>"Masukkan Kunci Lesen"</strong>.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text">Masukkan <strong>Nombor WhatsApp Berdaftar</strong> anda (cth: <code>+60123456789</code>) dan tampal <strong>Kunci Lesen</strong> anda.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text">Tekan <strong>"Aktifkan Aplikasi Penuh"</strong>. Anda kini memiliki akses seumur hidup dengan unit tanpa had!</div>
+        </div>
+      `
+    },
+    {
+      id: 'guide-props',
+      icon: 'fa-house-chimney',
+      title: '3. Menambah Unit Homestay & Bilik Sewa',
+      content: `
+        <p>Anda boleh menguruskan seluruh rumah, vila, apartmen, atau bilik sewa individu:</p>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text">Tekan <strong>Tetapan (⚙️)</strong> > Tekan <strong>"+ Tambah Unit Homestay / Bilik"</strong> (atau tekan <strong>"+ Tambah"</strong> di bar atas).</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text">
+            <strong>Isikan Butiran Unit:</strong><br>
+            • <strong>Kategori:</strong> Seluruh Rumah, Bilik Master, Bilik Medium, Bilik Single, atau Studio.<br>
+            • <strong>Akses:</strong> Kod PIN Kunci Pintu Pintar (cth: <code>5829#</code>) dan Nama/Kata Laluan WiFi.<br>
+            • <strong>Harga:</strong> Kadar asas semalam dan yuran pembersihan.
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text">Tekan <strong>"Simpan Unit Homestay"</strong>.</div>
+        </div>
+      `
+    },
+    {
+      id: 'guide-bookings',
+      icon: 'fa-calendar-plus',
+      title: '4. Merekod Tempahan (Harian & Bulanan)',
+      content: `
+        <p>Tekan butang terapung <strong><code>+</code> (Tambah)</strong> di penjuru kanan bawah untuk membuka borang tempahan:</p>
+        <div class="guide-callout success">
+          <strong>☀️ Sewaan Harian / Jangka Pendek:</strong><br>
+          • Pilih <strong>"Harian / Jangka Pendek"</strong> (bahagian bulanan disekat automatik).<br>
+          • Masukkan Tarikh Masuk/Keluar, Kadar Semalam, dan Yuran Pembersihan.<br>
+          • Tekan pilihan deposit pantas: <code>30%</code>, <code>50%</code>, atau <code>100% Penuh</code>.<br>
+          • Isikan maklumat tetamu: Nama, WhatsApp, No. KP/Pasport, dan Alamat.
+        </div>
+        <div class="guide-callout">
+          <strong>📅 Sewaan Bulanan (Bilik / Rumah):</strong><br>
+          • Pilih <strong>"Sewaan Bulanan"</strong> (bahagian harian disekat automatik).<br>
+          • Masukkan Tarikh Mula, Tempoh (cth: 6 Bulan), dan Sewa Bulanan.<br>
+          • Masukkan Deposit Sewa, Deposit Utiliti, dan Yuran Perjanjian Sewa.<br>
+          • Sistem mengira <strong>Jumlah Pakej Kemasukan (Move-In)</strong> secara automatik.
+        </div>
+      `
+    },
+    {
+      id: 'guide-invoicing',
+      icon: 'fa-file-invoice-dollar',
+      title: '5. Invois & Resit Sewaan Bulanan',
+      content: `
+        <p>Bagi sewaan bulanan, sistem menyediakan jadual bil bulanan berurutan:</p>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text">Buka tab <strong>Tempahan</strong> dan tekan butang <strong>"📑 Jadual Invois (X/Y)"</strong> pada kad sewaan bulanan.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text"><strong>Hantar Invois:</strong> Tekan <code>Invois</code> pada mana-mana bulan (cth: Bulan 2). Boleh masukkan caj utiliti TNB/Air tambahan jika ada sebelum buka WhatsApp.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text"><strong>Tanda Bayar:</strong> Tekan <code>Tanda Bayar</code> apabila penyewa telah memindahkan bayaran sewa.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text"><strong>Hantar Resit:</strong> Tekan <code>Resit</code> untuk menghantar resit rasmi WhatsApp pengesahan bayaran sewa (<code>REC-RENT-M2-XXXX</code>).</div>
+        </div>
+      `
+    },
+    {
+      id: 'guide-wa',
+      icon: 'fa-brands fa-whatsapp',
+      title: '6. Automasi WhatsApp 1-Sentuhan (8 Templat)',
+      content: `
+        <p>Tekan butang WhatsApp pada mana-mana kad tempahan untuk memilih daripada 8 templat siap sedia tanpa perlu taip manual:</p>
+        <ul style="padding-left:18px; margin:6px 0;">
+          <li><strong>📄 Sebut Harga:</strong> Hantar perincian harga rasmi & jumlah bayaran booking.</li>
+          <li><strong>🧾 Resit Booking / Deposit:</strong> Pengesahan deposit & unit ditanda ditempah.</li>
+          <li><strong>🔑 Resit Penuh & Panduan Kunci:</strong> Resit bayaran penuh berserta PIN pintu & WiFi.</li>
+          <li><strong>📑 Invois Sewa Bulanan:</strong> Invois bulanan mengikut bulan, tarikh akhir & no bank.</li>
+          <li><strong>🧾 Resit Rasmi Sewa Bulanan:</strong> Resit rasmi pengesahan bayaran sewa bulanan.</li>
+          <li><strong>🏁 Peringatan Daftar Keluar:</strong> Peringatan waktu keluar, suis elektrik & kunci.</li>
+          <li><strong>💰 Penyata Pulangan Deposit:</strong> Penyata perincian deposit & tolakan bil utiliti.</li>
+          <li><strong>🧹 Arahan Pembersihan:</strong> Arahan tugasan kepada pembersih berserta kod PIN pintu.</li>
+        </ul>
+      `
+    },
+    {
+      id: 'guide-refunds',
+      icon: 'fa-money-bill-transfer',
+      title: '7. Tamat Sewaan & Pemulangan Deposit',
+      content: `
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text">Tekan butang <strong>"Tamat Sewa & Pulang Deposit"</strong> pada kad tempahan.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text">Masukkan jumlah tolakan jika ada <strong>Tunggakan Utiliti (TNB/Air)</strong> atau <strong>Kerosakan / Pembersihan</strong>.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text">Tekan <strong>"Hantar Penyata Pulangan"</strong> — membuka penyata tolakan yang telus dan jelas di WhatsApp penyewa!</div>
+        </div>
+      `
+    },
+    {
+      id: 'guide-cleaning',
+      icon: 'fa-broom',
+      title: '8. Jadual Pembersihan & Kakitangan',
+      content: `
+        <p>Setiap daftar keluar menjana tugasan pembersihan secara automatik di tab <strong>Pembersihan (🧹)</strong>:</p>
+        <ul style="padding-left:18px; margin:6px 0;">
+          <li>Tanda senarai semak tugasan (cadar, bilik air, kelengkapan, aircond, reset PIN).</li>
+          <li>Tekan <strong>"Hantar ke Pembersih"</strong> untuk menghantar arahan tugasan terus ke WhatsApp staf dengan 1 sentuhan.</li>
+        </ul>
+      `
+    },
+    {
+      id: 'guide-finances',
+      icon: 'fa-chart-line',
+      title: '9. Laporan Kewangan & Untung Bersih',
+      content: `
+        <p>Tekan tab <strong>Kewangan (📈)</strong> untuk melihat prestasi perniagaan anda:</p>
+        <ul style="padding-left:18px; margin:6px 0;">
+          <li>💵 <strong>Jumlah Hasil:</strong> Jumlah pendapatan sewaan yang diterima.</li>
+          <li>📉 <strong>Jumlah Perbelanjaan:</strong> Kos operasi yang direkod (tekan <em>+ Tambah Kos</em>).</li>
+          <li>🏆 <strong>Untung Bersih:</strong> Keuntungan sebenar berwarna hijau (<em>Hasil tolak Perbelanjaan</em>).</li>
+          <li>📊 <strong>Pecahan Unit:</strong> Carta peratusan unit homestay/bilik yang menjana hasil tertinggi.</li>
+        </ul>
+      `
+    },
+    {
+      id: 'guide-backup',
+      icon: 'fa-shield-halved',
+      title: '10. Kemas Kini Tanpa Hilang Data & Sandaran',
+      content: `
+        <div class="guide-callout success">
+          <strong>🔒 Jaminan 100% Data Selamat:</strong><br>
+          Semua maklumat homestay, tempahan, rekod penyewa, invois, dan lesen disimpan secara peribadi di peranti anda. Kemas kini aplikasi <strong>tidak akan memadamkan data anda</strong>.
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text"><strong>Kemas Kini:</strong> Apabila versi baharu dikeluarkan, tekan <strong>"Kemas Kini Sekarang"</strong> pada sepanduk atas.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text"><strong>Sandaran Manual:</strong> Pergi ke <strong>Tetapan (⚙️) > Data & Sandaran</strong> dan tekan <strong>"Eksport Sandaran (.json)"</strong> bila-bila masa untuk simpan salinan.</div>
+        </div>
+      `
+    }
+  ]
+};
+
+function openUserGuideModal() {
+  const currentAppLang = appState.settings.language || 'en';
+  
+  // Set segment active state matching app language
+  document.querySelectorAll('#guideLangSegmented .segment-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-glang') === currentAppLang);
+  });
+
+  renderUserGuideAccordion(currentAppLang);
+  document.getElementById('userGuideModal').classList.add('active');
+}
+
+function renderUserGuideAccordion(lang = 'en') {
+  const container = document.getElementById('userGuideAccordion');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const list = USER_GUIDE_DATA[lang] || USER_GUIDE_DATA.en;
+
+  list.forEach((item, index) => {
+    const card = document.createElement('div');
+    card.className = `guide-card ${index === 0 ? 'active' : ''}`;
+    card.innerHTML = `
+      <div class="guide-card-header">
+        <div class="guide-card-title-group">
+          <div class="guide-card-icon">
+            <i class="fa-solid ${item.icon}"></i>
+          </div>
+          <h4 class="guide-card-title">${item.title}</h4>
+        </div>
+        <i class="fa-solid fa-chevron-down guide-card-chevron"></i>
+      </div>
+      <div class="guide-card-body">
+        ${item.content}
+      </div>
+    `;
+
+    card.querySelector('.guide-card-header').addEventListener('click', () => {
+      const wasActive = card.classList.contains('active');
+      container.querySelectorAll('.guide-card').forEach(c => c.classList.remove('active'));
+      if (!wasActive) card.classList.add('active');
+    });
+
+    container.appendChild(card);
+  });
 }
 
 // Start application

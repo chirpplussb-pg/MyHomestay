@@ -58,6 +58,9 @@
           <button class="icon-btn lang-toggle-btn" id="btnLangToggle" title="Tukar Bahasa / Switch Language">
             <span id="currentLangLabel" style="font-size:11px; font-weight:800;">EN</span>
           </button>
+          <button class="icon-btn" id="btnOpenUserGuide" title="User Guide & Manual / Panduan Pengguna" aria-label="User Guide">
+            <i class="fa-solid fa-circle-question" style="color:var(--primary);"></i>
+          </button>
           <button class="icon-btn" id="btnQuickGuestGuide" title="Digital Guest Guide" aria-label="Digital Guest Guide">
             <i class="fa-solid fa-book-open"></i>
           </button>
@@ -462,6 +465,19 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- User Manual & In-App Guide Card -->
+        <div class="card" style="background:linear-gradient(135deg, rgba(2,132,199,0.06), rgba(99,102,241,0.06)); border:1px solid rgba(2,132,199,0.25);">
+          <div class="card-header-flex mb-2">
+            <div>
+              <h3 class="card-title"><i class="fa-solid fa-book-open-reader" style="color:var(--primary);"></i> <span data-i18n="user_guide_title">User Manual & Operational Guide</span></h3>
+              <p class="card-subtitle" data-i18n="user_guide_sub">Step-by-step instructions on mobile setup, bookings, invoicing, WhatsApp, and finances.</p>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm btn-block" id="btnOpenUserGuideSettings">
+            <i class="fa-solid fa-book-open"></i> <span data-i18n="btn_open_guide">Read In-App User Guide (EN / BM)</span>
+          </button>
         </div>
 
         <!-- App Version & Seamless Updates -->
@@ -1110,6 +1126,38 @@
             <button class="btn btn-whatsapp btn-block" id="btnBuyLicenseViaWa">
               <i class="fa-brands fa-whatsapp"></i> Buy License via WhatsApp
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. USER MANUAL & IN-APP GUIDE MODAL -->
+    <div class="modal-backdrop" id="userGuideModal">
+      <div class="bottom-sheet" style="max-height: 90vh;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div class="wa-header-brand">
+            <i class="fa-solid fa-book-open-reader" style="font-size: 24px; color: var(--primary);"></i>
+            <div>
+              <h2 class="modal-title" data-i18n="user_guide_modal_title">User Guide & Manual</h2>
+              <span class="modal-subtitle" data-i18n="user_guide_modal_sub">Interactive guide & operational walkthrough</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnCloseUserGuideModal">&times;</button>
+        </div>
+        <div class="modal-body" style="padding-top: 10px;">
+          <!-- Guide Language Switcher -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; background:var(--bg-surface-subtle); padding:6px 12px; border-radius:var(--radius-md);">
+            <span style="font-size:12px; font-weight:700; color:var(--text-muted);" data-i18n="guide_lang_label">Select Guide Language:</span>
+            <div class="segmented-control" id="guideLangSegmented" style="margin:0; width:auto;">
+              <button class="segment-btn active" data-glang="en">🇬🇧 English</button>
+              <button class="segment-btn" data-glang="bm">🇲🇾 B. Melayu</button>
+            </div>
+          </div>
+
+          <!-- Dynamic Guide Accordion Container -->
+          <div id="userGuideAccordion" class="user-guide-container">
+            <!-- Dynamically populated in app.js -->
           </div>
         </div>
       </div>
