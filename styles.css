@@ -629,6 +629,215 @@ body {
   cursor: pointer;
 }
 
+/* Calendar Mode Selector (Check-In vs Check-Out vs Stays) */
+.cal-mode-selector {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  background: var(--bg-surface-subtle);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.cal-mode-pill {
+  flex: 1;
+  padding: 7px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.cal-mode-pill:hover {
+  color: var(--text-main);
+  background: var(--bg-surface);
+}
+
+.cal-mode-pill.active {
+  background: var(--bg-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-color: var(--border-color);
+  font-weight: 800;
+}
+
+.cal-mode-pill[data-cal-filter="checkin"].active {
+  color: #16a34a;
+  border-color: rgba(22, 163, 74, 0.3);
+}
+
+.cal-mode-pill[data-cal-filter="checkout"].active {
+  color: #ea580c;
+  border-color: rgba(234, 88, 12, 0.3);
+}
+
+.cal-mode-pill[data-cal-filter="stays"].active {
+  color: var(--primary);
+  border-color: rgba(2, 132, 199, 0.3);
+}
+
+.cal-day-cell.has-checkin {
+  background: rgba(34, 197, 94, 0.10);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.cal-day-cell.has-checkin:hover {
+  background: rgba(34, 197, 94, 0.20);
+  border-color: #16a34a;
+}
+
+.cal-day-cell.has-checkout {
+  background: rgba(249, 115, 22, 0.10);
+  border-color: rgba(249, 115, 22, 0.35);
+}
+
+.cal-day-cell.has-checkout:hover {
+  background: rgba(249, 115, 22, 0.20);
+  border-color: #ea580c;
+}
+
+.cal-day-mode-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 4px;
+  line-height: 1.1;
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.cal-day-mode-badge.badge-checkin {
+  background: rgba(34, 197, 94, 0.20);
+  color: #15803d;
+}
+
+.cal-day-mode-badge.badge-checkout {
+  background: rgba(249, 115, 22, 0.20);
+  color: #c2410c;
+}
+
+/* Date Metrics Bar in Day Details */
+.cal-date-metrics-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.cal-metric-chip {
+  background: var(--bg-surface-subtle);
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cal-metric-chip .metric-num {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.cal-metric-chip .metric-lbl {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.cal-metric-chip.active-in {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.cal-metric-chip.active-in .metric-num {
+  color: #16a34a;
+}
+
+.cal-metric-chip.active-out {
+  background: rgba(249, 115, 22, 0.08);
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+.cal-metric-chip.active-out .metric-num {
+  color: #ea580c;
+}
+
+.cal-metric-chip.active-avail {
+  background: rgba(2, 132, 199, 0.08);
+  border-color: rgba(2, 132, 199, 0.3);
+}
+
+.cal-metric-chip.active-avail .metric-num {
+  color: var(--primary);
+}
+
+.cal-vacating-alert-card {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.07), rgba(2, 132, 199, 0.07));
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.cal-vacating-alert-card .alert-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.18);
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.cal-vacating-alert-card .alert-content {
+  flex: 1;
+}
+
+.cal-vacating-alert-card .alert-content strong {
+  display: block;
+  font-size: 13px;
+  color: var(--text-main);
+  margin-bottom: 3px;
+}
+
+.cal-vacating-alert-card .alert-content p {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.theme-dark .cal-mode-pill[data-cal-filter="checkin"].active { color: #4ade80; border-color: rgba(74, 222, 128, 0.4); }
+.theme-dark .cal-mode-pill[data-cal-filter="checkout"].active { color: #fb923c; border-color: rgba(251, 146, 60, 0.4); }
+.theme-dark .cal-day-cell.has-checkin { background: rgba(34, 197, 94, 0.18); border-color: rgba(34, 197, 94, 0.45); }
+.theme-dark .cal-day-cell.has-checkout { background: rgba(249, 115, 22, 0.18); border-color: rgba(249, 115, 22, 0.45); }
+.theme-dark .cal-day-mode-badge.badge-checkin { background: rgba(34, 197, 94, 0.28); color: #86efac; }
+.theme-dark .cal-day-mode-badge.badge-checkout { background: rgba(249, 115, 22, 0.28); color: #fdba74; }
+.theme-dark .cal-metric-chip.active-in .metric-num { color: #4ade80; }
+.theme-dark .cal-metric-chip.active-out .metric-num { color: #fb923c; }
+.theme-dark .cal-metric-chip.active-avail .metric-num { color: #38bdf8; }
+
 .cal-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

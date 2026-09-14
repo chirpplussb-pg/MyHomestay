@@ -196,7 +196,33 @@ Tap the floating **`+` (Add)** button on any screen to open the booking modal.
 
 ---
 
-## 5. Multi-Month Invoicing & Receipts / Invois & Resit Bulanan
+## 5. Calendar View: Check-In vs. Check-Out Modes / Paparan Kalendar Pintar
+
+The app includes an interactive Calendar with a **3-Way Mode Selector**:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ [ 📥 Check-In ]     [ 📤 Check-Out ]     [ 🛏️ All Stays ]    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 🇬🇧 English: Calendar Features
+* **📥 Check-In Mode**: Highlights arrival dates (`checkIn`). If a guest checks in on 14/9 and checks out on 15/9, **14/9 is marked** with a green check-in badge (e.g., `📥 1`), while 15/9 remains clean. Helps hosts instantly see daily arrivals.
+* **📤 Check-Out Mode**: Highlights departure dates (`checkOut`). For the 14/9–15/9 booking, **15/9 is marked** with an orange badge (`📤 1`). Clicking the date displays a **Vacating Unit Notice** informing that the unit will be cleaned and ready for new guests, complete with a 1-tap `+ Book This Unit Starting Today` button to instantly reserve the unit for a new guest arriving today!
+* **🛏️ All Stays Mode**: Highlights overnight stays with property color dots.
+* **4-Metric Date Bar**: Tap any date to view: `[📥 Check-In: X] [📤 Check-Out: Y] [🛏️ In-Stay: Z] [✨ Available Tonight: W]`.
+* **Incoming Agenda Tab**: Displays all upcoming bookings in order of nearest dates with proximity tags (*Check-In Today*, *Tomorrow*, *In 2 Days*).
+
+### 🇲🇾 Bahasa Melayu: Ciri-Ciri Paparan Kalendar
+* **📥 Mod Daftar Masuk**: Menandakan hari ketibaan tetamu. Cth: Masuk 14/9 dan keluar 15/9 — **14/9 ditanda** dengan lencana `📥 1`, manakala 15/9 kekal bersih. Membolehkan hos menyemak berapa unit mendaftar masuk pada hari tersebut.
+* **📤 Mod Daftar Keluar**: Menandakan hari tetamu keluar. Pada tarikh 15/9, lencana `📤 1` dipaparkan. Menekan tarikh tersebut akan memaparkan **Kad Unit Keluar** yang memaklumkan unit sedia dibersihkan, berserta butang pantas `+ Tempah Unit Ini Mulai Hari Ini` untuk menerima tempahan baharu serta-merta!
+* **🛏️ Mod Penginapan**: Menandakan semua malam penginapan dengan titik berwarna mengikut unit homestay.
+* **Bar 4-Statistik Harian**: Tekan mana-mana tarikh untuk melihat bilangan Masuk, Keluar, Menginap, dan unit Kosong Malam Ini.
+* **Tab Tempahan Terdekat**: Menyusun semua tempahan akan datang mengikut tarikh paling hampir (*Masuk Hari Ini*, *Esok*, *Dalam 2 Hari*).
+
+---
+
+## 6. Multi-Month Invoicing & Receipts / Invois & Resit Bulanan
 
 For monthly tenancies, the app provides a **Sequential Monthly Billing Engine**.
 
@@ -234,7 +260,7 @@ For monthly tenancies, the app provides a **Sequential Monthly Billing Engine**.
 
 ---
 
-## 6. 1-Tap WhatsApp Automation / Automasi Mesej WhatsApp 1-Sentuhan
+## 7. 1-Tap WhatsApp Automation / Automasi Mesej WhatsApp 1-Sentuhan
 
 The app includes 8 built-in bilingual templates with zero manual typing required:
 
@@ -251,7 +277,7 @@ The app includes 8 built-in bilingual templates with zero manual typing required
 
 ---
 
-## 7. Deposit Refunds & Move-Out / Pemulangan Deposit & Tamat Sewaan
+## 8. Deposit Refunds & Move-Out / Pemulangan Deposit & Tamat Sewaan
 
 ### 🇬🇧 English: End of Tenancy & Deposit Settlement
 1. On the booking card, tap **`End Tenancy & Refund Deposit`** (or *Refund Security Deposit*).
@@ -273,7 +299,7 @@ The app includes 8 built-in bilingual templates with zero manual typing required
 
 ---
 
-## 8. Turnover, Maintenance Team & Suppliers Directory / Pengurusan Pembersihan, Pasukan Penyelenggaraan & Pembekal
+## 9. Turnover, Maintenance Team & Suppliers Directory / Pengurusan Pembersihan, Pasukan Penyelenggaraan & Pembekal
 
 * **Maintenance Team & Suppliers Directory**: Store your full network of cleaners, aircond technicians, plumbers, electricians, handymen, locksmiths, and supply vendors (linens, laundry, cooking gas, guest amenities) in **Settings > Maintenance Team & Suppliers**.
 * **Automatic Turnaround Schedules**: Every check-out automatically creates a turnover task in the **Turnovers (🧹)** tab with an interactive checklist.
@@ -282,7 +308,7 @@ The app includes 8 built-in bilingual templates with zero manual typing required
 
 ---
 
-## 9. Financial Reports & Expenses / Laporan Kewangan & Untung Bersih
+## 10. Financial Reports & Expenses / Laporan Kewangan & Untung Bersih
 
 * **Interactive Monthly Dashboard**: View **Total Revenue**, **Total Expenses**, and **Net Profit** for any selected month and year.
 * **Revenue by Property**: Visual percentage bars showing which homestay or room generates the most income.
@@ -290,7 +316,7 @@ The app includes 8 built-in bilingual templates with zero manual typing required
 
 ---
 
-## 10. Updating the App (Zero Data Loss) / Kemas Kini Tanpa Hilang Data
+## 11. Updating the App (Zero Data Loss) / Kemas Kini Tanpa Hilang Data
 
 ### 🇬🇧 English: Zero-Data-Loss Update Architecture & Guide
 

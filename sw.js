@@ -1,5 +1,5 @@
 // Service Worker for Homestay Manager PWA
-const CACHE_NAME = 'staymanager-cache-v2.3.0';
+const CACHE_NAME = 'staymanager-cache-v2.4.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

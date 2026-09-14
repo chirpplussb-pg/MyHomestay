@@ -125,10 +125,11 @@ Tap the floating **`+` (Add)** button on the bottom-right of your screen to open
 6. The app automatically calculates the **Initial Move-In Settlement Package**.
 7. Tap **"Save Booking"**.
 
-> 💡 **Calendar View & Incoming Bookings Agenda / Paparan Kalendar & Jadual Terdekat**:
-> * **Marked Booked Dates**: Every date with an active booking is highlighted with colored property dots on the calendar grid.
-> * **Incoming Bookings (Nearest First)**: The calendar view listing automatically organizes all upcoming bookings in order of nearest dates, complete with proximity badges (*Check-In Today*, *Tomorrow*, *In 2 Days*, *In-Stay*).
-> * **Selected Date Filter**: Tapping any date on the calendar displays stays for that day or allows 1-click booking if the unit is vacant.
+> 💡 **Calendar View & Smart Check-In / Check-Out Modes / Paparan Kalendar Pintar**:
+> * **📥 Check-In Mode**: Highlights arrival dates with total check-in count badges (e.g. `📥 1`). Days without arrivals remain clean. Allows hosts to immediately see daily arrivals.
+> * **📤 Check-Out Mode & Vacating Units**: Highlights guest departure dates (e.g. `📤 1`). Clicking a check-out date displays dedicated **Vacating Unit Cards** with a 1-tap `[+ Book This Unit Starting Today]` button to instantly re-book the vacating unit for a new guest arriving today!
+> * **🛏️ All Stays Mode**: Shows all ongoing overnight stays with colored dots for each homestay property.
+> * **4-Metric Date Summary Bar**: Tapping any date instantly shows: `[📥 Check-In: X] [📤 Check-Out: Y] [🛏️ In-Stay: Z] [✨ Available Tonight: W]`.
 
 ---
 

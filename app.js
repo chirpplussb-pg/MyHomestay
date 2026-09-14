@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.3.0';
+const APP_VERSION = '2.4.0';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -138,6 +138,16 @@ const TRANSLATIONS = {
     cal_incoming_title: 'Incoming Bookings',
     cal_incoming_subtitle: 'Ordered by nearest dates',
     cal_no_incoming: 'No upcoming or active bookings found.',
+    cal_mode_checkin: 'Check-In',
+    cal_mode_checkout: 'Check-Out',
+    cal_mode_stays: 'All Stays',
+    cal_checkins_for_date: 'Check-In(s) on',
+    cal_checkouts_for_date: 'Check-Out(s) on',
+    cal_no_checkins_date: 'No check-ins on this date. Unit(s) available for new booking.',
+    cal_no_checkouts_date: 'No check-outs scheduled on this date.',
+    cal_unit_vacating_title: 'Checking Out Today — Ready for New Booking!',
+    cal_unit_vacating_desc: 'Guest departs by 12:00 PM. Unit will be cleaned & ready for a new guest to check in at 3:00 PM.',
+    cal_book_unit_today: '+ Book Unit from Today',
 
     // Bookings & Filters
     filter_all: 'All',
@@ -481,6 +491,16 @@ const TRANSLATIONS = {
     cal_incoming_title: 'Tempahan Akan Datang',
     cal_incoming_subtitle: 'Susunan mengikut tarikh terdekat',
     cal_no_incoming: 'Tiada tempahan aktif atau akan datang ditemui.',
+    cal_mode_checkin: 'Daftar Masuk',
+    cal_mode_checkout: 'Daftar Keluar',
+    cal_mode_stays: 'Penginapan',
+    cal_checkins_for_date: 'Daftar Masuk pada',
+    cal_checkouts_for_date: 'Daftar Keluar pada',
+    cal_no_checkins_date: 'Tiada tetamu mendaftar masuk pada tarikh ini. Unit sedia untuk tempahan baharu.',
+    cal_no_checkouts_date: 'Tiada daftar keluar dijadualkan pada tarikh ini.',
+    cal_unit_vacating_title: 'Keluar Hari Ini — Sedia Untuk Tempahan Baharu!',
+    cal_unit_vacating_desc: 'Tetamu keluar jam 12:00 PM. Unit dibersihkan & sedia untuk tetamu baharu mendaftar masuk jam 3:00 PM.',
+    cal_book_unit_today: '+ Tempah Unit Mulai Hari Ini',
 
     // Bookings & Filters
     filter_all: 'Semua',
@@ -844,6 +864,7 @@ let appState = {
   currentCalDate: new Date(),
   selectedCalDate: new Date().toISOString().split('T')[0],
   calListingMode: 'incoming',
+  calFilterMode: 'checkin',
   activeWaBooking: null,
   activeWaTemplate: 'confirm',
   activeDispatchRecipientId: null,
@@ -1387,6 +1408,18 @@ function setupEventListeners() {
   document.getElementById('btnQuickBookForDate').addEventListener('click', () => {
     openBookingModal(null, appState.selectedCalDate);
   });
+
+  // Calendar Mode Selector (Check-In vs Check-Out vs Stays)
+  document.querySelectorAll('#calModeSelector .cal-mode-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const mode = pill.getAttribute('data-cal-filter') || 'checkin';
+      appState.calFilterMode = mode;
+      document.querySelectorAll('#calModeSelector .cal-mode-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      renderCalendarTab();
+    });
+  });
+
   document.getElementById('calTabIncoming')?.addEventListener('click', () => {
     appState.calListingMode = 'incoming';
     document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
@@ -2378,6 +2411,12 @@ function renderCalendarTab() {
   const currentMonth = appState.currentCalDate.getMonth();
   const currentYear = appState.currentCalDate.getFullYear();
   
+  // Sync Calendar Mode pills active state
+  const currentCalMode = appState.calFilterMode || 'checkin';
+  document.querySelectorAll('#calModeSelector .cal-mode-pill').forEach(pill => {
+    pill.classList.toggle('active', pill.getAttribute('data-cal-filter') === currentCalMode);
+  });
+  
   const locale = appState.settings.language === 'bm' ? 'ms-MY' : 'en-US';
   const monthName = appState.currentCalDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
   document.getElementById('calMonthTitle').textContent = monthName;
@@ -2435,6 +2474,7 @@ function renderCalendarTab() {
 
 function createCalDayCell(dayNum, dateStr, isOtherMonth, bookings, todayStr) {
   const isSelected = dateStr === appState.selectedCalDate && appState.calListingMode === 'selected';
+  const calFilter = appState.calFilterMode || 'checkin';
   const cell = document.createElement('div');
   cell.className = `cal-day-cell ${isOtherMonth ? 'other-month' : ''} ${dateStr === todayStr ? 'today' : ''} ${isSelected ? 'selected' : ''}`;
   cell.setAttribute('data-date', dateStr);
@@ -2444,43 +2484,93 @@ function createCalDayCell(dayNum, dateStr, isOtherMonth, bookings, todayStr) {
   numSpan.textContent = dayNum;
   cell.appendChild(numSpan);
 
-  // Find bookings active on this date (exclude cancelled)
-  const dayBookings = bookings.filter(b => {
-    if (b.status === 'cancelled') return false;
-    if (b.checkIn === b.checkOut) {
-      return b.checkIn === dateStr;
-    }
+  const activeBookings = bookings.filter(b => b.status !== 'cancelled');
+  const checkins = activeBookings.filter(b => b.checkIn === dateStr);
+  const checkouts = activeBookings.filter(b => b.checkOut === dateStr);
+  const stays = activeBookings.filter(b => {
+    if (b.checkIn === b.checkOut) return b.checkIn === dateStr;
     return b.checkIn <= dateStr && b.checkOut > dateStr;
   });
 
-  if (dayBookings.length > 0) {
-    cell.classList.add('has-booking');
-    const isConfirmedOrBooked = dayBookings.some(b => ['booked', 'confirmed', 'checked-in', 'active', 'blocked'].includes(b.status));
-    if (isConfirmedOrBooked) {
-      cell.classList.add('is-confirmed-booked');
+  if (calFilter === 'checkin') {
+    if (checkins.length > 0) {
+      cell.classList.add('has-checkin', 'has-booking');
+      const isConfirmed = checkins.some(b => ['booked', 'confirmed', 'checked-in', 'active', 'blocked'].includes(b.status));
+      if (isConfirmed) cell.classList.add('is-confirmed-booked');
+
+      const badge = document.createElement('span');
+      badge.className = 'cal-day-mode-badge badge-checkin';
+      badge.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket"></i> ${checkins.length}`;
+      cell.appendChild(badge);
+
+      const dotsContainer = document.createElement('div');
+      dotsContainer.className = 'cal-dots-container';
+      checkins.forEach(b => {
+        const prop = getPropertyById(b.propertyId);
+        const dot = document.createElement('span');
+        dot.className = 'cal-stay-dot';
+        dot.style.backgroundColor = prop.color || '#16a34a';
+        dot.title = `${prop.name}: ${b.guestName} (${t('cal_mode_checkin')})`;
+        if (b.status === 'quotation') dot.classList.add('is-quotation');
+        dotsContainer.appendChild(dot);
+      });
+      cell.appendChild(dotsContainer);
     }
+  } else if (calFilter === 'checkout') {
+    if (checkouts.length > 0) {
+      cell.classList.add('has-checkout', 'has-booking');
+      const isConfirmed = checkouts.some(b => ['booked', 'confirmed', 'checked-in', 'active', 'blocked'].includes(b.status));
+      if (isConfirmed) cell.classList.add('is-confirmed-booked');
 
-    const dotsContainer = document.createElement('div');
-    dotsContainer.className = 'cal-dots-container';
+      const badge = document.createElement('span');
+      badge.className = 'cal-day-mode-badge badge-checkout';
+      badge.innerHTML = `<i class="fa-solid fa-arrow-right-from-bracket"></i> ${checkouts.length}`;
+      cell.appendChild(badge);
 
-    dayBookings.forEach(b => {
-      const prop = getPropertyById(b.propertyId);
-      const dot = document.createElement('span');
-      dot.className = 'cal-stay-dot';
-      dot.style.backgroundColor = prop.color || '#0284c7';
-      dot.title = `${prop.name}: ${b.guestName} (${b.status})`;
-      if (b.status === 'quotation') {
-        dot.classList.add('is-quotation');
-      }
-      dotsContainer.appendChild(dot);
-    });
+      const dotsContainer = document.createElement('div');
+      dotsContainer.className = 'cal-dots-container';
+      checkouts.forEach(b => {
+        const prop = getPropertyById(b.propertyId);
+        const dot = document.createElement('span');
+        dot.className = 'cal-stay-dot';
+        dot.style.backgroundColor = prop.color || '#ea580c';
+        dot.title = `${prop.name}: ${b.guestName} (${t('cal_mode_checkout')})`;
+        if (b.status === 'quotation') dot.classList.add('is-quotation');
+        dotsContainer.appendChild(dot);
+      });
+      cell.appendChild(dotsContainer);
+    }
+  } else {
+    // 'stays' mode
+    if (stays.length > 0) {
+      cell.classList.add('has-booking');
+      const isConfirmed = stays.some(b => ['booked', 'confirmed', 'checked-in', 'active', 'blocked'].includes(b.status));
+      if (isConfirmed) cell.classList.add('is-confirmed-booked');
 
-    cell.appendChild(dotsContainer);
+      const badge = document.createElement('span');
+      badge.className = 'cal-day-mode-badge badge-stays';
+      badge.style.background = 'rgba(2, 132, 199, 0.15)';
+      badge.style.color = 'var(--primary)';
+      badge.innerHTML = `<i class="fa-solid fa-bed"></i> ${stays.length}`;
+      cell.appendChild(badge);
+
+      const dotsContainer = document.createElement('div');
+      dotsContainer.className = 'cal-dots-container';
+      stays.forEach(b => {
+        const prop = getPropertyById(b.propertyId);
+        const dot = document.createElement('span');
+        dot.className = 'cal-stay-dot';
+        dot.style.backgroundColor = prop.color || '#0284c7';
+        dot.title = `${prop.name}: ${b.guestName} (${b.status})`;
+        if (b.status === 'quotation') dot.classList.add('is-quotation');
+        dotsContainer.appendChild(dot);
+      });
+      cell.appendChild(dotsContainer);
+    }
   }
 
   cell.addEventListener('click', () => {
     if (appState.selectedCalDate === dateStr && appState.calListingMode === 'selected') {
-      // Tapping selected date toggles back to all incoming
       appState.calListingMode = 'incoming';
       document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
     } else {
@@ -2498,14 +2588,22 @@ function createCalDayCell(dayNum, dateStr, isOtherMonth, bookings, todayStr) {
 function getIncomingBookings() {
   const allBookings = getFilteredBookings();
   const todayStr = new Date().toISOString().split('T')[0];
+  const calFilter = appState.calFilterMode || 'checkin';
 
-  // Incoming bookings: active in-house or future check-ins, exclude cancelled and past check-outs
-  const incoming = allBookings.filter(b => {
-    if (b.status === 'cancelled') return false;
-    return b.checkOut >= todayStr;
-  });
+  const active = allBookings.filter(b => b.status !== 'cancelled');
 
-  // Sort strictly in order of nearest dates:
+  if (calFilter === 'checkout') {
+    // In checkout mode: show upcoming check-outs (from today onwards)
+    const checkouts = active.filter(b => b.checkOut >= todayStr);
+    checkouts.sort((a, b) => {
+      if (a.checkOut !== b.checkOut) return a.checkOut.localeCompare(b.checkOut);
+      return a.checkIn.localeCompare(b.checkIn);
+    });
+    return checkouts;
+  }
+
+  // Check-In or Stays mode: incoming bookings
+  const incoming = active.filter(b => b.checkOut >= todayStr);
   incoming.sort((a, b) => {
     const aInHouse = (a.checkIn <= todayStr && a.checkOut >= todayStr);
     const bInHouse = (b.checkIn <= todayStr && b.checkOut >= todayStr);
@@ -2529,6 +2627,7 @@ function getIncomingBookings() {
 
 function renderCalendarListing() {
   const mode = appState.calListingMode || 'incoming';
+  const calFilter = appState.calFilterMode || 'checkin';
   const list = document.getElementById('selectedDayBookingsList');
   if (!list) return;
   list.innerHTML = '';
@@ -2567,22 +2666,38 @@ function renderCalendarListing() {
   const subtitleEl = document.querySelector('#selectedDayDetails .card-subtitle');
 
   if (mode === 'incoming') {
-    if (subtitleEl) {
-      subtitleEl.textContent = isBM ? 'Susunan mengikut tarikh terdekat' : 'Ordered by nearest dates';
+    let modeTitle = isBM ? 'Tempahan Akan Datang' : 'Incoming Bookings';
+    let modeSubtitle = isBM ? 'Susunan mengikut tarikh terdekat' : 'Ordered by nearest dates';
+    let modeIcon = 'fa-calendar-days';
+
+    if (calFilter === 'checkin') {
+      modeTitle = isBM ? 'Daftar Masuk Akan Datang' : 'Upcoming Check-Ins';
+      modeSubtitle = isBM ? 'Susunan tarikh daftar masuk terdekat' : 'Ordered by nearest check-in dates';
+      modeIcon = 'fa-arrow-right-to-bracket';
+    } else if (calFilter === 'checkout') {
+      modeTitle = isBM ? 'Daftar Keluar & Kekosongan' : 'Upcoming Check-Outs & Vacancies';
+      modeSubtitle = isBM ? 'Susunan tarikh daftar keluar terdekat' : 'Ordered by nearest check-out dates';
+      modeIcon = 'fa-arrow-right-from-bracket';
     }
+
+    if (subtitleEl) subtitleEl.textContent = modeSubtitle;
     if (titleEl) {
-      titleEl.innerHTML = `<i class="fa-solid fa-calendar-days" style="color:var(--primary); margin-right:6px;"></i>${isBM ? 'Tempahan Akan Datang' : 'Incoming Bookings'} <span class="badge-count" style="font-size:12px; font-weight:700; background:var(--primary-light); color:var(--primary); padding:2px 8px; border-radius:12px; margin-left:6px; vertical-align:middle;">${incomingBookings.length}</span>`;
+      titleEl.innerHTML = `<i class="fa-solid ${modeIcon}" style="color:var(--primary); margin-right:6px;"></i>${modeTitle} <span class="badge-count" style="font-size:12px; font-weight:700; background:var(--primary-light); color:var(--primary); padding:2px 8px; border-radius:12px; margin-left:6px; vertical-align:middle;">${incomingBookings.length}</span>`;
     }
 
     if (incomingBookings.length === 0) {
+      const emptyMsg = calFilter === 'checkout'
+        ? (isBM ? 'Tiada daftar keluar dijadualkan.' : 'No check-outs scheduled.')
+        : (isBM ? 'Semua unit kini tiada tempahan baharu. Tekan + untuk tambah tempahan.' : 'All units currently have no upcoming bookings. Tap + to add a booking.');
+
       list.innerHTML = `
         <div class="empty-hint" style="padding: 24px 16px; text-align: center;">
           <i class="fa-solid fa-calendar-xmark" style="font-size: 28px; color: var(--text-muted); opacity: 0.5; margin-bottom: 8px; display: block;"></i>
           <p style="font-size: 14px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">
-            ${isBM ? 'Tiada Tempahan Akan Datang' : 'No Incoming Bookings'}
+            ${isBM ? 'Tiada Rekod Dijumpai' : 'No Records Found'}
           </p>
           <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px;">
-            ${isBM ? 'Semua unit kini tiada tempahan baharu. Tekan + untuk tambah tempahan.' : 'All units currently have no upcoming bookings. Tap + to add a booking.'}
+            ${emptyMsg}
           </p>
           <button class="btn btn-primary btn-sm" id="btnCalAddBookingEmpty">
             <i class="fa-solid fa-plus"></i> ${isBM ? 'Tambah Tempahan' : 'Add Booking'}
@@ -2594,14 +2709,14 @@ function renderCalendarListing() {
       return;
     }
 
-    // Render incoming bookings cards in order of nearest dates
+    // Render incoming bookings cards
     incomingBookings.forEach(b => {
       const card = createCalendarBookingCard(b, todayStr, isBM, false);
       list.appendChild(card);
     });
 
   } else {
-    // Mode is 'selected'
+    // Mode is 'selected' (date selected on calendar)
     const dateStr = appState.selectedCalDate || todayStr;
     const d = new Date(dateStr + 'T00:00:00');
     const formattedDate = d.toLocaleDateString(isBM ? 'ms-MY' : 'en-US', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
@@ -2613,44 +2728,175 @@ function renderCalendarListing() {
       titleEl.innerHTML = `<i class="fa-regular fa-calendar-check" style="color:var(--primary); margin-right:6px;"></i>${formattedDate}`;
     }
 
-    const dayBookings = getFilteredBookings().filter(b => b.status !== 'cancelled' && b.checkIn <= dateStr && b.checkOut >= dateStr);
+    const allFiltered = getFilteredBookings().filter(b => b.status !== 'cancelled');
+    const dayCheckIns = allFiltered.filter(b => b.checkIn === dateStr);
+    const dayCheckOuts = allFiltered.filter(b => b.checkOut === dateStr);
+    const dayInStays = allFiltered.filter(b => {
+      if (b.checkIn === b.checkOut) return b.checkIn === dateStr;
+      return b.checkIn <= dateStr && b.checkOut > dateStr;
+    });
 
-    if (dayBookings.length === 0) {
-      list.innerHTML = `
-        <div class="empty-hint" style="padding: 24px 16px; text-align: center;">
-          <i class="fa-solid fa-calendar-check" style="font-size: 28px; color: var(--success); margin-bottom: 8px; display: block;"></i>
-          <p style="font-size: 14.5px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
-            ${formattedDate}
-          </p>
-          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
-            ${isBM ? 'Tiada tempahan pada tarikh ini. Unit kosong & sedia ditempah.' : 'No bookings for this date. Unit is vacant & available.'}
-          </p>
-          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-            <button class="btn btn-primary btn-sm" id="btnQuickBookForDateEmpty">
-              <i class="fa-solid fa-plus"></i> ${isBM ? 'Tempah Tarikh Ini' : 'Book This Date'}
-            </button>
-            <button class="btn btn-outline btn-sm" id="btnSwitchToIncoming">
-              <i class="fa-regular fa-clock"></i> ${isBM ? '📅 Semua Akan Datang' : '📅 All Incoming Bookings'}
-            </button>
+    const activeProps = appState.selectedPropertyId === 'all'
+      ? appState.properties
+      : appState.properties.filter(p => p.id === appState.selectedPropertyId);
+    const occupiedPropIds = new Set(dayInStays.map(b => b.propertyId));
+    const vacantCount = Math.max(0, activeProps.length - occupiedPropIds.size);
+
+    // 1. Render Metrics Bar
+    const metricsBar = document.createElement('div');
+    metricsBar.className = 'cal-date-metrics-bar';
+    metricsBar.innerHTML = `
+      <div class="cal-metric-chip ${calFilter === 'checkin' ? 'active-in' : ''}">
+        <span class="metric-num">${dayCheckIns.length}</span>
+        <span class="metric-lbl"><i class="fa-solid fa-arrow-right-to-bracket"></i> ${isBM ? 'Masuk' : 'Check-In'}</span>
+      </div>
+      <div class="cal-metric-chip ${calFilter === 'checkout' ? 'active-out' : ''}">
+        <span class="metric-num">${dayCheckOuts.length}</span>
+        <span class="metric-lbl"><i class="fa-solid fa-arrow-right-from-bracket"></i> ${isBM ? 'Keluar' : 'Check-Out'}</span>
+      </div>
+      <div class="cal-metric-chip ${calFilter === 'stays' ? 'active-in' : ''}">
+        <span class="metric-num">${dayInStays.length}</span>
+        <span class="metric-lbl"><i class="fa-solid fa-bed"></i> ${isBM ? 'Menginap' : 'In-Stay'}</span>
+      </div>
+      <div class="cal-metric-chip active-avail">
+        <span class="metric-num">${vacantCount}</span>
+        <span class="metric-lbl"><i class="fa-solid fa-door-open"></i> ${isBM ? 'Kosong' : 'Available'}</span>
+      </div>
+    `;
+    list.appendChild(metricsBar);
+
+    // 2. Render content according to calFilter
+    if (calFilter === 'checkout') {
+      if (dayCheckOuts.length > 0) {
+        dayCheckOuts.forEach(b => {
+          const prop = getPropertyById(b.propertyId);
+          const alertCard = document.createElement('div');
+          alertCard.className = 'cal-vacating-alert-card';
+          alertCard.innerHTML = `
+            <div class="alert-icon">
+              <i class="fa-solid fa-door-open"></i>
+            </div>
+            <div class="alert-content">
+              <strong>✨ ${prop.name} — ${isBM ? 'Daftar Keluar Hari Ini' : 'Checking Out Today'}</strong>
+              <p>${isBM 
+                ? `Tetamu <b>${b.guestName}</b> keluar jam ${prop.checkOutTime || '12:00 PM'}. Unit dibersihkan &amp; sedia untuk tetamu baharu mendaftar masuk jam ${prop.checkInTime || '3:00 PM'}!` 
+                : `Guest <b>${b.guestName}</b> departs by ${prop.checkOutTime || '12:00 PM'}. Unit will be cleaned &amp; ready for a new guest check-in at ${prop.checkInTime || '3:00 PM'}!`}</p>
+              <button class="btn btn-primary btn-sm btn-book-vacating-unit" data-pid="${prop.id}" data-date="${dateStr}">
+                <i class="fa-solid fa-calendar-plus"></i> ${isBM ? '+ Tempah Unit Ini Mulai Hari Ini' : '+ Book This Unit Starting Today'}
+              </button>
+            </div>
+          `;
+          list.appendChild(alertCard);
+
+          const card = createCalendarBookingCard(b, todayStr, isBM, true, dateStr);
+          list.appendChild(card);
+        });
+      } else {
+        list.innerHTML += `
+          <div class="empty-hint" style="padding: 20px 16px; text-align: center;">
+            <i class="fa-solid fa-circle-info" style="font-size: 26px; color: var(--text-muted); opacity: 0.6; margin-bottom: 8px; display: block;"></i>
+            <p style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
+              ${isBM ? 'Tiada Daftar Keluar pada Tarikh Ini' : 'No Check-Outs on this Date'}
+            </p>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px;">
+              ${vacantCount > 0 
+                ? (isBM ? `${vacantCount} unit homestay sedia ditempah.` : `${vacantCount} homestay unit(s) available for new booking.`)
+                : (isBM ? 'Semua unit sedang diduduki tetamu.' : 'All units occupied by in-house guests.')}
+            </p>
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-primary btn-sm" id="btnQuickBookForDateEmpty">
+                <i class="fa-solid fa-plus"></i> ${isBM ? 'Tempah Tarikh Ini' : 'Book This Date'}
+              </button>
+              <button class="btn btn-outline btn-sm" id="btnSwitchToIncoming">
+                <i class="fa-regular fa-clock"></i> ${isBM ? '📅 Semua Akan Datang' : '📅 All Incoming Bookings'}
+              </button>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
+    } else if (calFilter === 'checkin') {
+      if (dayCheckIns.length > 0) {
+        dayCheckIns.forEach(b => {
+          const card = createCalendarBookingCard(b, todayStr, isBM, true, dateStr);
+          list.appendChild(card);
+        });
 
-      const qbBtn = document.getElementById('btnQuickBookForDateEmpty');
-      if (qbBtn) qbBtn.addEventListener('click', () => openBookingModal(null, dateStr));
-
-      const swBtn = document.getElementById('btnSwitchToIncoming');
-      if (swBtn) swBtn.addEventListener('click', () => {
-        appState.calListingMode = 'incoming';
-        document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
-        renderCalendarListing();
-      });
-      return;
+        if (vacantCount > 0) {
+          const availBanner = document.createElement('div');
+          availBanner.style.cssText = 'background:var(--bg-surface-subtle); border:1px dashed var(--border-color); border-radius:var(--radius-md); padding:10px 14px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;';
+          availBanner.innerHTML = `
+            <span style="font-size:12.5px; color:var(--text-muted);">
+              <i class="fa-solid fa-circle-check" style="color:var(--success);"></i> <strong>${vacantCount}</strong> ${isBM ? 'lagi unit kosong pada tarikh ini.' : 'more unit(s) available on this date.'}
+            </span>
+            <button class="btn btn-outline btn-xs" id="btnAddCheckinTodayBtn">
+              <i class="fa-solid fa-plus"></i> ${isBM ? 'Tambah Tempahan' : 'Add Booking'}
+            </button>
+          `;
+          list.appendChild(availBanner);
+          const addBtn = availBanner.querySelector('#btnAddCheckinTodayBtn');
+          if (addBtn) addBtn.addEventListener('click', () => openBookingModal(null, dateStr));
+        }
+      } else {
+        list.innerHTML += `
+          <div class="empty-hint" style="padding: 20px 16px; text-align: center;">
+            <i class="fa-solid fa-calendar-check" style="font-size: 26px; color: var(--success); margin-bottom: 8px; display: block;"></i>
+            <p style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
+              ${isBM ? 'Tiada Daftar Masuk pada Tarikh Ini' : 'No Check-Ins on this Date'}
+            </p>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px;">
+              ${vacantCount > 0 
+                ? (isBM ? `${vacantCount} unit sedia untuk ditempah.` : `${vacantCount} unit(s) available for new booking.`)
+                : (isBM ? 'Tiada daftar masuk baharu (unit sedang menginap).' : 'No new check-in arrivals scheduled.')}
+            </p>
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-primary btn-sm" id="btnQuickBookForDateEmpty">
+                <i class="fa-solid fa-plus"></i> ${isBM ? 'Tempah Tarikh Ini' : 'Book This Date'}
+              </button>
+              <button class="btn btn-outline btn-sm" id="btnSwitchToIncoming">
+                <i class="fa-regular fa-clock"></i> ${isBM ? '📅 Semua Akan Datang' : '📅 All Incoming Bookings'}
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    } else {
+      // Stays mode
+      if (dayInStays.length > 0) {
+        dayInStays.forEach(b => {
+          const card = createCalendarBookingCard(b, todayStr, isBM, true, dateStr);
+          list.appendChild(card);
+        });
+      } else {
+        list.innerHTML += `
+          <div class="empty-hint" style="padding: 20px 16px; text-align: center;">
+            <i class="fa-solid fa-bed" style="font-size: 26px; color: var(--success); margin-bottom: 8px; display: block;"></i>
+            <p style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
+              ${isBM ? 'Tiada Penginapan pada Tarikh Ini' : 'No Stays on this Date'}
+            </p>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px;">
+              ${isBM ? 'Semua unit kosong & sedia ditempah.' : 'All units vacant & ready for booking.'}
+            </p>
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-primary btn-sm" id="btnQuickBookForDateEmpty">
+                <i class="fa-solid fa-plus"></i> ${isBM ? 'Tempah Tarikh Ini' : 'Book This Date'}
+              </button>
+              <button class="btn btn-outline btn-sm" id="btnSwitchToIncoming">
+                <i class="fa-regular fa-clock"></i> ${isBM ? '📅 Semua Akan Datang' : '📅 All Incoming Bookings'}
+              </button>
+            </div>
+          </div>
+        `;
+      }
     }
 
-    dayBookings.forEach(b => {
-      const card = createCalendarBookingCard(b, todayStr, isBM, true, dateStr);
-      list.appendChild(card);
+    const qbBtn = document.getElementById('btnQuickBookForDateEmpty');
+    if (qbBtn) qbBtn.addEventListener('click', () => openBookingModal(null, dateStr));
+
+    const swBtn = document.getElementById('btnSwitchToIncoming');
+    if (swBtn) swBtn.addEventListener('click', () => {
+      appState.calListingMode = 'incoming';
+      document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
+      renderCalendarListing();
     });
   }
 
@@ -2812,6 +3058,14 @@ function attachCalendarCardActions(container) {
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => x.id === bid);
       if (b) openBookingModal(b);
+    });
+  });
+
+  container.querySelectorAll('.btn-book-vacating-unit').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const pid = e.currentTarget.getAttribute('data-pid');
+      const dStr = e.currentTarget.getAttribute('data-date');
+      openBookingModal(null, dStr, pid);
     });
   });
 }
@@ -3917,7 +4171,7 @@ function setBookingFormRentalType(type) {
   });
 }
 
-function openBookingModal(existingBooking = null, prefillDate = null) {
+function openBookingModal(existingBooking = null, prefillDate = null, prefillPropertyId = null) {
   if (appState.properties.length === 0) {
     alert(appState.settings.language === 'bm' 
       ? 'Sila tambah sekurang-kurangnya satu unit homestay atau bilik sebelum membuat tempahan.' 
@@ -3993,7 +4247,9 @@ function openBookingModal(existingBooking = null, prefillDate = null) {
     document.getElementById('bookingGuestEmail').value = '';
     document.getElementById('bookingGuestAddress').value = '';
     
-    if (appState.selectedPropertyId !== 'all') {
+    if (prefillPropertyId) {
+      document.getElementById('bookingPropertySelect').value = prefillPropertyId;
+    } else if (appState.selectedPropertyId !== 'all') {
       document.getElementById('bookingPropertySelect').value = appState.selectedPropertyId;
     }
 
@@ -5770,7 +6026,11 @@ const USER_GUIDE_DATA = {
           • The system automatically calculates the <strong>Total Move-In Package</strong>.
         </div>
         <div class="guide-callout success">
-          <strong>💡 Calendar View:</strong> Dates with bookings are automatically highlighted with colored dots. The calendar listing automatically displays all incoming bookings ordered by nearest dates with proximity badges (e.g. Check-In Today, Tomorrow, In 2 Days).
+          <strong>💡 Calendar View (Check-In vs. Check-Out Modes):</strong><br>
+          • <strong>📥 Check-In Mode:</strong> Highlights days when guests arrive with count badges (e.g. 📥 1) and lists upcoming arrivals.<br>
+          • <strong>📤 Check-Out Mode:</strong> Highlights departure dates (e.g. 📤 1). Displays vacating unit notices with 1-tap <code>+ Book This Unit Starting Today</code> button!<br>
+          • <strong>🛏️ All Stays:</strong> View overnight stays with colored dots for each homestay unit.<br>
+          • <strong>4-Metric Bar:</strong> Tap any date to inspect Check-Ins, Check-Outs, In-Stay guests, and units available tonight.
         </div>
       `
     },
@@ -5997,7 +6257,11 @@ const USER_GUIDE_DATA = {
           • Sistem mengira <strong>Jumlah Pakej Kemasukan (Move-In)</strong> secara automatik.
         </div>
         <div class="guide-callout success">
-          <strong>💡 Paparan Kalendar:</strong> Tarikh dengan tempahan ditanda dengan warna unit. Senarai kalendar menyusun semua tempahan akan datang mengikut tarikh terdekat dengan lencana (cth: Masuk Hari Ini, Esok, Dalam 2 Hari).
+          <strong>💡 Paparan Kalendar (Mod Daftar Masuk vs. Daftar Keluar):</strong><br>
+          • <strong>📥 Mod Daftar Masuk:</strong> Menandakan hari ketibaan tetamu dengan lencana bilangan (cth: 📥 1) dan menyusun senarai ketibaan terdekat.<br>
+          • <strong>📤 Mod Daftar Keluar:</strong> Menandakan hari tetamu keluar (cth: 📤 1). Memaparkan notis unit sedia dibersihkan berserta butang 1-sentuhan <code>+ Tempah Unit Ini Mulai Hari Ini</code>!<br>
+          • <strong>🛏️ Penginapan:</strong> Paparkan semua malam penginapan dengan titik warna bagi setiap unit homestay.<br>
+          • <strong>Bar 4-Statistik:</strong> Tekan mana-mana tarikh untuk melihat Masuk, Keluar, Menginap, dan unit Kosong Malam Ini.
         </div>
       `
     },
