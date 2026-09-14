@@ -200,12 +200,21 @@
           </div>
         </div>
 
-        <!-- Selected Day Details & Quick Book -->
+        <!-- Selected Day Details & Incoming Bookings Listing -->
         <div class="card selected-day-card" id="selectedDayDetails">
+          <div class="cal-listing-tabs">
+            <button class="cal-tab-pill active" id="calTabIncoming" data-mode="incoming">
+              <i class="fa-regular fa-clock"></i> <span data-i18n="cal_all_incoming_tab">📅 All Incoming (Nearest First)</span>
+            </button>
+            <button class="cal-tab-pill" id="calTabSelected" data-mode="selected">
+              <i class="fa-regular fa-calendar-check"></i> <span id="calSelectedTabLabel" data-i18n="cal_selected_date_tab">🎯 Selected Date</span>
+            </button>
+          </div>
+
           <div class="day-details-header">
             <div>
-              <span class="card-subtitle" data-i18n="selected_date">Selected Date</span>
-              <h3 class="card-title" id="selectedDayTitle">Select a date</h3>
+              <span class="card-subtitle" data-i18n="cal_incoming_subtitle">Ordered by nearest dates</span>
+              <h3 class="card-title" id="selectedDayTitle">📅 Incoming Bookings</h3>
             </div>
             <button class="btn btn-primary btn-sm" id="btnQuickBookForDate">
               <i class="fa-solid fa-plus"></i> <span data-i18n="book_date_btn">Book Date</span>
@@ -252,6 +261,14 @@
               <h3 class="card-title" data-i18n="turnover_title">Turnover & Cleaning</h3>
               <p class="card-subtitle" data-i18n="turnover_subtitle">Prep your homestay for the next guest</p>
             </div>
+          </div>
+          <div class="turnover-actions-bar mt-2" style="display:flex; gap:8px; flex-wrap:wrap; padding-top:8px; border-top:1px solid var(--border-color);">
+            <button class="btn btn-outline btn-xs" id="btnTurnoverTeamDir">
+              <i class="fa-solid fa-users-gear"></i> <span data-i18n="btn_team_dir">Team & Suppliers</span>
+            </button>
+            <button class="btn btn-primary btn-xs" id="btnTurnoverServiceAlert">
+              <i class="fa-solid fa-bell"></i> <span data-i18n="btn_dispatch_service">Service / Supply Alert</span>
+            </button>
           </div>
         </div>
 
@@ -334,6 +351,22 @@
           </div>
         </div>
 
+        <!-- Maintenance Team & Suppliers Directory -->
+        <div class="card">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title" data-i18n="team_dir_title">Maintenance Team & Suppliers</h3>
+              <p class="card-subtitle" data-i18n="team_dir_subtitle">Manage cleaners, technicians, handymen & suppliers</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btnAddNewContactModal">
+              <i class="fa-solid fa-plus"></i> <span data-i18n="add_person_btn">+ Add Person</span>
+            </button>
+          </div>
+          <div class="settings-contact-list mt-2" id="settingsContactList">
+            <!-- Dynamic Contact Cards -->
+          </div>
+        </div>
+
         <!-- General App Settings -->
         <div class="card">
           <h3 class="card-title mb-3" data-i18n="app_pref_title">App Preferences & Seller Info</h3>
@@ -376,6 +409,16 @@
             <label class="form-label" data-i18n="deposit_pct_label">Standard Deposit Percentage (%)</label>
             <input type="number" id="settingDefaultDepositPctInput" class="form-control" placeholder="30" min="0" max="100" value="30">
             <span class="card-subtitle" style="font-size: 11px;" data-i18n="deposit_pct_hint">Default deposit requested upon booking (e.g. 30%).</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="quotation_validity_label">Default Quotation Validity (Days)</label>
+            <input type="number" id="settingQuotationValidityInput" class="form-control" placeholder="3" min="1" max="90" value="3">
+            <span class="card-subtitle" style="font-size: 11px;" data-i18n="quotation_validity_hint">Default number of days a quotation remains valid before expiry.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="standard_notes_label">Standard WhatsApp Notes / Footer</label>
+            <textarea id="settingStandardNotesInput" class="form-control" rows="3" placeholder="e.g. House rules apply. Smoking strictly prohibited. Check-in after 3 PM. Thank you for choosing us!"></textarea>
+            <span class="card-subtitle" style="font-size: 11px;" data-i18n="standard_notes_hint">Automatically appended at the bottom of customer WhatsApp automation messages.</span>
           </div>
           <button class="btn btn-primary btn-block" id="btnSavePreferences" data-i18n="btn_save_pref">Save Preferences</button>
         </div>
@@ -487,7 +530,7 @@
               <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
               <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
             </div>
-            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.1.0</span>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.3.0</span>
           </div>
 
           <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
@@ -758,6 +801,12 @@
             </div>
           </div>
 
+          <div class="form-group" id="bookingQuotationValidityGroup" style="display:none;">
+            <label class="form-label" data-i18n="quotation_validity_label">Quotation Validity (Days)</label>
+            <input type="number" id="bookingQuotationValidity" class="form-control" placeholder="3" min="1" max="90" value="3">
+            <span class="card-subtitle" style="font-size:11px;" data-i18n="quotation_validity_hint">Quotation validity in days before expiration.</span>
+          </div>
+
           <div class="form-group">
             <label class="form-label" data-i18n="special_notes">Special Requests / Notes</label>
             <textarea id="bookingNotes" class="form-control" rows="2" placeholder="e.g. Extra mattress requested, arriving late at 8 PM"></textarea>
@@ -804,9 +853,15 @@
             </select>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" data-i18n="address_loc">Address / Location</label>
-            <input type="text" id="propertyAddressInput" class="form-control" placeholder="Full address or building & unit number">
+          <div class="form-row">
+            <div class="form-group" style="flex:1.2;">
+              <label class="form-label" data-i18n="address_loc">Address / Location</label>
+              <input type="text" id="propertyAddressInput" class="form-control" placeholder="Full address or building & unit number">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label" data-i18n="gps_loc">GPS / Google Maps Link</label>
+              <input type="text" id="propertyGpsInput" class="form-control" placeholder="e.g. https://maps.app.goo.gl/... or 3.1390, 101.6869">
+            </div>
           </div>
 
           <div class="form-row">
@@ -891,6 +946,7 @@
           <div class="wa-template-selector">
             <button class="wa-tab-btn active" data-template="quotation">📄 Quotation</button>
             <button class="wa-tab-btn" data-template="deposit_receipt">🧾 Deposit Receipt (Booked)</button>
+            <button class="wa-tab-btn" data-template="checkin_reminder">📅 Check-In Reminder</button>
             <button class="wa-tab-btn" data-template="full_receipt">🔑 Full Receipt & Keys</button>
             <button class="wa-tab-btn" data-template="monthly_invoice">📑 Monthly Rent Invoice</button>
             <button class="wa-tab-btn" data-template="monthly_rent_receipt">🧾 Monthly Rent Receipt</button>
@@ -898,6 +954,17 @@
             <button class="wa-tab-btn" data-template="checkout">🏁 Check-Out Reminder</button>
             <button class="wa-tab-btn" data-template="cleaner">🧹 Cleaner Job</button>
             <button class="wa-tab-btn" data-template="payment">💳 Balance Due</button>
+          </div>
+
+          <!-- Dynamic Controls for Quotation Validity -->
+          <div id="waQuotationControls" class="form-row mb-2 hidden" style="background:var(--bg-surface-subtle); padding:8px 10px; border-radius:var(--radius-md); border:1px solid var(--border-color); align-items:center;">
+            <div class="form-group mb-0" style="flex:1;">
+              <label class="form-label mb-1" style="font-size:11.5px; font-weight:700;" data-i18n="quotation_validity_label">Quotation Validity (Days)</label>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="number" id="waQuotationValidityInput" class="form-control form-control-sm" placeholder="3" min="1" max="90" value="3" style="width:80px;">
+                <span style="font-size:12px; color:var(--text-muted);" data-i18n="days_label">days</span>
+              </div>
+            </div>
           </div>
 
           <!-- Dynamic Controls for Monthly Invoicing / Surcharges -->
@@ -1125,6 +1192,148 @@
             <p class="card-subtitle" style="text-align:center; margin-bottom:8px;">Don't have a license key yet?</p>
             <button class="btn btn-whatsapp btn-block" id="btnBuyLicenseViaWa">
               <i class="fa-brands fa-whatsapp"></i> Buy License via WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. MAINTENANCE CONTACT & SUPPLIER MODAL -->
+    <div class="modal-backdrop" id="contactModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <h2 class="modal-title" id="contactModalTitle">Add Person / Supplier</h2>
+          <button class="modal-close" id="btnCloseContactModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="contactForm">
+            <input type="hidden" id="contactIdInput">
+            <div class="form-group">
+              <label class="form-label required" data-i18n="contact_name_label">Full Name / Contact Name</label>
+              <input type="text" id="contactNameInput" class="form-control" placeholder="e.g. Kak Siti / Ah Keong" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required" data-i18n="contact_category_label">Service Category / Role</label>
+                <select id="contactCategorySelect" class="form-select" required>
+                  <option value="cleaner">🧹 Cleaner / Cleaning Crew</option>
+                  <option value="aircond">❄️ Aircond Specialist</option>
+                  <option value="plumber">🔧 Plumber</option>
+                  <option value="electrician">⚡ Electrician</option>
+                  <option value="handyman">🔨 Handyman / General Repairs</option>
+                  <option value="linen_supplier">🧺 Linen & Laundry Supplier</option>
+                  <option value="gas_supplier">⛽ Gas & Amenities Supplier</option>
+                  <option value="locksmith">🔐 Locksmith / Smart Lock Tech</option>
+                  <option value="other">📦 Other Contractor / Supplier</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label required" data-i18n="contact_phone_label">WhatsApp Phone Number</label>
+                <input type="tel" id="contactPhoneInput" class="form-control" placeholder="e.g. +60129998877" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="contact_company_label">Company / Shop Name (Optional)</label>
+              <input type="text" id="contactCompanyInput" class="form-control" placeholder="e.g. Siti Clean Services / Keong Cool Aircond">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="contact_notes_label">Rates, Notes & Service Details</label>
+              <textarea id="contactNotesInput" class="form-control" rows="2" placeholder="e.g. Standard turnover RM70. Available Mon-Sat. Emergency repair surcharge RM50."></textarea>
+            </div>
+            <div class="form-actions mt-3">
+              <button type="button" class="btn btn-outline" id="btnCancelContact" data-i18n="cancel">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btnSaveContactSubmit">
+                <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="save_contact_btn">Save Contact</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. WHATSAPP SERVICE & SUPPLY DISPATCH MODAL -->
+    <div class="modal-backdrop" id="serviceDispatchModal">
+      <div class="bottom-sheet" style="max-height: 90vh;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div class="wa-header-brand">
+            <i class="fa-brands fa-whatsapp" style="font-size: 24px; color: #25D366;"></i>
+            <div>
+              <h2 class="modal-title" data-i18n="dispatch_modal_title">WhatsApp Service & Supply Alert</h2>
+              <span class="modal-subtitle" data-i18n="dispatch_modal_sub">Dispatch cleaners, technicians or order supplies</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnCloseServiceDispatchModal">&times;</button>
+        </div>
+        <div class="modal-body" style="padding-top: 10px;">
+          <input type="hidden" id="dispatchTurnoverId">
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" data-i18n="dispatch_recipient_label">Send WhatsApp To</label>
+              <select id="dispatchRecipientSelect" class="form-select">
+                <!-- Dynamically populated from saved contacts -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" data-i18n="dispatch_property_label">Homestay Unit / Property</label>
+              <select id="dispatchPropertySelect" class="form-select">
+                <!-- Dynamically populated with properties -->
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" data-i18n="dispatch_type_label">Service / Task Type</label>
+              <select id="dispatchServiceTypeSelect" class="form-select">
+                <option value="turnover_clean">🧹 Turnover Cleaning</option>
+                <option value="aircond_service">❄️ Aircond Servicing / Not Cold</option>
+                <option value="plumbing_repair">🔧 Plumbing / Leak Repair</option>
+                <option value="electrical_repair">⚡ Electrical Issue / Power Trip</option>
+                <option value="handyman_repair">🔨 General Handyman / Repair</option>
+                <option value="linen_order">🧺 Linen & Laundry Supply Order</option>
+                <option value="gas_order">⛽ Gas / Amenities Restock Order</option>
+                <option value="inspection">🔍 Unit Inspection</option>
+                <option value="other_task">📝 Custom Task / Request</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="dispatch_urgency_label">Urgency Level</label>
+              <select id="dispatchUrgencySelect" class="form-select">
+                <option value="normal">🟢 Normal Schedule</option>
+                <option value="high">🟡 High Priority</option>
+                <option value="urgent">🔴 Urgent / Immediate</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="dispatch_details_label">Task / Order Instructions</label>
+            <textarea id="dispatchDetailsInput" class="form-control" rows="2" placeholder="e.g. Please check master bedroom aircond. It is leaking water."></textarea>
+          </div>
+
+          <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <input type="checkbox" id="dispatchIncludePinCheck" checked style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;">
+            <label for="dispatchIncludePinCheck" style="font-size:13px; font-weight:600; cursor:pointer; margin:0;" data-i18n="dispatch_include_pin">Include Smart Lock Door PIN in message</label>
+          </div>
+
+          <!-- WhatsApp Message Live Preview -->
+          <div class="wa-preview-card">
+            <div class="wa-preview-header">
+              <span id="dispatchRecipientBadge" style="font-weight:700; color:var(--text-main); font-size:13px;">To: Kak Siti</span>
+              <span class="wa-preview-time" id="dispatchTimestamp">12:30 ✓✓</span>
+            </div>
+            <div class="wa-message-bubble" id="dispatchPreviewText" style="white-space: pre-wrap; font-size: 13.5px; line-height: 1.5;"></div>
+          </div>
+
+          <div class="form-actions mt-3">
+            <button type="button" class="btn btn-outline" id="btnCopyDispatchText">
+              <i class="fa-solid fa-copy"></i> <span data-i18n="btn_copy_text">Copy Text</span>
+            </button>
+            <button type="button" class="btn btn-whatsapp" id="btnSendDispatchWa" style="flex:1;">
+              <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_send_wa_direct">Send via WhatsApp</span>
             </button>
           </div>
         </div>

@@ -7,17 +7,53 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '2.3.0';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
   BOOKINGS: 'staymanager_bookings_v2',
   TURNOVERS: 'staymanager_turnovers_v2',
   EXPENSES: 'staymanager_expenses_v2',
+  CONTACTS: 'staymanager_contacts_v2',
   SETTINGS: 'staymanager_settings_v2',
   LICENSE: 'staymanager_license_v2',
   VERSION: 'staymanager_app_version'
 };
+
+const DEFAULT_CONTACTS = [
+  {
+    id: 'c-1',
+    name: 'Kak Siti',
+    category: 'cleaner',
+    phone: '+60129998877',
+    company: 'Siti Clean Services',
+    notes: 'Turnover cleaning RM70/unit. Available Mon-Sat.'
+  },
+  {
+    id: 'c-2',
+    name: 'Ah Keong',
+    category: 'aircond',
+    phone: '+60128887766',
+    company: 'Keong Cool Aircond',
+    notes: 'Aircond chemical wash (RM120/unit) & emergency gas refilling.'
+  },
+  {
+    id: 'c-3',
+    name: 'Pak Din',
+    category: 'plumber',
+    phone: '+60127776655',
+    company: 'Pak Din Plumbing',
+    notes: 'Pipe repairs, toilet clog, water heater troubleshooting.'
+  },
+  {
+    id: 'c-4',
+    name: 'Sri Dobi Supply',
+    category: 'linen_supplier',
+    phone: '+60126665544',
+    company: 'Sri Dobi & Linens Sdn Bhd',
+    notes: 'Bedsheet sets, duvets, white bath towels wholesale restock.'
+  }
+];
 
 const LICENSE_SECRET_SALT = 'HOMESTAY_PRO_SALT_2026_SECURE_AUTH';
 
@@ -40,7 +76,9 @@ const DEFAULT_SETTINGS = {
   bankName: 'Maybank',
   bankAccNum: '5123 4567 8901',
   bankAccHolder: 'Homestay Host',
-  duitNow: '0123456789'
+  duitNow: '0123456789',
+  quotationValidityDays: 3,
+  standardNotes: ''
 };
 
 const TRANSLATIONS = {
@@ -95,6 +133,11 @@ const TRANSLATIONS = {
     book_date_btn: 'Book Date',
     cal_tap_hint: 'Tap on any date above to view bookings or check availability.',
     no_bookings_date: 'No bookings for this date. Unit is vacant & available.',
+    cal_all_incoming_tab: '📅 All Incoming (Nearest First)',
+    cal_selected_date_tab: '🎯 Selected Date',
+    cal_incoming_title: 'Incoming Bookings',
+    cal_incoming_subtitle: 'Ordered by nearest dates',
+    cal_no_incoming: 'No upcoming or active bookings found.',
 
     // Bookings & Filters
     filter_all: 'All',
@@ -157,6 +200,11 @@ const TRANSLATIONS = {
     app_language_label: 'App Language / Bahasa',
     deposit_pct_label: 'Standard Deposit Percentage (%)',
     deposit_pct_hint: 'Default deposit requested upon booking (e.g. 30%).',
+    quotation_validity_label: 'Default Quotation Validity (Days)',
+    quotation_validity_hint: 'Default number of days a quotation remains valid before expiry.',
+    standard_notes_label: 'Standard WhatsApp Notes / Footer',
+    standard_notes_hint: 'Automatically appended at the bottom of customer WhatsApp automation messages.',
+    days_label: 'days',
     btn_save_pref: 'Save Preferences',
     bank_title: 'Bank & Payment Details',
     bank_sub: 'Auto-included in Quotations, Invoices, and Payment Receipts sent to guests.',
@@ -241,6 +289,8 @@ const TRANSLATIONS = {
     cat_single: '🚪 Room Rental - Single Room (Sewa Bilik Single / Standard)',
     cat_studio: '🏢 Studio Apartment / Suite',
     address_loc: 'Address / Location',
+    gps_loc: 'GPS / Google Maps Link',
+    open_maps: 'Open in Google Maps / Waze',
     wifi_name: 'WiFi Name (SSID)',
     wifi_pass: 'WiFi Password',
     door_pin: 'Door / Smart Lock PIN',
@@ -257,6 +307,7 @@ const TRANSLATIONS = {
     wa_to: 'To: Guest',
     wa_tab_quotation: '📄 Quotation',
     wa_tab_deposit: '🧾 Deposit Receipt (Booked)',
+    wa_tab_checkin: '📅 Check-In Reminder',
     wa_tab_full: '🔑 Full Receipt & Keys',
     wa_tab_invoice: '📑 Monthly Rent Invoice',
     wa_tab_rent_receipt: '🧾 Monthly Rent Receipt',
@@ -264,6 +315,7 @@ const TRANSLATIONS = {
     wa_tab_checkout: '🏁 Check-Out Reminder',
     wa_tab_cleaner: '🧹 Cleaner Job',
     wa_tab_payment: '💳 Balance Due',
+    btn_checkin_reminder: 'Check-In Reminder',
     btn_copy_text: 'Copy Text',
     btn_open_wa: 'Open WhatsApp',
 
@@ -337,7 +389,41 @@ const TRANSLATIONS = {
     btn_send_full_receipt: 'Send Full Receipt & Key',
     btn_checkin: 'Check In',
     btn_checkout_reminder: 'Check-Out Reminder',
-    btn_complete_checkout: 'Complete Check-Out'
+    btn_complete_checkout: 'Complete Check-Out',
+
+    // Team & Suppliers Directory and Dispatch
+    team_dir_title: 'Maintenance Team & Suppliers',
+    team_dir_subtitle: 'Manage cleaners, technicians, handymen & suppliers',
+    add_person_btn: '+ Add Person',
+    btn_team_suppliers: '👷 Team & Suppliers',
+    btn_service_supply_alert: '🛠️ Service / Supply Alert',
+    contact_name_label: 'Contact / Person Name',
+    contact_category_label: 'Service Category / Role',
+    contact_phone_label: 'WhatsApp Phone Number',
+    contact_company_label: 'Company / Shop Name (Optional)',
+    contact_notes_label: 'Rates, Notes & Service Details',
+    contact_modal_title_new: 'Add Team Member / Supplier',
+    contact_modal_title_edit: 'Edit Contact Details',
+    save_contact_btn: 'Save Contact',
+    dispatch_modal_title: 'WhatsApp Service & Supply Alert',
+    dispatch_modal_sub: 'Dispatch cleaners, technicians or order supplies',
+    dispatch_recipient_label: 'Send WhatsApp To',
+    dispatch_property_label: 'Homestay Unit / Property',
+    dispatch_type_label: 'Service / Task Type',
+    dispatch_urgency_label: 'Urgency Level',
+    dispatch_details_label: 'Task / Order Instructions',
+    dispatch_include_pin: 'Include Smart Lock Door PIN in message',
+    btn_copy_text: 'Copy Text',
+    btn_send_wa_direct: 'Send via WhatsApp',
+    cat_cleaner: '🧹 Cleaner / Cleaning Crew',
+    cat_aircond: '❄️ Aircond Specialist',
+    cat_plumber: '🔧 Plumber',
+    cat_electrician: '⚡ Electrician',
+    cat_handyman: '🔨 Handyman / General Repairs',
+    cat_linen_supplier: '🧺 Linen & Laundry Supplier',
+    cat_gas_supplier: '⛽ Gas & Amenities Supplier',
+    cat_locksmith: '🔐 Locksmith / Smart Lock Tech',
+    cat_other: '📦 Other Contractor / Supplier'
   },
   bm: {
     // Navigation
@@ -390,6 +476,11 @@ const TRANSLATIONS = {
     book_date_btn: 'Tempah Tarikh',
     cal_tap_hint: 'Tekan mana-mana tarikh di atas untuk melihat tempahan atau kekosongan.',
     no_bookings_date: 'Tiada tempahan pada tarikh ini. Unit kosong & sedia ditempah.',
+    cal_all_incoming_tab: '📅 Semua Akan Datang (Terdekat)',
+    cal_selected_date_tab: '🎯 Tarikh Dipilih',
+    cal_incoming_title: 'Tempahan Akan Datang',
+    cal_incoming_subtitle: 'Susunan mengikut tarikh terdekat',
+    cal_no_incoming: 'Tiada tempahan aktif atau akan datang ditemui.',
 
     // Bookings & Filters
     filter_all: 'Semua',
@@ -450,8 +541,13 @@ const TRANSLATIONS = {
     owner_phone_label: 'Nombor WhatsApp Pemilik (Terkunci ke Lesen)',
     owner_phone_hint: 'Nombor WhatsApp rasmi anda. Digunakan dalam sebut harga dan diikat secara kekal pada lesen aplikasi anda.',
     app_language_label: 'Bahasa Aplikasi',
-    deposit_pct_label: 'Peratusan Deposit Booking Standard (%)',
+    deposit_pct_label: 'Peratusan Deposit Standard (%)',
     deposit_pct_hint: 'Deposit standard yang diminta semasa tempahan (contoh: 30%).',
+    quotation_validity_label: 'Tempoh Sah Sebut Harga (Hari)',
+    quotation_validity_hint: 'Jumlah hari sebut harga sah sebelum luput.',
+    standard_notes_label: 'Nota Standard WhatsApp (Kaki Mesej)',
+    standard_notes_hint: 'Dimasukkan secara automatik di bahagian bawah mesej automasi WhatsApp.',
+    days_label: 'hari',
     btn_save_pref: 'Simpan Tetapan',
     bank_title: 'Maklumat Akaun Bank & DuitNow',
     bank_sub: 'Dimasukkan secara automatik dalam Sebut Harga, Invois, dan Resit Bayaran tetamu.',
@@ -536,6 +632,8 @@ const TRANSLATIONS = {
     cat_single: '🚪 Sewa Bilik - Bilik Single',
     cat_studio: '🏢 Studio Apartmen / Suite',
     address_loc: 'Alamat / Lokasi',
+    gps_loc: 'Pautan GPS / Google Maps',
+    open_maps: 'Buka di Google Maps / Waze',
     wifi_name: 'Nama WiFi (SSID)',
     wifi_pass: 'Kata Laluan WiFi',
     door_pin: 'PIN Kunci Pintu / Smart Lock',
@@ -552,12 +650,15 @@ const TRANSLATIONS = {
     wa_to: 'Kepada: Tetamu',
     wa_tab_quotation: '📄 Sebut Harga',
     wa_tab_deposit: '🧾 Resit Booking & Deposit',
+    wa_tab_checkin: '📅 Peringatan Masuk',
     wa_tab_full: '🔑 Resit Penuh & Kunci PIN',
     wa_tab_invoice: '📑 Invois Bulanan',
+    wa_tab_rent_receipt: '🧾 Resit Sewa Bulanan',
     wa_tab_refund: '💰 Penyata Pemulangan Deposit',
     wa_tab_checkout: '🏁 Peringatan Daftar Keluar',
     wa_tab_cleaner: '🧹 Tugasan Pembersihan',
     wa_tab_payment: '💳 Peringatan Baki Bayaran',
+    btn_checkin_reminder: 'Peringatan Masuk',
     btn_copy_text: 'Salin Teks',
     btn_open_wa: 'Buka WhatsApp Terus',
 
@@ -631,7 +732,41 @@ const TRANSLATIONS = {
     btn_open_guide: 'Buka Panduan Pengguna (BM / EN)',
     user_guide_modal_title: 'Panduan Pengguna & Manual',
     user_guide_modal_sub: 'Panduan lengkap & panduan operasi sistem',
-    guide_lang_label: 'Pilihan Bahasa Panduan:'
+    guide_lang_label: 'Pilihan Bahasa Panduan:',
+
+    // Team & Suppliers Directory and Dispatch
+    team_dir_title: 'Pasukan Penyelenggaraan & Pembekal',
+    team_dir_subtitle: 'Urus tukang cuci, juruteknik, tukang baiki & pembekal',
+    add_person_btn: '+ Tambah Kenalan',
+    btn_team_suppliers: '👷 Pasukan & Pembekal',
+    btn_service_supply_alert: '🛠️ Notis Servis & Bekalan',
+    contact_name_label: 'Nama Kenalan / Pekerja',
+    contact_category_label: 'Kategori Servis / Peranan',
+    contact_phone_label: 'Nombor WhatsApp',
+    contact_company_label: 'Nama Syarikat / Kedai (Pilihan)',
+    contact_notes_label: 'Kadar Caj, Skop Kerja & Nota',
+    contact_modal_title_new: 'Tambah Pasukan / Pembekal',
+    contact_modal_title_edit: 'Kemaskini Butiran Kenalan',
+    save_contact_btn: 'Simpan Kenalan',
+    dispatch_modal_title: 'WhatsApp Notis Servis & Bekalan',
+    dispatch_modal_sub: 'Hantar arahan kepada pencuci, juruteknik atau tempah bekalan',
+    dispatch_recipient_label: 'Hantar WhatsApp Kepada',
+    dispatch_property_label: 'Unit Homestay Terlibat',
+    dispatch_type_label: 'Jenis Servis / Tugasan',
+    dispatch_urgency_label: 'Tahap Keperluan',
+    dispatch_details_label: 'Arahan Kerja / Baiki / Tempahan',
+    dispatch_include_pin: 'Sertakan Kod PIN Pintu & Akses',
+    btn_copy_text: 'Salin Teks',
+    btn_send_wa_direct: 'Hantar melalui WhatsApp',
+    cat_cleaner: '🧹 Tukang Cuci / Pasukan Kemas',
+    cat_aircond: '❄️ Pakar Servis Aircond',
+    cat_plumber: '🔧 Tukang Paip',
+    cat_electrician: '⚡ Juruelektrik / Pendawaian',
+    cat_handyman: '🔨 Baiki Am / Tukang Rumah',
+    cat_linen_supplier: '🧺 Pembekal Linen & Dobi',
+    cat_gas_supplier: '⛽ Pembekal Gas & Keperluan',
+    cat_locksmith: '🔐 Tukang Kunci / Smart Lock',
+    cat_other: '📦 Kontraktor / Pembekal Lain'
   }
 };
 
@@ -647,6 +782,7 @@ const INITIAL_PROPERTIES = [
     propType: 'entire',
     roomNo: 'Whole Unit (3-Bedroom)',
     address: 'Unit 12-05, Seaview Residences, Jalan Pantai 1',
+    gpsLocation: 'https://maps.google.com/?q=3.1390,101.6869',
     wifiName: 'SunsetVilla_HighSpeed',
     wifiPass: 'oceanbreeze2026',
     doorCode: '5829#',
@@ -663,6 +799,7 @@ const INITIAL_PROPERTIES = [
     propType: 'room_master',
     roomNo: 'Bilik Master (Attached Bathroom)',
     address: 'Lot 45, Green Hills Sanctuary, Cameron View',
+    gpsLocation: 'https://maps.google.com/?q=4.4721,101.3789',
     wifiName: 'VillaImpian_5G',
     wifiPass: 'freshcool99',
     doorCode: '1122#',
@@ -679,6 +816,7 @@ const INITIAL_PROPERTIES = [
     propType: 'room_medium',
     roomNo: 'Bilik 2',
     address: 'Lot 45, Green Hills Sanctuary, Cameron View',
+    gpsLocation: 'https://maps.google.com/?q=4.4721,101.3789',
     wifiName: 'VillaImpian_5G',
     wifiPass: 'freshcool99',
     doorCode: '1123#',
@@ -696,6 +834,7 @@ let appState = {
   bookings: [],
   turnovers: [],
   expenses: [],
+  contacts: [],
   settings: { ...DEFAULT_SETTINGS },
   isLicensed: false,
   isMasterAdmin: false,
@@ -704,8 +843,13 @@ let appState = {
   activeTab: 'dashboard',
   currentCalDate: new Date(),
   selectedCalDate: new Date().toISOString().split('T')[0],
+  calListingMode: 'incoming',
   activeWaBooking: null,
-  activeWaTemplate: 'confirm'
+  activeWaTemplate: 'confirm',
+  activeDispatchRecipientId: null,
+  activeDispatchPropertyId: null,
+  activeDispatchService: 'turnover_clean',
+  activeDispatchTurnover: null
 };
 
 // ==========================================================================
@@ -765,6 +909,7 @@ function loadFromStorage() {
     const savedBookings = localStorage.getItem(STORAGE_KEYS.BOOKINGS);
     const savedTurnovers = localStorage.getItem(STORAGE_KEYS.TURNOVERS);
     const savedExpenses = localStorage.getItem(STORAGE_KEYS.EXPENSES);
+    const savedContacts = localStorage.getItem(STORAGE_KEYS.CONTACTS);
     const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
     const savedLicense = localStorage.getItem(STORAGE_KEYS.LICENSE);
 
@@ -772,6 +917,17 @@ function loadFromStorage() {
     if (savedBookings) appState.bookings = JSON.parse(savedBookings);
     if (savedTurnovers) appState.turnovers = JSON.parse(savedTurnovers);
     if (savedExpenses) appState.expenses = JSON.parse(savedExpenses);
+    
+    if (savedContacts) {
+      try {
+        appState.contacts = JSON.parse(savedContacts);
+      } catch (e) {
+        appState.contacts = [...DEFAULT_CONTACTS];
+      }
+    } else {
+      appState.contacts = [...DEFAULT_CONTACTS];
+    }
+
     if (savedSettings) appState.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
     
     if (savedLicense) {
@@ -803,6 +959,7 @@ function runDataMigrations() {
         bookings: appState.bookings,
         turnovers: appState.turnovers,
         expenses: appState.expenses,
+        contacts: appState.contacts,
         settings: appState.settings,
         licenseKey: appState.licenseKey,
         isLicensed: appState.isLicensed,
@@ -831,6 +988,20 @@ function runDataMigrations() {
         });
       }
 
+      // Ensure contacts array exists
+      if (!Array.isArray(appState.contacts) || appState.contacts.length === 0) {
+        const savedContacts = localStorage.getItem(STORAGE_KEYS.CONTACTS);
+        if (savedContacts) {
+          try {
+            appState.contacts = JSON.parse(savedContacts);
+          } catch(e) {
+            appState.contacts = [...DEFAULT_CONTACTS];
+          }
+        } else {
+          appState.contacts = [...DEFAULT_CONTACTS];
+        }
+      }
+
       // Ensure settings have default language
       if (!appState.settings.language) {
         appState.settings.language = 'en';
@@ -857,6 +1028,7 @@ function saveToStorage() {
   localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(appState.bookings));
   localStorage.setItem(STORAGE_KEYS.TURNOVERS, JSON.stringify(appState.turnovers));
   localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(appState.expenses));
+  localStorage.setItem(STORAGE_KEYS.CONTACTS, JSON.stringify(appState.contacts));
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(appState.settings));
   if (appState.isLicensed && appState.licenseKey) {
     localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: appState.licenseKey, activatedAt: new Date().toISOString() }));
@@ -1161,6 +1333,8 @@ function seedDemoData() {
     }
   ];
 
+  appState.contacts = [...DEFAULT_CONTACTS];
+
   saveToStorage();
   showToast('Demo data loaded with 2 homestays & sample bookings!');
 }
@@ -1212,6 +1386,15 @@ function setupEventListeners() {
   document.getElementById('calNextMonth').addEventListener('click', () => changeCalMonth(1));
   document.getElementById('btnQuickBookForDate').addEventListener('click', () => {
     openBookingModal(null, appState.selectedCalDate);
+  });
+  document.getElementById('calTabIncoming')?.addEventListener('click', () => {
+    appState.calListingMode = 'incoming';
+    document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
+    renderCalendarListing();
+  });
+  document.getElementById('calTabSelected')?.addEventListener('click', () => {
+    appState.calListingMode = 'selected';
+    renderCalendarListing();
   });
 
   // Bookings Search & Filter
@@ -1347,10 +1530,44 @@ function setupEventListeners() {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.wa-tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      appState.activeWaTemplate = btn.getAttribute('data-template');
+      const tmpl = btn.getAttribute('data-template');
+      appState.activeWaTemplate = tmpl;
+
+      // Toggle quotation controls
+      const quotationControls = document.getElementById('waQuotationControls');
+      if (quotationControls) {
+        quotationControls.classList.toggle('hidden', tmpl !== 'quotation');
+      }
+
+      // Toggle monthly controls
+      const monthlyControls = document.getElementById('waMonthlyControls');
+      if (monthlyControls) {
+        const isMonthly = appState.activeWaBooking?.rentalType === 'monthly';
+        monthlyControls.classList.toggle('hidden', !(isMonthly && (tmpl === 'monthly_invoice' || tmpl === 'monthly_rent_receipt')));
+      }
+
       renderWhatsAppPreview();
     });
   });
+
+  document.getElementById('waQuotationValidityInput')?.addEventListener('input', (e) => {
+    if (appState.activeWaBooking) {
+      appState.activeWaBooking.quotationValidityDays = parseInt(e.target.value) || 3;
+    }
+    renderWhatsAppPreview();
+  });
+
+  // Booking Form Status Change -> Toggle Quotation Validity Group
+  const bookingStatusSel = document.getElementById('bookingStatusSelect');
+  if (bookingStatusSel) {
+    bookingStatusSel.addEventListener('change', () => {
+      const validityGroup = document.getElementById('bookingQuotationValidityGroup');
+      if (validityGroup) {
+        validityGroup.style.display = bookingStatusSel.value === 'quotation' ? 'block' : 'none';
+      }
+    });
+  }
+
   document.getElementById('btnCopyWaText').addEventListener('click', handleCopyWaText);
   document.getElementById('btnSendWaDirect').addEventListener('click', handleSendWaDirect);
 
@@ -1381,6 +1598,56 @@ function setupEventListeners() {
   const btnSafetySnap = document.getElementById('btnDownloadSafetySnapshot');
   if (btnSafetySnap) btnSafetySnap.addEventListener('click', downloadSafetySnapshot);
 
+  // Contact Modal & Team Directory
+  const btnAddContact = document.getElementById('btnAddNewContactModal');
+  if (btnAddContact) btnAddContact.addEventListener('click', () => openContactModal());
+
+  const btnCloseContact = document.getElementById('btnCloseContactModal');
+  if (btnCloseContact) btnCloseContact.addEventListener('click', closeAllModals);
+
+  const btnCancelContact = document.getElementById('btnCancelContact');
+  if (btnCancelContact) btnCancelContact.addEventListener('click', closeAllModals);
+
+  const contactForm = document.getElementById('contactForm');
+  if (contactForm) contactForm.addEventListener('submit', handleSaveContact);
+
+  // Turnovers Quick Actions
+  const btnTurnoverDir = document.getElementById('btnTurnoverTeamDir');
+  if (btnTurnoverDir) {
+    btnTurnoverDir.addEventListener('click', () => {
+      switchTab('settings');
+      setTimeout(() => {
+        document.getElementById('settingsContactList')?.scrollIntoView({ behavior: 'smooth' });
+      }, 150);
+    });
+  }
+
+  const btnTurnoverAlert = document.getElementById('btnTurnoverServiceAlert');
+  if (btnTurnoverAlert) {
+    btnTurnoverAlert.addEventListener('click', () => openServiceDispatchModal());
+  }
+
+  // Service & Supply Dispatch Modal
+  const btnCloseDispatch = document.getElementById('btnCloseServiceDispatchModal');
+  if (btnCloseDispatch) btnCloseDispatch.addEventListener('click', closeAllModals);
+
+  [
+    'dispatchRecipientSelect', 'dispatchPropertySelect', 'dispatchServiceTypeSelect',
+    'dispatchUrgencySelect', 'dispatchIncludePinCheck'
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', renderServiceDispatchPreview);
+  });
+
+  const dispatchDetails = document.getElementById('dispatchDetailsInput');
+  if (dispatchDetails) dispatchDetails.addEventListener('input', renderServiceDispatchPreview);
+
+  const btnCopyDispatch = document.getElementById('btnCopyDispatchText');
+  if (btnCopyDispatch) btnCopyDispatch.addEventListener('click', handleCopyServiceDispatchText);
+
+  const btnSendDispatch = document.getElementById('btnSendDispatchWa');
+  if (btnSendDispatch) btnSendDispatch.addEventListener('click', handleSendServiceDispatchWa);
+
   // Finance Selectors
   document.getElementById('financeMonthSelect').addEventListener('change', renderFinancesTab);
   document.getElementById('financeYearSelect').addEventListener('change', renderFinancesTab);
@@ -1406,6 +1673,10 @@ function applyDepositPreset(pct, targetStatus) {
   document.getElementById('bookingDepositPaid').value = depositAmount;
   if (targetStatus) {
     document.getElementById('bookingStatusSelect').value = targetStatus;
+    const validityGroup = document.getElementById('bookingQuotationValidityGroup');
+    if (validityGroup) {
+      validityGroup.style.display = targetStatus === 'quotation' ? 'block' : 'none';
+    }
   }
 }
 
@@ -1510,6 +1781,7 @@ function applyLanguageUI() {
     const template = btn.getAttribute('data-template');
     if (template === 'quotation') btn.textContent = t('wa_tab_quotation');
     else if (template === 'deposit_receipt') btn.textContent = t('wa_tab_deposit');
+    else if (template === 'checkin_reminder') btn.textContent = t('wa_tab_checkin');
     else if (template === 'full_receipt') btn.textContent = t('wa_tab_full');
     else if (template === 'monthly_invoice') btn.textContent = t('wa_tab_invoice');
     else if (template === 'monthly_rent_receipt') btn.textContent = t('wa_tab_rent_receipt');
@@ -2157,13 +2429,14 @@ function renderCalendarTab() {
     legend.appendChild(item);
   });
 
-  // Render Selected Day Details
-  renderSelectedDayDetails();
+  // Render Calendar Listing (Incoming Bookings or Selected Day)
+  renderCalendarListing();
 }
 
 function createCalDayCell(dayNum, dateStr, isOtherMonth, bookings, todayStr) {
+  const isSelected = dateStr === appState.selectedCalDate && appState.calListingMode === 'selected';
   const cell = document.createElement('div');
-  cell.className = `cal-day-cell ${isOtherMonth ? 'other-month' : ''} ${dateStr === todayStr ? 'today' : ''} ${dateStr === appState.selectedCalDate ? 'selected' : ''}`;
+  cell.className = `cal-day-cell ${isOtherMonth ? 'other-month' : ''} ${dateStr === todayStr ? 'today' : ''} ${isSelected ? 'selected' : ''}`;
   cell.setAttribute('data-date', dateStr);
 
   const numSpan = document.createElement('span');
@@ -2171,10 +2444,22 @@ function createCalDayCell(dayNum, dateStr, isOtherMonth, bookings, todayStr) {
   numSpan.textContent = dayNum;
   cell.appendChild(numSpan);
 
-  // Find bookings active on this date
-  const dayBookings = bookings.filter(b => b.status !== 'cancelled' && b.checkIn <= dateStr && b.checkOut > dateStr);
+  // Find bookings active on this date (exclude cancelled)
+  const dayBookings = bookings.filter(b => {
+    if (b.status === 'cancelled') return false;
+    if (b.checkIn === b.checkOut) {
+      return b.checkIn === dateStr;
+    }
+    return b.checkIn <= dateStr && b.checkOut > dateStr;
+  });
 
   if (dayBookings.length > 0) {
+    cell.classList.add('has-booking');
+    const isConfirmedOrBooked = dayBookings.some(b => ['booked', 'confirmed', 'checked-in', 'active', 'blocked'].includes(b.status));
+    if (isConfirmedOrBooked) {
+      cell.classList.add('is-confirmed-booked');
+    }
+
     const dotsContainer = document.createElement('div');
     dotsContainer.className = 'cal-dots-container';
 
@@ -2182,7 +2467,11 @@ function createCalDayCell(dayNum, dateStr, isOtherMonth, bookings, todayStr) {
       const prop = getPropertyById(b.propertyId);
       const dot = document.createElement('span');
       dot.className = 'cal-stay-dot';
-      dot.style.background = prop.color || '#0284c7';
+      dot.style.backgroundColor = prop.color || '#0284c7';
+      dot.title = `${prop.name}: ${b.guestName} (${b.status})`;
+      if (b.status === 'quotation') {
+        dot.classList.add('is-quotation');
+      }
       dotsContainer.appendChild(dot);
     });
 
@@ -2190,76 +2479,319 @@ function createCalDayCell(dayNum, dateStr, isOtherMonth, bookings, todayStr) {
   }
 
   cell.addEventListener('click', () => {
-    appState.selectedCalDate = dateStr;
-    document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
-    cell.classList.add('selected');
-    renderSelectedDayDetails();
+    if (appState.selectedCalDate === dateStr && appState.calListingMode === 'selected') {
+      // Tapping selected date toggles back to all incoming
+      appState.calListingMode = 'incoming';
+      document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
+    } else {
+      appState.selectedCalDate = dateStr;
+      appState.calListingMode = 'selected';
+      document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
+      cell.classList.add('selected');
+    }
+    renderCalendarListing();
   });
 
   return cell;
 }
 
-function renderSelectedDayDetails() {
-  const dateStr = appState.selectedCalDate;
-  const d = new Date(dateStr + 'T00:00:00');
-  const locale = appState.settings.language === 'bm' ? 'ms-MY' : 'en-US';
-  const formattedDate = d.toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
-  
-  document.getElementById('selectedDayTitle').textContent = formattedDate;
+function getIncomingBookings() {
+  const allBookings = getFilteredBookings();
+  const todayStr = new Date().toISOString().split('T')[0];
 
-  const list = document.getElementById('selectedDayBookingsList');
-  list.innerHTML = '';
-
-  const dayBookings = getFilteredBookings().filter(b => b.status !== 'cancelled' && b.checkIn <= dateStr && b.checkOut >= dateStr);
-
-  if (dayBookings.length === 0) {
-    list.innerHTML = `
-      <div class="empty-hint">
-        <i class="fa-solid fa-calendar-check" style="font-size: 20px; color: var(--success); margin-bottom:4px; display:block;"></i>
-        ${t('no_bookings_date')}
-      </div>
-    `;
-    return;
-  }
-
-  dayBookings.forEach(b => {
-    const prop = getPropertyById(b.propertyId);
-    const isCheckInDay = b.checkIn === dateStr;
-    const isCheckOutDay = b.checkOut === dateStr;
-
-    let badgeText = appState.settings.language === 'bm' ? 'Sedang Menginap' : 'In-Stay';
-    if (isCheckInDay) badgeText = appState.settings.language === 'bm' ? 'Daftar Masuk' : 'Check-In Day';
-    if (isCheckOutDay) badgeText = appState.settings.language === 'bm' ? 'Daftar Keluar' : 'Check-Out Day';
-
-    const card = document.createElement('div');
-    card.className = 'booking-card';
-    card.style.borderLeft = `4px solid ${prop.color}`;
-    card.innerHTML = `
-      <div class="booking-card-top">
-        <span class="booking-prop-badge" style="background:${prop.color}20; color:${prop.color};">
-          <span class="property-dot" style="background:${prop.color};"></span> ${prop.name}
-        </span>
-        <span class="booking-channel-badge">${badgeText}</span>
-      </div>
-      <h3 class="booking-guest-title">${b.guestName} (${b.guestCount} ${t('guests')})</h3>
-      <p class="booking-dates-row"><i class="fa-regular fa-calendar"></i> ${b.checkIn} → ${b.checkOut} (${b.nights} ${t('nights')})</p>
-      <div class="booking-financial-pill">
-        <span>${t('total')}: <strong>${formatCurrency(b.totalAmount)}</strong></span>
-        <span>${t('balance')}: <strong style="color:${b.balance > 0 ? 'var(--danger)' : 'var(--success)'};">${formatCurrency(b.balance)}</strong></span>
-      </div>
-      <div class="booking-actions-row">
-        <button class="btn btn-whatsapp btn-xs btn-open-wa" data-bid="${b.id}">
-          <i class="fa-brands fa-whatsapp"></i> ${t('btn_wa')}
-        </button>
-        <button class="btn btn-outline btn-xs btn-edit-booking" data-bid="${b.id}">
-          <i class="fa-solid fa-pen"></i> ${t('btn_edit')}
-        </button>
-      </div>
-    `;
-    list.appendChild(card);
+  // Incoming bookings: active in-house or future check-ins, exclude cancelled and past check-outs
+  const incoming = allBookings.filter(b => {
+    if (b.status === 'cancelled') return false;
+    return b.checkOut >= todayStr;
   });
 
-  list.querySelectorAll('.btn-open-wa').forEach(btn => {
+  // Sort strictly in order of nearest dates:
+  incoming.sort((a, b) => {
+    const aInHouse = (a.checkIn <= todayStr && a.checkOut >= todayStr);
+    const bInHouse = (b.checkIn <= todayStr && b.checkOut >= todayStr);
+
+    if (aInHouse && bInHouse) {
+      if (a.checkIn !== b.checkIn) return a.checkIn.localeCompare(b.checkIn);
+      return a.checkOut.localeCompare(b.checkOut);
+    }
+    if (aInHouse && !bInHouse) return -1;
+    if (!aInHouse && bInHouse) return 1;
+
+    // Both future check-ins: sort by earliest checkIn date first (ascending)
+    if (a.checkIn !== b.checkIn) {
+      return a.checkIn.localeCompare(b.checkIn);
+    }
+    return a.checkOut.localeCompare(b.checkOut);
+  });
+
+  return incoming;
+}
+
+function renderCalendarListing() {
+  const mode = appState.calListingMode || 'incoming';
+  const list = document.getElementById('selectedDayBookingsList');
+  if (!list) return;
+  list.innerHTML = '';
+
+  const incomingBookings = getIncomingBookings();
+  const todayStr = new Date().toISOString().split('T')[0];
+  const lang = appState.settings.language || 'en';
+  const isBM = lang === 'bm';
+
+  // Update tabs
+  const tabIncoming = document.getElementById('calTabIncoming');
+  const tabSelected = document.getElementById('calTabSelected');
+  const tabSelectedLabel = document.getElementById('calSelectedTabLabel');
+
+  if (tabIncoming && tabSelected) {
+    if (mode === 'incoming') {
+      tabIncoming.classList.add('active');
+      tabSelected.classList.remove('active');
+    } else {
+      tabIncoming.classList.remove('active');
+      tabSelected.classList.add('active');
+    }
+
+    if (tabSelectedLabel) {
+      if (appState.selectedCalDate) {
+        const d = new Date(appState.selectedCalDate + 'T00:00:00');
+        const dStr = d.toLocaleDateString(isBM ? 'ms-MY' : 'en-US', { day: 'numeric', month: 'short' });
+        tabSelectedLabel.textContent = `🎯 ${dStr}`;
+      } else {
+        tabSelectedLabel.textContent = isBM ? '🎯 Tarikh Dipilih' : '🎯 Selected Date';
+      }
+    }
+  }
+
+  const titleEl = document.getElementById('selectedDayTitle');
+  const subtitleEl = document.querySelector('#selectedDayDetails .card-subtitle');
+
+  if (mode === 'incoming') {
+    if (subtitleEl) {
+      subtitleEl.textContent = isBM ? 'Susunan mengikut tarikh terdekat' : 'Ordered by nearest dates';
+    }
+    if (titleEl) {
+      titleEl.innerHTML = `<i class="fa-solid fa-calendar-days" style="color:var(--primary); margin-right:6px;"></i>${isBM ? 'Tempahan Akan Datang' : 'Incoming Bookings'} <span class="badge-count" style="font-size:12px; font-weight:700; background:var(--primary-light); color:var(--primary); padding:2px 8px; border-radius:12px; margin-left:6px; vertical-align:middle;">${incomingBookings.length}</span>`;
+    }
+
+    if (incomingBookings.length === 0) {
+      list.innerHTML = `
+        <div class="empty-hint" style="padding: 24px 16px; text-align: center;">
+          <i class="fa-solid fa-calendar-xmark" style="font-size: 28px; color: var(--text-muted); opacity: 0.5; margin-bottom: 8px; display: block;"></i>
+          <p style="font-size: 14px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">
+            ${isBM ? 'Tiada Tempahan Akan Datang' : 'No Incoming Bookings'}
+          </p>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px;">
+            ${isBM ? 'Semua unit kini tiada tempahan baharu. Tekan + untuk tambah tempahan.' : 'All units currently have no upcoming bookings. Tap + to add a booking.'}
+          </p>
+          <button class="btn btn-primary btn-sm" id="btnCalAddBookingEmpty">
+            <i class="fa-solid fa-plus"></i> ${isBM ? 'Tambah Tempahan' : 'Add Booking'}
+          </button>
+        </div>
+      `;
+      const emptyAddBtn = document.getElementById('btnCalAddBookingEmpty');
+      if (emptyAddBtn) emptyAddBtn.addEventListener('click', () => openBookingModal());
+      return;
+    }
+
+    // Render incoming bookings cards in order of nearest dates
+    incomingBookings.forEach(b => {
+      const card = createCalendarBookingCard(b, todayStr, isBM, false);
+      list.appendChild(card);
+    });
+
+  } else {
+    // Mode is 'selected'
+    const dateStr = appState.selectedCalDate || todayStr;
+    const d = new Date(dateStr + 'T00:00:00');
+    const formattedDate = d.toLocaleDateString(isBM ? 'ms-MY' : 'en-US', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+
+    if (subtitleEl) {
+      subtitleEl.textContent = isBM ? 'Tarikh Dipilih' : 'Selected Date';
+    }
+    if (titleEl) {
+      titleEl.innerHTML = `<i class="fa-regular fa-calendar-check" style="color:var(--primary); margin-right:6px;"></i>${formattedDate}`;
+    }
+
+    const dayBookings = getFilteredBookings().filter(b => b.status !== 'cancelled' && b.checkIn <= dateStr && b.checkOut >= dateStr);
+
+    if (dayBookings.length === 0) {
+      list.innerHTML = `
+        <div class="empty-hint" style="padding: 24px 16px; text-align: center;">
+          <i class="fa-solid fa-calendar-check" style="font-size: 28px; color: var(--success); margin-bottom: 8px; display: block;"></i>
+          <p style="font-size: 14.5px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
+            ${formattedDate}
+          </p>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+            ${isBM ? 'Tiada tempahan pada tarikh ini. Unit kosong & sedia ditempah.' : 'No bookings for this date. Unit is vacant & available.'}
+          </p>
+          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-sm" id="btnQuickBookForDateEmpty">
+              <i class="fa-solid fa-plus"></i> ${isBM ? 'Tempah Tarikh Ini' : 'Book This Date'}
+            </button>
+            <button class="btn btn-outline btn-sm" id="btnSwitchToIncoming">
+              <i class="fa-regular fa-clock"></i> ${isBM ? '📅 Semua Akan Datang' : '📅 All Incoming Bookings'}
+            </button>
+          </div>
+        </div>
+      `;
+
+      const qbBtn = document.getElementById('btnQuickBookForDateEmpty');
+      if (qbBtn) qbBtn.addEventListener('click', () => openBookingModal(null, dateStr));
+
+      const swBtn = document.getElementById('btnSwitchToIncoming');
+      if (swBtn) swBtn.addEventListener('click', () => {
+        appState.calListingMode = 'incoming';
+        document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
+        renderCalendarListing();
+      });
+      return;
+    }
+
+    dayBookings.forEach(b => {
+      const card = createCalendarBookingCard(b, todayStr, isBM, true, dateStr);
+      list.appendChild(card);
+    });
+  }
+
+  // Bind actions
+  attachCalendarCardActions(list);
+}
+
+function createCalendarBookingCard(b, todayStr, isBM, isSelectedDayMode, selectedDateStr = null) {
+  const prop = getPropertyById(b.propertyId);
+  const card = document.createElement('div');
+  card.className = 'booking-card cal-listing-booking-card';
+  card.style.borderLeft = `4px solid ${prop.color}`;
+
+  const proximity = getBookingProximityInfo(b, todayStr, isBM);
+  let badgeText = proximity.label;
+  let badgeClass = proximity.badgeClass;
+
+  if (isSelectedDayMode && selectedDateStr) {
+    if (b.checkIn === selectedDateStr) {
+      badgeText = isBM ? '📥 Daftar Masuk' : '📥 Check-In Day';
+      badgeClass = 'cal-prox-today';
+    } else if (b.checkOut === selectedDateStr) {
+      badgeText = isBM ? '📤 Daftar Keluar' : '📤 Check-Out Day';
+      badgeClass = 'cal-prox-checkout';
+    } else {
+      badgeText = isBM ? '🔑 Sedang Menginap' : '🔑 In-Stay';
+      badgeClass = 'cal-prox-instay';
+    }
+  }
+
+  // Status tag
+  let statusBadge = '';
+  if (b.status === 'confirmed') {
+    statusBadge = `<span class="badge-pill badge-confirmed">${isBM ? '🟢 Sah' : '🟢 Confirmed'}</span>`;
+  } else if (b.status === 'booked') {
+    statusBadge = `<span class="badge-pill badge-booked">${isBM ? '🟡 Ditempah' : '🟡 Booked'}</span>`;
+  } else if (b.status === 'checked-in') {
+    statusBadge = `<span class="badge-pill badge-inhouse">${isBM ? '🔑 Menginap' : '🔑 In-House'}</span>`;
+  } else if (b.status === 'quotation') {
+    statusBadge = `<span class="badge-pill badge-quotation">${isBM ? '📋 Sebut Harga' : '📋 Quotation'}</span>`;
+  }
+
+  const isCheckinReminderEligible = (b.status === 'booked' || b.status === 'confirmed') && b.checkIn >= todayStr;
+
+  card.innerHTML = `
+    <div class="booking-card-top">
+      <span class="booking-prop-badge" style="background:${prop.color}20; color:${prop.color};">
+        <span class="property-dot" style="background:${prop.color};"></span> ${prop.name}
+      </span>
+      <div style="display:flex; gap:6px; align-items:center;">
+        ${statusBadge}
+        <span class="cal-proximity-badge ${badgeClass}">${badgeText}</span>
+      </div>
+    </div>
+    <h3 class="booking-guest-title">${b.guestName} <span style="font-size:13px; font-weight:600; color:var(--text-muted);">(${b.guestCount || 1} ${t('guests')})</span></h3>
+    <p class="booking-dates-row">
+      <i class="fa-regular fa-calendar"></i> <strong>${b.checkIn}</strong> → <strong>${b.checkOut}</strong> (${b.nights || 1} ${t('nights')})
+    </p>
+    <div class="booking-financial-pill">
+      <span>${t('total')}: <strong>${formatCurrency(b.totalAmount)}</strong></span>
+      <span>${t('balance')}: <strong style="color:${b.balance > 0 ? 'var(--danger)' : 'var(--success)'};">${formatCurrency(b.balance)}</strong></span>
+    </div>
+    <div class="booking-actions-row" style="flex-wrap: wrap;">
+      <button class="btn btn-whatsapp btn-xs btn-open-wa" data-bid="${b.id}">
+        <i class="fa-brands fa-whatsapp"></i> ${t('btn_wa')}
+      </button>
+      ${isCheckinReminderEligible ? `
+      <button class="btn btn-primary btn-xs btn-open-wa-reminder" data-bid="${b.id}" title="${isBM ? 'Hantar peringatan daftar masuk' : 'Send check-in reminder'}">
+        <i class="fa-regular fa-bell"></i> ${isBM ? 'Peringatan Masuk' : 'Check-In Reminder'}
+      </button>
+      ` : ''}
+      <button class="btn btn-outline btn-xs btn-edit-booking" data-bid="${b.id}">
+        <i class="fa-solid fa-pen"></i> ${t('btn_edit')}
+      </button>
+    </div>
+  `;
+
+  return card;
+}
+
+function getBookingProximityInfo(b, todayStr, isBM) {
+  const checkInDate = new Date(b.checkIn + 'T00:00:00');
+  const checkOutDate = new Date(b.checkOut + 'T00:00:00');
+  const todayDate = new Date(todayStr + 'T00:00:00');
+
+  const diffMs = checkInDate - todayDate;
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (b.checkIn <= todayStr && b.checkOut >= todayStr) {
+    if (b.checkIn === todayStr) {
+      return {
+        label: isBM ? '🟢 Masuk Hari Ini' : '🟢 Check-In Today',
+        badgeClass: 'cal-prox-today'
+      };
+    }
+    if (b.checkOut === todayStr) {
+      return {
+        label: isBM ? '🔴 Keluar Hari Ini' : '🔴 Check-Out Today',
+        badgeClass: 'cal-prox-checkout'
+      };
+    }
+    const remDays = Math.round((checkOutDate - todayDate) / (1000 * 60 * 60 * 24));
+    return {
+      label: isBM ? `🔑 Menginap (Baki ${remDays} mlm)` : `🔑 In-Stay (${remDays} nights left)`,
+      badgeClass: 'cal-prox-instay'
+    };
+  }
+
+  if (diffDays === 1) {
+    return {
+      label: isBM ? '🟡 Esok (Daftar Masuk)' : '🟡 Tomorrow (Check-In)',
+      badgeClass: 'cal-prox-tomorrow'
+    };
+  }
+  if (diffDays === 2) {
+    return {
+      label: isBM ? '⏳ 2 Hari Lagi' : '⏳ In 2 Days',
+      badgeClass: 'cal-prox-soon'
+    };
+  }
+  if (diffDays > 2 && diffDays <= 7) {
+    return {
+      label: isBM ? `📅 ${diffDays} Hari Lagi` : `📅 In ${diffDays} Days`,
+      badgeClass: 'cal-prox-soon'
+    };
+  }
+  if (diffDays > 7) {
+    return {
+      label: isBM ? `📅 Dalam ${diffDays} Hari` : `📅 In ${diffDays} Days`,
+      badgeClass: 'cal-prox-future'
+    };
+  }
+
+  return {
+    label: isBM ? 'Akan Datang' : 'Upcoming',
+    badgeClass: 'cal-prox-future'
+  };
+}
+
+function attachCalendarCardActions(container) {
+  container.querySelectorAll('.btn-open-wa').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => x.id === bid);
@@ -2267,13 +2799,25 @@ function renderSelectedDayDetails() {
     });
   });
 
-  list.querySelectorAll('.btn-edit-booking').forEach(btn => {
+  container.querySelectorAll('.btn-open-wa-reminder').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) openWhatsAppModal(b, 'checkin_reminder');
+    });
+  });
+
+  container.querySelectorAll('.btn-edit-booking').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => x.id === bid);
       if (b) openBookingModal(b);
     });
   });
+}
+
+function renderSelectedDayDetails() {
+  renderCalendarListing();
 }
 
 // ==========================================================================
@@ -2431,6 +2975,9 @@ function renderBookingsTab() {
           <button class="btn btn-whatsapp btn-xs btn-open-wa" data-bid="${b.id}" data-wa="deposit_receipt">
             <i class="fa-solid fa-receipt"></i> ${t('btn_send_deposit_receipt')}
           </button>
+          <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="checkin_reminder" style="color:var(--primary); font-weight:700;">
+            <i class="fa-solid fa-bell"></i> ${t('btn_checkin_reminder')}
+          </button>
           ${b.rentalType === 'monthly' ? `
             <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="monthly_invoice">
               <i class="fa-solid fa-file-invoice"></i> ${t('btn_send_invoice')}
@@ -2448,6 +2995,9 @@ function renderBookingsTab() {
         ${b.status === 'confirmed' ? `
           <button class="btn btn-whatsapp btn-xs btn-open-wa" data-bid="${b.id}" data-wa="full_receipt">
             <i class="fa-solid fa-key"></i> ${t('btn_send_full_receipt')}
+          </button>
+          <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="checkin_reminder" style="color:var(--primary); font-weight:700;">
+            <i class="fa-solid fa-bell"></i> ${t('btn_checkin_reminder')}
           </button>
           <button class="btn btn-outline btn-xs btn-mark-checkin" data-bid="${b.id}">
             <i class="fa-solid fa-door-open" style="color:var(--primary);"></i> ${t('btn_checkin')}
@@ -2895,6 +3445,12 @@ function renderSettingsTab() {
   document.getElementById('settingBankAccHolderInput').value = appState.settings.bankAccHolder || '';
   document.getElementById('settingDuitNowInput').value = appState.settings.duitNow || '';
 
+  const quotationValidityInput = document.getElementById('settingQuotationValidityInput');
+  if (quotationValidityInput) quotationValidityInput.value = appState.settings.quotationValidityDays || 3;
+
+  const standardNotesInput = document.getElementById('settingStandardNotesInput');
+  if (standardNotesInput) standardNotesInput.value = appState.settings.standardNotes || '';
+
   const propList = document.getElementById('settingsPropertyList');
   propList.innerHTML = '';
 
@@ -2927,6 +3483,7 @@ function renderSettingsTab() {
             ${prop.name}
             <span style="font-size:10px; font-weight:700; background:var(--bg-surface-subtle); padding:2px 6px; border-radius:999px; color:var(--primary);">${typeLabel}</span>
           </h4>
+          <p><i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> ${prop.address || (isBM ? 'Alamat belum diisi' : 'No address set')}${prop.gpsLocation ? ` • <a href="${prop.gpsLocation}" target="_blank" style="color:var(--primary); font-weight:700; text-decoration:none;"><i class="fa-solid fa-map-location-dot"></i> GPS / Maps</a>` : ''}</p>
           <p>🔑 PIN: <strong>${prop.doorCode || (isBM ? 'Tiada' : 'None')}</strong> • 📶 WiFi: <strong>${prop.wifiName || (isBM ? 'Tiada' : 'None')}</strong></p>
           <p>${isBM ? 'Kadar' : 'Rate'}: ${formatCurrency(prop.defaultRate)}/${isBM ? 'malam' : 'night'} • ${isBM ? 'Pembersihan' : 'Clean fee'}: ${formatCurrency(prop.cleaningFee)}</p>
         </div>
@@ -3017,6 +3574,228 @@ function renderSettingsTab() {
 
   const verBadge = document.getElementById('appCurrentVersionBadge');
   if (verBadge) verBadge.textContent = `v${APP_VERSION}`;
+
+  // Render Maintenance Team & Suppliers Directory
+  renderSettingsContactList();
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(new RegExp('"', 'g'), '&quot;')
+    .replace(new RegExp("'", 'g'), '&#039;');
+}
+
+function getContactCategoryBadge(cat) {
+  const isBM = appState.settings.language === 'bm';
+  switch (cat) {
+    case 'cleaner':
+      return { label: isBM ? '🧹 Tukang Cuci' : '🧹 Cleaner', class: 'cat-cleaner' };
+    case 'aircond':
+      return { label: isBM ? '❄️ Juruteknik Aircond' : '❄️ Aircond Tech', class: 'cat-aircond' };
+    case 'plumber':
+      return { label: isBM ? '🔧 Tukang Paip' : '🔧 Plumber', class: 'cat-plumber' };
+    case 'electrician':
+      return { label: isBM ? '⚡ Juruelektrik' : '⚡ Electrician', class: 'cat-electrician' };
+    case 'handyman':
+      return { label: isBM ? '🔨 Baiki Am / Handyman' : '🔨 Handyman', class: 'cat-handyman' };
+    case 'linen_supplier':
+      return { label: isBM ? '🧺 Pembekal Linen & Dobi' : '🧺 Linen Supplier', class: 'cat-linen_supplier' };
+    case 'gas_supplier':
+      return { label: isBM ? '⛽ Pembekal Gas & Barang' : '⛽ Gas / Amenities', class: 'cat-gas_supplier' };
+    case 'locksmith':
+      return { label: isBM ? '🔐 Tukang Kunci' : '🔐 Locksmith', class: 'cat-locksmith' };
+    default:
+      return { label: isBM ? '📦 Vendor / Pembekal' : '📦 Contractor / Vendor', class: 'cat-other' };
+  }
+}
+
+function renderSettingsContactList() {
+  const container = document.getElementById('settingsContactList');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const isBM = appState.settings.language === 'bm';
+  const contacts = appState.contacts || [];
+
+  if (contacts.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:24px 16px; background:var(--bg-surface-subtle); border-radius:var(--radius-md); border:1px dashed var(--border-color);">
+        <i class="fa-solid fa-users-gear" style="font-size:28px; color:var(--text-muted); margin-bottom:8px;"></i>
+        <p style="font-size:13px; font-weight:700; color:var(--text-main); margin-bottom:4px;">${isBM ? 'Tiada kenalan / pembekal disimpan lagi' : 'No team members or suppliers added yet'}</p>
+        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">${isBM ? 'Simpan tukang cuci, juruteknik aircond, tukang paip dan pembekal untuk notis kerja pantas 1-klik WhatsApp.' : 'Save cleaners, aircond techs, plumbers & supply vendors for 1-click WhatsApp alerts.'}</p>
+        <button class="btn btn-primary btn-sm" id="btnSettingsAddFirstContact"><i class="fa-solid fa-plus"></i> ${isBM ? 'Tambah Kenalan Pertama' : 'Add First Contact'}</button>
+      </div>
+    `;
+    const addFirst = document.getElementById('btnSettingsAddFirstContact');
+    if (addFirst) addFirst.addEventListener('click', () => openContactModal());
+    return;
+  }
+
+  contacts.forEach(contact => {
+    const card = document.createElement('div');
+    card.className = 'contact-card';
+    const badgeInfo = getContactCategoryBadge(contact.category);
+    const cleanPhone = (contact.phone || '').replace(/[^0-9]/g, '');
+
+    card.innerHTML = `
+      <div class="contact-card-header">
+        <div>
+          <div class="contact-card-title">${escapeHtml(contact.name)}</div>
+          ${contact.company ? `<div class="contact-company-text"><i class="fa-solid fa-briefcase"></i> ${escapeHtml(contact.company)}</div>` : ''}
+        </div>
+        <span class="contact-category-badge ${badgeInfo.class}">
+          ${badgeInfo.label}
+        </span>
+      </div>
+
+      <div class="contact-card-body">
+        <a href="https://wa.me/${cleanPhone}" target="_blank" class="contact-phone-link">
+          <i class="fa-brands fa-whatsapp" style="color:var(--success);"></i> ${escapeHtml(contact.phone)}
+        </a>
+        ${contact.notes ? `<div class="contact-notes-text">${escapeHtml(contact.notes)}</div>` : ''}
+      </div>
+
+      <div class="contact-card-actions">
+        <button class="btn btn-whatsapp btn-xs btn-contact-dispatch" data-cid="${contact.id}" title="${isBM ? 'Hantar Notis Servis / Bekalan' : 'Dispatch Service / Supply'}">
+          <i class="fa-brands fa-whatsapp"></i> ${isBM ? 'Hantar Notis' : 'Dispatch Alert'}
+        </button>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-outline btn-xs btn-edit-contact" data-cid="${contact.id}" title="${t('edit')}">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="btn btn-danger-outline btn-xs btn-delete-contact" data-cid="${contact.id}" title="${t('delete')}">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+
+  // Action listeners
+  container.querySelectorAll('.btn-contact-dispatch').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const cid = e.currentTarget.getAttribute('data-cid');
+      const c = appState.contacts.find(x => x.id === cid);
+      if (c) openServiceDispatchModal(null, c.category, c.id);
+    });
+  });
+
+  container.querySelectorAll('.btn-edit-contact').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const cid = e.currentTarget.getAttribute('data-cid');
+      openContactModal(cid);
+    });
+  });
+
+  container.querySelectorAll('.btn-delete-contact').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const cid = e.currentTarget.getAttribute('data-cid');
+      handleDeleteContact(cid);
+    });
+  });
+}
+
+function openContactModal(contactId = null) {
+  const isBM = appState.settings.language === 'bm';
+  const modal = document.getElementById('contactModal');
+  const title = document.getElementById('contactModalTitle');
+  const idInput = document.getElementById('contactIdInput');
+  const nameInput = document.getElementById('contactNameInput');
+  const catSelect = document.getElementById('contactCategorySelect');
+  const phoneInput = document.getElementById('contactPhoneInput');
+  const compInput = document.getElementById('contactCompanyInput');
+  const notesInput = document.getElementById('contactNotesInput');
+
+  if (contactId) {
+    const contact = (appState.contacts || []).find(c => c.id === contactId);
+    if (contact) {
+      if (title) title.textContent = isBM ? 'Kemaskini Butiran Kenalan' : 'Edit Contact Details';
+      if (idInput) idInput.value = contact.id;
+      if (nameInput) nameInput.value = contact.name || '';
+      if (catSelect) catSelect.value = contact.category || 'cleaner';
+      if (phoneInput) phoneInput.value = contact.phone || '';
+      if (compInput) compInput.value = contact.company || '';
+      if (notesInput) notesInput.value = contact.notes || '';
+    }
+  } else {
+    if (title) title.textContent = isBM ? 'Tambah Pasukan / Pembekal' : 'Add Team Member / Supplier';
+    if (idInput) idInput.value = '';
+    if (nameInput) nameInput.value = '';
+    if (catSelect) catSelect.value = 'cleaner';
+    if (phoneInput) phoneInput.value = '';
+    if (compInput) compInput.value = '';
+    if (notesInput) notesInput.value = '';
+  }
+
+  if (modal) modal.classList.add('active');
+}
+
+function handleSaveContact(e) {
+  e.preventDefault();
+  const idInput = document.getElementById('contactIdInput').value;
+  const name = document.getElementById('contactNameInput').value.trim();
+  const category = document.getElementById('contactCategorySelect').value;
+  const phone = document.getElementById('contactPhoneInput').value.trim();
+  const company = document.getElementById('contactCompanyInput').value.trim();
+  const notes = document.getElementById('contactNotesInput').value.trim();
+
+  if (!name || !phone) {
+    alert(appState.settings.language === 'bm' ? 'Sila masukkan nama dan nombor WhatsApp.' : 'Please enter contact name and WhatsApp phone number.');
+    return;
+  }
+
+  if (!Array.isArray(appState.contacts)) appState.contacts = [];
+
+  if (idInput) {
+    // Update
+    const idx = appState.contacts.findIndex(c => c.id === idInput);
+    if (idx !== -1) {
+      appState.contacts[idx] = {
+        ...appState.contacts[idx],
+        name,
+        category,
+        phone,
+        company,
+        notes
+      };
+    }
+  } else {
+    // New
+    const newContact = {
+      id: 'c-' + Date.now(),
+      name,
+      category,
+      phone,
+      company,
+      notes
+    };
+    appState.contacts.push(newContact);
+  }
+
+  saveToStorage();
+  renderSettingsContactList();
+  closeAllModals();
+  showToast(appState.settings.language === 'bm' ? 'Kenalan berjaya disimpan!' : 'Contact saved successfully!');
+}
+
+function handleDeleteContact(contactId) {
+  const isBM = appState.settings.language === 'bm';
+  const contact = (appState.contacts || []).find(c => c.id === contactId);
+  if (!contact) return;
+
+  const msg = isBM ? `Padamkan ${contact.name} daripada direktori pasukan?` : `Remove ${contact.name} from your team directory?`;
+  if (confirm(msg)) {
+    appState.contacts = appState.contacts.filter(c => c.id !== contactId);
+    saveToStorage();
+    renderSettingsContactList();
+    showToast(isBM ? 'Kenalan telah dipadamkan.' : 'Contact removed.');
+  }
 }
 
 function handleSavePreferences() {
@@ -3029,6 +3808,8 @@ function handleSavePreferences() {
   appState.settings.sellerPhone = newOwnerPhone || appState.settings.sellerPhone || '+60123456789';
   appState.settings.language = document.getElementById('settingLanguageSelect') ? document.getElementById('settingLanguageSelect').value : (appState.settings.language || 'en');
   appState.settings.defaultDepositPct = parseInt(document.getElementById('settingDefaultDepositPctInput').value) || 30;
+  appState.settings.quotationValidityDays = parseInt(document.getElementById('settingQuotationValidityInput')?.value) || 3;
+  appState.settings.standardNotes = document.getElementById('settingStandardNotesInput') ? document.getElementById('settingStandardNotesInput').value.trim() : (appState.settings.standardNotes || '');
 
   // Validate license against new phone number if phone changed
   if (appState.isLicensed && !appState.isMasterAdmin && newOwnerPhone !== oldOwnerPhone) {
@@ -3180,6 +3961,14 @@ function openBookingModal(existingBooking = null, prefillDate = null) {
     document.getElementById('bookingStatusSelect').value = existingBooking.status || 'booked';
     document.getElementById('bookingNotes').value = existingBooking.notes || '';
 
+    const qVal = existingBooking.quotationValidityDays || appState.settings.quotationValidityDays || 3;
+    const qValEl = document.getElementById('bookingQuotationValidity');
+    if (qValEl) qValEl.value = qVal;
+    const qGroup = document.getElementById('bookingQuotationValidityGroup');
+    if (qGroup) {
+      qGroup.style.display = (existingBooking.status === 'quotation') ? 'block' : 'none';
+    }
+
     const rType = existingBooking.rentalType || 'daily';
     setBookingFormRentalType(rType);
 
@@ -3232,6 +4021,13 @@ function openBookingModal(existingBooking = null, prefillDate = null) {
 
     document.getElementById('bookingDepositPaid').value = 0;
     document.getElementById('bookingStatusSelect').value = 'quotation';
+
+    const qValEl = document.getElementById('bookingQuotationValidity');
+    if (qValEl) qValEl.value = appState.settings.quotationValidityDays || 3;
+    const qGroup = document.getElementById('bookingQuotationValidityGroup');
+    if (qGroup) {
+      qGroup.style.display = 'block';
+    }
   }
 
   updateBookingModalPricing();
@@ -3292,6 +4088,7 @@ function handleSaveBooking(e) {
   const depositPaid = parseFloat(document.getElementById('bookingDepositPaid').value) || 0;
   let status = document.getElementById('bookingStatusSelect').value;
   const notes = document.getElementById('bookingNotes').value.trim();
+  const quotationValidityDays = parseInt(document.getElementById('bookingQuotationValidity')?.value) || appState.settings.quotationValidityDays || 3;
 
   let checkIn = '';
   let checkOut = '';
@@ -3390,6 +4187,7 @@ function handleSaveBooking(e) {
     depositPaid,
     balance,
     status,
+    quotationValidityDays,
     notes,
     createdAt: new Date().toISOString()
   };
@@ -3678,6 +4476,7 @@ function openPropertyModal(existingProp = null) {
     document.getElementById('propertyRoomNoInput').value = existingProp.roomNo || '';
     document.getElementById('propertyTypeSelect').value = existingProp.propType || 'entire';
     document.getElementById('propertyAddressInput').value = existingProp.address || '';
+    document.getElementById('propertyGpsInput').value = existingProp.gpsLocation || '';
     document.getElementById('propertyWifiNameInput').value = existingProp.wifiName || '';
     document.getElementById('propertyWifiPassInput').value = existingProp.wifiPass || '';
     document.getElementById('propertyDoorPinInput').value = existingProp.doorCode || '';
@@ -3691,6 +4490,8 @@ function openPropertyModal(existingProp = null) {
     document.getElementById('propertyIdInput').value = '';
     document.getElementById('propertyRoomNoInput').value = '';
     document.getElementById('propertyTypeSelect').value = 'entire';
+    document.getElementById('propertyAddressInput').value = '';
+    document.getElementById('propertyGpsInput').value = '';
     document.getElementById('propertyDefaultRateInput').value = 250;
     document.getElementById('propertyCleaningFeeInput').value = 50;
   }
@@ -3706,6 +4507,7 @@ function handleSaveProperty(e) {
   const roomNo = document.getElementById('propertyRoomNoInput') ? document.getElementById('propertyRoomNoInput').value.trim() : '';
   const propType = document.getElementById('propertyTypeSelect') ? document.getElementById('propertyTypeSelect').value : 'entire';
   const address = document.getElementById('propertyAddressInput').value.trim();
+  const gpsLocation = document.getElementById('propertyGpsInput') ? document.getElementById('propertyGpsInput').value.trim() : '';
   const wifiName = document.getElementById('propertyWifiNameInput').value.trim();
   const wifiPass = document.getElementById('propertyWifiPassInput').value.trim();
   const doorCode = document.getElementById('propertyDoorPinInput').value.trim();
@@ -3724,6 +4526,7 @@ function handleSaveProperty(e) {
     roomNo,
     propType,
     address,
+    gpsLocation,
     wifiName,
     wifiPass,
     doorCode,
@@ -3842,24 +4645,278 @@ function openWhatsAppModal(booking, templateType = 'quotation', monthIndex = 1) 
     if (monthlyControls) monthlyControls.classList.add('hidden');
   }
 
+  // Setup quotation validity input if quotation template
+  const waQuotationControls = document.getElementById('waQuotationControls');
+  const waQuotationValidityInput = document.getElementById('waQuotationValidityInput');
+  if (waQuotationControls) {
+    waQuotationControls.classList.toggle('hidden', templateType !== 'quotation');
+  }
+  if (waQuotationValidityInput) {
+    waQuotationValidityInput.value = booking.quotationValidityDays || appState.settings.quotationValidityDays || 3;
+  }
+
   renderWhatsAppPreview();
   document.getElementById('whatsappModal').classList.add('active');
 }
 
-function openWhatsAppCleanerJob(turnover) {
-  const prop = getPropertyById(turnover.propertyId);
-  const msg = `🧹 *Turnover Job Alert - ${prop.name}*\n\n` +
-    `Hello! We have a turnover scheduled for:\n` +
-    `📅 *Date:* ${turnover.date}\n` +
-    `🏠 *Unit:* ${prop.name}\n` +
-    `📍 *Address:* ${prop.address || 'Standard Address'}\n` +
-    `🔑 *Door PIN Code:* ${prop.doorCode || 'Standard PIN'}\n` +
-    `⏰ *Cleaning Window:* ${prop.checkOutTime || '12:00 PM'} - ${prop.checkInTime || '3:00 PM'}\n\n` +
-    `Please ensure bed linens are washed and fresh towels/toiletries are set up. Thank you! 🙏`;
+function populateDispatchRecipients(selectedContactId = null, preselectedCategory = null) {
+  const select = document.getElementById('dispatchRecipientSelect');
+  if (!select) return;
+  select.innerHTML = '';
 
-  const phone = (turnover.cleanerPhone || '').replace(/[^0-9]/g, '');
+  const contacts = appState.contacts || [];
+  const isBM = appState.settings.language === 'bm';
+
+  if (contacts.length === 0) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = isBM ? '-- Tiada Kenalan (Tambah di Tetapan) --' : '-- No Contacts Saved (Add in Settings) --';
+    select.appendChild(opt);
+    return;
+  }
+
+  contacts.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    const badge = getContactCategoryBadge(c.category);
+    opt.textContent = `${c.name} (${badge.label})${c.company ? ' - ' + c.company : ''}`;
+    select.appendChild(opt);
+  });
+
+  if (selectedContactId && contacts.some(c => c.id === selectedContactId)) {
+    select.value = selectedContactId;
+  } else if (preselectedCategory) {
+    const matched = contacts.find(c => c.category === preselectedCategory);
+    if (matched) {
+      select.value = matched.id;
+    } else {
+      select.value = contacts[0].id;
+    }
+  } else {
+    select.value = contacts[0].id;
+  }
+}
+
+function populateDispatchProperties(selectedPropId = null) {
+  const select = document.getElementById('dispatchPropertySelect');
+  if (!select) return;
+  select.innerHTML = '';
+
+  const props = appState.properties || [];
+  props.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name;
+    select.appendChild(opt);
+  });
+
+  if (selectedPropId && props.some(p => p.id === selectedPropId)) {
+    select.value = selectedPropId;
+  } else if (appState.selectedPropertyId && appState.selectedPropertyId !== 'all' && props.some(p => p.id === appState.selectedPropertyId)) {
+    select.value = appState.selectedPropertyId;
+  } else if (props.length > 0) {
+    select.value = props[0].id;
+  }
+}
+
+function openServiceDispatchModal(turnover = null, preselectedCategory = null, preselectedContactId = null) {
+  appState.activeDispatchTurnover = turnover;
+  const isBM = appState.settings.language === 'bm';
+
+  const tidInput = document.getElementById('dispatchTurnoverId');
+  if (tidInput) tidInput.value = turnover ? turnover.id : '';
+
+  const targetPropId = turnover ? turnover.propertyId : null;
+  populateDispatchProperties(targetPropId);
+
+  let cat = preselectedCategory;
+  if (turnover) {
+    cat = 'cleaner';
+    const sType = document.getElementById('dispatchServiceTypeSelect');
+    if (sType) sType.value = 'turnover_clean';
+    const sUrg = document.getElementById('dispatchUrgencySelect');
+    if (sUrg) sUrg.value = 'normal';
+    const details = document.getElementById('dispatchDetailsInput');
+    if (details) {
+      details.value = isBM
+        ? `Pembersihan unit homestay dijadualkan pada ${turnover.date}. Sila pastikan cadar ditukar dan tuala bersih disediakan.`
+        : `Turnover cleaning scheduled for ${turnover.date}. Please ensure fresh linens and towels are provided.`;
+    }
+  } else if (preselectedCategory) {
+    const catToType = {
+      cleaner: 'turnover_clean',
+      aircond: 'aircond_service',
+      plumber: 'plumbing_repair',
+      electrician: 'electrical_repair',
+      handyman: 'handyman_repair',
+      linen_supplier: 'linen_order',
+      gas_supplier: 'gas_order',
+      locksmith: 'inspection',
+      other: 'other_task'
+    };
+    const sType = document.getElementById('dispatchServiceTypeSelect');
+    if (sType && catToType[preselectedCategory]) {
+      sType.value = catToType[preselectedCategory];
+    }
+  }
+
+  populateDispatchRecipients(preselectedContactId, cat);
+  renderServiceDispatchPreview();
+  const modal = document.getElementById('serviceDispatchModal');
+  if (modal) modal.classList.add('active');
+}
+
+function openWhatsAppCleanerJob(turnover) {
+  openServiceDispatchModal(turnover, 'cleaner');
+}
+
+function generateServiceDispatchMessage() {
+  const isBM = appState.settings.language === 'bm';
+  const recipientId = document.getElementById('dispatchRecipientSelect')?.value;
+  const propId = document.getElementById('dispatchPropertySelect')?.value;
+  const serviceType = document.getElementById('dispatchServiceTypeSelect')?.value || 'turnover_clean';
+  const urgency = document.getElementById('dispatchUrgencySelect')?.value || 'normal';
+  const customDetails = document.getElementById('dispatchDetailsInput')?.value.trim() || '';
+  const includePin = document.getElementById('dispatchIncludePinCheck')?.checked;
+
+  const contact = (appState.contacts || []).find(c => c.id === recipientId);
+  const prop = getPropertyById(propId) || (appState.properties[0] || { name: 'Homestay Unit', address: '' });
+  const turnover = appState.activeDispatchTurnover;
+  const settings = appState.settings;
+
+  let headerTitle = '';
+  let defaultTaskDesc = '';
+
+  switch (serviceType) {
+    case 'turnover_clean':
+      headerTitle = isBM ? '🧹 *ARAHAN KERJA PEMBERSIHAN / TURNOVER*' : '🧹 *TURNOVER CLEANING JOB ALERT*';
+      defaultTaskDesc = isBM ? 'Pembersihan unit menyeluruh, tukar cadar, basuh tuala dan kemas bilik.' : 'Full turnover cleaning, fresh bed linens, sanitized towels & amenities restock.';
+      break;
+    case 'aircond_service':
+      headerTitle = isBM ? '❄️ *NOTIS SERVIS & BAIKI AIRCOND*' : '❄️ *AIRCOND SERVICE & REPAIR REQUEST*';
+      defaultTaskDesc = isBM ? 'Servis aircond tidak sejuk / cuci filter / pemeriksaan kebocoran.' : 'Aircond servicing, filter cleaning, or cooling troubleshooting.';
+      break;
+    case 'plumbing_repair':
+      headerTitle = isBM ? '🔧 *NOTIS BAIKI PAIP & SALIRAN*' : '🔧 *PLUMBING REPAIR REQUEST*';
+      defaultTaskDesc = isBM ? 'Baiki paip bocor, mangkuk tandas tersumbat atau water heater.' : 'Plumbing inspection, leak repair, or toilet drain troubleshooting.';
+      break;
+    case 'electrical_repair':
+      headerTitle = isBM ? '⚡ *NOTIS PENDAWAIAN & ELEKTRIK*' : '⚡ *ELECTRICAL REPAIR REQUEST*';
+      defaultTaskDesc = isBM ? 'Periksa masalah elektrik, suis rosak atau trip elektrik.' : 'Electrical wiring check, power trip, socket or lighting issue.';
+      break;
+    case 'handyman_repair':
+      headerTitle = isBM ? '🔨 *NOTIS KERJA BAIKI AM (HANDYMAN)*' : '🔨 *GENERAL HANDYMAN REPAIR REQUEST*';
+      defaultTaskDesc = isBM ? 'Kerja baiki kerosakan am pintu, perabot atau perkakasan unit.' : 'General repair for doors, hinges, furniture, or fixture maintenance.';
+      break;
+    case 'linen_order':
+      headerTitle = isBM ? '🧺 *PESANAN BEKALAN LINEN & DOBI*' : '🧺 *LINEN & LAUNDRY SUPPLY ORDER*';
+      defaultTaskDesc = isBM ? 'Pesanan tambahan cadar, sarung bantal, duvet dan tuala putih.' : 'Restock order for bedsheet sets, duvet covers, and bath towels.';
+      break;
+    case 'gas_order':
+      headerTitle = isBM ? '⛽ *PESANAN TONG GAS & KEPERLUAN UNIT*' : '⛽ *GAS / AMENITIES RESTOCK ORDER*';
+      defaultTaskDesc = isBM ? 'Penghantaran tong gas memasak atau stok sabun / syampu / kopi.' : 'Delivery order for cooking gas cylinder, toiletries, or guest amenities.';
+      break;
+    case 'inspection':
+      headerTitle = isBM ? '🔍 *NOTIS PEMERIKSAAN UNIT*' : '🔍 *UNIT INSPECTION REQUEST*';
+      defaultTaskDesc = isBM ? 'Pemeriksaan status unit, kunci pintu, peralatan dan kebersihan.' : 'General inspection of unit condition, appliances, and access.';
+      break;
+    default:
+      headerTitle = isBM ? '📝 *ARAHAN TUGASAN KHAS*' : '📝 *SERVICE / MAINTENANCE REQUEST*';
+      defaultTaskDesc = isBM ? 'Tugasan perkhidmatan berkaitan unit homestay.' : 'Service task for homestay property.';
+  }
+
+  let urgencyText = '';
+  if (urgency === 'urgent') {
+    urgencyText = isBM ? '🔴 *Tahap Keperluan:* SEGERA / KECEMASAN (Sila hadir secepat mungkin)\n' : '🔴 *Urgency:* URGENT / IMMEDIATE (Please attend ASAP)\n';
+  } else if (urgency === 'high') {
+    urgencyText = isBM ? '🟡 *Tahap Keperluan:* KEUTAMAAN TINGGI (Hari ini)\n' : '🟡 *Urgency:* HIGH PRIORITY (Today)\n';
+  } else {
+    urgencyText = isBM ? '🟢 *Tahap Keperluan:* Jadual Biasa\n' : '🟢 *Urgency:* Normal Schedule\n';
+  }
+
+  const recipientGreeting = contact ? (isBM ? `Salam ${contact.name}` : `Hello ${contact.name}`) : (isBM ? 'Salam sejahtera' : 'Hello');
+
+  let body = `${headerTitle}\n\n` +
+    `${recipientGreeting}, ${isBM ? 'kami memerlukan bantuan anda bagi perkhidmatan berikut:' : 'we require your service for the following property:'}\n\n` +
+    `🏠 *${isBM ? 'Unit / Homestay' : 'Property'}:* ${prop.name}\n` +
+    `📍 *${isBM ? 'Alamat' : 'Address'}:* ${prop.address || (isBM ? 'Alamat unit standard' : 'Standard Address')}\n` +
+    (prop.gpsLocation ? `🗺️ *${isBM ? 'Peta Google Maps' : 'Google Maps GPS'}:* ${prop.gpsLocation}\n` : '') +
+    urgencyText;
+
+  if (serviceType === 'turnover_clean' || turnover) {
+    const targetDate = turnover ? turnover.date : new Date().toISOString().split('T')[0];
+    body += `📅 *${isBM ? 'Tarikh Tugasan' : 'Target Date'}:* ${targetDate}\n` +
+            `⏰ *${isBM ? 'Waktu Pembersihan' : 'Cleaning Window'}:* ${prop.checkOutTime || '12:00 PM'} - ${prop.checkInTime || '3:00 PM'}\n`;
+  }
+
+  if (includePin && prop.doorCode) {
+    body += `🔑 *${isBM ? 'Kod PIN Pintu (Smart Lock)' : 'Smart Lock Door PIN'}:* ${prop.doorCode}\n`;
+  }
+
+  const detailsText = customDetails || defaultTaskDesc;
+  body += `\n📋 *${isBM ? 'ARAHAN / PERINCIAN' : 'TASK DETAILS / INSTRUCTIONS'}:*\n${detailsText}\n\n`;
+
+  body += isBM
+    ? `Sila sahkan penerimaan mesej ini dan maklumkan waktu kehadiran/penghantaran anda. Terima kasih! 🙏\n_${settings.businessName || 'Pengurusan Homestay'}_`
+    : `Please acknowledge receipt and advise your estimated arrival/delivery time. Thank you! 🙏\n_${settings.businessName || 'Homestay Management'}_`;
+
+  return body;
+}
+
+function renderServiceDispatchPreview() {
+  const bubble = document.getElementById('dispatchPreviewText');
+  const badge = document.getElementById('dispatchRecipientBadge');
+  const time = document.getElementById('dispatchTimestamp');
+  if (!bubble) return;
+
+  const msg = generateServiceDispatchMessage();
+  bubble.textContent = msg;
+
+  const recipientId = document.getElementById('dispatchRecipientSelect')?.value;
+  const contact = (appState.contacts || []).find(c => c.id === recipientId);
+  if (badge) {
+    if (contact) {
+      badge.textContent = `To: ${contact.name} (${contact.phone})`;
+    } else {
+      badge.textContent = 'To: Unspecified Contact';
+    }
+  }
+
+  if (time) {
+    const now = new Date();
+    const hrs = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    time.textContent = `${hrs}:${mins} ✓✓`;
+  }
+}
+
+function handleSendServiceDispatchWa() {
+  const recipientId = document.getElementById('dispatchRecipientSelect')?.value;
+  const contact = (appState.contacts || []).find(c => c.id === recipientId);
+  const msg = generateServiceDispatchMessage();
+
+  let phone = '';
+  if (contact && contact.phone) {
+    phone = contact.phone.replace(/[^0-9]/g, '');
+  }
+
   const waUrl = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
   window.open(waUrl, '_blank');
+  closeAllModals();
+  showToast(appState.settings.language === 'bm' ? 'Mesej WhatsApp dihantar!' : 'WhatsApp dispatch opened!');
+}
+
+function handleCopyServiceDispatchText() {
+  const msg = generateServiceDispatchMessage();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(msg).then(() => {
+      showToast(appState.settings.language === 'bm' ? 'Teks notis disalin!' : 'Message text copied to clipboard!');
+    }).catch(() => {
+      showToast('Copied to clipboard');
+    });
+  } else {
+    showToast('Copied to clipboard');
+  }
 }
 
 function generateWhatsAppMessage(booking, templateType) {
@@ -3932,17 +4989,27 @@ function generateWhatsAppMessage(booking, templateType) {
   const invNo = `INV-M${mIndex}-${booking.id.slice(-5).toUpperCase()}`;
   const recNo = `REC-RENT-M${mIndex}-${booking.id.slice(-5).toUpperCase()}`;
 
+  // Quotation Validity Calculation
+  const validityDays = parseInt(booking.quotationValidityDays) || parseInt(settings.quotationValidityDays) || 3;
+  const expDateObj = new Date();
+  expDateObj.setDate(expDateObj.getDate() + validityDays);
+  const expDateStr = expDateObj.toISOString().split('T')[0];
+
+  let msg = '';
+
   if (isBM) {
     switch (templateType) {
       case 'quotation':
         if (isMonthly) {
-          return `📋 *SEBUT HARGA SEWAAN BULANAN - ${prop.name.toUpperCase()}*\n` +
+          msg = `📋 *SEBUT HARGA SEWAAN BULANAN - ${prop.name.toUpperCase()}*\n` +
             `No Rujukan: QUO-M-${booking.id.slice(-6).toUpperCase()}\n\n` +
             `Salam sejahtera *${booking.guestName}*, terima kasih atas pertanyaan sewaan bulanan anda! Berikut adalah perincian pakej sewaan:\n\n` +
             `${unitTitleBM}\n` +
             `📍 *Lokasi:* ${prop.address || 'Alamat Unit'}\n` +
+            (prop.gpsLocation ? `🗺️ *Lokasi GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
             `📅 *Tarikh Mula:* ${booking.checkIn}\n` +
-            `⏳ *Tempoh Sewaan:* ${booking.monthlyDuration || 6} Bulan\n\n` +
+            `⏳ *Tempoh Sewaan:* ${booking.monthlyDuration || 6} Bulan\n` +
+            `⏳ *Tempoh Sah Sebut Harga:* *${validityDays} Hari* (Sah sehingga: *${expDateStr}*)\n\n` +
             tenantParticularsBM +
             `💰 *PERINCIAN PAKEJ KEMASUKAN (MOVE-IN):*\n` +
             `• Sewa Bulan Pertama (Pendahuluan): ${currency} ${mRate.toFixed(2)}\n` +
@@ -3954,16 +5021,18 @@ function generateWhatsAppMessage(booking, templateType) {
             `🔒 *Bayaran Booking Diperlukan untuk Kunci Unit:* *${currency} ${(booking.depositPaid > 0 ? booking.depositPaid : mRate * 0.5).toFixed(2)}*\n` +
             `⏳ *Baki Bayaran Sebelum Serahan Kunci:* ${currency} ${(totalMoveIn - (booking.depositPaid > 0 ? booking.depositPaid : mRate * 0.5)).toFixed(2)}\n` +
             bankInfoBM +
-            `\n📌 *Nota Deposit:* Deposit Sewa dan Deposit Utiliti akan dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada bil utiliti dan keadaan bilik/rumah. ✨🏡`;
+            `\n📌 *Nota Deposit:* Deposit Sewa dan Deposit Utiliti akan dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada bil utiliti dan keadaan bilik/rumah. Sebut harga ini sah selama *${validityDays} hari* sehingga *${expDateStr}*. ✨🏡`;
         } else {
-          return `📋 *SEBUT HARGA RASMI - ${prop.name.toUpperCase()}*\n` +
+          msg = `📋 *SEBUT HARGA RASMI - ${prop.name.toUpperCase()}*\n` +
             `No Rujukan: QUO-${booking.id.slice(-6).toUpperCase()}\n\n` +
             `Salam sejahtera *${booking.guestName}*, terima kasih atas pertanyaan anda! Berikut adalah perincian harga bagi penginapan anda:\n\n` +
             `${unitTitleBM}\n` +
             `📍 *Lokasi:* ${prop.address || 'Alamat Unit'}\n` +
+            (prop.gpsLocation ? `🗺️ *Lokasi GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
             `📅 *Daftar Masuk (Check-In):* ${booking.checkIn} (${prop.checkInTime || '3:00 PM'})\n` +
             `🏁 *Daftar Keluar (Check-Out):* ${booking.checkOut} (${prop.checkOutTime || '12:00 PM'})\n` +
-            `🌙 *Tempoh:* ${booking.nights} Malam • ${booking.guestCount} Tetamu\n\n` +
+            `🌙 *Tempoh:* ${booking.nights} Malam • ${booking.guestCount} Tetamu\n` +
+            `⏳ *Tempoh Sah Sebut Harga:* *${validityDays} Hari* (Sah sehingga: *${expDateStr}*)\n\n` +
             `💰 *PERINCIAN HARGA:*\n` +
             `• Kadar Sewa: ${currency} ${(booking.nightlyRate || 0).toFixed(2)} × ${booking.nights} malam = ${currency} ${(booking.nights * booking.nightlyRate).toFixed(2)}\n` +
             `• Yuran Pembersihan: ${currency} ${(booking.cleaningFee || 0).toFixed(2)}\n` +
@@ -3973,16 +5042,19 @@ function generateWhatsAppMessage(booking, templateType) {
             `🔒 *Bayaran Booking Diperlukan (${settings.defaultDepositPct || 30}%):* *${currency} ${bookingFee.toFixed(2)}*\n` +
             `⏳ *Baki Bayaran Sebelum Serahan Kunci:* ${currency} ${(booking.totalAmount - bookingFee).toFixed(2)}\n` +
             bankInfoBM +
-            `\n📌 *Nota:* Tarikh akan ditanda sebagai *"DITEMPAH"* selepas slip bayaran booking diterima. ✨🏡`;
+            `\n📌 *Nota:* Tarikh akan ditanda sebagai *"DITEMPAH"* selepas slip bayaran booking diterima. Sebut harga ini sah selama *${validityDays} hari* sehingga *${expDateStr}*. ✨🏡`;
         }
+        break;
 
       case 'deposit_receipt':
         if (isMonthly) {
-          return `🧾 *RESIT BAYARAN BOOKING & DEPOSIT SEWAAN - ${prop.name.toUpperCase()}*\n` +
+          msg = `🧾 *RESIT BAYARAN BOOKING & DEPOSIT SEWAAN - ${prop.name.toUpperCase()}*\n` +
             `No Resit: REC-BOOK-M-${booking.id.slice(-6).toUpperCase()}\n\n` +
             `Salam *${booking.guestName}*, bayaran booking sewaan bulanan anda telah disahkan! 🎉\n` +
             `Unit kini berstatus *DITEMPAH & DIKUNCI* untuk kemasukan anda.\n\n` +
             `${unitTitleBM}\n` +
+            `📍 *Lokasi:* ${prop.address || 'Alamat Unit'}\n` +
+            (prop.gpsLocation ? `🗺️ *Lokasi GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
             `📅 *Tarikh Kemasukan:* ${booking.checkIn}\n` +
             `⏳ *Tempoh Sewaan:* ${booking.monthlyDuration || 6} Bulan\n\n` +
             tenantParticularsBM +
@@ -3993,11 +5065,13 @@ function generateWhatsAppMessage(booking, templateType) {
             `💳 *Baki Perlu Dibayar Sebelum Serahan Kunci:* *${currency} ${booking.balance.toFixed(2)}*\n\n` +
             `🔑 *Kunci & Smart Lock PIN:* Akan diserahkan selepas baki pakej kemasukan dijelaskan sepenuhnya. Terima kasih! 🙏`;
         } else {
-          return `🧾 *RESIT BAYARAN BOOKING & DEPOSIT - ${prop.name.toUpperCase()}*\n` +
+          msg = `🧾 *RESIT BAYARAN BOOKING & DEPOSIT - ${prop.name.toUpperCase()}*\n` +
             `No Resit: REC-DEP-${booking.id.slice(-6).toUpperCase()}\n\n` +
             `Salam *${booking.guestName}*, bayaran booking dan deposit anda telah diterima! 🎉\n` +
             `Unit anda kini secara rasmi berstatus *DITEMPAH & DIKUNCI* di kalendar kami.\n\n` +
             `${unitTitleBM}\n` +
+            `📍 *Lokasi:* ${prop.address || 'Alamat Unit'}\n` +
+            (prop.gpsLocation ? `🗺️ *Lokasi GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
             `📅 *Daftar Masuk:* ${booking.checkIn} (${prop.checkInTime || '3:00 PM'})\n` +
             `🏁 *Daftar Keluar:* ${booking.checkOut} (${prop.checkOutTime || '12:00 PM'})\n\n` +
             `💰 *REKOD BAYARAN:*\n` +
@@ -4007,9 +5081,30 @@ function generateWhatsAppMessage(booking, templateType) {
             `💳 *Baki Bayaran Sebelum Daftar Masuk:* *${currency} ${booking.balance.toFixed(2)}*\n\n` +
             `🔑 *Kod PIN Kunci Pintu:* Akan diberikan selepas pengesahan bayaran penuh sebelum waktu daftar masuk. Terima kasih! 🏡✨`;
         }
+        break;
+
+      case 'checkin_reminder':
+        msg = `📅 *PERINGATAN DAFTAR MASUK (CHECK-IN) - ${prop.name.toUpperCase()}*\n\n` +
+          `Salam mesra *${booking.guestName}*, kami menantikan kehadiran anda tidak lama lagi! Berikut adalah maklumat penting bagi persediaan daftar masuk anda:\n\n` +
+          `${unitTitleBM}\n` +
+          `📅 *Tarikh Daftar Masuk:* ${booking.checkIn}\n` +
+          `⏰ *Waktu Masuk:* Mulai jam *${prop.checkInTime || '3:00 PM'}* ke atas\n` +
+          `🏁 *Tarikh Daftar Keluar:* ${booking.checkOut} (sebelum ${prop.checkOutTime || '12:00 PM'})\n\n` +
+          `📍 *Alamat Homestay:* ${prop.address || 'Alamat Unit'}\n` +
+          (prop.gpsLocation ? `🗺️ *Lokasi GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
+          `\n🔑 *MAKLUMAT AKSES & KUNCI:*\n` +
+          (booking.status === 'confirmed' || booking.balance <= 0 
+            ? `• Kod PIN Smart Lock Pintu: *${prop.doorCode || '123456#'}*\n• Nama WiFi: *${prop.wifiName || 'Homestay_WiFi'}*\n• Kata Laluan WiFi: *${prop.wifiPass || 'welcome123'}*\n` 
+            : `• Kod PIN pintu & kata laluan WiFi akan diserahkan serta-merta selepas baki bayaran dijelaskan.\n`) +
+          (booking.balance > 0 
+            ? `\n💳 *Peringatan Baki Bayaran:* *${currency} ${booking.balance.toFixed(2)}* (Sila jelaskan sebelum waktu masuk).\n` + bankInfoBM 
+            : `\n✅ *Status Bayaran:* Selesai Dibayar Penuh (${currency} ${booking.totalAmount.toFixed(2)})\n`) +
+          `\n📜 *Peraturan Homestay:* ${prop.rules || 'Dilarang merokok di dalam unit, jaga ketenteraman selepas 10 malam.'}\n\n` +
+          `Jika anda memerlukan sebarang bantuan atau panduan arah, sila balas mesej ini pada bila-bila masa. Selamat bertolak dan semoga perjalanan anda lancar & selamat! ✨🏡`;
+        break;
 
       case 'full_receipt':
-        return `🔑 *RESIT BAYARAN PENUH & PANDUAN MASUK - ${prop.name.toUpperCase()}*\n` +
+        msg = `🔑 *RESIT BAYARAN PENUH & PANDUAN MASUK - ${prop.name.toUpperCase()}*\n` +
           `No Resit: REC-FULL-${booking.id.slice(-6).toUpperCase()}\n\n` +
           `Salam *${booking.guestName}*! Bayaran penuh telah disahkan dan tempahan anda kini *100% DISAHKAN*. Berikut adalah maklumat akses masuk anda:\n\n` +
           `${unitTitleBM}\n` +
@@ -4020,21 +5115,24 @@ function generateWhatsAppMessage(booking, templateType) {
           `🔑 *MAKLUMAT AKSES & KUNCI PINTU PINTAR:*\n` +
           `========================================\n` +
           `📍 *Alamat:* ${prop.address || 'Alamat Unit'}\n` +
+          (prop.gpsLocation ? `🗺️ *Lokasi GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
           `⏰ *Waktu Daftar Masuk:* Hari ini dari jam ${prop.checkInTime || '3:00 PM'} ke atas\n` +
           `🔐 *Kod PIN Smart Lock Pintu:* *${prop.doorCode || '123456#'}*\n` +
           `📶 *Nama WiFi:* ${prop.wifiName || 'Homestay_WiFi'}\n` +
           `🔑 *Kata Laluan WiFi:* *${prop.wifiPass || 'welcome123'}*\n\n` +
           `📜 *Peraturan:* ${prop.rules || 'Dilarang merokok di dalam rumah, jaga ketenteraman selepas 10 malam.'}\n\n` +
           `Selamat menikmati penginapan anda! Sila hubungi kami bila-bila masa jika memerlukan bantuan. ✨🏡`;
+        break;
 
       case 'monthly_invoice':
-        return `📑 *INVOIS SEWAAN BULANAN (BULAN KE-${mIndex} DRPD ${booking.monthlyDuration || 6})*\n` +
+        msg = `📑 *INVOIS SEWAAN BULANAN (BULAN KE-${mIndex} DRPD ${booking.monthlyDuration || 6})*\n` +
           `No. Invois: *${invNo}*\n` +
           `Tarikh Invois: *${todayStr}*\n` +
           `Tarikh Akhir Bayaran: *${dueStr}*\n\n` +
           tenantParticularsBM +
           `${unitTitleBM}\n` +
-          `📍 *Lokasi:* ${prop.address || 'Alamat Unit'}\n\n` +
+          `📍 *Lokasi:* ${prop.address || 'Alamat Unit'}\n` +
+          (prop.gpsLocation ? `🗺️ *Lokasi GPS / Google Maps:* ${prop.gpsLocation}\n` : '') + `\n` +
           `📅 *TEMPOH BIL SEWAAN:*\n` +
           `• Dari: *${startStr}* Hingga: *${endStr}* (Bulan ke-${mIndex})\n\n` +
           `💵 *PERINCIAN BAYARAN:*\n` +
@@ -4044,9 +5142,10 @@ function generateWhatsAppMessage(booking, templateType) {
           `💳 *JUMLAH PERLU DIBAYAR:* *${currency} ${totalMonthDue.toFixed(2)}*\n` +
           bankInfoBM +
           `\n📌 *Nota:* Sila jelaskan bayaran sebelum *${dueStr}* dan hantar salinan resit transaksi ke WhatsApp ini. Terima kasih atas kerjasama anda! 🙏✨`;
+        break;
 
       case 'monthly_rent_receipt':
-        return `🧾 *RESIT RASMI BAYARAN SEWA (BULAN KE-${mIndex})*\n` +
+        msg = `🧾 *RESIT RASMI BAYARAN SEWA (BULAN KE-${mIndex})*\n` +
           `No. Resit: *${recNo}*\n` +
           `Tarikh: *${todayStr}*\n\n` +
           `Salam *${booking.guestName}*, bayaran sewa bulanan anda bagi *Bulan ke-${mIndex}* telah diterima dan disahkan! 🎉\n\n` +
@@ -4056,6 +5155,7 @@ function generateWhatsAppMessage(booking, templateType) {
           `💰 *Jumlah Diterima:* *${currency} ${totalMonthDue.toFixed(2)}*\n` +
           `✅ *Status Bayaran:* SELESAI DIBAYAR (PAID)\n\n` +
           `Terima kasih atas pembayaran anda yang tepat pada masanya! 🙏✨`;
+        break;
 
       case 'refund_receipt':
         const ref = booking.refundDetails || {
@@ -4066,7 +5166,7 @@ function generateWhatsAppMessage(booking, templateType) {
           netRefund: (booking.rentalDeposit || 0) + (booking.utilitiesDeposit || booking.securityDeposit || 0),
           notes: 'Deposit dipulangkan sepenuhnya.'
         };
-        return `💰 *PENYATA PEMULANGAN DEPOSIT SEWAAN - ${prop.name.toUpperCase()}*\n` +
+        msg = `💰 *PENYATA PEMULANGAN DEPOSIT SEWAAN - ${prop.name.toUpperCase()}*\n` +
           `No Rujukan: REF-${booking.id.slice(-6).toUpperCase()}\n\n` +
           tenantParticularsBM +
           `${unitTitleBM}\n` +
@@ -4083,9 +5183,10 @@ function generateWhatsAppMessage(booking, templateType) {
           `💵 *JUMLAH BERSIH DIPULANGKAN:* *${currency} ${ref.netRefund.toFixed(2)}* ✅\n\n` +
           `📝 *Catatan Tolakan:* ${ref.notes || 'Tiada'}\n\n` +
           `Terima kasih kerana menyewa bersama kami dan menjaga unit dengan baik! Semoga maju jaya. 🙏✨`;
+        break;
 
       case 'checkout':
-        return `🏁 *Peringatan Daftar Keluar / Tamat Sewaan - ${prop.name}*\n\n` +
+        msg = `🏁 *Peringatan Daftar Keluar / Tamat Sewaan - ${prop.name}*\n\n` +
           `Salam *${booking.guestName}*, semoga anda menikmati penginapan yang menyenangkan bersama kami!\n\n` +
           `⏰ *Waktu Daftar Keluar:* Hari ini sebelum jam ${prop.checkOutTime || '12:00 PM'}\n\n` +
           `Sebelum bertolak, mohon kerjasama untuk:\n` +
@@ -4093,23 +5194,29 @@ function generateWhatsAppMessage(booking, templateType) {
           `2. Pastikan semua pintu dan tingkap dikunci rapi\n` +
           `3. Serahkan kembali kunci atau masukkan ke dalam peti kunci pintar\n\n` +
           `Pemeriksaan unit dan pemulangan baki deposit keselamatan akan diproses selepas pemeriksaan selesai. Terima kasih! ⭐⭐⭐⭐⭐`;
+        break;
 
       case 'cleaner':
-        return `🧹 *Notis Pembersihan / Turnover - ${prop.name}*\n\n` +
+        msg = `🧹 *Notis Pembersihan / Turnover - ${prop.name}*\n\n` +
           `Kerja pembersihan diperlukan untuk ${prop.name} pada ${booking.checkOut}.\n` +
           `Tetamu ${booking.guestName} daftar keluar jam ${prop.checkOutTime || '12:00 PM'}.\n` +
+          (prop.address ? `Alamat: ${prop.address}\n` : '') +
+          (prop.gpsLocation ? `Lokasi GPS: ${prop.gpsLocation}\n` : '') +
           `Kod PIN Smart Lock untuk diset: ${prop.doorCode || '1234'}.`;
+        break;
 
       case 'payment':
-        return `💳 *Peringatan Baki Bayaran - ${prop.name}*\n\n` +
+        msg = `💳 *Peringatan Baki Bayaran - ${prop.name}*\n\n` +
           `Salam *${booking.guestName}*, ini adalah peringatan mesra bagi baki bayaran penginapan anda:\n\n` +
           `📅 *Tarikh:* ${booking.checkIn} hingga ${booking.checkOut}\n` +
           `💰 *Baki Bayaran:* *${currency} ${booking.balance.toFixed(2)}*\n` +
           bankInfoBM +
           `\nSila jelaskan baki sebelum daftar masuk untuk menerima kod akses masuk. Terima kasih! 🙏`;
+        break;
 
       default:
-        return '';
+        msg = '';
+        break;
     }
   }
 
@@ -4117,13 +5224,15 @@ function generateWhatsAppMessage(booking, templateType) {
   switch (templateType) {
     case 'quotation':
       if (isMonthly) {
-        return `📋 *MONTHLY TENANCY QUOTATION - ${prop.name.toUpperCase()}*\n` +
+        msg = `📋 *MONTHLY TENANCY QUOTATION - ${prop.name.toUpperCase()}*\n` +
           `Ref: QUO-M-${booking.id.slice(-6).toUpperCase()}\n\n` +
           `Hi *${booking.guestName}*, thank you for your monthly rental enquiry! Here is the tenancy move-in package breakdown:\n\n` +
           `${unitTitleEN}\n` +
           `📍 *Location:* ${prop.address || 'Standard Address'}\n` +
+          (prop.gpsLocation ? `🗺️ *GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
           `📅 *Tenancy Start Date:* ${booking.checkIn}\n` +
-          `⏳ *Duration:* ${booking.monthlyDuration || 6} Months\n\n` +
+          `⏳ *Duration:* ${booking.monthlyDuration || 6} Months\n` +
+          `⏳ *Quotation Validity:* *${validityDays} Day(s)* (Valid until: *${expDateStr}*)\n\n` +
           tenantParticularsEN +
           `💰 *MOVE-IN INITIAL PACKAGE BREAKDOWN:*\n` +
           `• 1st Month Advance Rent: ${currency} ${mRate.toFixed(2)}\n` +
@@ -4135,16 +5244,18 @@ function generateWhatsAppMessage(booking, templateType) {
           `🔒 *Booking Fee to Reserve Unit:* *${currency} ${(booking.depositPaid > 0 ? booking.depositPaid : mRate * 0.5).toFixed(2)}*\n` +
           `⏳ *Balance Due upon Key Handover:* ${currency} ${(totalMoveIn - (booking.depositPaid > 0 ? booking.depositPaid : mRate * 0.5)).toFixed(2)}\n` +
           bankInfoEN +
-          `\n📌 *Deposit Refund Terms:* Rental & Utilities deposits are 100% refundable at the end of tenancy subject to utility arrears & unit inspection. ✨🏡`;
+          `\n📌 *Deposit Refund Terms:* Rental & Utilities deposits are 100% refundable at the end of tenancy subject to utility arrears & unit inspection. Quotation is valid for *${validityDays} day(s)* until *${expDateStr}*. ✨🏡`;
       } else {
-        return `📋 *OFFICIAL QUOTATION - ${prop.name.toUpperCase()}*\n` +
+        msg = `📋 *OFFICIAL QUOTATION - ${prop.name.toUpperCase()}*\n` +
           `Ref: QUO-${booking.id.slice(-6).toUpperCase()}\n\n` +
           `Hi *${booking.guestName}*, thank you for your enquiry! Here is the price breakdown for your stay:\n\n` +
           `${unitTitleEN}\n` +
           `📍 *Location:* ${prop.address || 'Standard Address'}\n` +
+          (prop.gpsLocation ? `🗺️ *GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
           `📅 *Check-In:* ${booking.checkIn} (${prop.checkInTime || '3:00 PM'})\n` +
           `🏁 *Check-Out:* ${booking.checkOut} (${prop.checkOutTime || '12:00 PM'})\n` +
-          `🌙 *Stay Duration:* ${booking.nights} Night(s) • ${booking.guestCount} Guest(s)\n\n` +
+          `🌙 *Stay Duration:* ${booking.nights} Night(s) • ${booking.guestCount} Guest(s)\n` +
+          `⏳ *Quotation Validity:* *${validityDays} Day(s)* (Valid until: *${expDateStr}*)\n\n` +
           `💰 *PRICE BREAKDOWN:*\n` +
           `• Nightly Rate: ${currency} ${(booking.nightlyRate || 0).toFixed(2)} × ${booking.nights} nights = ${currency} ${(booking.nights * booking.nightlyRate).toFixed(2)}\n` +
           `• Cleaning Fee: ${currency} ${(booking.cleaningFee || 0).toFixed(2)}\n` +
@@ -4154,16 +5265,19 @@ function generateWhatsAppMessage(booking, templateType) {
           `🔒 *Booking Fee Required to Lock Dates (${settings.defaultDepositPct || 30}%):* *${currency} ${bookingFee.toFixed(2)}*\n` +
           `⏳ *Balance Due upon Key Handover:* ${currency} ${(booking.totalAmount - bookingFee).toFixed(2)}\n` +
           bankInfoEN +
-          `\n📌 *Next Step:* Unit will be reserved and labelled *"BOOKED"* immediately upon booking fee receipt. Let us know to secure your dates! ✨🏡`;
+          `\n📌 *Next Step:* Unit will be reserved and labelled *"BOOKED"* immediately upon booking fee receipt. Quotation valid for *${validityDays} day(s)* until *${expDateStr}*. Let us know to secure your dates! ✨🏡`;
       }
+      break;
 
     case 'deposit_receipt':
       if (isMonthly) {
-        return `🧾 *TENANCY BOOKING & DEPOSIT RECEIPT - ${prop.name.toUpperCase()}*\n` +
+        msg = `🧾 *TENANCY BOOKING & DEPOSIT RECEIPT - ${prop.name.toUpperCase()}*\n` +
           `Receipt No: REC-BOOK-M-${booking.id.slice(-6).toUpperCase()}\n\n` +
           `Hi *${booking.guestName}*, your tenancy booking fee has been received! 🎉\n` +
           `The property is now officially *BOOKED & RESERVED* for your move-in.\n\n` +
           `${unitTitleEN}\n` +
+          `📍 *Location:* ${prop.address || 'Standard Address'}\n` +
+          (prop.gpsLocation ? `🗺️ *GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
           `📅 *Move-In Date:* ${booking.checkIn}\n` +
           `⏳ *Tenancy Period:* ${booking.monthlyDuration || 6} Months\n\n` +
           tenantParticularsEN +
@@ -4174,11 +5288,13 @@ function generateWhatsAppMessage(booking, templateType) {
           `💳 *Remaining Balance Due Before Keys Handover:* *${currency} ${booking.balance.toFixed(2)}*\n\n` +
           `🔑 *Keys & Smart Lock PIN:* Will be released upon full settlement of the remaining move-in balance. Thank you! 🙏`;
       } else {
-        return `🧾 *BOOKING & DEPOSIT PAYMENT RECEIPT - ${prop.name.toUpperCase()}*\n` +
+        msg = `🧾 *BOOKING & DEPOSIT PAYMENT RECEIPT - ${prop.name.toUpperCase()}*\n` +
           `Receipt No: REC-DEP-${booking.id.slice(-6).toUpperCase()}\n\n` +
           `Hi *${booking.guestName}*, we have received your booking fee & deposit! 🎉\n` +
           `Your unit is now officially *BOOKED & RESERVED* on our calendar.\n\n` +
           `${unitTitleEN}\n` +
+          `📍 *Location:* ${prop.address || 'Standard Address'}\n` +
+          (prop.gpsLocation ? `🗺️ *GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
           `📅 *Check-In:* ${booking.checkIn} (${prop.checkInTime || '3:00 PM'})\n` +
           `🏁 *Check-Out:* ${booking.checkOut} (${prop.checkOutTime || '12:00 PM'})\n\n` +
           `💰 *PAYMENT RECORD:*\n` +
@@ -4188,9 +5304,30 @@ function generateWhatsAppMessage(booking, templateType) {
           `💳 *Remaining Balance to Pay Before Check-In:* *${currency} ${booking.balance.toFixed(2)}*\n\n` +
           `🔑 *Smart Lock Access Code:* Will be released upon full payment confirmation before check-in. Thank you! 🏡✨`;
       }
+      break;
+
+    case 'checkin_reminder':
+      msg = `📅 *CHECK-IN REMINDER & ARRIVAL GUIDE - ${prop.name.toUpperCase()}*\n\n` +
+        `Hi *${booking.guestName}*, we look forward to welcoming you soon! Here are the essential details for your upcoming stay:\n\n` +
+        `${unitTitleEN}\n` +
+        `📅 *Check-In Date:* ${booking.checkIn}\n` +
+        `⏰ *Check-In Time:* From *${prop.checkInTime || '3:00 PM'}* onwards\n` +
+        `🏁 *Check-Out Date:* ${booking.checkOut} (by ${prop.checkOutTime || '12:00 PM'})\n\n` +
+        `📍 *Address:* ${prop.address || 'Standard Address'}\n` +
+        (prop.gpsLocation ? `🗺️ *GPS / Google Maps Link:* ${prop.gpsLocation}\n` : '') +
+        `\n🔑 *SELF CHECK-IN & ACCESS:*\n` +
+        (booking.status === 'confirmed' || booking.balance <= 0
+          ? `• Door Smart Lock PIN: *${prop.doorCode || '123456#'}*\n• WiFi Network: *${prop.wifiName || 'Homestay_WiFi'}*\n• WiFi Password: *${prop.wifiPass || 'welcome123'}*\n`
+          : `• Door access PIN and WiFi credentials will be released immediately upon balance settlement before check-in.\n`) +
+        (booking.balance > 0
+          ? `\n💳 *Remaining Balance Due:* *${currency} ${booking.balance.toFixed(2)}* (Kindly settle before arrival).\n` + bankInfoEN
+          : `\n✅ *Payment Status:* Paid in Full (${currency} ${booking.totalAmount.toFixed(2)})\n`) +
+        `\n📜 *House Rules:* ${prop.rules || 'No smoking indoors, quiet hours after 10 PM.'}\n\n` +
+        `If you need any assistance or driving directions, feel free to message us here anytime. Safe travels and see you soon! ✨🏡`;
+      break;
 
     case 'full_receipt':
-      return `🔑 *FULL PAYMENT RECEIPT & ACCESS GUIDE - ${prop.name.toUpperCase()}*\n` +
+      msg = `🔑 *FULL PAYMENT RECEIPT & ACCESS GUIDE - ${prop.name.toUpperCase()}*\n` +
         `Receipt No: REC-FULL-${booking.id.slice(-6).toUpperCase()}\n\n` +
         `Hi *${booking.guestName}*! Full payment has been received and your booking is *100% CONFIRMED*. Here are your self check-in access keys:\n\n` +
         `${unitTitleEN}\n` +
@@ -4201,21 +5338,24 @@ function generateWhatsAppMessage(booking, templateType) {
         `🔑 *YOUR ACCESS & DOOR LOCK DETAILS:*\n` +
         `========================================\n` +
         `📍 *Address:* ${prop.address || 'Standard Address'}\n` +
+        (prop.gpsLocation ? `🗺️ *GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
         `⏰ *Check-In Time:* Today from ${prop.checkInTime || '3:00 PM'} onwards\n` +
         `🔐 *Door Smart Lock PIN:* *${prop.doorCode || '123456#'}*\n` +
         `📶 *WiFi Name:* ${prop.wifiName || 'Homestay_WiFi'}\n` +
         `🔑 *WiFi Password:* *${prop.wifiPass || 'welcome123'}*\n\n` +
         `📜 *House Rules:* ${prop.rules || 'No smoking inside, quiet hours after 10 PM.'}\n\n` +
         `Have a wonderful stay with us! If you need anything, message us anytime. ✨🏡`;
+      break;
 
     case 'monthly_invoice':
-      return `📑 *MONTHLY RENTAL INVOICE (MONTH ${mIndex} OF ${booking.monthlyDuration || 6})*\n` +
+      msg = `📑 *MONTHLY RENTAL INVOICE (MONTH ${mIndex} OF ${booking.monthlyDuration || 6})*\n` +
         `Invoice No: *${invNo}*\n` +
         `Invoice Date: *${todayStr}*\n` +
         `Payment Due Date: *${dueStr}*\n\n` +
         tenantParticularsEN +
         `${unitTitleEN}\n` +
-        `📍 *Location:* ${prop.address || 'Standard Address'}\n\n` +
+        `📍 *Location:* ${prop.address || 'Standard Address'}\n` +
+        (prop.gpsLocation ? `🗺️ *GPS / Google Maps:* ${prop.gpsLocation}\n` : '') + `\n` +
         `📅 *BILLING PERIOD:*\n` +
         `• Period: *${startStr} to ${endStr}* (Month ${mIndex})\n\n` +
         `💵 *PAYMENT BREAKDOWN:*\n` +
@@ -4225,9 +5365,10 @@ function generateWhatsAppMessage(booking, templateType) {
         `💳 *TOTAL AMOUNT DUE:* *${currency} ${totalMonthDue.toFixed(2)}*\n` +
         bankInfoEN +
         `\n📌 *Note:* Please settle payment on or before *${dueStr}* and forward the transfer receipt. Thank you for your cooperation! 🙏✨`;
+      break;
 
     case 'monthly_rent_receipt':
-      return `🧾 *OFFICIAL RENT PAYMENT RECEIPT (MONTH ${mIndex})*\n` +
+      msg = `🧾 *OFFICIAL RENT PAYMENT RECEIPT (MONTH ${mIndex})*\n` +
         `Receipt No: *${recNo}*\n` +
         `Date: *${todayStr}*\n\n` +
         `Dear *${booking.guestName}*, your monthly rent payment for *Month ${mIndex}* has been received and verified! 🎉\n\n` +
@@ -4237,6 +5378,7 @@ function generateWhatsAppMessage(booking, templateType) {
         `💰 *Amount Received:* *${currency} ${totalMonthDue.toFixed(2)}*\n` +
         `✅ *Status:* PAID IN FULL\n\n` +
         `Thank you for your prompt payment! 🙏✨`;
+      break;
 
     case 'refund_receipt':
       const refEN = booking.refundDetails || {
@@ -4247,7 +5389,7 @@ function generateWhatsAppMessage(booking, templateType) {
         netRefund: (booking.rentalDeposit || 0) + (booking.utilitiesDeposit || booking.securityDeposit || 0),
         notes: 'Full deposit refunded.'
       };
-      return `💰 *TENANCY DEPOSIT REFUND STATEMENT - ${prop.name.toUpperCase()}*\n` +
+      msg = `💰 *TENANCY DEPOSIT REFUND STATEMENT - ${prop.name.toUpperCase()}*\n` +
         `Ref: REF-${booking.id.slice(-6).toUpperCase()}\n\n` +
         tenantParticularsEN +
         `${unitTitleEN}\n` +
@@ -4264,9 +5406,10 @@ function generateWhatsAppMessage(booking, templateType) {
         `💵 *NET REFUND TO TENANT:* *${currency} ${refEN.netRefund.toFixed(2)}* ✅\n\n` +
         `📝 *Deduction Notes:* ${refEN.notes || 'None'}\n\n` +
         `Thank you for staying with us and taking care of the property! Wishing you all the best. 🙏✨`;
+      break;
 
     case 'checkout':
-      return `🏁 *Check-Out / Tenancy End Reminder - ${prop.name}*\n\n` +
+      msg = `🏁 *Check-Out / Tenancy End Reminder - ${prop.name}*\n\n` +
         `Hi *${booking.guestName}*, we hope you had a fantastic stay with us!\n\n` +
         `⏰ *Check-Out Time:* Today by ${prop.checkOutTime || '12:00 PM'}\n\n` +
         `Before you depart, kindly:\n` +
@@ -4274,24 +5417,41 @@ function generateWhatsAppMessage(booking, templateType) {
         `2. Ensure doors/windows are safely locked\n` +
         `3. Return keys or lock in the smart lockbox\n\n` +
         `Deposit refunds will be inspected and processed promptly after key return. Thank you! ⭐⭐⭐⭐⭐`;
+      break;
 
     case 'cleaner':
-      return `🧹 *Turnover Notice - ${prop.name}*\n\n` +
+      msg = `🧹 *Turnover Notice - ${prop.name}*\n\n` +
         `Turnover required for ${prop.name} on ${booking.checkOut}.\n` +
         `Guest ${booking.guestName} checking out at ${prop.checkOutTime || '12:00 PM'}.\n` +
+        (prop.address ? `Address: ${prop.address}\n` : '') +
+        (prop.gpsLocation ? `GPS Location: ${prop.gpsLocation}\n` : '') +
         `Smart Lock PIN to reset: ${prop.doorCode || '1234'}.`;
+      break;
 
     case 'payment':
-      return `💳 *Payment Reminder - ${prop.name}*\n\n` +
+      msg = `💳 *Payment Reminder - ${prop.name}*\n\n` +
         `Hi *${booking.guestName}*, gentle reminder regarding the remaining balance for your stay:\n\n` +
         `📅 *Dates:* ${booking.checkIn} to ${booking.checkOut}\n` +
         `💰 *Balance Due:* *${currency} ${booking.balance.toFixed(2)}*\n` +
         bankInfoEN +
         `\nKindly settle the balance before check-in to receive your door access PIN. Thank you! 🙏`;
+      break;
 
     default:
-      return '';
+      msg = '';
+      break;
   }
+
+  // Append Standard Notes / Footer (Customer-facing templates only)
+  if (msg) {
+    const stdNotes = (settings.standardNotes || '').trim();
+    if (stdNotes && templateType !== 'cleaner') {
+      const header = isBM ? '\n\n📝 *NOTA PENTING:*' : '\n\n📝 *IMPORTANT NOTES:*';
+      msg = msg.trim() + `${header}\n${stdNotes}`;
+    }
+  }
+
+  return msg;
 }
 
 function renderWhatsAppPreview() {
@@ -4344,7 +5504,7 @@ function openGuestGuideModal() {
   content.innerHTML = `
     <div class="guest-guide-hero">
       <h3 style="font-size:18px; font-weight:800;">${prop.name}</h3>
-      <p class="card-subtitle"><i class="fa-solid fa-location-dot"></i> ${prop.address || 'Homestay Address'}</p>
+      <p class="card-subtitle"><i class="fa-solid fa-location-dot"></i> ${prop.address || 'Homestay Address'}${prop.gpsLocation ? ` • <a href="${prop.gpsLocation}" target="_blank" style="color:var(--primary); font-weight:700; text-decoration:none;"><i class="fa-solid fa-map-location-dot"></i> Maps / GPS</a>` : ''}</p>
       
       <div class="qr-code-box">
         <img src="${qrUrl}" alt="WiFi QR Code" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\'%3E%3Crect width=\\'100\\' height=\\'100\\' fill=\\'%23f1f5f9\\'/ %3E%3Ctext x=\\'50\\' y=\\'55\\' font-size=\\'12\\' text-anchor=\\'middle\\' fill=\\'%2364748b\\'%3EWiFi QR%3C/text%3E%3C/svg%3E'">
@@ -4377,6 +5537,7 @@ function openGuestGuideModal() {
   document.getElementById('btnShareGuideWa').addEventListener('click', () => {
     const text = `🏡 *Welcome Guide - ${prop.name}*\n\n` +
       `📍 *Address:* ${prop.address || 'Standard Address'}\n` +
+      (prop.gpsLocation ? `🗺️ *GPS / Google Maps:* ${prop.gpsLocation}\n` : '') +
       `📶 *WiFi:* ${prop.wifiName} (Pass: ${prop.wifiPass})\n` +
       `🔑 *Door PIN:* ${prop.doorCode}\n` +
       `📜 *Rules:* ${prop.rules}\n\n` +
@@ -4393,12 +5554,13 @@ function openGuestGuideModal() {
 
 function exportDataBackup() {
   const exportObject = {
-    version: '2.0',
+    version: APP_VERSION,
     exportDate: new Date().toISOString(),
     properties: appState.properties,
     bookings: appState.bookings,
     turnovers: appState.turnovers,
     expenses: appState.expenses,
+    contacts: appState.contacts,
     settings: appState.settings
   };
 
@@ -4425,6 +5587,7 @@ function importDataBackup(event) {
         appState.bookings = data.bookings || [];
         appState.turnovers = data.turnovers || [];
         appState.expenses = data.expenses || [];
+        appState.contacts = data.contacts || [...DEFAULT_CONTACTS];
         appState.settings = data.settings || DEFAULT_SETTINGS;
         saveToStorage();
         renderApp();
@@ -4450,6 +5613,7 @@ function resetAllData() {
     appState.bookings = [];
     appState.turnovers = [];
     appState.expenses = [];
+    appState.contacts = [...DEFAULT_CONTACTS];
     appState.selectedPropertyId = 'all';
     appState.isLicensed = preservedIsLicensed;
     appState.licenseKey = preservedLicense;
@@ -4574,6 +5738,7 @@ const USER_GUIDE_DATA = {
           <div class="guide-step-text">
             <strong>Fill in Unit Particulars:</strong><br>
             • <strong>Category:</strong> Entire House, Master Room, Medium Room, Single Room, or Studio.<br>
+            • <strong>Location:</strong> Full Address and <strong>GPS / Google Maps Link</strong> (for guest navigation).<br>
             • <strong>Access:</strong> Smart Lock Door PIN (e.g. <code>5829#</code>) and WiFi Name/Password.<br>
             • <strong>Pricing:</strong> Standard nightly rate and cleaning fee.
           </div>
@@ -4604,6 +5769,9 @@ const USER_GUIDE_DATA = {
           • Enter Rental Deposit, Utilities Deposit, and Tenancy Agreement Fee.<br>
           • The system automatically calculates the <strong>Total Move-In Package</strong>.
         </div>
+        <div class="guide-callout success">
+          <strong>💡 Calendar View:</strong> Dates with bookings are automatically highlighted with colored dots. The calendar listing automatically displays all incoming bookings ordered by nearest dates with proximity badges (e.g. Check-In Today, Tomorrow, In 2 Days).
+        </div>
       `
     },
     {
@@ -4633,18 +5801,19 @@ const USER_GUIDE_DATA = {
     {
       id: 'guide-wa',
       icon: 'fa-brands fa-whatsapp',
-      title: '6. 1-Tap WhatsApp Automation (8 Templates)',
+      title: '6. 1-Tap WhatsApp Automation (9 Templates)',
       content: `
-        <p>Tap the WhatsApp button on any booking card to choose from 8 pre-formatted templates with zero manual typing:</p>
+        <p>Tap the WhatsApp button on any booking card to choose from 9 pre-formatted templates with zero manual typing:</p>
         <ul style="padding-left:18px; margin:6px 0;">
-          <li><strong>📄 Quotation:</strong> Send price breakdown & deposit request.</li>
+          <li><strong>📄 Quotation:</strong> Send price breakdown, location, & deposit request.</li>
           <li><strong>🧾 Deposit Receipt:</strong> Confirm booking & lock calendar dates.</li>
-          <li><strong>🔑 Full Receipt & Keys:</strong> Send Door Lock PIN, WiFi credentials & directions.</li>
+          <li><strong>📅 Check-In Reminder:</strong> Send friendly arrival guide with check-in time, address, GPS link, access PIN, & payment status (sent at owner's discretion when arrival is near).</li>
+          <li><strong>🔑 Full Receipt & Keys:</strong> Send Door Lock PIN, WiFi credentials, address & directions.</li>
           <li><strong>📑 Monthly Invoice:</strong> Send monthly rent bill with due date & bank account.</li>
           <li><strong>🧾 Monthly Rent Receipt:</strong> Send official rent payment confirmation.</li>
           <li><strong>🏁 Check-Out Reminder:</strong> Reminder on check-out time & key return.</li>
           <li><strong>💰 Deposit Refund Statement:</strong> Itemized statement with utility deductions.</li>
-          <li><strong>🧹 Cleaner Notice:</strong> Job alert with unit address, check-out time & PIN code.</li>
+          <li><strong>🧹 Cleaner Notice:</strong> Job alert with unit address, GPS link, check-out time & PIN code.</li>
         </ul>
       `
     },
@@ -4670,13 +5839,26 @@ const USER_GUIDE_DATA = {
     {
       id: 'guide-cleaning',
       icon: 'fa-broom',
-      title: '8. Turnovers & Cleaning Management',
+      title: '8. Turnovers, Maintenance Team & Supplier Dispatch',
       content: `
-        <p>Every check-out automatically creates a turnover task in the <strong>Turnovers (🧹)</strong> tab:</p>
-        <ul style="padding-left:18px; margin:6px 0;">
-          <li>Check off standard tasks (bedsheets, bathroom, amenities, AC, PIN reset).</li>
-          <li>Tap <strong>"Send to Cleaner"</strong> to dispatch the turnover schedule to your cleaner via WhatsApp with 1 tap.</li>
-        </ul>
+        <p>Keep your homestays pristine, coordinate cleaning crews, technicians, and restock supplies with 1-click WhatsApp alerts:</p>
+        <div class="guide-callout success">
+          <strong>👷 Team & Supplier Directory (Settings > Maintenance Team & Suppliers):</strong><br>
+          • Store phone numbers, rates, and notes for your cleaners, aircond specialists, plumbers, electricians, handymen, and supply vendors (linen/laundry, cooking gas, toiletries).<br>
+          • Direct 1-tap WhatsApp chat and dispatch alert buttons on every contact card.
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text"><strong>Turnover Cleaning:</strong> Every checkout generates a turnover card in the <strong>Turnovers (🧹)</strong> tab. Tap <strong>"WhatsApp Cleaner"</strong> to open the Dispatch modal with target date, cleaning window, address, GPS link, and Smart Lock PIN pre-filled.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text"><strong>Service & Repair Alerts:</strong> Tap <strong>"🛠️ Service / Supply Alert"</strong> in the Turnovers header anytime to dispatch job requests for aircond servicing, plumbing leaks, electrical power trips, or general handyman fixes with urgency levels (Urgent / High / Normal).</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text"><strong>Supply Restock Orders:</strong> Order fresh bedsheets, bath towels from your linen supplier or cooking gas cylinders from your gas vendor with 1 tap.</div>
+        </div>
       `
     },
     {
@@ -4700,15 +5882,23 @@ const USER_GUIDE_DATA = {
       content: `
         <div class="guide-callout success">
           <strong>🔒 100% Data Preservation Guarantee:</strong><br>
-          All your homestays, bookings, tenant records, invoices, and license keys are stored privately on your device. Updating the app will <strong>never delete or erase your data</strong>.
+          All your homestays, bookings, tenant records, invoices, and license keys are stored in your device's persistent <code>localStorage</code> database. Updating the app only refreshes the code cache — it <strong>never deletes or touches your data</strong>!
         </div>
         <div class="guide-step">
           <div class="guide-step-num">1</div>
-          <div class="guide-step-text"><strong>Updating:</strong> When an update is released, tap <strong>"Update Now"</strong> on the top banner.</div>
+          <div class="guide-step-text"><strong>1-Tap Auto Banner:</strong> When an update is deployed, tap <strong>"Update Now"</strong> on the notification banner at the top of the screen to activate instantly (~1s).</div>
         </div>
         <div class="guide-step">
           <div class="guide-step-num">2</div>
-          <div class="guide-step-text"><strong>Manual Backup:</strong> Go to <strong>Settings (⚙️) > Data & Backup</strong> and tap <strong>"Export Backup (.json)"</strong> anytime to save a copy.</div>
+          <div class="guide-step-text"><strong>Check in Settings:</strong> You can also go to <strong>Settings (⚙️) > App Version & Updates</strong> and tap <strong>"Check for Updates"</strong> anytime.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text"><strong>PWA Mobile App:</strong> For apps installed on your home screen, closing the app and reopening while connected to internet triggers automatic update in the background.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text"><strong>Safety Backup:</strong> Under <strong>Settings (⚙️) > Data Backup</strong>, tap <strong>"Export Backup (.json)"</strong> to save an encrypted snapshot of your business anytime.</div>
         </div>
       `
     }
@@ -4775,6 +5965,7 @@ const USER_GUIDE_DATA = {
           <div class="guide-step-text">
             <strong>Isikan Butiran Unit:</strong><br>
             • <strong>Kategori:</strong> Seluruh Rumah, Bilik Master, Bilik Medium, Bilik Single, atau Studio.<br>
+            • <strong>Lokasi:</strong> Alamat Penuh dan <strong>Pautan GPS / Google Maps</strong> (panduan arah tetamu).<br>
             • <strong>Akses:</strong> Kod PIN Kunci Pintu Pintar (cth: <code>5829#</code>) dan Nama/Kata Laluan WiFi.<br>
             • <strong>Harga:</strong> Kadar asas semalam dan yuran pembersihan.
           </div>
@@ -4805,6 +5996,9 @@ const USER_GUIDE_DATA = {
           • Masukkan Deposit Sewa, Deposit Utiliti, dan Yuran Perjanjian Sewa.<br>
           • Sistem mengira <strong>Jumlah Pakej Kemasukan (Move-In)</strong> secara automatik.
         </div>
+        <div class="guide-callout success">
+          <strong>💡 Paparan Kalendar:</strong> Tarikh dengan tempahan ditanda dengan warna unit. Senarai kalendar menyusun semua tempahan akan datang mengikut tarikh terdekat dengan lencana (cth: Masuk Hari Ini, Esok, Dalam 2 Hari).
+        </div>
       `
     },
     {
@@ -4834,18 +6028,19 @@ const USER_GUIDE_DATA = {
     {
       id: 'guide-wa',
       icon: 'fa-brands fa-whatsapp',
-      title: '6. Automasi WhatsApp 1-Sentuhan (8 Templat)',
+      title: '6. Automasi WhatsApp 1-Sentuhan (9 Templat)',
       content: `
-        <p>Tekan butang WhatsApp pada mana-mana kad tempahan untuk memilih daripada 8 templat siap sedia tanpa perlu taip manual:</p>
+        <p>Tekan butang WhatsApp pada mana-mana kad tempahan untuk memilih daripada 9 templat siap sedia tanpa perlu taip manual:</p>
         <ul style="padding-left:18px; margin:6px 0;">
-          <li><strong>📄 Sebut Harga:</strong> Hantar perincian harga rasmi & jumlah bayaran booking.</li>
+          <li><strong>📄 Sebut Harga:</strong> Hantar perincian harga rasmi, lokasi, & jumlah bayaran booking.</li>
           <li><strong>🧾 Resit Booking / Deposit:</strong> Pengesahan deposit & unit ditanda ditempah.</li>
-          <li><strong>🔑 Resit Penuh & Panduan Kunci:</strong> Resit bayaran penuh berserta PIN pintu & WiFi.</li>
+          <li><strong>📅 Peringatan Daftar Masuk:</strong> Peringatan mesra ketibaan berserta waktu masuk, alamat, pautan GPS Maps, PIN pintu & status baki bayaran (dihantar mengikut budi bicara pemilik apabila tarikh masuk hampir).</li>
+          <li><strong>🔑 Resit Penuh & Panduan Kunci:</strong> Resit bayaran penuh berserta PIN pintu, WiFi, alamat & panduan.</li>
           <li><strong>📑 Invois Sewa Bulanan:</strong> Invois bulanan mengikut bulan, tarikh akhir & no bank.</li>
           <li><strong>🧾 Resit Rasmi Sewa Bulanan:</strong> Resit rasmi pengesahan bayaran sewa bulanan.</li>
           <li><strong>🏁 Peringatan Daftar Keluar:</strong> Peringatan waktu keluar, suis elektrik & kunci.</li>
           <li><strong>💰 Penyata Pulangan Deposit:</strong> Penyata perincian deposit & tolakan bil utiliti.</li>
-          <li><strong>🧹 Arahan Pembersihan:</strong> Arahan tugasan kepada pembersih berserta kod PIN pintu.</li>
+          <li><strong>🧹 Arahan Pembersihan:</strong> Arahan tugasan kepada pembersih berserta alamat, GPS, & kod PIN pintu.</li>
         </ul>
       `
     },
@@ -4871,13 +6066,26 @@ const USER_GUIDE_DATA = {
     {
       id: 'guide-cleaning',
       icon: 'fa-broom',
-      title: '8. Jadual Pembersihan & Kakitangan',
+      title: '8. Pembersihan, Pasukan Penyelenggaraan & Tempahan Bekalan',
       content: `
-        <p>Setiap daftar keluar menjana tugasan pembersihan secara automatik di tab <strong>Pembersihan (🧹)</strong>:</p>
-        <ul style="padding-left:18px; margin:6px 0;">
-          <li>Tanda senarai semak tugasan (cadar, bilik air, kelengkapan, aircond, reset PIN).</li>
-          <li>Tekan <strong>"Hantar ke Pembersih"</strong> untuk menghantar arahan tugasan terus ke WhatsApp staf dengan 1 sentuhan.</li>
-        </ul>
+        <p>Kekalkan kebersihan homestay anda, selaraskan kakitangan pembersihan, juruteknik, dan tempahan stok bekalan sepantas 1-klik WhatsApp:</p>
+        <div class="guide-callout success">
+          <strong>👷 Direktori Pasukan & Pembekal (Tetapan > Pasukan Penyelenggaraan & Pembekal):</strong><br>
+          • Simpan nombor telefon, kadar caj dan nota kerja untuk tukang cuci, pakar aircond, tukang paip, juruelektrik, tukang rumah, dan pembekal (dobi linen, tong gas memasak, sabun/syampu).<br>
+          • Butang sembang terus WhatsApp dan butang hantar notis tugasan tersedia pada setiap kad kenalan.
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text"><strong>Pembersihan Unit (Turnover):</strong> Setiap daftar keluar menjana tugasan di tab <strong>Pembersihan (🧹)</strong>. Tekan <strong>"WhatsApp Cleaner"</strong> untuk membuka tetingkap Notis dengan tarikh, waktu mengemas, alamat, pautan GPS Maps, dan Kod PIN pintu tersedia automatik.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text"><strong>Notis Pembaikan & Servis:</strong> Tekan <strong>"🛠️ Notis Servis & Bekalan"</strong> di bar atas tab Pembersihan pada bila-bila masa untuk menghantar tugasan servis aircond, paip bocor, bekalan elektrik trip, atau baiki perkakasan dengan tahap keperluan (Kecemasan / Tinggi / Biasa).</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text"><strong>Pesanan Tambahan Stok:</strong> Tempah set cadar & tuala baru dari pembekal linen atau tong gas memasak baru daripada pembekal gas dengan 1 sentuhan.</div>
+        </div>
       `
     },
     {
@@ -4901,15 +6109,23 @@ const USER_GUIDE_DATA = {
       content: `
         <div class="guide-callout success">
           <strong>🔒 Jaminan 100% Data Selamat:</strong><br>
-          Semua maklumat homestay, tempahan, rekod penyewa, invois, dan lesen disimpan secara peribadi di peranti anda. Kemas kini aplikasi <strong>tidak akan memadamkan data anda</strong>.
+          Semua maklumat homestay, tempahan, rekod penyewa, invois, dan lesen disimpan secara kekal di dalam <code>localStorage</code> peranti anda. Kemas kini aplikasi hanya memperbaharui kod program — ia <strong>tidak sekali-kali memadamkan data anda</strong>!
         </div>
         <div class="guide-step">
           <div class="guide-step-num">1</div>
-          <div class="guide-step-text"><strong>Kemas Kini:</strong> Apabila versi baharu dikeluarkan, tekan <strong>"Kemas Kini Sekarang"</strong> pada sepanduk atas.</div>
+          <div class="guide-step-text"><strong>Sepanduk 1-Sentuhan:</strong> Apabila versi baharu dikeluarkan, tekan <strong>"Kemas Kini Sekarang"</strong> pada sepanduk atas untuk memuatkan versi terkini (~1 saat).</div>
         </div>
         <div class="guide-step">
           <div class="guide-step-num">2</div>
-          <div class="guide-step-text"><strong>Sandaran Manual:</strong> Pergi ke <strong>Tetapan (⚙️) > Data & Sandaran</strong> dan tekan <strong>"Eksport Sandaran (.json)"</strong> bila-bila masa untuk simpan salinan.</div>
+          <div class="guide-step-text"><strong>Semak di Tetapan:</strong> Anda juga boleh pergi ke <strong>Tetapan (⚙️) > Versi Aplikasi</strong> dan tekan <strong>"Semak Kemas Kini"</strong> pada bila-bila masa.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text"><strong>Aplikasi Telefon (PWA):</strong> Jika dipasang di skrin utama telefon, tutup aplikasi sepenuhnya dan buka semula semasa ada internet untuk muat turun fail terkini di latar belakang.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text"><strong>Sandaran Keselamatan:</strong> Di <strong>Tetapan (⚙️) > Sandaran Data</strong>, tekan <strong>"Eksport Sandaran (.json)"</strong> bila-bila masa untuk simpan salinan keselamatan fail bisnes anda.</div>
         </div>
       `
     }

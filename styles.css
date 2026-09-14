@@ -109,6 +109,7 @@ body {
   justify-content: center;
   align-items: flex-start;
   overflow-x: hidden;
+  font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -180,7 +181,7 @@ body {
 }
 
 .brand-title {
-  font-size: 17px;
+  font-size: 18.5px;
   font-weight: 800;
   color: var(--text-main);
   letter-spacing: -0.3px;
@@ -188,7 +189,7 @@ body {
 }
 
 .brand-subtitle {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-muted);
 }
@@ -209,7 +210,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -224,7 +225,7 @@ body {
   width: auto;
   padding: 0 10px;
   gap: 6px;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--primary);
   background: var(--primary-light);
@@ -234,7 +235,7 @@ body {
 .lang-toggle-btn {
   width: 36px;
   height: 36px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--primary);
   background: var(--primary-light);
@@ -274,7 +275,7 @@ body {
   background: var(--bg-surface-subtle);
   border: 1.5px solid transparent;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -305,7 +306,7 @@ body {
   background: transparent;
   border: 1.5px dashed var(--border-color);
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -356,14 +357,14 @@ body {
 }
 
 .card-title {
-  font-size: 16px;
+  font-size: 17.5px;
   font-weight: 700;
   color: var(--text-main);
   letter-spacing: -0.2px;
 }
 
 .card-subtitle {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -383,7 +384,7 @@ body {
 }
 
 .section-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text-main);
   text-transform: uppercase;
@@ -391,7 +392,7 @@ body {
 }
 
 .section-action {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--primary);
   cursor: pointer;
@@ -440,13 +441,13 @@ body {
 }
 
 .kpi-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
 }
 
 .kpi-val {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--text-main);
   line-height: 1.1;
@@ -660,18 +661,46 @@ body {
 }
 
 .cal-day-cell.other-month {
-  opacity: 0.3;
+  opacity: 0.28;
+}
+
+.cal-day-cell:hover {
+  background: var(--bg-surface);
+  border-color: var(--border-color);
+}
+
+.cal-day-cell.has-booking {
+  background: rgba(2, 132, 199, 0.08);
+  border-color: rgba(2, 132, 199, 0.25);
+}
+
+.cal-day-cell.has-booking.is-confirmed-booked {
+  background: rgba(2, 132, 199, 0.12);
+  border-color: rgba(2, 132, 199, 0.38);
+}
+
+.cal-day-cell.has-booking:hover {
+  background: rgba(2, 132, 199, 0.18);
+  border-color: var(--primary);
+  transform: translateY(-1px);
 }
 
 .cal-day-cell.today {
   border-color: var(--primary);
   background: var(--primary-light);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.cal-day-cell.today.has-booking {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1.5px var(--primary);
 }
 
 .cal-day-cell.selected {
   outline: 2px solid var(--primary);
   outline-offset: -2px;
-  background: rgba(2, 132, 199, 0.2);
+  background: rgba(2, 132, 199, 0.22);
 }
 
 .cal-day-num {
@@ -679,7 +708,11 @@ body {
   font-weight: 700;
   color: var(--text-main);
   line-height: 1;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
+}
+
+.cal-day-cell.has-booking .cal-day-num {
+  font-weight: 800;
 }
 
 .cal-day-cell.today .cal-day-num {
@@ -689,16 +722,33 @@ body {
 
 .cal-dots-container {
   display: flex;
-  gap: 2px;
+  gap: 3px;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
+  margin-top: 2px;
   max-width: 100%;
+  min-height: 8px;
 }
 
+.cal-stay-dot,
 .cal-booking-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+}
+
+.cal-stay-dot.is-quotation {
+  opacity: 0.65;
+  border: 1px dashed rgba(255, 255, 255, 0.8);
+}
+
+.cal-day-cell:hover .cal-stay-dot {
+  transform: scale(1.2);
 }
 
 .cal-legend {
@@ -718,9 +768,46 @@ body {
   gap: 6px;
 }
 
-/* Selected Day Card */
+/* Selected Day & Incoming Bookings Card */
 .selected-day-card {
   margin-top: 14px;
+}
+
+.cal-listing-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.cal-tab-pill {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.cal-tab-pill:hover {
+  background: var(--bg-surface-subtle);
+  color: var(--text-main);
+}
+
+.cal-tab-pill.active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-text);
+  font-weight: 700;
 }
 
 .day-details-header {
@@ -733,7 +820,84 @@ body {
 .selected-day-bookings {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+}
+
+/* Proximity & Calendar Badges */
+.cal-proximity-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.cal-prox-today {
+  background: var(--success-light);
+  color: var(--success-text);
+  border: 1px solid var(--success);
+}
+
+.cal-prox-checkout {
+  background: var(--danger-light);
+  color: var(--danger-text);
+  border: 1px solid var(--danger);
+}
+
+.cal-prox-tomorrow {
+  background: var(--warning-light);
+  color: var(--warning-text);
+  border: 1px solid var(--warning);
+}
+
+.cal-prox-soon {
+  background: rgba(2, 132, 199, 0.12);
+  color: var(--primary);
+  border: 1px solid rgba(2, 132, 199, 0.25);
+}
+
+.cal-prox-future {
+  background: var(--bg-surface-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.cal-prox-instay {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Status Badges */
+.badge-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-confirmed {
+  background: var(--success-light);
+  color: var(--success-text);
+}
+
+.badge-booked {
+  background: var(--warning-light);
+  color: var(--warning-text);
+}
+
+.badge-inhouse {
+  background: rgba(139, 92, 246, 0.15);
+  color: #7c3aed;
+}
+
+.badge-quotation {
+  background: var(--bg-surface-subtle);
+  color: var(--text-muted);
 }
 
 .empty-hint {
@@ -854,7 +1018,7 @@ body {
 }
 
 .booking-guest-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--text-main);
   margin-top: 4px;
@@ -864,7 +1028,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
 }
 
@@ -879,7 +1043,7 @@ body {
   background: var(--bg-surface-subtle);
   padding: 8px 12px;
   border-radius: var(--radius-md);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .booking-actions-row {
@@ -1114,9 +1278,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 10px 17px;
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   border: 1px solid transparent;
@@ -1159,14 +1323,14 @@ body {
 }
 
 .btn-sm {
-  padding: 6px 12px;
-  font-size: 12px;
+  padding: 7px 13px;
+  font-size: 13px;
   border-radius: var(--radius-sm);
 }
 
 .btn-xs {
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: 5px 9px;
+  font-size: 12px;
   border-radius: var(--radius-sm);
 }
 
@@ -1186,7 +1350,7 @@ body {
 
 .form-label {
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
   margin-bottom: 4px;
@@ -1199,12 +1363,12 @@ body {
 
 .form-control, .form-select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px 13px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   background: var(--bg-input);
   color: var(--text-main);
-  font-size: 13px;
+  font-size: 14px;
   outline: none;
   transition: border-color 0.2s ease;
 }
@@ -1224,12 +1388,12 @@ body {
 .pricing-calc-box {
   background: var(--bg-surface-subtle);
   border-radius: var(--radius-md);
-  padding: 10px 12px;
+  padding: 11px 13px;
   margin-bottom: 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .calc-row {
@@ -1239,9 +1403,9 @@ body {
 }
 
 .inline-input {
-  width: 90px;
+  width: 95px;
   padding: 4px 8px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .calc-total-row {
@@ -1253,7 +1417,7 @@ body {
 }
 
 .total-amount-badge {
-  font-size: 15px;
+  font-size: 16.5px;
   color: var(--primary);
   font-weight: 800;
 }
@@ -1346,7 +1510,7 @@ body {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   padding: 8px 0;
@@ -1354,7 +1518,7 @@ body {
 }
 
 .nav-item i {
-  font-size: 18px;
+  font-size: 19px;
   transition: transform 0.2s ease;
 }
 
@@ -1428,20 +1592,20 @@ body {
 }
 
 .modal-title {
-  font-size: 17px;
+  font-size: 18.5px;
   font-weight: 800;
   color: var(--text-main);
 }
 
 .modal-subtitle {
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--text-muted);
 }
 
 .modal-close {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 26px;
   color: var(--text-muted);
   cursor: pointer;
   line-height: 1;
@@ -1487,12 +1651,12 @@ body {
 }
 
 .wa-tab-btn {
-  padding: 6px 12px;
+  padding: 7px 13px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border-color);
   background: var(--bg-surface-subtle);
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
@@ -1520,11 +1684,11 @@ body.theme-dark .wa-preview-card {
 
 .wa-bubble {
   background: #ffffff;
-  padding: 12px;
+  padding: 13px;
   border-radius: var(--radius-md);
   box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 14.5px;
+  line-height: 1.45;
   color: #111b21;
   position: relative;
   word-break: break-word;
@@ -1539,7 +1703,7 @@ body.theme-dark .wa-bubble {
 .wa-time-stamp {
   display: block;
   text-align: right;
-  font-size: 10px;
+  font-size: 11px;
   color: #667781;
   margin-top: 4px;
 }
@@ -2014,4 +2178,129 @@ body.theme-dark .banner-text {
   border-left-color: var(--warning);
 }
 
+/* Dark Mode Overrides for Calendar & Listing */
+body.theme-dark .cal-day-cell.has-booking {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+body.theme-dark .cal-day-cell.has-booking.is-confirmed-booked {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.45);
+}
+
+body.theme-dark .cal-tab-pill {
+  background: var(--bg-surface);
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+body.theme-dark .cal-tab-pill.active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+/* ==========================================================================
+   MAINTENANCE CONTACTS & DISPATCH MODAL
+   ========================================================================== */
+
+.settings-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contact-card {
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.contact-card:hover {
+  border-color: var(--primary);
+}
+
+.contact-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.contact-card-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.contact-category-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.badge-cleaner { background: #e0f2fe; color: #0369a1; }
+.badge-aircond { background: #e0f2fe; color: #0284c7; }
+.badge-plumber { background: #e0e7ff; color: #3730a3; }
+.badge-electrician { background: #fef3c7; color: #92400e; }
+.badge-handyman { background: #fee2e2; color: #991b1b; }
+.badge-linen_supplier { background: #f3e8ff; color: #6b21a8; }
+.badge-gas_supplier { background: #ffedd5; color: #9a3412; }
+.badge-locksmith { background: #ecfdf5; color: #065f46; }
+.badge-other { background: #f1f5f9; color: #475569; }
+
+body.theme-dark .badge-cleaner { background: rgba(3, 105, 161, 0.25); color: #38bdf8; }
+body.theme-dark .badge-aircond { background: rgba(2, 132, 199, 0.25); color: #38bdf8; }
+body.theme-dark .badge-plumber { background: rgba(55, 48, 163, 0.25); color: #818cf8; }
+body.theme-dark .badge-electrician { background: rgba(146, 64, 14, 0.25); color: #fde047; }
+body.theme-dark .badge-handyman { background: rgba(153, 27, 27, 0.25); color: #f87171; }
+body.theme-dark .badge-linen_supplier { background: rgba(107, 33, 168, 0.25); color: #c084fc; }
+body.theme-dark .badge-gas_supplier { background: rgba(154, 52, 18, 0.25); color: #fb923c; }
+body.theme-dark .badge-locksmith { background: rgba(6, 95, 70, 0.25); color: #34d399; }
+body.theme-dark .badge-other { background: rgba(71, 85, 105, 0.25); color: #94a3b8; }
+
+.contact-phone-link {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contact-phone-link:hover {
+  color: var(--primary);
+}
+
+.contact-notes-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.contact-actions-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+  align-items: center;
+  flex-wrap: wrap;
+}
 
