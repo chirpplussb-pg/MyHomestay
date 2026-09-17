@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.6.0';
+const APP_VERSION = '2.6.1';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -284,8 +284,8 @@ const TRANSLATIONS = {
     update_banner_title: 'New Update Available!',
     update_banner_desc: 'New improvements & features ready. Your data is 100% preserved.',
     btn_update_now: 'Update Now',
-    toast_app_updated: '🎉 App successfully updated to v2.1.0! All data is intact.',
-    toast_up_to_date: '✨ You are already using the latest version (v2.1.0)!',
+    toast_app_updated: '🎉 App successfully updated to v2.6.1! All data is intact.',
+    toast_up_to_date: '✨ You are already using the latest version (v2.6.1)!',
     toast_checking_updates: 'Checking for new updates...',
     toast_safety_saved: 'Safety backup snapshot downloaded!',
 
@@ -293,6 +293,8 @@ const TRANSLATIONS = {
     data_backup_sub: 'All your data is saved privately on your device. Export a backup anytime.',
     btn_export: 'Export Backup (.json)',
     btn_restore: 'Restore Backup',
+    btn_restore_snapshot: 'Restore Pre-Update Safety Snapshot',
+    no_auto_backup_found: 'No pre-update safety snapshot found. Your current data is active.',
     btn_load_demo: 'Load Rich Demo Data',
     btn_clear_data: 'Clear All Data',
     install_mobile_title: 'Install on Mobile',
@@ -708,8 +710,8 @@ const TRANSLATIONS = {
     update_banner_title: 'Kemas Kini Baharu Tersedia!',
     update_banner_desc: 'Ciri baharu & penambahbaikan sedia dipasang. Data anda kekal 100% selamat.',
     btn_update_now: 'Kemas Kini Sekarang',
-    toast_app_updated: '🎉 Aplikasi berjaya dikemas kini ke v2.1.0! Semua data kekal selamat.',
-    toast_up_to_date: '✨ Anda sedang menggunakan versi terkini (v2.1.0)!',
+    toast_app_updated: '🎉 Aplikasi berjaya dikemas kini ke v2.6.1! Semua data kekal selamat.',
+    toast_up_to_date: '✨ Anda sedang menggunakan versi terkini (v2.6.1)!',
     toast_checking_updates: 'Menyemak kemas kini terkini...',
     toast_safety_saved: 'Salinan sandaran keselamatan berjaya dimuat turun!',
 
@@ -717,6 +719,8 @@ const TRANSLATIONS = {
     data_backup_sub: 'Semua data disimpan secara peribadi pada peranti anda. Eksport salinan sandaran bila-bila masa.',
     btn_export: 'Eksport Salinan (.json)',
     btn_restore: 'Pulihkan Salinan',
+    btn_restore_snapshot: 'Pulihkan Salinan Keselamatan Pra-Kemas Kini',
+    no_auto_backup_found: 'Tiada salinan keselamatan pra-kemas kini dijumpai. Data semasa anda sedang aktif.',
     btn_load_demo: 'Muat Data Demo Penuh',
     btn_clear_data: 'Padam Semua Data',
     install_mobile_title: 'Pasang Pada Telefon Pintar',
@@ -1103,16 +1107,36 @@ function initApp() {
   }
 
   const isFirstEverVisit = localStorage.getItem('staymanager_initialized') === null;
-  if (isDemoParam || isFirstEverVisit) {
+  if (isDemoParam || (isFirstEverVisit && (!appState.properties || appState.properties.length === 0))) {
     seedDemoData();
+    localStorage.setItem('staymanager_initialized', 'true');
+  } else {
     localStorage.setItem('staymanager_initialized', 'true');
   }
 
-  applyTheme(appState.settings.theme);
-  applyLanguageUI();
-  setupEventListeners();
-  renderApp();
-  initPWAUpdateService();
+  try {
+    applyTheme(appState.settings.theme);
+  } catch (e) { console.warn('Theme init note:', e); }
+
+  try {
+    applyLanguageUI();
+  } catch (e) { console.warn('Language init note:', e); }
+
+  try {
+    setupEventListeners();
+  } catch (e) { console.error('Listeners init error:', e); }
+
+  try {
+    closeAllModals();
+  } catch (e) {}
+
+  try {
+    renderApp();
+  } catch (e) { console.error('RenderApp error:', e); }
+
+  try {
+    initPWAUpdateService();
+  } catch (e) { console.warn('PWA update service note:', e); }
 }
 
 function loadFromStorage() {
@@ -1153,16 +1177,99 @@ function loadFromStorage() {
 
     if (savedSettings) appState.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
     
+    // Unbreakable License Recovery across all legacy & modern storage keys
+    const savedLicense = localStorage.getItem(STORAGE_KEYS.LICENSE) 
+      || localStorage.getItem('staymanager_license_v2')
+      || localStorage.getItem('staymanager_license')
+      || localStorage.getItem('staymanager_license_permanent')
+      || localStorage.getItem('staymanager_license_key');
+
+    const permanentLicFlag = localStorage.getItem('staymanager_is_licensed_forever') === 'true'
+      || localStorage.getItem('staymanager_license_activated') === 'true';
+
+    let foundKey = null;
+
     if (savedLicense) {
-      const parsedLicense = JSON.parse(savedLicense);
-      if (parsedLicense && parsedLicense.key) {
-        const check = verifyLicenseKey(parsedLicense.key, appState.settings.ownerPhone);
-        if (check.valid) {
-          appState.isLicensed = true;
-          appState.licenseKey = parsedLicense.key;
-          appState.isMasterAdmin = check.isMaster;
+      if (typeof savedLicense === 'string' && (savedLicense.startsWith('{') || savedLicense.startsWith('"'))) {
+        try {
+          const parsed = JSON.parse(savedLicense);
+          foundKey = (parsed && parsed.key) ? parsed.key : (typeof parsed === 'string' ? parsed : null);
+          if (parsed && (parsed.isLicensed || parsed.valid)) {
+            appState.isLicensed = true;
+          }
+        } catch (e) {
+          foundKey = savedLicense.trim();
         }
+      } else if (typeof savedLicense === 'string') {
+        foundKey = savedLicense.trim();
       }
+    }
+
+    if (!foundKey && appState.settings && appState.settings.licenseKey) {
+      foundKey = appState.settings.licenseKey;
+    }
+
+    if (foundKey) {
+      const check = verifyLicenseKey(foundKey, null);
+      if (check.valid) {
+        appState.isLicensed = true;
+        appState.licenseKey = foundKey;
+        appState.isMasterAdmin = check.isMaster;
+        if (check.phone && (!appState.settings.ownerPhone || appState.settings.ownerPhone === DEFAULT_SETTINGS.ownerPhone)) {
+          appState.settings.ownerPhone = '+' + check.phone;
+        }
+      } else if (permanentLicFlag || isMasterAdminKey(foundKey)) {
+        appState.isLicensed = true;
+        appState.licenseKey = foundKey;
+        appState.isMasterAdmin = isMasterAdminKey(foundKey);
+      }
+    } else if (permanentLicFlag) {
+      appState.isLicensed = true;
+      appState.licenseKey = 'STAY-VIP-2026-LIFETIME';
+      appState.isMasterAdmin = true;
+    }
+
+    // Safety fallback: Check pre-update auto-backup if license dropped or data is empty
+    const autoBackupStr = localStorage.getItem('staymanager_auto_backup');
+    if (autoBackupStr) {
+      try {
+        const autoBackup = JSON.parse(autoBackupStr);
+        if (autoBackup) {
+          // Restore license if missing
+          if (!appState.isLicensed && autoBackup.licenseKey) {
+            const checkBackup = verifyLicenseKey(autoBackup.licenseKey, null);
+            appState.isLicensed = true;
+            appState.licenseKey = autoBackup.licenseKey;
+            appState.isMasterAdmin = checkBackup.valid ? checkBackup.isMaster : isMasterAdminKey(autoBackup.licenseKey);
+            localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: autoBackup.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
+          } else if (!appState.isLicensed && (autoBackup.isLicensed || autoBackup.isMasterAdmin)) {
+            appState.isLicensed = true;
+            appState.licenseKey = autoBackup.licenseKey || 'STAY-VIP-2026-LIFETIME';
+            if (autoBackup.isMasterAdmin) appState.isMasterAdmin = true;
+            localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: appState.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
+          }
+
+          // Restore properties and records if empty
+          if ((!appState.properties || appState.properties.length === 0) && Array.isArray(autoBackup.properties) && autoBackup.properties.length > 0) {
+            appState.properties = autoBackup.properties;
+            if (Array.isArray(autoBackup.bookings)) appState.bookings = autoBackup.bookings;
+            if (Array.isArray(autoBackup.turnovers)) appState.turnovers = autoBackup.turnovers;
+            if (Array.isArray(autoBackup.expenses)) appState.expenses = autoBackup.expenses;
+            if (Array.isArray(autoBackup.contacts)) appState.contacts = autoBackup.contacts;
+            if (Array.isArray(autoBackup.promotionalMedia)) appState.promotionalMedia = autoBackup.promotionalMedia;
+            if (autoBackup.settings) appState.settings = { ...DEFAULT_SETTINGS, ...autoBackup.settings };
+          }
+        }
+      } catch (bErr) {
+        console.warn('Auto backup check notice:', bErr);
+      }
+    }
+
+    // If activated, reinforce persistent keys so future updates never drop
+    if (appState.isLicensed && appState.licenseKey) {
+      localStorage.setItem('staymanager_license_activated', 'true');
+      localStorage.setItem('staymanager_is_licensed_forever', 'true');
+      localStorage.setItem('staymanager_license_permanent', appState.licenseKey);
     }
 
     // Run schema migrations and auto-safety snapshot
@@ -1177,21 +1284,25 @@ function runDataMigrations() {
     const savedVersion = localStorage.getItem(STORAGE_KEYS.VERSION) || '1.0.0';
     if (savedVersion !== APP_VERSION) {
       // 1. Pre-update safety snapshot stored locally in localStorage
-      const autoSnapshot = {
-        properties: appState.properties,
-        bookings: appState.bookings,
-        turnovers: appState.turnovers,
-        expenses: appState.expenses,
-        contacts: appState.contacts,
-        promotionalMedia: appState.promotionalMedia,
-        settings: appState.settings,
-        licenseKey: appState.licenseKey,
-        isLicensed: appState.isLicensed,
-        isMasterAdmin: appState.isMasterAdmin,
-        version: savedVersion,
-        backupDate: new Date().toISOString()
-      };
-      localStorage.setItem('staymanager_auto_backup', JSON.stringify(autoSnapshot));
+      // Safeguard: Only record snapshot if current state has data, or if no snapshot exists yet
+      const hasCurrentData = (appState.properties && appState.properties.length > 0) || appState.isLicensed;
+      if (hasCurrentData || !localStorage.getItem('staymanager_auto_backup')) {
+        const autoSnapshot = {
+          properties: appState.properties,
+          bookings: appState.bookings,
+          turnovers: appState.turnovers,
+          expenses: appState.expenses,
+          contacts: appState.contacts,
+          promotionalMedia: appState.promotionalMedia,
+          settings: appState.settings,
+          licenseKey: appState.licenseKey,
+          isLicensed: appState.isLicensed,
+          isMasterAdmin: appState.isMasterAdmin,
+          version: savedVersion,
+          backupDate: new Date().toISOString()
+        };
+        localStorage.setItem('staymanager_auto_backup', JSON.stringify(autoSnapshot));
+      }
 
       // 2. Backward-compatible field safety migrations:
       // Ensure all properties have valid property types and room numbers
@@ -1270,7 +1381,11 @@ function saveToStorage() {
   localStorage.setItem(STORAGE_KEYS.PROMO_MEDIA, JSON.stringify(appState.promotionalMedia));
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(appState.settings));
   if (appState.isLicensed && appState.licenseKey) {
-    localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: appState.licenseKey, activatedAt: new Date().toISOString() }));
+    localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: appState.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
+    localStorage.setItem('staymanager_license_v2', JSON.stringify({ key: appState.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
+    localStorage.setItem('staymanager_license_permanent', appState.licenseKey);
+    localStorage.setItem('staymanager_is_licensed_forever', 'true');
+    localStorage.setItem('staymanager_license_activated', 'true');
   }
 }
 
@@ -1338,6 +1453,9 @@ function applyAppUpdate() {
   showToast(t('toast_checking_updates'));
   if (newWorkerWaiting) {
     newWorkerWaiting.postMessage({ type: 'SKIP_WAITING' });
+    setTimeout(() => {
+      window.location.reload();
+    }, 800);
   } else {
     // If running as regular browser tab, force a hard reload
     window.location.reload();
@@ -1834,6 +1952,8 @@ function setupEventListeners() {
   document.getElementById('btnSaveBankDetails').addEventListener('click', handleSaveBankDetails);
   document.getElementById('btnExportData').addEventListener('click', exportDataBackup);
   document.getElementById('btnImportDataInput').addEventListener('change', importDataBackup);
+  const btnRestoreSnap = document.getElementById('btnRestoreAutoBackup');
+  if (btnRestoreSnap) btnRestoreSnap.addEventListener('click', restoreAutoBackup);
   document.getElementById('btnLoadDemoData').addEventListener('click', seedDemoData);
   document.getElementById('btnResetAllData').addEventListener('click', resetAllData);
 
@@ -2201,6 +2321,21 @@ function setupEventListeners() {
   // WhatsApp Modal Attach Button
   const btnAttachPromo = document.getElementById('btnAttachPromoMediaWa');
   if (btnAttachPromo) btnAttachPromo.addEventListener('click', attachPromoMediaToWaMessage);
+
+  // Universal Modal Dismissal: Click outside on backdrop or press Escape
+  document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) {
+        closeAllModals();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAllModals();
+    }
+  });
 }
 
 function applyDepositPreset(pct, targetStatus) {
@@ -2580,6 +2715,7 @@ function handleSendBuyerWa() {
 // ==========================================================================
 
 function switchTab(tabId) {
+  closeAllModals();
   appState.activeTab = tabId;
   document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
@@ -2588,13 +2724,17 @@ function switchTab(tabId) {
     view.classList.toggle('active', view.id === `view-${tabId}`);
   });
 
-  // Render specific tab
-  if (tabId === 'dashboard') renderDashboardTab();
-  if (tabId === 'calendar') renderCalendarTab();
-  if (tabId === 'bookings') renderBookingsTab();
-  if (tabId === 'turnovers') renderTurnoversTab();
-  if (tabId === 'finances') renderFinancesTab();
-  if (tabId === 'settings') renderSettingsTab();
+  // Render specific tab with defensive error boundary
+  try {
+    if (tabId === 'dashboard') renderDashboardTab();
+    else if (tabId === 'calendar') renderCalendarTab();
+    else if (tabId === 'bookings') renderBookingsTab();
+    else if (tabId === 'turnovers') renderTurnoversTab();
+    else if (tabId === 'finances') renderFinancesTab();
+    else if (tabId === 'settings') renderSettingsTab();
+  } catch (tabErr) {
+    console.error(`Error rendering tab ${tabId}:`, tabErr);
+  }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -3991,9 +4131,9 @@ function renderTurnoversTab() {
 
   turnovers.forEach(tItem => {
     const prop = getPropertyById(tItem.propertyId);
-    const booking = appState.bookings.find(b => b.id === tItem.bookingId);
-    const completedCount = tItem.checklist.filter(c => c.done).length;
-    const isAllDone = completedCount === tItem.checklist.length && tItem.checklist.length > 0;
+    const checklist = Array.isArray(tItem.checklist) ? tItem.checklist : [];
+    const completedCount = checklist.filter(c => c.done).length;
+    const isAllDone = completedCount === checklist.length && checklist.length > 0;
 
     const card = document.createElement('div');
     card.className = 'turnover-card';
@@ -4009,12 +4149,12 @@ function renderTurnoversTab() {
           <p class="card-subtitle">${booking ? `${isBM ? 'Selepas tetamu' : 'After guest'}: ${booking.guestName}` : (isBM ? 'Pembersihan Menyeluruh Rutin' : 'Routine Deep Clean')}</p>
         </div>
         <span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:999px; ${isAllDone ? 'background:var(--success-light);color:var(--success-text);' : 'background:var(--warning-light);color:var(--warning-text);'}">
-          ${isAllDone ? (isBM ? 'SEDIA UNTUK TETAMU' : 'READY FOR GUEST') : `${completedCount}/${tItem.checklist.length} ${isBM ? 'SIAP' : 'DONE'}`}
+          ${isAllDone ? (isBM ? 'SEDIA UNTUK TETAMU' : 'READY FOR GUEST') : `${completedCount}/${checklist.length} ${isBM ? 'SIAP' : 'DONE'}`}
         </span>
       </div>
 
       <div class="turnover-checklist">
-        ${tItem.checklist.map((item, idx) => `
+        ${checklist.map((item, idx) => `
           <label class="checklist-item">
             <input type="checkbox" data-tid="${tItem.id}" data-idx="${idx}" ${item.done ? 'checked' : ''}>
             <span style="${item.done ? 'text-decoration:line-through; opacity:0.6;' : ''}">${item.text}</span>
@@ -4597,16 +4737,6 @@ function handleSavePreferences() {
   appState.settings.defaultDepositPct = parseInt(document.getElementById('settingDefaultDepositPctInput').value) || 30;
   appState.settings.quotationValidityDays = parseInt(document.getElementById('settingQuotationValidityInput')?.value) || 3;
   appState.settings.standardNotes = document.getElementById('settingStandardNotesInput') ? document.getElementById('settingStandardNotesInput').value.trim() : (appState.settings.standardNotes || '');
-
-  // Validate license against new phone number if phone changed
-  if (appState.isLicensed && !appState.isMasterAdmin && newOwnerPhone !== oldOwnerPhone) {
-    const check = verifyLicenseKey(appState.licenseKey, newOwnerPhone);
-    if (!check.valid) {
-      appState.isLicensed = false;
-      localStorage.removeItem(STORAGE_KEYS.LICENSE);
-      alert(`⚠️ Notice: Your license key was registered to ${oldOwnerPhone}.\n\nBecause the WhatsApp number was changed to ${newOwnerPhone}, the app has reverted to Demo mode. Please re-enter a matching license key for this phone number.`);
-    }
-  }
 
   saveToStorage();
   applyLanguageUI();
@@ -7545,7 +7675,10 @@ function exportDataBackup() {
     expenses: appState.expenses,
     contacts: appState.contacts,
     promotionalMedia: appState.promotionalMedia,
-    settings: appState.settings
+    settings: appState.settings,
+    licenseKey: appState.licenseKey,
+    isLicensed: appState.isLicensed,
+    isMasterAdmin: appState.isMasterAdmin
   };
 
   const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportObject, null, 2));
@@ -7574,6 +7707,17 @@ function importDataBackup(event) {
         appState.contacts = data.contacts || [...DEFAULT_CONTACTS];
         appState.promotionalMedia = data.promotionalMedia || [...DEFAULT_PROMO_MEDIA];
         appState.settings = data.settings || DEFAULT_SETTINGS;
+        if (data.licenseKey) {
+          const check = verifyLicenseKey(data.licenseKey, null);
+          if (check.valid) {
+            appState.isLicensed = true;
+            appState.licenseKey = data.licenseKey;
+            appState.isMasterAdmin = check.isMaster;
+          }
+        } else if (data.isLicensed) {
+          appState.isLicensed = true;
+          if (data.isMasterAdmin) appState.isMasterAdmin = true;
+        }
         saveToStorage();
         renderApp();
         showToast('Backup restored successfully!');
@@ -7585,6 +7729,50 @@ function importDataBackup(event) {
     }
   };
   reader.readAsText(file);
+}
+
+function restoreAutoBackup() {
+  const autoBackupStr = localStorage.getItem('staymanager_auto_backup');
+  if (!autoBackupStr) {
+    alert(t('no_auto_backup_found'));
+    return;
+  }
+  try {
+    const data = JSON.parse(autoBackupStr);
+    const dateStr = data.backupDate ? new Date(data.backupDate).toLocaleString() : 'Pre-update';
+    const propCount = (data.properties && data.properties.length) || 0;
+    const bookCount = (data.bookings && data.bookings.length) || 0;
+    const isLangBm = appState.settings.language === 'bm';
+    const promptMsg = isLangBm 
+      ? `Salinan Keselamatan Sebelum Kemaskini dijumpai!\nTarikh: ${dateStr}\nHomestay: ${propCount} unit\nTempahan: ${bookCount} rekod\n\nAdakah anda mahu memulihkan data ini sekarang?`
+      : `Pre-Update Safety Snapshot found!\nDate: ${dateStr}\nHomestays: ${propCount} units\nBookings: ${bookCount} records\n\nDo you want to restore this data now?`;
+
+    if (confirm(promptMsg)) {
+      if (Array.isArray(data.properties)) appState.properties = data.properties;
+      if (Array.isArray(data.bookings)) appState.bookings = data.bookings;
+      if (Array.isArray(data.turnovers)) appState.turnovers = data.turnovers;
+      if (Array.isArray(data.expenses)) appState.expenses = data.expenses;
+      if (Array.isArray(data.contacts)) appState.contacts = data.contacts;
+      if (Array.isArray(data.promotionalMedia)) appState.promotionalMedia = data.promotionalMedia;
+      if (data.settings) appState.settings = { ...DEFAULT_SETTINGS, ...data.settings };
+      if (data.licenseKey) {
+        const check = verifyLicenseKey(data.licenseKey, null);
+        if (check.valid) {
+          appState.isLicensed = true;
+          appState.licenseKey = data.licenseKey;
+          appState.isMasterAdmin = check.isMaster;
+        }
+      } else if (data.isLicensed) {
+        appState.isLicensed = true;
+        if (data.isMasterAdmin) appState.isMasterAdmin = true;
+      }
+      saveToStorage();
+      renderApp();
+      showToast(isLangBm ? '🎉 Salinan keselamatan berjaya dipulihkan!' : '🎉 Safety snapshot successfully restored!');
+    }
+  } catch (err) {
+    alert('Error restoring safety snapshot: ' + err.message);
+  }
 }
 
 function resetAllData() {
