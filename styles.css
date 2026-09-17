@@ -2513,3 +2513,431 @@ body.theme-dark .badge-other { background: rgba(71, 85, 105, 0.25); color: #94a3
   flex-wrap: wrap;
 }
 
+/* ==========================================================================
+   DIGITAL PAYMENT RECEIPTS & PROOFS
+   ========================================================================== */
+
+.bank-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.bank-pill {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface-subtle);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bank-pill:hover {
+  border-color: var(--primary);
+  color: var(--text-main);
+  background: var(--bg-surface);
+}
+
+.bank-pill.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.25);
+}
+
+.receipt-upload-dropzone {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-subtle);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.receipt-upload-dropzone:hover {
+  border-color: var(--primary);
+  background: rgba(2, 132, 199, 0.04);
+}
+
+.receipt-upload-dropzone.dragover {
+  border-color: var(--primary);
+  background: rgba(2, 132, 199, 0.08);
+}
+
+.receipt-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.receipt-preview-thumbnail {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: #f1f5f9;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.receipt-preview-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.badge-receipts {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.badge-receipts:hover {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: #059669;
+}
+
+.badge-receipts-none {
+  background: var(--bg-surface-subtle);
+  color: var(--text-muted);
+  border-color: var(--border-color);
+}
+
+.badge-receipts-none:hover {
+  color: var(--text-main);
+  background: var(--bg-surface);
+}
+
+.receipt-record-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.receipt-record-card:hover {
+  border-color: var(--primary);
+}
+
+.receipt-record-card.type-deposit { border-left: 4px solid var(--warning); }
+.receipt-record-card.type-balance,
+.receipt-record-card.type-full { border-left: 4px solid var(--success); }
+.receipt-record-card.type-monthly_rent { border-left: 4px solid var(--primary); }
+.receipt-record-card.type-security_deposit { border-left: 4px solid #8b5cf6; }
+
+.receipt-record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.receipt-record-body {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.receipt-record-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.receipt-record-thumb:hover {
+  transform: scale(1.05);
+}
+
+.receipt-ref-pill {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--bg-surface-subtle);
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.receipt-actions-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-color);
+  flex-wrap: wrap;
+}
+
+/* Dark mode for receipts */
+body.theme-dark .bank-pill.active {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+body.theme-dark .badge-receipts {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+body.theme-dark .receipt-upload-dropzone {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+body.theme-dark .receipt-upload-dropzone:hover {
+  background: rgba(2, 132, 199, 0.1);
+}
+
+/* ==========================================================================
+   14. PROMOTIONAL MEDIA & MARKETING HUB STYLES
+   ========================================================================== */
+
+.promo-controls-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.promo-category-pills {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.promo-category-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.promo-media-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 580px) {
+  .promo-media-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .promo-media-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.promo-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.promo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.promo-thumb-container {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  background: var(--bg-surface-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.promo-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.promo-thumb-container:hover .promo-thumb-img {
+  transform: scale(1.05);
+}
+
+.promo-thumb-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text-muted);
+}
+
+.promo-badge-overlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+
+.promo-cat-badge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.promo-cat-badge.cat-photo { background: #0284c7; }
+.promo-cat-badge.cat-poster { background: #8b5cf6; }
+.promo-cat-badge.cat-video_tour { background: #e11d48; }
+.promo-cat-badge.cat-copywriting { background: #f59e0b; }
+
+.promo-prop-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.promo-card-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.promo-card-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+
+.promo-card-caption-preview {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  background: var(--bg-surface-subtle);
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.promo-card-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+  margin-top: auto;
+}
+
+.btn-promo-wa {
+  background: #25D366 !important;
+  border-color: #25D366 !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  flex: 1;
+}
+
+.btn-promo-wa:hover {
+  background: #20b858 !important;
+  border-color: #20b858 !important;
+}
+
+.btn-promo-share {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+.promo-menu-btn {
+  color: var(--text-muted);
+  padding: 4px 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.promo-menu-btn:hover {
+  color: var(--danger);
+}
+
+body.theme-dark .promo-card {
+  background: var(--bg-surface);
+  border-color: var(--border-color);
+}
+
+body.theme-dark .promo-card-caption-preview {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.promo-media-sheet {
+  max-width: 820px;
+}
+
+
+

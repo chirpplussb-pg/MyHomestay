@@ -9,13 +9,15 @@
 2. [First-Time Setup & Settings / Tetapan Awal & Profil Bisnes](#2-first-time-setup--settings--tetapan-awal--profil-bisnes)
 3. [Managing Properties & Rooms / Pengurusan Homestay & Bilik](#3-managing-properties--rooms--pengurusan-homestay--bilik)
 4. [Creating Bookings & Tenancies / Merekod Tempahan & Sewaan](#4-creating-bookings--tenancies--merekod-tempahan--sewaan)
-5. [Multi-Month Invoicing & Receipts / Invois & Resit Bulanan](#5-multi-month-invoicing--receipts--invois--resit-bulanan)
-6. [1-Tap WhatsApp Automation / Automasi Mesej WhatsApp 1-Sentuhan](#6-1-tap-whatsapp-automation--automasi-mesej-whatsapp-1-sentuhan)
-7. [Deposit Refunds & Move-Out / Pemulangan Deposit & Tamat Sewaan](#7-deposit-refunds--move-out--pemulangan-deposit--tamat-sewaan)
-8. [Turnover, Maintenance Team & Suppliers Directory / Pengurusan Pembersihan, Pasukan Penyelenggaraan & Pembekal](#8-turnover-maintenance-team--suppliers-directory--pengurusan-pembersihan-pasukan-penyelenggaraan--pembekal)
-9. [Financial Reports & Expenses / Laporan Kewangan & Untung Bersih](#9-financial-reports--expenses--laporan-kewangan--untung-bersih)
-10. [Updating the App (Zero Data Loss) / Kemas Kini Tanpa Hilang Data](#10-updating-the-app-zero-data-loss--kemas-kini-tanpa-hilang-data)
-11. [Licensing & Security / Pengurusan Lesen & Keselamatan](#11-licensing--security--pengurusan-lesen--keselamatan)
+5. [Calendar View: Check-In vs. Check-Out Modes / Paparan Kalendar Pintar](#5-calendar-view-check-in-vs-check-out-modes--paparan-kalendar-pintar)
+6. [Multi-Month Invoicing & Receipts / Invois & Resit Bulanan](#6-multi-month-invoicing--receipts--invois--resit-bulanan)
+7. [Digital Payment Receipts & Bank Reference Capture / Rekod Resit Digital & Rujukan Bank](#7-digital-payment-receipts--bank-reference-capture--rekod-resit-digital--rujukan-bank)
+8. [1-Tap WhatsApp Automation / Automasi Mesej WhatsApp 1-Sentuhan](#8-1-tap-whatsapp-automation--automasi-mesej-whatsapp-1-sentuhan)
+9. [Deposit Refunds & Move-Out / Pemulangan Deposit & Tamat Sewaan](#9-deposit-refunds--move-out--pemulangan-deposit--tamat-sewaan)
+10. [Turnover, Maintenance Team & Suppliers Directory / Pengurusan Pembersihan, Pasukan Penyelenggaraan & Pembekal](#10-turnover-maintenance-team--suppliers-directory--pengurusan-pembersihan-pasukan-penyelenggaraan--pembekal)
+11. [Financial Reports & Expenses / Laporan Kewangan & Untung Bersih](#11-financial-reports--expenses--laporan-kewangan--untung-bersih)
+12. [Updating the App (Zero Data Loss) / Kemas Kini Tanpa Hilang Data](#12-updating-the-app-zero-data-loss--kemas-kini-tanpa-hilang-data)
+13. [Licensing & Security / Pengurusan Lesen & Keselamatan](#13-licensing--security--pengurusan-lesen--keselamatan)
 
 ---
 
@@ -260,24 +262,72 @@ For monthly tenancies, the app provides a **Sequential Monthly Billing Engine**.
 
 ---
 
-## 7. 1-Tap WhatsApp Automation / Automasi Mesej WhatsApp 1-Sentuhan
+## 7. Digital Payment Receipts & Bank Reference Capture / Rekod Resit Digital & Rujukan Bank
 
-The app includes 8 built-in bilingual templates with zero manual typing required:
+Most guests transfer deposits or full balances through online banking (DuitNow QR, Maybank2u, CIMB Clicks, etc.) and forward their transfer slips via WhatsApp. The app provides a dedicated capture and reference archiving system.
+
+### 🇬🇧 English: How to Capture & Reference Payment Proofs
+1. **Recording Payment Proofs**:
+   * On any booking card in the **Bookings** tab, tap **`+ Resit / + Receipt`** or **`Mark Deposit Paid`** / **`Mark Fully Paid`**.
+   * The **"Capture Payment Receipt & Reference"** modal opens with recommended amounts pre-filled.
+2. **Bank & Reference Number**:
+   * Tap any quick bank pill: `Maybank`, `CIMB`, `Bank Islam`, `Public Bank`, `RHB`, `Hong Leong`, `DuitNow QR`, `TNG eWallet`, `Cash`, or `Other`.
+   * Tap **`Paste`** next to *Bank Ref No. / Transaction ID* to instantly paste the reference code copied from the tenant's slip.
+3. **Smart Client-Side Image Compression**:
+   * Tap the dropzone to snap a photo or upload the tenant's transfer screenshot (JPG, PNG, WebP, or PDF).
+   * The built-in HTML5 Canvas engine compresses the image by **97% down to ~40KB–70KB** while keeping all printed account numbers, transaction IDs, and timestamps crystal clear.
+   * This protects your device storage and ensures zero lag!
+4. **Receipt Gallery & Full-Screen Lightbox**:
+   * Tap the **`🧾 X Receipt(s)`** chip on any booking card to open the **Payment Receipts & Proofs Gallery**.
+   * View total paid vs balance due with a visual settlement progress bar.
+   * Tap **`Copy`** to copy the transaction reference number with 1 tap.
+   * Tap **`View Slip`** to open the full-resolution Lightbox viewer, or tap **`Download`** to save the slip to your device.
+5. **WhatsApp Receipt Automation**:
+   * When you generate an official WhatsApp deposit receipt, full receipt, or monthly rent confirmation, the tenant's bank reference number is automatically quoted:
+     > `• 🔖 Bank Reference No: M2U-99218291 (Maybank)`
+
+---
+
+### 🇲🇾 Bahasa Melayu: Cara Merekod & Menyimpan Bukti Resit Bank
+1. **Merekod Bukti Bayaran**:
+   * Pada kad tempahan di tab **Tempahan**, tekan butang **`+ Resit`** atau butang **`Tanda Deposit Dibayar`** / **`Tanda Bayaran Penuh`**.
+   * Tetingkap **"Rekod Resit Bayaran & No. Rujukan"** akan dipaparkan dengan jumlah bayaran dicadangkan automatik.
+2. **Pilihan Saluran Bank & No. Rujukan**:
+   * Tekan butang pantas bank: `Maybank`, `CIMB`, `Bank Islam`, `Public Bank`, `RHB`, `Hong Leong`, `DuitNow QR`, `TNG eWallet`, `Tunai`, atau `Bank Lain`.
+   * Tekan butang **`Tampal`** untuk menampal nombor rujukan / ID transaksi pindahan bank penyewa.
+3. **Pemampatan Imej Pintar Tanpa Menjejaskan Kualiti**:
+   * Tekan ruangan muat naik untuk tangkap gambar atau pilih tangkapan skrin resit bank (JPG, PNG, WebP, atau PDF).
+   * Sistem memampatkan fail imej sebanyak **97% kepada sekitar 40KB–70KB** dengan mengekalkan kejelasan teks nombor akaun dan resit bagi melindungi kuota storan peranti.
+4. **Galeri Resit & Paparan Skrin Penuh (Lightbox)**:
+   * Tekan lencana **`🧾 X Resit`** pada mana-mana kad tempahan untuk membuka **Galeri Bukti Bayaran & Resit**.
+   * Semak jumlah telah dibayar vs baki bayaran berserta bar peratus penyelesaian.
+   * Tekan ikon **Salin** untuk menyalin nombor rujukan dengan 1 sentuhan.
+   * Tekan **`Lihat Penuh`** untuk melihat imej resit bersaiz besar (Lightbox), atau tekan **`Muat Turun`** untuk memuat turun slip ke peranti anda.
+5. **Autosebut No. Rujukan di WhatsApp**:
+   * Resit rasmi WhatsApp bagi deposit, bayaran penuh, dan sewa bulanan akan menyertakan nombor rujukan bank penyewa secara automatik:
+     > `• 🔖 No. Rujukan Bank: M2U-99218291 (Maybank)`
+
+---
+
+## 8. 1-Tap WhatsApp Automation / Automasi Mesej WhatsApp 1-Sentuhan
+
+The app includes 9 built-in bilingual templates with zero manual typing required:
 
 | Template / Templat | Purpose (English) | Kegunaan (Bahasa Melayu) |
 |---|---|---|
 | **📄 Quotation** | Official price breakdown & booking deposit request | Sebut harga rasmi & jumlah bayaran booking |
-| **🧾 Deposit Receipt** | Confirms booking & marks dates as reserved | Pengesahan deposit & unit ditanda ditempah |
-| **🔑 Full Receipt & Keys** | Full payment confirmation with Smart Lock PIN & WiFi | Resit penuh berserta PIN pintu & WiFi |
+| **🧾 Deposit Receipt** | Confirms booking & quotes bank transaction reference | Pengesahan deposit & unit ditanda ditempah |
+| **📅 Check-In Reminder** | Arrival guide with check-in time, GPS, access PIN & balance | Peringatan ketibaan, pautan GPS, PIN pintu & status baki |
+| **🔑 Full Receipt & Keys** | Full payment receipt with Door Lock PIN, WiFi & address | Resit penuh berserta PIN pintu, WiFi & alamat |
 | **📑 Monthly Invoice** | Specific billing cycle invoice with bank & due date | Invois sewa bulanan mengikut bulan & tarikh akhir |
-| **🧾 Monthly Rent Receipt** | Official monthly rent payment receipt | Resit rasmi pengesahan bayaran sewa bulanan |
+| **🧾 Monthly Rent Receipt** | Official monthly rent payment receipt with bank ref ID | Resit rasmi bayaran sewa bulanan berserta no rujukan |
 | **🏁 Check-Out Reminder** | Check-out time, switch-off guide & key return | Peringatan waktu keluar & serahan kunci |
 | **💰 Refund Statement** | Itemized deposit refund statement & deductions | Penyata pulangan deposit & tolakan bil utiliti |
 | **🧹 Cleaner Notice** | Job alert with unit, check-out time & PIN code | Arahan pembersihan unit kepada staf pembersihan |
 
 ---
 
-## 8. Deposit Refunds & Move-Out / Pemulangan Deposit & Tamat Sewaan
+## 9. Deposit Refunds & Move-Out / Pemulangan Deposit & Tamat Sewaan
 
 ### 🇬🇧 English: End of Tenancy & Deposit Settlement
 1. On the booking card, tap **`End Tenancy & Refund Deposit`** (or *Refund Security Deposit*).
@@ -299,7 +349,7 @@ The app includes 8 built-in bilingual templates with zero manual typing required
 
 ---
 
-## 9. Turnover, Maintenance Team & Suppliers Directory / Pengurusan Pembersihan, Pasukan Penyelenggaraan & Pembekal
+## 10. Turnover, Maintenance Team & Suppliers Directory / Pengurusan Pembersihan, Pasukan Penyelenggaraan & Pembekal
 
 * **Maintenance Team & Suppliers Directory**: Store your full network of cleaners, aircond technicians, plumbers, electricians, handymen, locksmiths, and supply vendors (linens, laundry, cooking gas, guest amenities) in **Settings > Maintenance Team & Suppliers**.
 * **Automatic Turnaround Schedules**: Every check-out automatically creates a turnover task in the **Turnovers (🧹)** tab with an interactive checklist.
@@ -308,7 +358,7 @@ The app includes 8 built-in bilingual templates with zero manual typing required
 
 ---
 
-## 10. Financial Reports & Expenses / Laporan Kewangan & Untung Bersih
+## 11. Financial Reports & Expenses / Laporan Kewangan & Untung Bersih
 
 * **Interactive Monthly Dashboard**: View **Total Revenue**, **Total Expenses**, and **Net Profit** for any selected month and year.
 * **Revenue by Property**: Visual percentage bars showing which homestay or room generates the most income.
@@ -316,7 +366,7 @@ The app includes 8 built-in bilingual templates with zero manual typing required
 
 ---
 
-## 11. Updating the App (Zero Data Loss) / Kemas Kini Tanpa Hilang Data
+## 12. Updating the App (Zero Data Loss) / Kemas Kini Tanpa Hilang Data
 
 ### 🇬🇧 English: Zero-Data-Loss Update Architecture & Guide
 
@@ -354,7 +404,7 @@ The app includes 8 built-in bilingual templates with zero manual typing required
 
 ---
 
-## 11. Licensing & Security / Pengurusan Lesen & Keselamatan
+## 13. Licensing & Security / Pengurusan Lesen & Keselamatan
 
 ### 🇬🇧 English: WhatsApp Phone-Bound Security
 * **Phone-Locked Keys**: Each customer's license key is cryptographically tied to their registered WhatsApp phone number (`STAY-<PHONE>-<HASH1>-<HASH2>`).
@@ -377,8 +427,58 @@ The app includes 8 built-in bilingual templates with zero manual typing required
 | Action / Tindakan | Where to Find / Di Mana Hendak Tekan |
 |---|---|
 | ➕ **Add Booking / Tambah Tempahan** | Floating `+` button on bottom-right / Butang terapung `+` |
+| 📢 **Promotional Media Hub / Media Promosi** | Top Header Bullhorn Icon `📢` or Settings / Ikon Pembesar Suara di bar atas atau Tetapan |
 | 🌐 **Switch Language (EN / BM)** | Top Header `EN/BM` button or Settings / Butang `EN/BM` di atas |
 | 📑 **Monthly Invoices / Jadual Invois** | On monthly booking card in Bookings tab / Pada kad sewaan bulanan |
 | 🔑 **Guest Welcome Kit / Kod Akses Tetamu** | Top Header Book Icon / Ikon Buku di bar atas |
 | ⚙️ **Settings & Bank Details** | Bottom nav `Settings` tab / Tab `Tetapan` di bawah |
 | 📥 **Export Backup Data / Eksport Data** | Settings > Data & Backup / Tetapan > Data & Sandaran |
+
+---
+
+## 14. Promotional Media & Marketing Hub / Hab Media Promosi & Pemasaran
+
+### 🇬🇧 English: Promotional Media & Marketing Hub Guide
+
+The **Promotional Media & Marketing Hub** allows homestay owners to store, organize, and instantly locate marketing assets to close prospective inquiries faster.
+
+#### 1. Why Store Promotional Media in the App?
+* **Instant Locate & Send**: Stop digging through thousands of smartphone camera roll photos while chatting with a prospective guest.
+* **Organized by Property & Category**:
+  * 📷 **Photos**: Best angles of living hall, master bedroom, panoramic views, balconies, and bathrooms.
+  * 🎨 **Flyers & Posters**: Limited-time seasonal promotions, school holiday discount posters, and early bird packages.
+  * 🎥 **Video Tours**: High-definition walkthrough video links (YouTube, TikTok, Reels, or Google Drive) that take zero device storage.
+  * 📝 **Copywriting**: Ready-to-use marketing descriptions, amenity lists, rate cards, and booking calls to action.
+* **Storage Optimization**:
+  * Uploaded photos and posters are automatically compressed on-device using HTML5 Canvas to **~50KB–80KB** (97% reduction) without noticeable quality loss.
+  * External cloud/video URLs consume **0 bytes** of device storage.
+
+#### 2. How to Share Promotional Media with Guests
+* **1-Tap WhatsApp Share**: Tap the green **WhatsApp** button on any media card. Select a recent guest inquiry or enter a phone number. The app generates a formatted message with emojis, unit features, rates, and links ready to send.
+* **Native Mobile Sharing (📲)**: On iOS (Safari) and Android (Chrome), tap the Share icon to open the native share sheet to send directly to WhatsApp, Telegram, Instagram, Facebook, AirDrop, or Messages.
+* **1-Tap Copy Pitch (📋)**: Instantly copies promotional copywriting to your clipboard with a confirmation toast.
+* **WhatsApp Automation Modal Integration**: When creating or viewing a booking quotation, tap **"+ Append Promo Media / Tour Link"** to attach promotional photos and video links directly into the message.
+
+---
+
+### 🇲🇾 Bahasa Melayu: Panduan Hab Media Promosi & Pemasaran
+
+**Hab Media Promosi & Pemasaran** membolehkan pengusaha homestay menyimpan, menyusun, dan mencari bahan pemasaran serta foto bilik untuk dihantar kepada bakal tetamu dengan 1-klik.
+
+#### 1. Mengapa Simpan Media Promosi di Dalam Aplikasi?
+* **Cari & Hantar Pantas**: Tidak perlu lagi mencari foto homestay di antara ribuan gambar peribadi di galeri telefon semasa melayan WhatsApp pelanggan.
+* **Tersusun Mengikut Unit & Kategori**:
+  * 📷 **Foto**: Sudut terbaik ruang tamu, bilik tidur master, pemandangan balkoni, dan tandas.
+  * 🎨 **Flyer & Poster**: Poster promosi cuti sekolah, tawaran diskaun hujung minggu, dan pakej tempahan awal.
+  * 🎥 **Video Tour**: Pautan video walkthrough YouTube, TikTok, Reels, atau Google Drive (sifar penggunaan memori telefon).
+  * 📝 **Ayat Iklan**: Teks tawaran siap dengan emoji, senarai kemudahan, kadar sewa, dan arahan tempahan.
+* **Mampatan Imej Pintar**:
+  * Gambar yang dimuat naik dimampatkan secara automatik kepada **~50KB–80KB** (penjimatan memori 97%) supaya aplikasi kekal laju dan ringan.
+  * Pautan video awan menggunakan **0 bait** memori peranti.
+
+#### 2. Cara Menggunakan & Menghantar Media Kepada Tetamu
+* **1-Klik WhatsApp**: Tekan butang hijau **WhatsApp** pada mana-mana kad media. Pilih tetamu daripada senarai tempahan terkini atau masukkan nombor telefon untuk menghantar teks promosi lengkap.
+* **Perkongsian Asal Telefon (📲)**: Tekan ikon Kongsi pada telefon pintar untuk menghantar terus ke WhatsApp, Telegram, Facebook, Instagram, atau mesej peranti.
+* **1-Klik Salin Ayat (📋)**: Salin teks iklan ke papan keratan untuk ditampal di mana-mana media sosial.
+* **Sertakan dalam Mesej Sebut Harga**: Semasa menyediakan sebut harga di modal WhatsApp, tekan **"+ Sertakan Media Promosi / Pautan Tour"** untuk menambah pautan foto dan video secara automatik.
+

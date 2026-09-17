@@ -55,6 +55,9 @@
           </div>
         </div>
         <div class="header-actions">
+          <button class="icon-btn" id="btnOpenPromoMedia" title="Promotional Media Hub / Media Promosi" aria-label="Promotional Media Hub">
+            <i class="fa-solid fa-bullhorn" style="color:var(--primary);"></i>
+          </button>
           <button class="icon-btn lang-toggle-btn" id="btnLangToggle" title="Tukar Bahasa / Switch Language">
             <span id="currentLangLabel" style="font-size:11px; font-weight:800;">EN</span>
           </button>
@@ -380,6 +383,19 @@
           </div>
         </div>
 
+        <!-- Promotional Media & Marketing Hub -->
+        <div class="card">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-title"><i class="fa-solid fa-bullhorn" style="color:var(--primary);"></i> <span data-i18n="promo_media_card_title">Promotional Media & Marketing Hub</span></h3>
+              <p class="card-subtitle" data-i18n="promo_media_card_sub">Store property photos, holiday posters, video walkthroughs & marketing pitch copywriting</p>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btnOpenPromoMediaSettings">
+              <i class="fa-solid fa-folder-open"></i> <span data-i18n="open_media_hub">Open Media Hub</span>
+            </button>
+          </div>
+        </div>
+
         <!-- General App Settings -->
         <div class="card">
           <h3 class="card-title mb-3" data-i18n="app_pref_title">App Preferences & Seller Info</h3>
@@ -543,7 +559,7 @@
               <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
               <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
             </div>
-            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.4.0</span>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.6.0</span>
           </div>
 
           <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
@@ -825,6 +841,17 @@
             <textarea id="bookingNotes" class="form-control" rows="2" placeholder="e.g. Extra mattress requested, arriving late at 8 PM"></textarea>
           </div>
 
+          <!-- Attached Receipts in Booking Modal -->
+          <div class="form-group" id="bookingReceiptsSection" style="display:none; background:var(--bg-surface-subtle); padding:10px; border-radius:var(--radius-sm); border:1px dashed var(--border-color);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label class="form-label" style="margin-bottom:0; font-weight:700;" data-i18n="receipt_gallery_title">Payment Receipts & Proofs</label>
+              <button type="button" class="btn btn-outline btn-xs" id="btnBookingModalAddReceipt">
+                <i class="fa-solid fa-plus"></i> <span data-i18n="add_btn">+ Add</span>
+              </button>
+            </div>
+            <div id="bookingModalReceiptsList" style="display:flex; flex-direction:column; gap:6px;"></div>
+          </div>
+
           <div class="modal-footer">
             <button type="button" class="btn btn-outline" id="btnCancelBookingModal" data-i18n="cancel">Cancel</button>
             <button type="submit" class="btn btn-primary" id="btnSaveBooking" data-i18n="btn_save_booking">Save Booking</button>
@@ -990,6 +1017,12 @@
               <label class="form-label" style="font-size:11px;" data-i18n="extra_utility_surcharge">Utility / Extra (RM)</label>
               <input type="number" id="waInvoiceExtraInput" class="form-control form-control-sm" placeholder="0.00" value="0" step="any">
             </div>
+          </div>
+
+          <div style="margin-bottom:8px; display:flex; justify-content:flex-end;">
+            <button type="button" class="btn btn-outline btn-xs" id="btnAttachPromoMediaWa" style="border-style:dashed; font-size:11px; color:var(--primary); border-color:var(--primary);">
+              <i class="fa-solid fa-bullhorn"></i> <span data-i18n="attach_promo_media">+ Append Promo Media / Tour Link</span>
+            </button>
           </div>
 
           <div class="wa-preview-card">
@@ -1380,6 +1413,439 @@
           <!-- Dynamic Guide Accordion Container -->
           <div id="userGuideAccordion" class="user-guide-container">
             <!-- Dynamically populated in app.js -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. RECORD PAYMENT & DIGITAL RECEIPT PROOF MODAL -->
+    <div class="modal-backdrop" id="paymentProofModal">
+      <div class="bottom-sheet" style="max-height: 90vh;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div class="wa-header-brand">
+            <i class="fa-solid fa-file-invoice-dollar" style="font-size: 24px; color: var(--success);"></i>
+            <div>
+              <h2 class="modal-title" id="paymentProofModalTitle" data-i18n="receipt_modal_title">Capture Payment Receipt & Reference</h2>
+              <span class="modal-subtitle" id="paymentProofModalSubtitle">Record bank transfer slip & reference ID</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnClosePaymentProofModal">&times;</button>
+        </div>
+
+        <form id="paymentProofForm" class="modal-body" style="padding-top: 10px;">
+          <input type="hidden" id="paymentProofBookingId">
+          <input type="hidden" id="paymentProofId">
+
+          <!-- Tenant & Unit Info Badge -->
+          <div class="dispatch-notice-box" style="margin-bottom: 12px; background: var(--bg-surface-subtle); border-left: 4px solid var(--success);">
+            <div style="font-size: 13px; font-weight: 700; color: var(--text-main);" id="paymentProofGuestPropertyDisplay">
+              Villa Pantai • Ali Bin Ahmad
+            </div>
+            <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;" id="paymentProofFinancialSummary">
+              Total: RM 350.00 • Paid: RM 100.00 • Remaining Balance: RM 250.00
+            </div>
+          </div>
+
+          <!-- Payment Type Selector -->
+          <div class="form-row">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label required" data-i18n="payment_type">Payment Type / Purpose</label>
+              <select id="paymentProofTypeSelect" class="form-select" required>
+                <option value="deposit">🟡 Booking Deposit / Deposit Tempahan</option>
+                <option value="balance">🟢 Remaining Balance / Baki Bayaran</option>
+                <option value="full">🟢 Full Payment / Bayaran Penuh (100%)</option>
+                <option value="monthly_rent">📑 Monthly Rental / Sewaan Bulanan</option>
+                <option value="security_deposit">🔒 Security Deposit / Deposit Keselamatan</option>
+                <option value="utilities">💡 Utility Arrears / Bil TNB & Air</option>
+                <option value="other">📦 Other Payment / Bayaran Lain</option>
+              </select>
+            </div>
+            <div class="form-group" id="paymentProofMonthIndexGroup" style="display:none; flex:0.7;">
+              <label class="form-label required" data-i18n="monthly_cycle">Month Cycle</label>
+              <select id="paymentProofMonthIndexSelect" class="form-select">
+                <!-- Dynamically populated if monthly -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Amount Received & Date/Time -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" data-i18n="amount_received">Amount Received (RM)</label>
+              <input type="number" id="paymentProofAmountInput" class="form-control" placeholder="0.00" step="any" required style="font-size: 16px; font-weight: 700; color: var(--success-text);">
+            </div>
+            <div class="form-group">
+              <label class="form-label required" data-i18n="payment_date">Payment Date & Time</label>
+              <input type="datetime-local" id="paymentProofDateTimeInput" class="form-control" required>
+            </div>
+          </div>
+
+          <!-- Bank / Payment Channel -->
+          <div class="form-group">
+            <label class="form-label required" data-i18n="bank_channel">Bank / Payment Channel</label>
+            <div class="bank-pill-row" id="paymentProofBankPills">
+              <button type="button" class="bank-pill active" data-bank="Maybank">Maybank</button>
+              <button type="button" class="bank-pill" data-bank="CIMB">CIMB</button>
+              <button type="button" class="bank-pill" data-bank="Bank Islam">Bank Islam</button>
+              <button type="button" class="bank-pill" data-bank="Public Bank">Public Bank</button>
+              <button type="button" class="bank-pill" data-bank="RHB">RHB</button>
+              <button type="button" class="bank-pill" data-bank="Hong Leong">Hong Leong</button>
+              <button type="button" class="bank-pill" data-bank="DuitNow QR">DuitNow QR</button>
+              <button type="button" class="bank-pill" data-bank="Touch n Go">TNG eWallet</button>
+              <button type="button" class="bank-pill" data-bank="Cash">Cash / Tunai</button>
+              <button type="button" class="bank-pill" data-bank="Other">Other Bank</button>
+            </div>
+            <input type="text" id="paymentProofBankInput" class="form-control" placeholder="Selected Bank / Channel" value="Maybank" required style="margin-top: 6px;">
+          </div>
+
+          <!-- Bank Reference Number / Transaction ID -->
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label class="form-label required" data-i18n="bank_ref_no">Bank Ref No. / Transaction ID</label>
+              <button type="button" class="btn btn-link btn-xs" id="btnPastePaymentRef" style="font-size:11px; padding:0; text-decoration:none; color:var(--primary); font-weight:700;">
+                <i class="fa-solid fa-paste"></i> <span data-i18n="paste">Paste</span>
+              </button>
+            </div>
+            <input type="text" id="paymentProofRefInput" class="form-control" placeholder="e.g. M2U-99218291, DuitNow-8812903, CIMB-128938" required style="font-family:monospace; font-weight:700; letter-spacing:0.5px;">
+            <p style="font-size:11px; color:var(--text-muted); margin-top:3px; margin-bottom:0;" data-i18n="bank_ref_hint">
+              Copy & paste the Reference No / Rujukan Transaksi from the tenant's bank transfer slip.
+            </p>
+          </div>
+
+          <!-- Digital Receipt Screenshot / Slip Upload -->
+          <div class="form-group">
+            <label class="form-label" data-i18n="digital_receipt_slip">Digital Receipt Screenshot / Slip (Bukti Resit)</label>
+            <div class="receipt-upload-dropzone" id="receiptDropzone">
+              <input type="file" id="paymentProofFileInput" accept="image/*,application/pdf" capture="environment" style="display:none;">
+              <div id="receiptUploadPrompt" style="text-align:center; padding:12px;">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size:26px; color:var(--primary); opacity:0.8; margin-bottom:6px; display:block;"></i>
+                <span style="font-size:13px; font-weight:700; color:var(--text-main);" data-i18n="tap_to_upload_receipt">Tap to Upload or Snap Receipt Slip</span>
+                <p style="font-size:11px; color:var(--text-muted); margin-top:2px; margin-bottom:0;" data-i18n="receipt_formats_hint">JPG, PNG, WebP or PDF • Auto-compressed for zero storage lag</p>
+              </div>
+              <div id="receiptPreviewContainer" style="display:none; padding:8px;">
+                <div class="receipt-preview-card">
+                  <img id="receiptPreviewImg" src="" alt="Receipt Preview" class="receipt-preview-thumbnail">
+                  <div class="receipt-preview-info">
+                    <strong id="receiptPreviewFileName" style="font-size:12px; color:var(--text-main); word-break:break-all;">receipt.jpg</strong>
+                    <span id="receiptPreviewSize" style="font-size:10.5px; color:var(--text-muted); display:block;">45 KB (Compressed)</span>
+                    <div style="display:flex; gap:6px; margin-top:6px;">
+                      <button type="button" class="btn btn-outline btn-xs" id="btnViewReceiptPreview">
+                        <i class="fa-solid fa-eye"></i> <span data-i18n="view">View</span>
+                      </button>
+                      <button type="button" class="btn btn-outline btn-xs" id="btnRemoveReceiptImg" style="color:var(--danger); border-color:var(--danger);">
+                        <i class="fa-solid fa-trash"></i> <span data-i18n="remove">Remove</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="paymentProofImageData">
+            <input type="hidden" id="paymentProofImageName">
+          </div>
+
+          <!-- Notes -->
+          <div class="form-group">
+            <label class="form-label" data-i18n="payment_notes">Notes / Catatan (Optional)</label>
+            <input type="text" id="paymentProofNotesInput" class="form-control" placeholder="e.g. Sent via WhatsApp, verified with Maybank app">
+          </div>
+
+          <div class="modal-footer" style="padding-top:10px; gap:8px;">
+            <button type="button" class="btn btn-outline" id="btnCancelPaymentProofModal" data-i18n="cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btnSavePaymentProof" style="flex:1;">
+              <i class="fa-solid fa-circle-check"></i> <span data-i18n="save_payment_proof">Save Payment & Receipt</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 9. PAYMENT RECEIPTS & PROOFS GALLERY MODAL -->
+    <div class="modal-backdrop" id="receiptViewerModal">
+      <div class="bottom-sheet" style="max-height: 90vh;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div class="wa-header-brand">
+            <i class="fa-solid fa-receipt" style="font-size: 24px; color: var(--primary);"></i>
+            <div>
+              <h2 class="modal-title" data-i18n="receipt_gallery_title">Payment Receipts & Proofs</h2>
+              <span class="modal-subtitle" id="receiptViewerSubtitle">Verified bank slips & transaction IDs</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnCloseReceiptViewerModal">&times;</button>
+        </div>
+
+        <div class="modal-body" style="padding-top: 10px;">
+          <!-- Financial Balance Banner -->
+          <div id="receiptViewerFinancialBanner" class="dispatch-notice-box" style="margin-bottom: 12px; background: var(--bg-surface-subtle); border-left: 4px solid var(--primary);">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Receipts List Container -->
+          <div id="receiptViewerList" style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Action Bar -->
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary btn-sm" id="btnAddReceiptFromViewer" style="flex:1;">
+              <i class="fa-solid fa-plus"></i> <span data-i18n="add_payment_receipt">+ Record New Payment / Receipt</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="btnCloseReceiptViewerBtn" data-i18n="close">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. PROMOTIONAL MEDIA & MARKETING HUB MODAL -->
+    <div class="modal-backdrop" id="promotionalMediaModal">
+      <div class="bottom-sheet promo-media-sheet" style="max-height: 92vh;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div class="wa-header-brand">
+            <div class="header-icon-badge" style="background: rgba(2,132,199,0.12); color: var(--primary); width:38px; height:38px; border-radius: 10px; display:flex; align-items:center; justify-content:center;">
+              <i class="fa-solid fa-bullhorn" style="font-size: 20px;"></i>
+            </div>
+            <div>
+              <h2 class="modal-title" data-i18n="promo_hub_modal_title">Promotional Media & Marketing Hub</h2>
+              <span class="modal-subtitle" data-i18n="promo_hub_modal_sub">Store photos, posters, video tours & promo copywriting for 1-tap sharing</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnClosePromotionalMediaModal">&times;</button>
+        </div>
+
+        <div class="modal-body" style="padding-top: 8px;">
+          <!-- Controls Bar: Property Filter + Add Button -->
+          <div class="promo-controls-bar">
+            <div class="promo-filter-prop-wrap" style="flex:1;">
+              <label class="form-label" style="font-size:11px; margin-bottom:3px;" data-i18n="filter_by_property">Filter by Property</label>
+              <select id="promoPropertyFilter" class="form-select form-select-sm">
+                <option value="all" data-i18n="all_properties">All Homestays & General</option>
+              </select>
+            </div>
+            <div style="align-self: flex-end;">
+              <button type="button" class="btn btn-primary btn-sm" id="btnAddNewPromoMediaModal">
+                <i class="fa-solid fa-plus"></i> <span data-i18n="add_media_asset">+ Add Media</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Category Filter Pills -->
+          <div class="promo-category-pills" id="promoCategoryFilter">
+            <button type="button" class="cal-mode-pill active" data-category="all">
+              <i class="fa-solid fa-layer-group"></i> <span data-i18n="cat_all">All</span>
+            </button>
+            <button type="button" class="cal-mode-pill" data-category="photo">
+              <i class="fa-solid fa-image"></i> <span data-i18n="cat_photos">Photos</span>
+            </button>
+            <button type="button" class="cal-mode-pill" data-category="poster">
+              <i class="fa-solid fa-bullhorn"></i> <span data-i18n="cat_posters">Posters / Flyers</span>
+            </button>
+            <button type="button" class="cal-mode-pill" data-category="video_tour">
+              <i class="fa-solid fa-video"></i> <span data-i18n="cat_videos">Video Tours</span>
+            </button>
+            <button type="button" class="cal-mode-pill" data-category="copywriting">
+              <i class="fa-solid fa-pen-nib"></i> <span data-i18n="cat_copywriting">Copywriting</span>
+            </button>
+          </div>
+
+          <!-- Search Filter -->
+          <div class="promo-search-bar" style="margin-bottom:12px;">
+            <div style="position:relative; width:100%;">
+              <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:12px;"></i>
+              <input type="text" id="promoSearchInput" class="form-control form-control-sm" style="padding-left:30px;" placeholder="Search promo titles, features, or keywords...">
+            </div>
+          </div>
+
+          <!-- Media Cards Grid -->
+          <div class="promo-media-grid" id="promoMediaGrid">
+            <!-- Dynamically populated via JS -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="promoMediaEmptyState" style="display:none; text-align:center; padding:32px 16px; background:var(--bg-surface-subtle); border-radius:var(--radius-md); border:1px dashed var(--border-color); margin-top:8px;">
+            <i class="fa-solid fa-photo-film" style="font-size:36px; color:var(--text-muted); margin-bottom:10px; opacity:0.6;"></i>
+            <h4 style="font-size:14px; font-weight:700; color:var(--text-main); margin-bottom:4px;" data-i18n="no_promo_media_found">No promotional media found</h4>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;" data-i18n="no_promo_media_hint">Store photos, posters, video walkthrough links, and promotional captions for quick sharing.</p>
+            <button type="button" class="btn btn-primary btn-sm" id="btnEmptyAddPromoMedia">
+              <i class="fa-solid fa-plus"></i> <span data-i18n="add_first_promo_media">Add First Media Asset</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. ADD / EDIT PROMOTIONAL MEDIA ITEM MODAL -->
+    <div class="modal-backdrop" id="promoMediaEditModal" style="z-index: 9998;">
+      <div class="bottom-sheet" style="max-height: 92vh;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div class="wa-header-brand">
+            <i class="fa-solid fa-pen-to-square" style="font-size: 22px; color: var(--primary);"></i>
+            <div>
+              <h2 class="modal-title" id="promoMediaEditTitle" data-i18n="add_promo_media_title">Add Promotional Media</h2>
+              <span class="modal-subtitle" data-i18n="add_promo_media_sub">Upload property photos, video tour links, or promo text</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnClosePromoMediaEditModal">&times;</button>
+        </div>
+
+        <form id="promoMediaEditForm" class="modal-body" style="padding-top: 10px;">
+          <input type="hidden" id="promoMediaIdInput">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" data-i18n="select_property">Property / Unit</label>
+              <select id="promoMediaPropertySelect" class="form-select" required>
+                <option value="all" data-i18n="all_properties">General / All Homestays</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" data-i18n="media_category_label">Media Category</label>
+              <select id="promoMediaCategorySelect" class="form-select" required>
+                <option value="photo">📷 Property Photo</option>
+                <option value="poster">🎨 Flyer / Discount Poster</option>
+                <option value="video_tour">🎥 Video Walkthrough / Tour</option>
+                <option value="copywriting">📝 Marketing Pitch / Copywriting</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" data-i18n="media_title_label">Title / Headline</label>
+            <input type="text" id="promoMediaTitleInput" class="form-control" placeholder="e.g. Panoramic Living Room & Balcony Seaview" required>
+          </div>
+
+          <!-- Image Upload / Dropzone (with Auto-Compressor) -->
+          <div class="form-group" id="promoImageUploadSection">
+            <label class="form-label" data-i18n="upload_promo_image">Upload Image / Poster (Auto-Compressed for Storage)</label>
+            <div class="receipt-upload-dropzone promo-dropzone" id="promoImageDropzone">
+              <input type="file" id="promoMediaFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+              <div id="promoImageDropPrompt" style="padding:16px 12px; text-align:center; cursor:pointer;">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size:24px; color:var(--primary); opacity:0.8; margin-bottom:6px; display:block;"></i>
+                <span style="font-size:12.5px; font-weight:700; color:var(--text-main);" data-i18n="tap_upload_photo_poster">Tap to Upload Photo or Poster</span>
+                <p style="font-size:11px; color:var(--text-muted); margin-top:2px; margin-bottom:0;" data-i18n="auto_compressed_note">JPG, PNG, WebP • Auto-downscaled to ~60KB to keep your app fast</p>
+              </div>
+              <div id="promoImagePreviewContainer" style="display:none; padding:8px;">
+                <div class="receipt-preview-card">
+                  <img id="promoImagePreviewImg" src="" alt="Promo Preview" class="receipt-preview-thumbnail" style="object-fit:cover; width:64px; height:64px;">
+                  <div class="receipt-preview-info">
+                    <strong id="promoImageFileName" style="font-size:12px; color:var(--text-main); word-break:break-all;">photo.jpg</strong>
+                    <span id="promoImageFileSize" style="font-size:10.5px; color:var(--text-muted); display:block;">58 KB (Compressed)</span>
+                    <div style="display:flex; gap:6px; margin-top:6px;">
+                      <button type="button" class="btn btn-outline btn-xs" id="btnViewPromoImagePreview">
+                        <i class="fa-solid fa-eye"></i> <span data-i18n="view">View</span>
+                      </button>
+                      <button type="button" class="btn btn-outline btn-xs" id="btnRemovePromoImage" style="color:var(--danger); border-color:var(--danger);">
+                        <i class="fa-solid fa-trash"></i> <span data-i18n="remove">Remove</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="promoMediaImageData">
+          </div>
+
+          <!-- Video / External Cloud Gallery Link -->
+          <div class="form-group">
+            <label class="form-label" data-i18n="external_link_label">External Tour / Cloud Link (Optional)</label>
+            <div style="position:relative;">
+              <i class="fa-solid fa-link" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:12px;"></i>
+              <input type="url" id="promoMediaUrlInput" class="form-control" style="padding-left:30px;" placeholder="e.g. https://youtu.be/xyz or Google Drive folder / TikTok tour">
+            </div>
+            <span class="card-subtitle" style="font-size: 11px;" data-i18n="external_link_hint">Zero device storage used. Great for full 4K video tours or shared Google Drive galleries.</span>
+          </div>
+
+          <!-- Marketing Pitch & Copywriting Caption -->
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <label class="form-label required" style="margin-bottom:0;" data-i18n="promo_caption_label">Promotional Copywriting / Pitch Text</label>
+              <button type="button" class="btn btn-outline btn-xs" id="btnInsertPitchPreset" style="font-size:10.5px; padding:2px 8px;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="insert_template">Preset Template</span>
+              </button>
+            </div>
+            <textarea id="promoMediaCaptionInput" class="form-control" rows="5" placeholder="Enter appealing description, amenities, bedroom details, rates, and booking call-to-action..." required></textarea>
+            <span class="card-subtitle" style="font-size: 11px;" data-i18n="promo_caption_hint">This copywriting is pre-filled when sharing to WhatsApp or copying to clipboard.</span>
+          </div>
+
+          <div class="modal-footer" style="padding-top:10px; gap:8px;">
+            <button type="button" class="btn btn-outline" id="btnCancelPromoMediaEdit" data-i18n="cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btnSavePromoMedia" style="flex:1;">
+              <i class="fa-solid fa-circle-check"></i> <span data-i18n="save_promo_media">Save Media Asset</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 12. PROMO WHATSAPP QUICK SHARE PICKER MODAL -->
+    <div class="modal-backdrop" id="promoWaQuickModal" style="z-index: 9999;">
+      <div class="bottom-sheet" style="max-height: 88vh;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div class="wa-header-brand">
+            <i class="fa-brands fa-whatsapp" style="font-size: 26px; color: #25D366;"></i>
+            <div>
+              <h2 class="modal-title" data-i18n="share_via_whatsapp">Send Promo via WhatsApp</h2>
+              <span class="modal-subtitle" id="promoWaQuickSubtitle">Send promotional media to prospective guest</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnClosePromoWaQuickModal">&times;</button>
+        </div>
+
+        <div class="modal-body" style="padding-top: 10px;">
+          <input type="hidden" id="promoWaQuickMediaId">
+
+          <!-- Recipient Selection -->
+          <div class="form-group">
+            <label class="form-label" data-i18n="send_to_recipient">Send To Recipient</label>
+            <select id="promoWaRecipientSelect" class="form-select">
+              <option value="custom" data-i18n="enter_phone_number">Enter / Pick Phone Number</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="promoWaCustomPhoneGroup">
+            <label class="form-label" data-i18n="guest_phone_label">Guest WhatsApp Number</label>
+            <div style="position:relative;">
+              <i class="fa-brands fa-whatsapp" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#25D366; font-size:14px;"></i>
+              <input type="tel" id="promoWaCustomPhoneInput" class="form-control" style="padding-left:32px;" placeholder="e.g. +60123456789 or 0123456789">
+            </div>
+            <span class="card-subtitle" style="font-size: 11px;" data-i18n="phone_empty_hint">Leave blank to open WhatsApp and pick from your recent contacts.</span>
+          </div>
+
+          <!-- Preview Message Box -->
+          <div class="form-group">
+            <label class="form-label" data-i18n="message_preview">Message Preview</label>
+            <div id="promoWaMessagePreview" style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); font-size:12px; line-height:1.5; color:var(--text-main); white-space:pre-wrap; max-height:160px; overflow-y:auto;">
+              <!-- Preview text -->
+            </div>
+          </div>
+
+          <div class="modal-footer" style="padding-top:10px; gap:8px;">
+            <button type="button" class="btn btn-outline" id="btnCancelPromoWaQuick" data-i18n="cancel">Cancel</button>
+            <button type="button" class="btn btn-success" id="btnExecutePromoWaSend" style="flex:1; background:#25D366; border-color:#25D366; color:#fff;">
+              <i class="fa-brands fa-whatsapp"></i> <span data-i18n="open_in_whatsapp">Send on WhatsApp</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13. LIGHTBOX FULL-SCREEN VIEWER -->
+    <div class="modal-backdrop" id="receiptLightboxModal" style="z-index: 9999;">
+      <div style="position:relative; max-width:94vw; max-height:92vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <button type="button" id="btnCloseLightbox" style="position:absolute; top:-38px; right:0; background:rgba(0,0,0,0.6); color:#fff; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10;">&times;</button>
+        <div style="background:var(--bg-surface); padding:10px; border-radius:var(--radius-md); box-shadow:0 10px 30px rgba(0,0,0,0.5); text-align:center; max-height:85vh; overflow:auto;">
+          <h4 id="lightboxTitle" style="font-size:13px; font-weight:800; color:var(--text-main); margin-bottom:8px;">Bank Receipt Proof</h4>
+          <img id="lightboxImage" src="" alt="Full Receipt" style="max-width:100%; max-height:72vh; border-radius:var(--radius-sm); border:1px solid var(--border-color); object-fit:contain;">
+          <div style="display:flex; justify-content:center; gap:8px; margin-top:8px;">
+            <button type="button" class="btn btn-outline btn-xs" id="btnDownloadLightboxImg">
+              <i class="fa-solid fa-download"></i> <span data-i18n="download">Download Slip</span>
+            </button>
           </div>
         </div>
       </div>

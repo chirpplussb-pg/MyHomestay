@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.4.0';
+const APP_VERSION = '2.6.0';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -15,6 +15,7 @@ const STORAGE_KEYS = {
   TURNOVERS: 'staymanager_turnovers_v2',
   EXPENSES: 'staymanager_expenses_v2',
   CONTACTS: 'staymanager_contacts_v2',
+  PROMO_MEDIA: 'staymanager_promo_media_v2',
   SETTINGS: 'staymanager_settings_v2',
   LICENSE: 'staymanager_license_v2',
   VERSION: 'staymanager_app_version'
@@ -54,6 +55,50 @@ const DEFAULT_CONTACTS = [
     notes: 'Bedsheet sets, duvets, white bath towels wholesale restock.'
   }
 ];
+
+const DEFAULT_PROMO_MEDIA = [
+  {
+    id: 'promo-demo-1',
+    propertyId: 'prop-1',
+    category: 'photo',
+    title: 'Sunset Ocean Villa - Panoramic Living & Balcony Seaview',
+    caption: '🌊 *Sunset Ocean Villa (Whole Unit - 3 Bedrooms)* 🌅\nLooking for an unforgettable beachside getaway with family or friends?\n\n✨ *Key Highlights:* \n• Accommodates up to 8–10 guests comfortably\n• 3 air-conditioned bedrooms with luxury hotel-grade linens\n• Private balcony with direct panoramic sunset ocean views\n• High-speed 500Mbps WiFi & Smart TV with Netflix\n• Fully equipped dry & wet kitchen (fridge, microwave, induction cooker)\n• Infinity swimming pool, sauna & kids playground access\n\n📍 *Location:* Seaview Residences, Jalan Pantai\n💰 *Rates from:* RM 280 / night\n\n📲 Reply to this message now to check your dates and enjoy our early bird rates!',
+    imageData: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="340" viewBox="0 0 600 340"><defs><linearGradient id="ocean" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0284c7"/><stop offset="50%" stop-color="#0369a1"/><stop offset="100%" stop-color="#075985"/></linearGradient></defs><rect width="600" height="340" fill="url(#ocean)"/><circle cx="480" cy="100" r="55" fill="#f59e0b" opacity="0.85"/><path d="M0 240 Q150 200 300 240 T600 240 L600 340 L0 340 Z" fill="#0c4a6e" opacity="0.6"/><path d="M0 270 Q150 240 300 270 T600 270 L600 340 L0 340 Z" fill="#082f49"/><text x="40" y="80" fill="#ffffff" font-family="system-ui, sans-serif" font-size="24" font-weight="bold">🌊 Sunset Ocean Villa</text><text x="40" y="115" fill="#bae6fd" font-family="system-ui, sans-serif" font-size="15">Panoramic Living & Balcony Seaview</text><rect x="40" y="150" width="170" height="32" rx="6" fill="#f59e0b"/><text x="52" y="172" fill="#ffffff" font-family="system-ui, sans-serif" font-size="13" font-weight="bold">⭐ Top Rated Beachfront</text></svg>'),
+    mediaUrl: 'https://maps.google.com/?q=3.1390,101.6869',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'promo-demo-2',
+    propertyId: 'prop-2',
+    category: 'video_tour',
+    title: 'Villa Impian Master Bedroom - Virtual Video Tour',
+    caption: '🎥 *Virtual Video Walkthrough: Villa Impian Master Bedroom* 🌿\nTake a quick 1-minute video tour inside our cozy highland sanctuary!\n\n✨ *Room Specs:* \n• King-size bed with premium orthopedic mattress\n• Private en-suite bathroom with instant hot rain shower\n• Quiet environment surrounded by cool mountain mist\n• Access to shared BBQ patio, tea terrace & garden\n\n👇 *Click to Watch the Walkthrough Video:* \nhttps://youtu.be/sample-villa-tour\n\n💬 Send us a message today to lock in your preferred stay dates!',
+    imageData: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="340" viewBox="0 0 600 340"><defs><linearGradient id="vidbg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#065f46"/><stop offset="100%" stop-color="#047857"/></linearGradient></defs><rect width="600" height="340" fill="url(#vidbg)"/><circle cx="300" cy="170" r="44" fill="#ffffff" opacity="0.92"/><polygon points="292,152 316,170 292,188" fill="#047857"/><text x="40" y="60" fill="#ffffff" font-family="system-ui, sans-serif" font-size="22" font-weight="bold">🎥 Villa Impian Virtual Tour</text><text x="40" y="90" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="14">Master Bedroom & Highland Garden Walkthrough</text></svg>'),
+    mediaUrl: 'https://youtu.be/sample-villa-tour',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'promo-demo-3',
+    propertyId: 'all',
+    category: 'poster',
+    title: 'School Holiday Early Bird 15% OFF Promo Flyer',
+    caption: '🎉 *SPECIAL SCHOOL HOLIDAY PROMO - 15% OFF!* 🎒✨\nPlanning your next family trip or weekend getaway? Book early and save big!\n\n🎁 *Exclusive Early Bird Package:* \n• Get *15% OFF* for reservations of 2 nights or more\n• Free welcome drinks & late check-out till 1:00 PM (subject to availability)\n• Valid across all our homestay villas & medium rooms\n\n📅 *Booking Window:* Limited to the first 10 confirmed bookings!\n📲 Reply directly with your check-in dates to claim your 15% discount voucher!',
+    imageData: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="340" viewBox="0 0 600 340"><defs><linearGradient id="poster" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#4f46e5"/></linearGradient></defs><rect width="600" height="340" fill="url(#poster)"/><circle cx="100" cy="80" r="90" fill="#a855f7" opacity="0.3"/><circle cx="520" cy="260" r="110" fill="#6366f1" opacity="0.3"/><text x="50" y="90" fill="#fde047" font-family="system-ui, sans-serif" font-size="16" font-weight="800" letter-spacing="1">LIMITED TIME SPECIAL DEAL</text><text x="50" y="145" fill="#ffffff" font-family="system-ui, sans-serif" font-size="34" font-weight="900">SCHOOL HOLIDAY</text><text x="50" y="195" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="36" font-weight="900">SAVE 15% OFF!</text><text x="50" y="240" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="14">Book min 2 nights • Free welcome perks • Instant WhatsApp booking</text></svg>'),
+    mediaUrl: '',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'promo-demo-4',
+    propertyId: 'prop-3',
+    category: 'copywriting',
+    title: 'Affordable Highland Stay for Couples & Remote Workers',
+    caption: '🍃 *Cozy Medium Room @ Villa Impian* 🛏️\nAffordable, sparkling clean comfort in the cool highlands!\n\n• Queen bed with plush orthopedic mattress\n• Dedicated work desk with high-speed 5G WiFi (remote-work friendly)\n• Access to spacious living hall & tea-making pantry\n• Only *RM 100 / night* (Cleaning fee RM25)\n\n💬 Send us a message today to book your peaceful retreat!',
+    imageData: '',
+    mediaUrl: '',
+    createdAt: new Date().toISOString()
+  }
+];
+
 
 const LICENSE_SECRET_SALT = 'HOMESTAY_PRO_SALT_2026_SECURE_AUTH';
 
@@ -433,7 +478,78 @@ const TRANSLATIONS = {
     cat_linen_supplier: '🧺 Linen & Laundry Supplier',
     cat_gas_supplier: '⛽ Gas & Amenities Supplier',
     cat_locksmith: '🔐 Locksmith / Smart Lock Tech',
-    cat_other: '📦 Other Contractor / Supplier'
+    cat_other: '📦 Other Contractor / Supplier',
+
+    // Digital Receipts & Payments
+    receipt_modal_title: 'Capture Payment Receipt & Reference',
+    receipt_gallery_title: 'Payment Receipts & Proofs',
+    btn_receipt_proofs: 'Payment Proofs',
+    payment_type: 'Payment Type / Purpose',
+    monthly_cycle: 'Month Cycle',
+    amount_received: 'Amount Received (RM)',
+    payment_date: 'Payment Date & Time',
+    bank_channel: 'Bank / Payment Channel',
+    bank_ref_no: 'Bank Ref No. / Transaction ID',
+    paste: 'Paste',
+    bank_ref_hint: 'Copy & paste the Reference No / Transaction ID from the tenant slip.',
+    digital_receipt_slip: 'Digital Receipt Screenshot / Slip (Bukti Resit)',
+    tap_to_upload_receipt: 'Tap to Upload or Snap Receipt Slip',
+    receipt_formats_hint: 'JPG, PNG, WebP or PDF • Auto-compressed for zero storage lag',
+    view: 'View',
+    remove: 'Remove',
+    payment_notes: 'Notes / Remarks (Optional)',
+    save_payment_proof: 'Save Payment & Receipt',
+    add_payment_receipt: '+ Record New Payment / Receipt',
+    copy_ref: 'Copy Ref',
+    ref_copied: 'Reference number copied!',
+    download: 'Download Slip',
+    no_receipts_recorded: 'No payment receipts recorded for this booking yet.',
+    delete_receipt_confirm: 'Are you sure you want to delete this payment record and slip?',
+    receipt_badge_count: 'Receipt(s)',
+
+    // Promotional Media & Marketing Hub
+    promo_hub_modal_title: 'Promotional Media & Marketing Hub',
+    promo_hub_modal_sub: 'Store photos, posters, video tours & promo copywriting for 1-tap sharing',
+    filter_by_property: 'Filter by Property',
+    all_properties: 'All Homestays & General',
+    add_media_asset: '+ Add Media',
+    cat_all: 'All',
+    cat_photos: 'Photos',
+    cat_posters: 'Posters / Flyers',
+    cat_videos: 'Video Tours',
+    cat_copywriting: 'Copywriting',
+    no_promo_media_found: 'No promotional media found',
+    no_promo_media_hint: 'Store photos, posters, video walkthrough links, and promotional captions for quick sharing.',
+    add_first_promo_media: 'Add First Media Asset',
+    add_promo_media_title: 'Add Promotional Media',
+    edit_promo_media_title: 'Edit Promotional Media',
+    add_promo_media_sub: 'Upload property photos, video tour links, or promo text',
+    media_category_label: 'Media Category',
+    media_title_label: 'Title / Headline',
+    upload_promo_image: 'Upload Image / Poster (Auto-Compressed for Storage)',
+    tap_upload_photo_poster: 'Tap to Upload Photo or Poster',
+    auto_compressed_note: 'JPG, PNG, WebP • Auto-downscaled to ~60KB to keep your app fast',
+    external_link_label: 'External Tour / Cloud Link (Optional)',
+    external_link_hint: 'Zero device storage used. Great for full 4K video tours or shared Google Drive galleries.',
+    promo_caption_label: 'Promotional Copywriting / Pitch Text',
+    insert_template: 'Preset Template',
+    promo_caption_hint: 'This copywriting is pre-filled when sharing to WhatsApp or copying to clipboard.',
+    save_promo_media: 'Save Media Asset',
+    share_via_whatsapp: 'Send Promo via WhatsApp',
+    send_to_recipient: 'Send To Recipient',
+    enter_phone_number: 'Enter / Pick Phone Number',
+    guest_phone_label: 'Guest WhatsApp Number',
+    phone_empty_hint: 'Leave blank to open WhatsApp and pick from your recent contacts.',
+    message_preview: 'Message Preview',
+    open_in_whatsapp: 'Send on WhatsApp',
+    attach_promo_media: '+ Append Promo Media / Tour Link',
+    promo_media_card_title: 'Promotional Media & Marketing Hub',
+    promo_media_card_sub: 'Store property photos, holiday posters, video walkthroughs & marketing pitch copywriting',
+    open_media_hub: 'Open Media Hub',
+    copy_pitch: 'Copy Pitch',
+    pitch_copied: 'Promotional pitch copied to clipboard!',
+    link_copied: 'Media link copied to clipboard!',
+    delete_promo_confirm: 'Are you sure you want to delete this promotional media asset?'
   },
   bm: {
     // Navigation
@@ -786,7 +902,78 @@ const TRANSLATIONS = {
     cat_linen_supplier: '🧺 Pembekal Linen & Dobi',
     cat_gas_supplier: '⛽ Pembekal Gas & Keperluan',
     cat_locksmith: '🔐 Tukang Kunci / Smart Lock',
-    cat_other: '📦 Kontraktor / Pembekal Lain'
+    cat_other: '📦 Kontraktor / Pembekal Lain',
+
+    // Digital Receipts & Payments
+    receipt_modal_title: 'Rekod Resit Bayaran & No. Rujukan',
+    receipt_gallery_title: 'Bukti Bayaran & Resit Transaksi',
+    btn_receipt_proofs: 'Bukti Bayaran',
+    payment_type: 'Jenis / Tujuan Bayaran',
+    monthly_cycle: 'Pusingan Bulan',
+    amount_received: 'Jumlah Diterima (RM)',
+    payment_date: 'Tarikh & Masa Bayaran',
+    bank_channel: 'Bank / Saluran Bayaran',
+    bank_ref_no: 'No. Rujukan Bank / ID Transaksi',
+    paste: 'Tampal',
+    bank_ref_hint: 'Salin & tampal No. Rujukan Transaksi daripada resit pindahan bank penyewa.',
+    digital_receipt_slip: 'Tangkapan Skrin Resit / Slip (Bukti Resit)',
+    tap_to_upload_receipt: 'Tekan untuk Muat Naik atau Tangkap Gambar Slip',
+    receipt_formats_hint: 'JPG, PNG, WebP atau PDF • Dimampat automatik tanpa bebanan memori',
+    view: 'Lihat',
+    remove: 'Padam',
+    payment_notes: 'Catatan / Nota (Pilihan)',
+    save_payment_proof: 'Simpan Rekod Bayaran & Resit',
+    add_payment_receipt: '+ Rekod Bayaran / Resit Baharu',
+    copy_ref: 'Salin No. Ref',
+    ref_copied: 'Nombor rujukan bank berjaya disalin!',
+    download: 'Muat Turun Slip',
+    no_receipts_recorded: 'Tiada resit bayaran direkodkan bagi tempahan ini lagi.',
+    delete_receipt_confirm: 'Adakah anda pasti mahu memadamkan rekod bayaran dan slip ini?',
+    receipt_badge_count: 'Resit',
+
+    // Promotional Media & Marketing Hub
+    promo_hub_modal_title: 'Hab Media Promosi & Pemasaran',
+    promo_hub_modal_sub: 'Simpan foto, poster, video homestay & ayat iklan untuk dihantar pantas',
+    filter_by_property: 'Tapis mengikut Homestay',
+    all_properties: 'Semua Homestay & Umum',
+    add_media_asset: '+ Tambah Media',
+    cat_all: 'Semua',
+    cat_photos: 'Foto Unit',
+    cat_posters: 'Poster / Flyer',
+    cat_videos: 'Video Tour',
+    cat_copywriting: 'Ayat Iklan',
+    no_promo_media_found: 'Tiada media promosi dijumpai',
+    no_promo_media_hint: 'Simpan foto bilik, kemudahan, poster diskaun dan ayat promosi untuk dikongsi dengan bakal tetamu.',
+    add_first_promo_media: 'Tambah Media Pertama',
+    add_promo_media_title: 'Tambah Media Promosi',
+    edit_promo_media_title: 'Kemaskini Media Promosi',
+    add_promo_media_sub: 'Muat naik gambar, pautan video tour atau ayat promosi',
+    media_category_label: 'Kategori Media',
+    media_title_label: 'Tajuk / Tajuk Utama',
+    upload_promo_image: 'Muat Naik Gambar / Poster (Mampat Automatik)',
+    tap_upload_photo_poster: 'Tekan untuk Muat Naik Foto atau Poster',
+    auto_compressed_note: 'JPG, PNG, WebP • Dimampatkan automatik ~60KB tanpa beban memori',
+    external_link_label: 'Pautan Video Tour / Galeri Awan (Pilihan)',
+    external_link_hint: 'Sifar penggunaan memori telefon. Sesuai untuk pautan video YouTube, TikTok atau Google Drive.',
+    promo_caption_label: 'Ayat Iklan / Copywriting Promosi',
+    insert_template: 'Templat Contoh',
+    promo_caption_hint: 'Teks ini akan disertakan semasa perkongsian WhatsApp atau salin ke papan keratan.',
+    save_promo_media: 'Simpan Media',
+    share_via_whatsapp: 'Hantar Promosi via WhatsApp',
+    send_to_recipient: 'Hantar Kepada',
+    enter_phone_number: 'Masukkan / Pilih Nombor Telefon',
+    guest_phone_label: 'Nombor WhatsApp Bakal Tetamu',
+    phone_empty_hint: 'Biarkan kosong untuk buka WhatsApp dan pilih kenalan anda.',
+    message_preview: 'Pratonton Mesej',
+    open_in_whatsapp: 'Hantar di WhatsApp',
+    attach_promo_media: '+ Sertakan Media Promosi / Pautan Tour',
+    promo_media_card_title: 'Hab Media Promosi & Pemasaran',
+    promo_media_card_sub: 'Simpan foto unit, poster promosi, video walkthrough dan ayat tawaran untuk bakal tetamu',
+    open_media_hub: 'Buka Hab Media',
+    copy_pitch: 'Salin Ayat',
+    pitch_copied: 'Ayat promosi berjaya disalin ke papan keratan!',
+    link_copied: 'Pautan media berjaya disalin ke papan keratan!',
+    delete_promo_confirm: 'Adakah anda pasti mahu memadamkan media promosi ini?'
   }
 };
 
@@ -855,6 +1042,10 @@ let appState = {
   turnovers: [],
   expenses: [],
   contacts: [],
+  promotionalMedia: [],
+  selectedPromoPropertyId: 'all',
+  selectedPromoCategory: 'all',
+  promoSearchQuery: '',
   settings: { ...DEFAULT_SETTINGS },
   isLicensed: false,
   isMasterAdmin: false,
@@ -931,6 +1122,7 @@ function loadFromStorage() {
     const savedTurnovers = localStorage.getItem(STORAGE_KEYS.TURNOVERS);
     const savedExpenses = localStorage.getItem(STORAGE_KEYS.EXPENSES);
     const savedContacts = localStorage.getItem(STORAGE_KEYS.CONTACTS);
+    const savedPromo = localStorage.getItem(STORAGE_KEYS.PROMO_MEDIA);
     const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
     const savedLicense = localStorage.getItem(STORAGE_KEYS.LICENSE);
 
@@ -947,6 +1139,16 @@ function loadFromStorage() {
       }
     } else {
       appState.contacts = [...DEFAULT_CONTACTS];
+    }
+
+    if (savedPromo) {
+      try {
+        appState.promotionalMedia = JSON.parse(savedPromo);
+      } catch (e) {
+        appState.promotionalMedia = [...DEFAULT_PROMO_MEDIA];
+      }
+    } else {
+      appState.promotionalMedia = [...DEFAULT_PROMO_MEDIA];
     }
 
     if (savedSettings) appState.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
@@ -981,6 +1183,7 @@ function runDataMigrations() {
         turnovers: appState.turnovers,
         expenses: appState.expenses,
         contacts: appState.contacts,
+        promotionalMedia: appState.promotionalMedia,
         settings: appState.settings,
         licenseKey: appState.licenseKey,
         isLicensed: appState.isLicensed,
@@ -1023,6 +1226,20 @@ function runDataMigrations() {
         }
       }
 
+      // Ensure promotionalMedia array exists
+      if (!Array.isArray(appState.promotionalMedia) || appState.promotionalMedia.length === 0) {
+        const savedPromo = localStorage.getItem(STORAGE_KEYS.PROMO_MEDIA);
+        if (savedPromo) {
+          try {
+            appState.promotionalMedia = JSON.parse(savedPromo);
+          } catch(e) {
+            appState.promotionalMedia = [...DEFAULT_PROMO_MEDIA];
+          }
+        } else {
+          appState.promotionalMedia = [...DEFAULT_PROMO_MEDIA];
+        }
+      }
+
       // Ensure settings have default language
       if (!appState.settings.language) {
         appState.settings.language = 'en';
@@ -1050,6 +1267,7 @@ function saveToStorage() {
   localStorage.setItem(STORAGE_KEYS.TURNOVERS, JSON.stringify(appState.turnovers));
   localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(appState.expenses));
   localStorage.setItem(STORAGE_KEYS.CONTACTS, JSON.stringify(appState.contacts));
+  localStorage.setItem(STORAGE_KEYS.PROMO_MEDIA, JSON.stringify(appState.promotionalMedia));
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(appState.settings));
   if (appState.isLicensed && appState.licenseKey) {
     localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: appState.licenseKey, activatedAt: new Date().toISOString() }));
@@ -1355,6 +1573,7 @@ function seedDemoData() {
   ];
 
   appState.contacts = [...DEFAULT_CONTACTS];
+  appState.promotionalMedia = [...DEFAULT_PROMO_MEDIA];
 
   saveToStorage();
   showToast('Demo data loaded with 2 homestays & sample bookings!');
@@ -1685,6 +1904,303 @@ function setupEventListeners() {
   document.getElementById('financeMonthSelect').addEventListener('change', renderFinancesTab);
   document.getElementById('financeYearSelect').addEventListener('change', renderFinancesTab);
   populateFinanceDateSelectors();
+
+  // Payment Proof & Receipt Modals Event Handlers
+  const closePayProof = document.getElementById('btnClosePaymentProofModal');
+  if (closePayProof) closePayProof.addEventListener('click', closeAllModals);
+
+  const cancelPayProof = document.getElementById('btnCancelPaymentProofModal');
+  if (cancelPayProof) cancelPayProof.addEventListener('click', closeAllModals);
+
+  const closeReceiptViewer = document.getElementById('btnCloseReceiptViewerModal');
+  if (closeReceiptViewer) closeReceiptViewer.addEventListener('click', closeAllModals);
+
+  const closeReceiptViewerBtn = document.getElementById('btnCloseReceiptViewerBtn');
+  if (closeReceiptViewerBtn) closeReceiptViewerBtn.addEventListener('click', closeAllModals);
+
+  const closeLightbox = document.getElementById('btnCloseLightbox');
+  if (closeLightbox) closeLightbox.addEventListener('click', closeAllModals);
+
+  const lightboxModal = document.getElementById('receiptLightboxModal');
+  if (lightboxModal) {
+    lightboxModal.addEventListener('click', (e) => {
+      if (e.target.id === 'receiptLightboxModal') closeAllModals();
+    });
+  }
+
+  // Receipt File Upload Dropzone
+  const dropzone = document.getElementById('receiptDropzone');
+  const fileInput = document.getElementById('paymentProofFileInput');
+  if (dropzone && fileInput) {
+    dropzone.addEventListener('click', (e) => {
+      if (e.target.closest('#btnRemoveReceiptImg') || e.target.closest('#btnViewReceiptPreview')) return;
+      fileInput.click();
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleReceiptFileSelected(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleReceiptFileSelected(e.target.files[0]);
+      }
+    });
+  }
+
+  // Remove Receipt Image Button
+  const btnRemoveReceipt = document.getElementById('btnRemoveReceiptImg');
+  if (btnRemoveReceipt) {
+    btnRemoveReceipt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('paymentProofImageData').value = '';
+      document.getElementById('paymentProofImageName').value = '';
+      document.getElementById('paymentProofFileInput').value = '';
+      document.getElementById('receiptPreviewImg').src = '';
+      document.getElementById('receiptUploadPrompt').style.display = 'block';
+      document.getElementById('receiptPreviewContainer').style.display = 'none';
+    });
+  }
+
+  // View Receipt Preview Button in Form Dropzone
+  const btnViewReceiptPreview = document.getElementById('btnViewReceiptPreview');
+  if (btnViewReceiptPreview) {
+    btnViewReceiptPreview.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const imgData = document.getElementById('paymentProofImageData').value;
+      const fName = document.getElementById('paymentProofImageName').value || 'Receipt Preview';
+      if (imgData) openReceiptLightbox(imgData, fName);
+    });
+  }
+
+  // Bank Pills Quick Selector
+  document.querySelectorAll('#paymentProofBankPills .bank-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('#paymentProofBankPills .bank-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const bankName = pill.getAttribute('data-bank');
+      document.getElementById('paymentProofBankInput').value = bankName;
+    });
+  });
+
+  // Paste Reference Number Helper
+  const btnPasteRef = document.getElementById('btnPastePaymentRef');
+  if (btnPasteRef) {
+    btnPasteRef.addEventListener('click', async () => {
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const text = await navigator.clipboard.readText();
+          if (text) {
+            document.getElementById('paymentProofRefInput').value = text.trim();
+            showToast(appState.settings.language === 'bm' ? 'No. Rujukan berjaya ditampal!' : 'Reference No. pasted!');
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Clipboard read error:', err);
+      }
+      document.getElementById('paymentProofRefInput').focus();
+    });
+  }
+
+  // Payment Proof Type Selector Change
+  const payTypeSelect = document.getElementById('paymentProofTypeSelect');
+  if (payTypeSelect) {
+    payTypeSelect.addEventListener('change', () => {
+      const type = payTypeSelect.value;
+      const bId = document.getElementById('paymentProofBookingId').value;
+      const booking = appState.bookings.find(b => b.id === bId);
+      
+      const monthGroup = document.getElementById('paymentProofMonthIndexGroup');
+      if (monthGroup) {
+        monthGroup.style.display = (type === 'monthly_rent') ? 'block' : 'none';
+      }
+
+      if (booking) {
+        let amt = 0;
+        if (type === 'deposit') {
+          amt = booking.depositPaid > 0 ? booking.depositPaid : Math.round(booking.totalAmount * (appState.settings.defaultDepositPct || 30) / 100);
+        } else if (type === 'balance') {
+          amt = booking.balance > 0 ? booking.balance : booking.totalAmount;
+        } else if (type === 'full') {
+          amt = booking.totalAmount;
+        } else if (type === 'monthly_rent') {
+          amt = booking.monthlyRate || 0;
+        } else if (type === 'security_deposit') {
+          amt = booking.securityDeposit || booking.utilitiesDeposit || 0;
+        } else {
+          amt = booking.balance > 0 ? booking.balance : 0;
+        }
+        document.getElementById('paymentProofAmountInput').value = amt;
+      }
+    });
+  }
+
+  // Save Payment Proof Form Submit
+  const paymentProofForm = document.getElementById('paymentProofForm');
+  if (paymentProofForm) {
+    paymentProofForm.addEventListener('submit', handleSavePaymentProof);
+  }
+
+  // ==========================================
+  // Promotional Media & Marketing Hub Listeners
+  // ==========================================
+  const btnOpenPromo = document.getElementById('btnOpenPromoMedia');
+  if (btnOpenPromo) btnOpenPromo.addEventListener('click', () => openPromotionalMediaModal());
+
+  const btnOpenPromoSettings = document.getElementById('btnOpenPromoMediaSettings');
+  if (btnOpenPromoSettings) btnOpenPromoSettings.addEventListener('click', () => openPromotionalMediaModal());
+
+  const btnClosePromo = document.getElementById('btnClosePromotionalMediaModal');
+  if (btnClosePromo) btnClosePromo.addEventListener('click', closeAllModals);
+
+  const btnAddPromo = document.getElementById('btnAddNewPromoMediaModal');
+  if (btnAddPromo) btnAddPromo.addEventListener('click', () => openPromoMediaEditModal());
+
+  const btnEmptyAddPromo = document.getElementById('btnEmptyAddPromoMedia');
+  if (btnEmptyAddPromo) btnEmptyAddPromo.addEventListener('click', () => openPromoMediaEditModal());
+
+  const btnClosePromoEdit = document.getElementById('btnClosePromoMediaEditModal');
+  if (btnClosePromoEdit) btnClosePromoEdit.addEventListener('click', closeAllModals);
+
+  const btnCancelPromoEdit = document.getElementById('btnCancelPromoMediaEdit');
+  if (btnCancelPromoEdit) btnCancelPromoEdit.addEventListener('click', closeAllModals);
+
+  const promoForm = document.getElementById('promoMediaEditForm');
+  if (promoForm) promoForm.addEventListener('submit', savePromoMediaItem);
+
+  // Promo Property Filter Change
+  const promoPropFilter = document.getElementById('promoPropertyFilter');
+  if (promoPropFilter) {
+    promoPropFilter.addEventListener('change', (e) => {
+      appState.selectedPromoPropertyId = e.target.value;
+      renderPromotionalMediaList();
+    });
+  }
+
+  // Promo Category Pills
+  document.querySelectorAll('#promoCategoryFilter .cal-mode-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('#promoCategoryFilter .cal-mode-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      appState.selectedPromoCategory = pill.getAttribute('data-category');
+      renderPromotionalMediaList();
+    });
+  });
+
+  // Promo Search Input
+  const promoSearchInput = document.getElementById('promoSearchInput');
+  if (promoSearchInput) {
+    promoSearchInput.addEventListener('input', (e) => {
+      appState.promoSearchQuery = e.target.value;
+      renderPromotionalMediaList();
+    });
+  }
+
+  // Promo Image File Upload Dropzone
+  const promoDropzone = document.getElementById('promoImageDropzone');
+  const promoFileInput = document.getElementById('promoMediaFileInput');
+  if (promoDropzone && promoFileInput) {
+    promoDropzone.addEventListener('click', (e) => {
+      if (e.target.closest('#btnRemovePromoImage') || e.target.closest('#btnViewPromoImagePreview')) return;
+      promoFileInput.click();
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      promoDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        promoDropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      promoDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        promoDropzone.classList.remove('dragover');
+      });
+    });
+
+    promoDropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handlePromoImageFileSelected(e.dataTransfer.files[0]);
+      }
+    });
+
+    promoFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handlePromoImageFileSelected(e.target.files[0]);
+      }
+    });
+  }
+
+  // Remove Promo Image Button
+  const btnRemovePromoImg = document.getElementById('btnRemovePromoImage');
+  if (btnRemovePromoImg) {
+    btnRemovePromoImg.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('promoMediaImageData').value = '';
+      document.getElementById('promoMediaFileInput').value = '';
+      document.getElementById('promoImagePreviewImg').src = '';
+      document.getElementById('promoImageDropPrompt').style.display = 'block';
+      document.getElementById('promoImagePreviewContainer').style.display = 'none';
+    });
+  }
+
+  // View Promo Image Preview in Edit Modal
+  const btnViewPromoPreview = document.getElementById('btnViewPromoImagePreview');
+  if (btnViewPromoPreview) {
+    btnViewPromoPreview.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const imgData = document.getElementById('promoMediaImageData').value;
+      const title = document.getElementById('promoMediaTitleInput').value || 'Image Preview';
+      if (imgData) openReceiptLightbox(imgData, title);
+    });
+  }
+
+  // Preset Template Button in Promo Edit Form
+  const btnInsertPitch = document.getElementById('btnInsertPitchPreset');
+  if (btnInsertPitch) btnInsertPitch.addEventListener('click', insertPromoPitchTemplate);
+
+  // WhatsApp Quick Send Modal Listeners
+  const btnClosePromoWa = document.getElementById('btnClosePromoWaQuickModal');
+  if (btnClosePromoWa) btnClosePromoWa.addEventListener('click', closeAllModals);
+
+  const btnCancelPromoWa = document.getElementById('btnCancelPromoWaQuick');
+  if (btnCancelPromoWa) btnCancelPromoWa.addEventListener('click', closeAllModals);
+
+  const btnExecutePromoWa = document.getElementById('btnExecutePromoWaSend');
+  if (btnExecutePromoWa) btnExecutePromoWa.addEventListener('click', executePromoWaSend);
+
+  const promoWaRecipient = document.getElementById('promoWaRecipientSelect');
+  if (promoWaRecipient) {
+    promoWaRecipient.addEventListener('change', (e) => {
+      const isCustom = e.target.value === 'custom';
+      const customGroup = document.getElementById('promoWaCustomPhoneGroup');
+      const customInput = document.getElementById('promoWaCustomPhoneInput');
+      if (customGroup) customGroup.style.display = isCustom ? 'block' : 'none';
+      if (!isCustom && customInput) customInput.value = e.target.value;
+    });
+  }
+
+  // WhatsApp Modal Attach Button
+  const btnAttachPromo = document.getElementById('btnAttachPromoMediaWa');
+  if (btnAttachPromo) btnAttachPromo.addEventListener('click', attachPromoMediaToWaMessage);
 }
 
 function applyDepositPreset(pct, targetStatus) {
@@ -2947,6 +3463,11 @@ function createCalendarBookingCard(b, todayStr, isBM, isSelectedDayMode, selecte
         <span class="property-dot" style="background:${prop.color};"></span> ${prop.name}
       </span>
       <div style="display:flex; gap:6px; align-items:center;">
+        ${(b.payments && b.payments.length > 0) ? `
+          <button type="button" class="btn-open-receipt-gallery" data-bid="${b.id}" style="font-size:10px; font-weight:800; padding:1px 6px; border-radius:999px; background:#eff6ff; color:#1d4ed8; border:1px solid #93c5fd; cursor:pointer;" title="${t('receipt_gallery_title')}">
+            <i class="fa-solid fa-receipt"></i> ${b.payments.length}
+          </button>
+        ` : ''}
         ${statusBadge}
         <span class="cal-proximity-badge ${badgeClass}">${badgeText}</span>
       </div>
@@ -3068,6 +3589,14 @@ function attachCalendarCardActions(container) {
       openBookingModal(null, dStr, pid);
     });
   });
+
+  container.querySelectorAll('.btn-open-receipt-gallery').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) openReceiptViewerModal(b);
+    });
+  });
 }
 
 function renderSelectedDayDetails() {
@@ -3183,7 +3712,12 @@ function renderBookingsTab() {
       
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
         <h3 class="booking-guest-title">${b.guestName}</h3>
-        <div style="display:flex; gap:4px; align-items:center;">
+        <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
+          ${(b.payments && b.payments.length > 0) ? `
+            <button type="button" class="btn-open-receipt-gallery" data-bid="${b.id}" style="font-size:10px; font-weight:800; padding:2px 7px; border-radius:999px; background:#eff6ff; color:#1d4ed8; border:1px solid #93c5fd; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+              <i class="fa-solid fa-receipt"></i> ${b.payments.length} ${isBM ? 'Resit' : (b.payments.length === 1 ? 'Receipt' : 'Receipts')}
+            </button>
+          ` : ''}
           ${b.rentalType === 'monthly' ? `<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:999px; background:#e0e7ff; color:#3730a3;"><i class="fa-solid fa-calendar-days"></i> ${b.monthlyDuration || 6} ${t('months')}</span>` : ''}
           ${b.rentalType === 'monthly' ? (() => {
             const invs = getOrInitMonthlyInvoices(b);
@@ -3206,10 +3740,19 @@ function renderBookingsTab() {
         <span>${t('total')}: <strong>${formatCurrency(b.totalAmount)}</strong></span>
         <span>${isBM ? 'Dibayar' : 'Paid'}: <strong style="color:var(--success);">${formatCurrency(b.depositPaid)}</strong></span>
         <span>${isBM ? 'Baki' : 'Due'}: <strong style="color:${b.balance > 0 ? 'var(--danger)' : 'var(--success)'};">${formatCurrency(b.balance)}</strong></span>
+        ${b.lastPaymentRef ? `
+          <span style="display:flex; align-items:center; gap:4px; font-size:11px; margin-left:auto;">
+            <i class="fa-solid fa-receipt" style="color:var(--primary);"></i>
+            <span>Ref: <strong><code>${b.lastPaymentRef}</code></strong></span>
+          </span>
+        ` : ''}
       </div>
 
       <!-- Contextual Quick Action Workflow Bar -->
       <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;">
+        <button class="btn btn-outline btn-xs btn-open-receipt-gallery" data-bid="${b.id}" title="${t('receipt_gallery_title')}">
+          <i class="fa-solid fa-receipt"></i> ${(b.payments && b.payments.length > 0) ? `${b.payments.length} ${isBM ? 'Resit' : 'Receipts'}` : (isBM ? '+ Resit' : '+ Receipt')}
+        </button>
         ${b.rentalType === 'monthly' ? `
           <button class="btn btn-outline btn-xs btn-open-monthly-invoices" data-bid="${b.id}" style="color:var(--primary); font-weight:700; border-color:var(--primary);">
             <i class="fa-solid fa-file-invoice-dollar"></i> ${t('btn_view_invoices')}
@@ -3348,21 +3891,8 @@ function renderBookingsTab() {
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => x.id === bid);
       if (b) {
-        // Prompt for deposit paid if not set
-        if (b.depositPaid === 0) {
-          const defaultDep = Math.round(b.totalAmount * 0.30 * 100) / 100;
-          const promptText = isBM ? `Masukkan jumlah deposit yang diterima (${appState.settings.currency || 'RM'}):` : `Enter deposit amount received (${appState.settings.currency || 'RM'}):`;
-          const entered = prompt(promptText, defaultDep);
-          if (entered !== null) {
-            b.depositPaid = parseFloat(entered) || defaultDep;
-            b.balance = Math.max(0, b.totalAmount - b.depositPaid);
-          }
-        }
-        b.status = 'booked';
-        saveToStorage();
-        renderBookingsTab();
-        showToast(isBM ? 'Unit ditanda "DITEMPAH"! Membuka Resit Deposit...' : 'Unit marked as "BOOKED"! Opening Deposit Receipt...');
-        openWhatsAppModal(b, 'deposit_receipt');
+        const defaultDep = b.depositPaid > 0 ? b.depositPaid : Math.round(b.totalAmount * (appState.settings.defaultDepositPct || 30) / 100);
+        openPaymentProofModal(b, 'deposit', null, defaultDep);
       }
     });
   });
@@ -3372,14 +3902,17 @@ function renderBookingsTab() {
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => x.id === bid);
       if (b) {
-        b.depositPaid = b.totalAmount;
-        b.balance = 0;
-        b.status = 'confirmed';
-        saveToStorage();
-        renderBookingsTab();
-        showToast(isBM ? 'Unit ditanda "DISAHKAN"! Membuka Resit Bayaran Penuh & Panduan Kunci...' : 'Unit marked as "CONFIRMED"! Opening Full Payment Receipt & Key guide...');
-        openWhatsAppModal(b, 'full_receipt');
+        const defaultBal = b.balance > 0 ? b.balance : b.totalAmount;
+        openPaymentProofModal(b, 'balance', null, defaultBal);
       }
+    });
+  });
+
+  container.querySelectorAll('.btn-open-receipt-gallery').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) openReceiptViewerModal(b);
     });
   });
 
@@ -4240,12 +4773,40 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
       document.getElementById('bookingCleaningFee').value = existingBooking.cleaningFee || 0;
       document.getElementById('bookingSecurityDeposit').value = existingBooking.securityDeposit || 0;
     }
+
+    // Populate Attached Receipts Section
+    const receiptsSec = document.getElementById('bookingReceiptsSection');
+    const receiptsList = document.getElementById('bookingModalReceiptsList');
+    if (receiptsSec && receiptsList) {
+      receiptsSec.style.display = 'block';
+      const payments = existingBooking.payments || [];
+      if (payments.length === 0) {
+        receiptsList.innerHTML = `<p style="font-size:11.5px; color:var(--text-muted); margin:0;">${t('no_receipts_recorded')}</p>`;
+      } else {
+        receiptsList.innerHTML = payments.map(p => `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-surface); padding:5px 8px; border-radius:4px; border:1px solid var(--border-color); margin-top:4px; font-size:12px;">
+            <span><i class="fa-solid fa-building-columns" style="color:var(--primary); margin-right:4px;"></i><strong>${p.bankName || 'Bank'}</strong> • <code>${p.referenceNo || '-'}</code></span>
+            <span style="font-weight:700; color:var(--success);">${formatCurrency(p.amount)}</span>
+          </div>
+        `).join('');
+      }
+
+      const btnAddReceipt = document.getElementById('btnBookingModalAddReceipt');
+      if (btnAddReceipt) {
+        btnAddReceipt.onclick = () => {
+          openPaymentProofModal(existingBooking);
+        };
+      }
+    }
   } else {
     document.getElementById('bookingModalTitle').textContent = 'New Booking / Quotation';
     document.getElementById('bookingIdInput').value = '';
     document.getElementById('bookingGuestNric').value = '';
     document.getElementById('bookingGuestEmail').value = '';
     document.getElementById('bookingGuestAddress').value = '';
+
+    const receiptsSec = document.getElementById('bookingReceiptsSection');
+    if (receiptsSec) receiptsSec.style.display = 'none';
     
     if (prefillPropertyId) {
       document.getElementById('bookingPropertySelect').value = prefillPropertyId;
@@ -4706,15 +5267,1173 @@ function toggleMonthlyInvoicePaid(bookingId, monthIndex) {
     inv.status = 'pending';
     inv.paidAt = null;
     showToast(isBM ? `Bulan ke-${monthIndex} ditanda sebagai belum dibayar.` : `Month ${monthIndex} marked as pending.`);
+    saveToStorage();
+    renderMonthlyInvoicesList(booking);
+    if (appState.activeTab === 'bookings') renderBookingsTab();
   } else {
-    inv.status = 'paid';
-    inv.paidAt = new Date().toISOString();
-    showToast(isBM ? `Bulan ke-${monthIndex} berjaya ditanda telah dibayar!` : `Month ${monthIndex} successfully marked as paid!`);
+    // Open payment proof modal to attach the tenant's bank receipt!
+    closeAllModals();
+    openPaymentProofModal(booking, 'monthly_rent', monthIndex, inv.totalAmount || inv.rentAmount);
+  }
+}
+
+// ==========================================================================
+// 11D. DIGITAL PAYMENT RECEIPTS & PROOF CAPTURE ENGINE
+// ==========================================================================
+
+function compressReceiptImage(file, maxWidth = 900, maxHeight = 900, quality = 0.78) {
+  return new Promise((resolve, reject) => {
+    if (!file) return reject(new Error('No file provided'));
+
+    if (file.type === 'application/pdf') {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        const sizeBytes = Math.round((dataUrl.length * 3) / 4);
+        resolve({
+          dataUrl,
+          sizeBytes,
+          isPdf: true,
+          fileName: file.name
+        });
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        const sizeBytes = Math.round((dataUrl.length * 3) / 4);
+
+        resolve({
+          dataUrl,
+          sizeBytes,
+          width,
+          height,
+          isPdf: false,
+          fileName: file.name
+        });
+      };
+      img.onerror = (err) => reject(err);
+      img.src = e.target.result;
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
+function handleReceiptFileSelected(file) {
+  if (!file) return;
+  const isBM = appState.settings.language === 'bm';
+  showToast(isBM ? 'Memampatkan gambar resit...' : 'Compressing receipt slip...');
+
+  compressReceiptImage(file, 900, 900, 0.78)
+    .then(result => {
+      document.getElementById('paymentProofImageData').value = result.dataUrl;
+      document.getElementById('paymentProofImageName').value = result.fileName;
+
+      const previewImg = document.getElementById('receiptPreviewImg');
+      if (result.isPdf) {
+        previewImg.src = 'data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\'%3E%3Crect width=\\'100\\' height=\\'100\\' fill=\\'%23ef4444\\'/ %3E%3Ctext x=\\'50\\' y=\\'55\\' font-size=\\'18\\' font-weight=\\'bold\\' text-anchor=\\'middle\\' fill=\\'%23ffffff\\'%3EPDF%3C/text%3E%3C/svg%3E';
+      } else {
+        previewImg.src = result.dataUrl;
+      }
+
+      document.getElementById('receiptPreviewFileName').textContent = result.fileName;
+      const sizeKb = Math.round(result.sizeBytes / 1024);
+      document.getElementById('receiptPreviewSize').textContent = `${sizeKb} KB (Compressed & sharp)`;
+
+      document.getElementById('receiptUploadPrompt').style.display = 'none';
+      document.getElementById('receiptPreviewContainer').style.display = 'block';
+    })
+    .catch(err => {
+      alert('Error reading receipt file: ' + err.message);
+    });
+}
+
+function openPaymentProofModal(booking, defaultType = 'deposit', defaultMonth = null, defaultAmount = null) {
+  if (!booking) return;
+  const prop = getPropertyById(booking.propertyId);
+  const isBM = appState.settings.language === 'bm';
+
+  document.getElementById('paymentProofBookingId').value = booking.id;
+  document.getElementById('paymentProofId').value = '';
+
+  const titleEl = document.getElementById('paymentProofModalTitle');
+  if (titleEl) titleEl.textContent = t('receipt_modal_title');
+
+  document.getElementById('paymentProofGuestPropertyDisplay').textContent = `${prop.name} • ${booking.guestName} (${booking.guestPhone || '-'})`;
+  document.getElementById('paymentProofFinancialSummary').textContent = `${t('total')}: ${formatCurrency(booking.totalAmount)} • ${isBM ? 'Dibayar' : 'Paid'}: ${formatCurrency(booking.depositPaid)} • ${isBM ? 'Baki' : 'Balance'}: ${formatCurrency(booking.balance)}`;
+
+  const typeSelect = document.getElementById('paymentProofTypeSelect');
+  typeSelect.value = defaultType;
+
+  const monthGroup = document.getElementById('paymentProofMonthIndexGroup');
+  const monthSelect = document.getElementById('paymentProofMonthIndexSelect');
+  if (booking.rentalType === 'monthly') {
+    monthSelect.innerHTML = '';
+    const duration = booking.monthlyDuration || 6;
+    for (let i = 1; i <= duration; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = isBM ? `Bulan ke-${i}` : `Month ${i}`;
+      if (defaultMonth && i === defaultMonth) opt.selected = true;
+      monthSelect.appendChild(opt);
+    }
+    monthGroup.style.display = (defaultType === 'monthly_rent') ? 'block' : 'none';
+  } else {
+    monthGroup.style.display = 'none';
+  }
+
+  let targetAmount = 0;
+  if (defaultAmount !== null && defaultAmount !== undefined) {
+    targetAmount = defaultAmount;
+  } else if (defaultType === 'deposit') {
+    targetAmount = booking.depositPaid > 0 ? booking.depositPaid : Math.round(booking.totalAmount * (appState.settings.defaultDepositPct || 30) / 100);
+  } else if (defaultType === 'balance') {
+    targetAmount = booking.balance > 0 ? booking.balance : booking.totalAmount;
+  } else if (defaultType === 'full') {
+    targetAmount = booking.totalAmount;
+  } else if (defaultType === 'monthly_rent') {
+    targetAmount = booking.monthlyRate || 0;
+  } else {
+    targetAmount = booking.balance > 0 ? booking.balance : 0;
+  }
+  document.getElementById('paymentProofAmountInput').value = targetAmount;
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('paymentProofDateTimeInput').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+  const defaultBank = booking.lastPaymentBank || appState.settings.bankName || 'Maybank';
+  document.getElementById('paymentProofBankInput').value = defaultBank;
+  document.querySelectorAll('#paymentProofBankPills .bank-pill').forEach(pill => {
+    pill.classList.toggle('active', pill.getAttribute('data-bank').toLowerCase() === defaultBank.toLowerCase());
+  });
+
+  document.getElementById('paymentProofRefInput').value = '';
+  document.getElementById('paymentProofNotesInput').value = '';
+
+  document.getElementById('paymentProofFileInput').value = '';
+  document.getElementById('paymentProofImageData').value = '';
+  document.getElementById('paymentProofImageName').value = '';
+  document.getElementById('receiptUploadPrompt').style.display = 'block';
+  document.getElementById('receiptPreviewContainer').style.display = 'none';
+
+  document.getElementById('paymentProofModal').classList.add('active');
+}
+
+function handleSavePaymentProof(e) {
+  e.preventDefault();
+
+  const bookingId = document.getElementById('paymentProofBookingId').value;
+  const booking = appState.bookings.find(b => b.id === bookingId);
+  if (!booking) {
+    alert('Booking not found!');
+    return;
+  }
+
+  const type = document.getElementById('paymentProofTypeSelect').value;
+  const monthIndex = type === 'monthly_rent' ? parseInt(document.getElementById('paymentProofMonthIndexSelect').value) || 1 : null;
+  const amount = parseFloat(document.getElementById('paymentProofAmountInput').value) || 0;
+  const dateTime = document.getElementById('paymentProofDateTimeInput').value;
+  const bankName = document.getElementById('paymentProofBankInput').value.trim() || 'Bank Transfer';
+  const referenceNo = document.getElementById('paymentProofRefInput').value.trim();
+  const receiptImage = document.getElementById('paymentProofImageData').value || null;
+  const receiptFileName = document.getElementById('paymentProofImageName').value || null;
+  const notes = document.getElementById('paymentProofNotesInput').value.trim();
+
+  if (amount <= 0) {
+    alert(appState.settings.language === 'bm' ? 'Sila masukkan jumlah bayaran yang sah.' : 'Please enter a valid payment amount.');
+    return;
+  }
+
+  if (!referenceNo) {
+    alert(appState.settings.language === 'bm' ? 'Sila masukkan No. Rujukan Bank / Resit Transaksi.' : 'Please enter the Bank Reference No. / Transaction ID.');
+    return;
+  }
+
+  const newPayment = {
+    id: 'pay-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+    type,
+    amount,
+    monthIndex,
+    date: dateTime ? dateTime.split('T')[0] : new Date().toISOString().split('T')[0],
+    time: dateTime ? dateTime.split('T')[1] : '',
+    dateTime: dateTime || new Date().toISOString(),
+    bankName,
+    referenceNo,
+    receiptImage,
+    receiptFileName,
+    notes,
+    createdAt: new Date().toISOString()
+  };
+
+  booking.payments = booking.payments || [];
+  booking.payments.push(newPayment);
+
+  const totalPaid = booking.payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  booking.depositPaid = totalPaid;
+  booking.balance = Math.max(0, booking.totalAmount - totalPaid);
+  booking.lastPaymentRef = referenceNo;
+  booking.lastPaymentBank = bankName;
+
+  const oldStatus = booking.status;
+  if (booking.balance <= 0 && booking.totalAmount > 0) {
+    booking.status = 'confirmed';
+  } else if (booking.depositPaid > 0 && booking.status === 'quotation') {
+    booking.status = 'booked';
+  }
+
+  if (type === 'monthly_rent' && monthIndex) {
+    const invoices = getOrInitMonthlyInvoices(booking);
+    const targetInv = invoices.find(x => x.monthIndex === monthIndex);
+    if (targetInv) {
+      targetInv.status = 'paid';
+      targetInv.paidAt = dateTime || new Date().toISOString();
+      targetInv.referenceNo = referenceNo;
+      targetInv.bankName = bankName;
+      booking.monthlyInvoices = invoices;
+    }
   }
 
   saveToStorage();
-  renderMonthlyInvoicesList(booking);
-  if (appState.activeTab === 'bookings') renderBookingsTab();
+  closeAllModals();
+  renderApp();
+
+  const isBM = appState.settings.language === 'bm';
+  showToast(isBM ? `Resit bayaran ${formatCurrency(amount)} berjaya disimpan!` : `Payment receipt of ${formatCurrency(amount)} recorded successfully!`);
+
+  if (oldStatus === 'quotation' && booking.status === 'booked') {
+    openWhatsAppModal(booking, 'deposit_receipt');
+  } else if (booking.status === 'confirmed' && oldStatus !== 'confirmed') {
+    openWhatsAppModal(booking, 'full_receipt');
+  } else if (type === 'monthly_rent' && monthIndex) {
+    openWhatsAppModal(booking, 'monthly_rent_receipt', monthIndex);
+  }
+}
+
+function openReceiptViewerModal(booking) {
+  if (!booking) return;
+  const prop = getPropertyById(booking.propertyId);
+  const isBM = appState.settings.language === 'bm';
+
+  document.getElementById('receiptViewerSubtitle').textContent = `${booking.guestName} (${booking.guestPhone || '-'}) • ${prop.name}`;
+
+  const banner = document.getElementById('receiptViewerFinancialBanner');
+  const totalPaid = (booking.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0);
+  const pctPaid = booking.totalAmount > 0 ? Math.min(100, Math.round((totalPaid / booking.totalAmount) * 100)) : 100;
+
+  banner.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+      <div>
+        <span style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">${t('total')}: <strong>${formatCurrency(booking.totalAmount)}</strong></span>
+        <div style="font-size:16px; font-weight:800; color:var(--success-text); margin-top:1px;">
+          ${isBM ? 'Telah Dibayar' : 'Total Paid'}: ${formatCurrency(totalPaid)}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <span style="font-size:11px; font-weight:700; color:${booking.balance > 0 ? 'var(--danger)' : 'var(--success)'};">
+          ${isBM ? 'Baki Bayaran' : 'Balance Due'}: <strong>${formatCurrency(booking.balance)}</strong>
+        </span>
+        <div style="font-size:11px; font-weight:800; color:var(--text-muted); margin-top:2px;">
+          ${pctPaid}% ${isBM ? 'Selesai' : 'Settled'}
+        </div>
+      </div>
+    </div>
+    <div class="progress-bar-bg" style="margin-top:8px; margin-bottom:0; height:6px;">
+      <div class="progress-bar-fill" style="width:${pctPaid}%;"></div>
+    </div>
+  `;
+
+  const listContainer = document.getElementById('receiptViewerList');
+  listContainer.innerHTML = '';
+
+  const payments = booking.payments || [];
+  if (payments.length === 0) {
+    listContainer.innerHTML = `
+      <div class="empty-hint" style="padding:28px 16px; text-align:center;">
+        <i class="fa-solid fa-receipt" style="font-size:32px; color:var(--text-muted); opacity:0.4; margin-bottom:8px; display:block;"></i>
+        <p style="font-size:14px; font-weight:700; color:var(--text-main); margin-bottom:4px;">
+          ${t('no_receipts_recorded')}
+        </p>
+        <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:14px;">
+          ${isBM ? 'Tangkap resit atau rekod rujukan pindahan bank yang dikongsi oleh tetamu.' : 'Capture receipt screenshots and record bank transfer references shared by the guest.'}
+        </p>
+        <button type="button" class="btn btn-primary btn-sm" id="btnEmptyAddReceipt">
+          <i class="fa-solid fa-plus"></i> ${t('add_payment_receipt')}
+        </button>
+      </div>
+    `;
+    const emptyBtn = document.getElementById('btnEmptyAddReceipt');
+    if (emptyBtn) emptyBtn.addEventListener('click', () => {
+      closeAllModals();
+      openPaymentProofModal(booking);
+    });
+  } else {
+    payments.forEach((p, idx) => {
+      const card = document.createElement('div');
+      card.className = `receipt-record-card type-${p.type || 'deposit'}`;
+
+      let typeBadge = '';
+      if (p.type === 'deposit') {
+        typeBadge = `<span style="font-size:10.5px; font-weight:800; background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:999px;">🟡 ${isBM ? 'Deposit Tempahan' : 'Booking Deposit'}</span>`;
+      } else if (p.type === 'balance' || p.type === 'full') {
+        typeBadge = `<span style="font-size:10.5px; font-weight:800; background:#dcfce7; color:#166534; padding:2px 8px; border-radius:999px;">🟢 ${p.type === 'full' ? (isBM ? 'Bayaran Penuh' : 'Full Payment') : (isBM ? 'Baki Bayaran' : 'Balance Settlement')}</span>`;
+      } else if (p.type === 'monthly_rent') {
+        typeBadge = `<span style="font-size:10.5px; font-weight:800; background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:999px;">📑 ${isBM ? `Sewa Bulan ke-${p.monthIndex || 1}` : `Month ${p.monthIndex || 1} Rent`}</span>`;
+      } else if (p.type === 'security_deposit') {
+        typeBadge = `<span style="font-size:10.5px; font-weight:800; background:#f3e8ff; color:#6b21a8; padding:2px 8px; border-radius:999px;">🔒 ${isBM ? 'Deposit Keselamatan' : 'Security Deposit'}</span>`;
+      } else {
+        typeBadge = `<span style="font-size:10.5px; font-weight:800; background:var(--bg-surface-subtle); color:var(--text-main); padding:2px 8px; border-radius:999px;">📦 ${p.type}</span>`;
+      }
+
+      const formattedDate = p.dateTime ? p.dateTime.replace('T', ' ') : (p.date || '-');
+
+      card.innerHTML = `
+        <div class="receipt-record-header">
+          <div>
+            ${typeBadge}
+            <span style="font-size:11px; color:var(--text-muted); margin-left:6px;"><i class="fa-regular fa-clock"></i> ${formattedDate}</span>
+          </div>
+          <strong style="font-size:15px; font-weight:800; color:var(--success-text);">
+            ${formatCurrency(p.amount)}
+          </strong>
+        </div>
+
+        <div class="receipt-record-body">
+          ${p.receiptImage ? `
+            <img src="${p.receiptImage}" alt="Receipt Slip" class="receipt-record-thumb" data-idx="${idx}" title="${isBM ? 'Tekan untuk lihat resit penuh' : 'Click to zoom slip'}">
+          ` : `
+            <div style="width:56px; height:56px; border-radius:6px; background:var(--bg-surface-subtle); border:1px dashed var(--border-color); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-muted); font-size:10px; text-align:center; padding:2px;">
+              <i class="fa-solid fa-file-circle-xmark" style="font-size:16px; margin-bottom:2px;"></i> No Slip
+            </div>
+          `}
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:12.5px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+              <i class="fa-solid fa-building-columns" style="color:var(--primary);"></i> ${p.bankName || 'Bank Transfer'}
+            </div>
+            <div style="margin-top:3px;">
+              <span class="receipt-ref-pill">
+                <code>${p.referenceNo || '-'}</code>
+                <button type="button" class="btn-copy-ref-pill" data-ref="${p.referenceNo || ''}" title="${isBM ? 'Salin No. Rujukan' : 'Copy Reference No'}" style="background:none; border:none; color:var(--primary); cursor:pointer; padding:0 2px;">
+                  <i class="fa-solid fa-copy"></i>
+                </button>
+              </span>
+            </div>
+            ${p.notes ? `<p style="font-size:11.5px; color:var(--text-muted); margin:4px 0 0 0; font-style:italic;"><i class="fa-regular fa-note-sticky"></i> ${p.notes}</p>` : ''}
+          </div>
+        </div>
+
+        <div class="receipt-actions-row">
+          ${p.receiptImage ? `
+            <button type="button" class="btn btn-outline btn-xs btn-view-full-slip" data-idx="${idx}">
+              <i class="fa-solid fa-magnifying-glass-plus"></i> ${isBM ? 'Lihat Penuh' : 'View Slip'}
+            </button>
+            <button type="button" class="btn btn-outline btn-xs btn-download-slip" data-idx="${idx}">
+              <i class="fa-solid fa-download"></i> ${isBM ? 'Muat Turun' : 'Download'}
+            </button>
+          ` : ''}
+          <button type="button" class="btn btn-outline btn-xs btn-delete-receipt-record" data-pid="${p.id}" data-bid="${booking.id}" style="color:var(--danger); border-color:var(--danger); margin-left:auto;">
+            <i class="fa-solid fa-trash"></i> ${isBM ? 'Padam' : 'Delete'}
+          </button>
+        </div>
+      `;
+
+      listContainer.appendChild(card);
+    });
+
+    listContainer.querySelectorAll('.btn-copy-ref-pill').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const ref = e.currentTarget.getAttribute('data-ref');
+        if (ref) {
+          navigator.clipboard.writeText(ref).then(() => {
+            showToast(t('ref_copied'));
+          }).catch(() => {
+            showToast(`Copied: ${ref}`);
+          });
+        }
+      });
+    });
+
+    listContainer.querySelectorAll('.btn-view-full-slip, .receipt-record-thumb').forEach(el => {
+      el.addEventListener('click', (e) => {
+        const idx = parseInt(e.currentTarget.getAttribute('data-idx'));
+        const p = payments[idx];
+        if (p && p.receiptImage) {
+          openReceiptLightbox(p.receiptImage, `${p.bankName} • ${p.referenceNo} (${formatCurrency(p.amount)})`);
+        }
+      });
+    });
+
+    listContainer.querySelectorAll('.btn-download-slip').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.currentTarget.getAttribute('data-idx'));
+        const p = payments[idx];
+        if (p && p.receiptImage) {
+          const a = document.createElement('a');
+          a.href = p.receiptImage;
+          a.download = p.receiptFileName || `Receipt_${p.referenceNo || 'Payment'}.jpg`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
+      });
+    });
+
+    listContainer.querySelectorAll('.btn-delete-receipt-record').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const pId = e.currentTarget.getAttribute('data-pid');
+        const bId = e.currentTarget.getAttribute('data-bid');
+        deletePaymentReceipt(bId, pId);
+      });
+    });
+  }
+
+  const addBtn = document.getElementById('btnAddReceiptFromViewer');
+  if (addBtn) {
+    addBtn.onclick = () => {
+      closeAllModals();
+      openPaymentProofModal(booking, booking.balance > 0 ? 'balance' : 'deposit');
+    };
+  }
+
+  document.getElementById('receiptViewerModal').classList.add('active');
+}
+
+function openReceiptLightbox(imageUrl, title = 'Bank Receipt Proof') {
+  const modal = document.getElementById('receiptLightboxModal');
+  const img = document.getElementById('lightboxImage');
+  const titleEl = document.getElementById('lightboxTitle');
+  const downloadBtn = document.getElementById('btnDownloadLightboxImg');
+
+  if (!modal || !img) return;
+
+  img.src = imageUrl;
+  if (titleEl) titleEl.textContent = title;
+
+  if (downloadBtn) {
+    downloadBtn.onclick = () => {
+      const a = document.createElement('a');
+      a.href = imageUrl;
+      a.download = `Receipt_${new Date().toISOString().split('T')[0]}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+  }
+
+  modal.classList.add('active');
+}
+
+function deletePaymentReceipt(bookingId, paymentId) {
+  const isBM = appState.settings.language === 'bm';
+  if (!confirm(t('delete_receipt_confirm'))) return;
+
+  const booking = appState.bookings.find(b => b.id === bookingId);
+  if (!booking || !booking.payments) return;
+
+  booking.payments = booking.payments.filter(p => p.id !== paymentId);
+
+  const totalPaid = booking.payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  booking.depositPaid = totalPaid;
+  booking.balance = Math.max(0, booking.totalAmount - totalPaid);
+
+  if (booking.payments.length > 0) {
+    const lastP = booking.payments[booking.payments.length - 1];
+    booking.lastPaymentRef = lastP.referenceNo;
+    booking.lastPaymentBank = lastP.bankName;
+  } else {
+    booking.lastPaymentRef = null;
+    booking.lastPaymentBank = null;
+    if (booking.depositPaid === 0 && booking.status === 'booked') {
+      booking.status = 'quotation';
+    }
+  }
+
+  saveToStorage();
+  renderApp();
+  openReceiptViewerModal(booking);
+  showToast(isBM ? 'Rekod resit telah dipadam.' : 'Payment receipt record deleted.');
+}
+
+// ==========================================================================
+// 11E. PROMOTIONAL MEDIA & MARKETING HUB ENGINE
+// ==========================================================================
+
+function compressPromoMediaImage(file, maxWidth = 1000, maxHeight = 1000, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    if (!file) return reject(new Error('No file provided'));
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        const sizeBytes = Math.round((dataUrl.length * 3) / 4);
+        resolve({
+          dataUrl,
+          sizeBytes,
+          fileName: file.name
+        });
+      };
+      img.onerror = (err) => reject(err);
+      img.src = e.target.result;
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
+function openPromotionalMediaModal(defaultPropertyId = null) {
+  if (defaultPropertyId) {
+    appState.selectedPromoPropertyId = defaultPropertyId;
+  }
+  
+  // Populate property filter
+  const propSelect = document.getElementById('promoPropertyFilter');
+  if (propSelect) {
+    const isBM = appState.settings.language === 'bm';
+    let options = `<option value="all">${isBM ? 'Semua Homestay & Umum' : 'All Homestays & General'}</option>`;
+    appState.properties.forEach(p => {
+      options += `<option value="${p.id}">${escapeHtml(p.name)}</option>`;
+    });
+    propSelect.innerHTML = options;
+    propSelect.value = appState.selectedPromoPropertyId || 'all';
+  }
+
+  // Set category pills active state
+  const pills = document.querySelectorAll('#promoCategoryFilter .cal-mode-pill');
+  pills.forEach(p => {
+    if (p.getAttribute('data-category') === (appState.selectedPromoCategory || 'all')) {
+      p.classList.add('active');
+    } else {
+      p.classList.remove('active');
+    }
+  });
+
+  const searchInput = document.getElementById('promoSearchInput');
+  if (searchInput) searchInput.value = appState.promoSearchQuery || '';
+
+  renderPromotionalMediaList();
+  document.getElementById('promotionalMediaModal').classList.add('active');
+}
+
+function renderPromotionalMediaList() {
+  const container = document.getElementById('promoMediaGrid');
+  const emptyState = document.getElementById('promoMediaEmptyState');
+  if (!container) return;
+
+  const isBM = appState.settings.language === 'bm';
+  const filterProp = appState.selectedPromoPropertyId || 'all';
+  const filterCat = appState.selectedPromoCategory || 'all';
+  const query = (appState.promoSearchQuery || '').trim().toLowerCase();
+
+  const filtered = appState.promotionalMedia.filter(item => {
+    // Property match
+    if (filterProp !== 'all' && item.propertyId !== 'all' && item.propertyId !== filterProp) {
+      return false;
+    }
+    // Category match
+    if (filterCat !== 'all' && item.category !== filterCat) {
+      return false;
+    }
+    // Search query match
+    if (query) {
+      const prop = item.propertyId !== 'all' ? getPropertyById(item.propertyId) : null;
+      const propName = prop ? prop.name.toLowerCase() : '';
+      const title = (item.title || '').toLowerCase();
+      const caption = (item.caption || '').toLowerCase();
+      if (!title.includes(query) && !caption.includes(query) && !propName.includes(query)) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '';
+    if (emptyState) emptyState.style.display = 'block';
+    return;
+  }
+
+  if (emptyState) emptyState.style.display = 'none';
+
+  let html = '';
+  filtered.forEach(item => {
+    const prop = item.propertyId !== 'all' ? getPropertyById(item.propertyId) : null;
+    const propLabel = prop ? prop.name : (isBM ? 'Umum / Semua' : 'General / All');
+    const propColor = prop ? prop.color : '#0284c7';
+
+    // Category badge label
+    let catLabel = 'Photo';
+    let catIcon = 'fa-image';
+    if (item.category === 'photo') {
+      catLabel = isBM ? 'Foto' : 'Photo';
+      catIcon = 'fa-image';
+    } else if (item.category === 'poster') {
+      catLabel = isBM ? 'Poster' : 'Poster';
+      catIcon = 'fa-bullhorn';
+    } else if (item.category === 'video_tour') {
+      catLabel = isBM ? 'Video Tour' : 'Video Tour';
+      catIcon = 'fa-video';
+    } else if (item.category === 'copywriting') {
+      catLabel = isBM ? 'Ayat Iklan' : 'Copywriting';
+      catIcon = 'fa-pen-nib';
+    }
+
+    // Thumbnail area
+    let thumbArea = '';
+    if (item.imageData) {
+      thumbArea = `
+        <div class="promo-thumb-container" data-action="lightbox" data-id="${item.id}" title="${isBM ? 'Ketik untuk lihat saiz penuh' : 'Tap to view full-size'}">
+          <img src="${item.imageData}" alt="${escapeHtml(item.title)}" class="promo-thumb-img" loading="lazy">
+          <div class="promo-badge-overlay">
+            <span class="promo-cat-badge cat-${item.category}"><i class="fa-solid ${catIcon}"></i> ${catLabel}</span>
+            <span class="promo-prop-badge" style="border-left: 3px solid ${propColor};"><i class="fa-solid fa-house"></i> ${escapeHtml(propLabel)}</span>
+          </div>
+        </div>
+      `;
+    } else if (item.mediaUrl) {
+      thumbArea = `
+        <div class="promo-thumb-container" data-action="link" data-url="${escapeHtml(item.mediaUrl)}" style="background:linear-gradient(135deg, #1e293b, #0f172a);" title="${isBM ? 'Buka pautan' : 'Open external link'}">
+          <div class="promo-thumb-placeholder" style="color:#38bdf8;">
+            <i class="fa-solid ${item.category === 'video_tour' ? 'fa-circle-play' : 'fa-arrow-up-right-from-square'}" style="font-size:36px;"></i>
+            <span style="font-size:11px; font-weight:700; color:#e2e8f0;">${isBM ? 'Pautan Video / Awan' : 'Video / Cloud Link'}</span>
+          </div>
+          <div class="promo-badge-overlay">
+            <span class="promo-cat-badge cat-${item.category}"><i class="fa-solid ${catIcon}"></i> ${catLabel}</span>
+            <span class="promo-prop-badge" style="border-left: 3px solid ${propColor};"><i class="fa-solid fa-house"></i> ${escapeHtml(propLabel)}</span>
+          </div>
+        </div>
+      `;
+    } else {
+      thumbArea = `
+        <div class="promo-thumb-container" style="background:linear-gradient(135deg, #f8fafc, #e2e8f0);">
+          <div class="promo-thumb-placeholder" style="color:#d97706;">
+            <i class="fa-solid fa-quote-left" style="font-size:32px; opacity:0.8;"></i>
+            <span style="font-size:11px; font-weight:700; color:var(--text-muted);">${isBM ? 'Teks Iklan' : 'Marketing Pitch'}</span>
+          </div>
+          <div class="promo-badge-overlay">
+            <span class="promo-cat-badge cat-${item.category}"><i class="fa-solid ${catIcon}"></i> ${catLabel}</span>
+            <span class="promo-prop-badge" style="border-left: 3px solid ${propColor};"><i class="fa-solid fa-house"></i> ${escapeHtml(propLabel)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    html += `
+      <div class="promo-card" data-id="${item.id}">
+        ${thumbArea}
+        <div class="promo-card-body">
+          <h4 class="promo-card-title">${escapeHtml(item.title)}</h4>
+          <div class="promo-card-caption-preview">${escapeHtml(item.caption)}</div>
+          
+          <div class="promo-card-actions">
+            <button type="button" class="btn btn-sm btn-promo-wa" data-action="wa" data-id="${item.id}" title="${isBM ? 'Hantar ke WhatsApp' : 'Send via WhatsApp'}">
+              <i class="fa-brands fa-whatsapp"></i> <span>WhatsApp</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-promo-share" data-action="native-share" data-id="${item.id}" title="${isBM ? 'Kongsi ke Apps' : 'Share to apps'}">
+              <i class="fa-solid fa-share-nodes"></i>
+            </button>
+            <button type="button" class="btn btn-outline btn-xs" data-action="copy-pitch" data-id="${item.id}" title="${isBM ? 'Salin Ayat' : 'Copy Pitch'}">
+              <i class="fa-solid fa-copy"></i>
+            </button>
+            ${item.mediaUrl ? `
+              <button type="button" class="btn btn-outline btn-xs" data-action="copy-link" data-id="${item.id}" title="${isBM ? 'Salin Pautan' : 'Copy Link'}">
+                <i class="fa-solid fa-link"></i>
+              </button>
+            ` : ''}
+            <div style="margin-left:auto; display:flex; gap:2px;">
+              <button type="button" class="promo-menu-btn" data-action="edit" data-id="${item.id}" title="${isBM ? 'Kemas Kini' : 'Edit'}">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button type="button" class="promo-menu-btn" data-action="delete" data-id="${item.id}" title="${isBM ? 'Padam' : 'Delete'}">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  // Attach card interaction listeners
+  container.querySelectorAll('[data-action="lightbox"]').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.getAttribute('data-id');
+      openPromoLightbox(id);
+    });
+  });
+
+  container.querySelectorAll('[data-action="link"]').forEach(el => {
+    el.addEventListener('click', () => {
+      const url = el.getAttribute('data-url');
+      if (url) window.open(url, '_blank');
+    });
+  });
+
+  container.querySelectorAll('[data-action="wa"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      openPromoWaQuickModal(id);
+    });
+  });
+
+  container.querySelectorAll('[data-action="native-share"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      sharePromoMediaNative(id);
+    });
+  });
+
+  container.querySelectorAll('[data-action="copy-pitch"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      copyPromoCaption(id);
+    });
+  });
+
+  container.querySelectorAll('[data-action="copy-link"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      copyPromoLink(id);
+    });
+  });
+
+  container.querySelectorAll('[data-action="edit"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      openPromoMediaEditModal(id);
+    });
+  });
+
+  container.querySelectorAll('[data-action="delete"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      deletePromoMediaItem(id);
+    });
+  });
+}
+
+function openPromoMediaEditModal(mediaId = null) {
+  const isBM = appState.settings.language === 'bm';
+  const modal = document.getElementById('promoMediaEditModal');
+  const titleEl = document.getElementById('promoMediaEditTitle');
+  const idInput = document.getElementById('promoMediaIdInput');
+  const propSelect = document.getElementById('promoMediaPropertySelect');
+  const catSelect = document.getElementById('promoMediaCategorySelect');
+  const titleInput = document.getElementById('promoMediaTitleInput');
+  const urlInput = document.getElementById('promoMediaUrlInput');
+  const captionInput = document.getElementById('promoMediaCaptionInput');
+  const imgDataInput = document.getElementById('promoMediaImageData');
+  const fileInput = document.getElementById('promoMediaFileInput');
+  const promptEl = document.getElementById('promoImageDropPrompt');
+  const previewContainer = document.getElementById('promoImagePreviewContainer');
+  const previewImg = document.getElementById('promoImagePreviewImg');
+  const fileNameEl = document.getElementById('promoImageFileName');
+  const fileSizeEl = document.getElementById('promoImageFileSize');
+
+  // Populate property select
+  let propOptions = `<option value="all">${isBM ? 'Umum / Semua Homestay' : 'General / All Homestays'}</option>`;
+  appState.properties.forEach(p => {
+    propOptions += `<option value="${p.id}">${escapeHtml(p.name)}</option>`;
+  });
+  propSelect.innerHTML = propOptions;
+
+  fileInput.value = '';
+
+  const existing = mediaId ? appState.promotionalMedia.find(m => m.id === mediaId) : null;
+  if (existing) {
+    if (titleEl) titleEl.textContent = isBM ? 'Kemaskini Media Promosi' : 'Edit Promotional Media';
+    idInput.value = existing.id;
+    propSelect.value = existing.propertyId || 'all';
+    catSelect.value = existing.category || 'photo';
+    titleInput.value = existing.title || '';
+    urlInput.value = existing.mediaUrl || '';
+    captionInput.value = existing.caption || '';
+    imgDataInput.value = existing.imageData || '';
+
+    if (existing.imageData) {
+      previewImg.src = existing.imageData;
+      fileNameEl.textContent = 'Current Image';
+      const approxKb = Math.round((existing.imageData.length * 3) / 4096);
+      fileSizeEl.textContent = `~${approxKb} KB`;
+      promptEl.style.display = 'none';
+      previewContainer.style.display = 'block';
+    } else {
+      promptEl.style.display = 'block';
+      previewContainer.style.display = 'none';
+    }
+  } else {
+    if (titleEl) titleEl.textContent = isBM ? 'Tambah Media Promosi' : 'Add Promotional Media';
+    idInput.value = '';
+    propSelect.value = appState.selectedPromoPropertyId !== 'all' ? appState.selectedPromoPropertyId : 'all';
+    catSelect.value = appState.selectedPromoCategory !== 'all' ? appState.selectedPromoCategory : 'photo';
+    titleInput.value = '';
+    urlInput.value = '';
+    captionInput.value = '';
+    imgDataInput.value = '';
+    promptEl.style.display = 'block';
+    previewContainer.style.display = 'none';
+  }
+
+  modal.classList.add('active');
+}
+
+function handlePromoImageFileSelected(file) {
+  if (!file) return;
+
+  const isBM = appState.settings.language === 'bm';
+  showToast(isBM ? 'Memampatkan gambar...' : 'Optimizing & compressing image...');
+
+  compressPromoMediaImage(file, 1000, 1000, 0.8)
+    .then(res => {
+      document.getElementById('promoMediaImageData').value = res.dataUrl;
+      document.getElementById('promoImagePreviewImg').src = res.dataUrl;
+      document.getElementById('promoImageFileName').textContent = res.fileName;
+      document.getElementById('promoImageFileSize').textContent = `${Math.round(res.sizeBytes / 1024)} KB (Compressed)`;
+      document.getElementById('promoImageDropPrompt').style.display = 'none';
+      document.getElementById('promoImagePreviewContainer').style.display = 'block';
+      showToast(isBM ? 'Gambar sedia disimpan!' : 'Image optimized for storage!');
+    })
+    .catch(err => {
+      console.error('Compression error:', err);
+      alert(isBM ? 'Gagal memproses gambar.' : 'Failed to compress image.');
+    });
+}
+
+function savePromoMediaItem(e) {
+  e.preventDefault();
+
+  const isBM = appState.settings.language === 'bm';
+  const idInput = document.getElementById('promoMediaIdInput').value;
+  const propertyId = document.getElementById('promoMediaPropertySelect').value;
+  const category = document.getElementById('promoMediaCategorySelect').value;
+  const title = document.getElementById('promoMediaTitleInput').value.trim();
+  const mediaUrl = document.getElementById('promoMediaUrlInput').value.trim();
+  const caption = document.getElementById('promoMediaCaptionInput').value.trim();
+  const imageData = document.getElementById('promoMediaImageData').value;
+
+  if (!title || !caption) {
+    alert(isBM ? 'Sila isikan tajuk dan teks promosi.' : 'Please provide a title and promo copywriting text.');
+    return;
+  }
+
+  const existingIndex = idInput ? appState.promotionalMedia.findIndex(m => m.id === idInput) : -1;
+  const mediaObj = {
+    id: idInput || `promo-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    propertyId,
+    category,
+    title,
+    caption,
+    mediaUrl,
+    imageData,
+    createdAt: existingIndex >= 0 ? (appState.promotionalMedia[existingIndex].createdAt || new Date().toISOString()) : new Date().toISOString()
+  };
+
+  if (existingIndex >= 0) {
+    appState.promotionalMedia[existingIndex] = mediaObj;
+  } else {
+    appState.promotionalMedia.unshift(mediaObj);
+  }
+
+  saveToStorage();
+  renderPromotionalMediaList();
+  document.getElementById('promoMediaEditModal').classList.remove('active');
+  showToast(isBM ? 'Media promosi berjaya disimpan!' : 'Promotional media asset saved!');
+}
+
+function deletePromoMediaItem(mediaId) {
+  if (!confirm(t('delete_promo_confirm'))) return;
+
+  appState.promotionalMedia = appState.promotionalMedia.filter(m => m.id !== mediaId);
+  saveToStorage();
+  renderPromotionalMediaList();
+  showToast(appState.settings.language === 'bm' ? 'Media promosi telah dipadam.' : 'Promotional media deleted.');
+}
+
+function openPromoLightbox(mediaId) {
+  const item = appState.promotionalMedia.find(m => m.id === mediaId);
+  if (item && item.imageData) {
+    openReceiptLightbox(item.imageData, item.title);
+  }
+}
+
+function copyPromoCaption(mediaId) {
+  const item = appState.promotionalMedia.find(m => m.id === mediaId);
+  if (!item) return;
+
+  let textToCopy = item.caption;
+  if (item.mediaUrl && !textToCopy.includes(item.mediaUrl)) {
+    textToCopy += `\n\n🔗 ${item.mediaUrl}`;
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      showToast(t('pitch_copied'));
+    }).catch(() => {
+      copyViaFallback(textToCopy, t('pitch_copied'));
+    });
+  } else {
+    copyViaFallback(textToCopy, t('pitch_copied'));
+  }
+}
+
+function copyPromoLink(mediaId) {
+  const item = appState.promotionalMedia.find(m => m.id === mediaId);
+  if (!item || !item.mediaUrl) return;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(item.mediaUrl).then(() => {
+      showToast(t('link_copied'));
+    }).catch(() => {
+      copyViaFallback(item.mediaUrl, t('link_copied'));
+    });
+  } else {
+    copyViaFallback(item.mediaUrl, t('link_copied'));
+  }
+}
+
+function copyViaFallback(text, successMsg) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  showToast(successMsg);
+}
+
+function sharePromoMediaNative(mediaId) {
+  const item = appState.promotionalMedia.find(m => m.id === mediaId);
+  if (!item) return;
+
+  let shareText = item.caption;
+  const shareUrl = item.mediaUrl || '';
+
+  if (navigator.share) {
+    navigator.share({
+      title: item.title,
+      text: shareText,
+      url: shareUrl || undefined
+    }).catch(err => {
+      if (err.name !== 'AbortError') {
+        openPromoWaQuickModal(mediaId);
+      }
+    });
+  } else {
+    openPromoWaQuickModal(mediaId);
+  }
+}
+
+function openPromoWaQuickModal(mediaId, defaultPhone = '') {
+  const item = appState.promotionalMedia.find(m => m.id === mediaId);
+  if (!item) return;
+
+  const isBM = appState.settings.language === 'bm';
+  document.getElementById('promoWaQuickMediaId').value = mediaId;
+
+  // Populate recipients dropdown with recent bookings
+  const recipientSelect = document.getElementById('promoWaRecipientSelect');
+  const customPhoneGroup = document.getElementById('promoWaCustomPhoneGroup');
+  const customPhoneInput = document.getElementById('promoWaCustomPhoneInput');
+
+  let opts = `<option value="custom">${isBM ? '✏️ Masukkan / Pilih Nombor WhatsApp' : '✏️ Enter / Custom Phone Number'}</option>`;
+  
+  // Get unique recent guests with phone numbers
+  const recentGuests = [];
+  const seenPhones = new Set();
+
+  appState.bookings.forEach(b => {
+    if (b.guestPhone && !seenPhones.has(b.guestPhone)) {
+      seenPhones.add(b.guestPhone);
+      const prop = getPropertyById(b.propertyId);
+      recentGuests.push({
+        name: b.guestName,
+        phone: b.guestPhone,
+        property: prop ? prop.name : ''
+      });
+    }
+  });
+
+  recentGuests.slice(0, 8).forEach(g => {
+    opts += `<option value="${escapeHtml(g.phone)}">👤 ${escapeHtml(g.name)} (${g.phone}) • ${escapeHtml(g.property)}</option>`;
+  });
+
+  recipientSelect.innerHTML = opts;
+
+  if (defaultPhone) {
+    recipientSelect.value = 'custom';
+    customPhoneInput.value = defaultPhone;
+    customPhoneGroup.style.display = 'block';
+  } else if (recentGuests.length > 0) {
+    recipientSelect.value = recentGuests[0].phone;
+    customPhoneInput.value = recentGuests[0].phone;
+    customPhoneGroup.style.display = 'none';
+  } else {
+    recipientSelect.value = 'custom';
+    customPhoneInput.value = '';
+    customPhoneGroup.style.display = 'block';
+  }
+
+  // Format message text
+  let msg = item.caption;
+  if (item.mediaUrl && !msg.includes(item.mediaUrl)) {
+    msg += `\n\n🔗 ${item.mediaUrl}`;
+  }
+
+  document.getElementById('promoWaMessagePreview').textContent = msg;
+  document.getElementById('promoWaQuickModal').classList.add('active');
+}
+
+function executePromoWaSend() {
+  const isBM = appState.settings.language === 'bm';
+  const mediaId = document.getElementById('promoWaQuickMediaId').value;
+  const item = appState.promotionalMedia.find(m => m.id === mediaId);
+  if (!item) return;
+
+  const recipientSelect = document.getElementById('promoWaRecipientSelect');
+  const customPhoneInput = document.getElementById('promoWaCustomPhoneInput');
+  
+  let rawPhone = recipientSelect.value === 'custom' ? customPhoneInput.value.trim() : recipientSelect.value;
+  let cleanPhone = rawPhone.replace(/[^\d+]/g, '');
+  if (cleanPhone.startsWith('0')) {
+    cleanPhone = '60' + cleanPhone.slice(1);
+  } else if (cleanPhone.startsWith('+')) {
+    cleanPhone = cleanPhone.slice(1);
+  }
+
+  let text = item.caption;
+  if (item.mediaUrl && !text.includes(item.mediaUrl)) {
+    text += `\n\n🔗 ${item.mediaUrl}`;
+  }
+
+  const encoded = encodeURIComponent(text);
+  let waUrl = '';
+  if (cleanPhone && cleanPhone.length >= 8) {
+    waUrl = `https://wa.me/${cleanPhone}?text=${encoded}`;
+  } else {
+    waUrl = `https://wa.me/?text=${encoded}`;
+  }
+
+  window.open(waUrl, '_blank');
+  document.getElementById('promoWaQuickModal').classList.remove('active');
+  showToast(isBM ? 'Membuka WhatsApp...' : 'Opening WhatsApp...');
+}
+
+function insertPromoPitchTemplate() {
+  const isBM = appState.settings.language === 'bm';
+  const cat = document.getElementById('promoMediaCategorySelect').value;
+  const propId = document.getElementById('promoMediaPropertySelect').value;
+  const prop = propId !== 'all' ? getPropertyById(propId) : null;
+  const propName = prop ? prop.name : (isBM ? 'Homestay Eksklusif Kami' : 'Our Exclusive Homestay');
+  const rate = prop ? (prop.defaultRate || 200) : 200;
+
+  let template = '';
+  if (cat === 'photo' || cat === 'poster') {
+    if (isBM) {
+      template = `✨ *${propName}* ✨\nPercutian selesa & mendamaikan untuk anda sekeluarga!\n\n🏡 *Kemudahan Lengkap:*\n• Bilik tidur luas & selesa berhawa dingin\n• Dapur lengkap memasak & ruang tamu selesa\n• WiFi laju & Smart TV\n• Lokasi strategik berdekatan tempat menarik\n\n💰 *Kadar dari:* RM ${rate} / malam\n📲 WhatsApp kami untuk semak kekosongan tarikh pilihan anda!`;
+    } else {
+      template = `✨ *${propName}* ✨\nThe perfect retreat for your relaxing getaway!\n\n🏡 *Key Amenities:*\n• Fully air-conditioned & sparkling clean\n• High-speed WiFi & Smart Entertainment\n• Equipped kitchen & dining area\n• Prime location near local attractions\n\n💰 *Rates from:* RM ${rate} / night\n📲 Message us now to reserve your dates!`;
+    }
+  } else if (cat === 'video_tour') {
+    if (isBM) {
+      template = `🎥 *Video Tour Maya: ${propName}*\nLihat sendiri suasana selesa unit kami sebelum anda menempah!\n\n👇 *Tonton Video di sini:*\nhttps://youtu.be/sample-tour\n\n💬 Hubungi kami segera untuk tempahan & tawaran istimewa!`;
+    } else {
+      template = `🎥 *Virtual Tour: ${propName}*\nTake an exclusive walkthrough inside our cozy unit!\n\n👇 *Watch the video here:*\nhttps://youtu.be/sample-tour\n\n💬 Send us a message today to secure your stay!`;
+    }
+  } else {
+    if (isBM) {
+      template = `🎉 *Tawaran Terhad: Diskaun Khas Homestay!* 🌟\nTempah awal untuk percutian seterusnya dan nikmati diskaun eksklusif.\n\n• Sesuai untuk keluarga & rakan\n• Suasana tenang & privasi terjamin\n• Tempah terus tanpa caj tersembunyi\n\n📲 Balas mesej ini dengan tarikh pilihan anda untuk dapatkan diskaun!`;
+    } else {
+      template = `🎉 *Limited-Time Special Offer!* 🌟\nBook your upcoming getaway early and enjoy exclusive rates.\n\n• Ideal for families & group getaways\n• Total comfort, cleanliness & privacy\n• Direct booking guaranteed best price\n\n📲 Reply to this message with your dates to lock in your discount!`;
+    }
+  }
+
+  const captionInput = document.getElementById('promoMediaCaptionInput');
+  if (captionInput) {
+    captionInput.value = template;
+    captionInput.focus();
+  }
+}
+
+function attachPromoMediaToWaMessage() {
+  const isBM = appState.settings.language === 'bm';
+  if (!appState.activeWaBooking) return;
+
+  const bPropId = appState.activeWaBooking.propertyId;
+  const available = appState.promotionalMedia.filter(m => m.propertyId === 'all' || m.propertyId === bPropId);
+
+  if (available.length === 0) {
+    alert(isBM ? 'Tiada media promosi dijumpai bagi unit ini. Sila tambah media dalam Hab Media.' : 'No promo media found for this unit. Please add media in the Media Hub.');
+    return;
+  }
+
+  // Pick the first relevant media item
+  const chosen = available[0];
+  let extraText = `\n\n📸 *${chosen.title}*:\n${chosen.caption}`;
+  if (chosen.mediaUrl && !extraText.includes(chosen.mediaUrl)) {
+    extraText += `\n🔗 ${chosen.mediaUrl}`;
+  }
+
+  const previewEl = document.getElementById('waMessagePreviewText');
+  if (previewEl) {
+    previewEl.textContent += extraText;
+    showToast(isBM ? 'Media promosi disertakan!' : 'Promo media attached to message!');
+  }
 }
 
 // ==========================================================================
@@ -5317,6 +7036,7 @@ function generateWhatsAppMessage(booking, templateType) {
             `💰 *REKOD BAYARAN:*\n` +
             `• Jumlah Pakej Kemasukan: ${currency} ${totalMoveIn.toFixed(2)}\n` +
             `• ✅ *Bayaran Booking Diterima:* *${currency} ${booking.depositPaid.toFixed(2)}*\n` +
+            (booking.lastPaymentRef ? `• 🔖 *No. Rujukan Bank:* \`${booking.lastPaymentRef}\` (${booking.lastPaymentBank || 'Pindahan Bank'})\n` : '') +
             `----------------------------------------\n` +
             `💳 *Baki Perlu Dibayar Sebelum Serahan Kunci:* *${currency} ${booking.balance.toFixed(2)}*\n\n` +
             `🔑 *Kunci & Smart Lock PIN:* Akan diserahkan selepas baki pakej kemasukan dijelaskan sepenuhnya. Terima kasih! 🙏`;
@@ -5333,6 +7053,7 @@ function generateWhatsAppMessage(booking, templateType) {
             `💰 *REKOD BAYARAN:*\n` +
             `• Jumlah Penginapan: ${currency} ${booking.totalAmount.toFixed(2)}\n` +
             `• ✅ *Deposit / Booking Diterima:* *${currency} ${booking.depositPaid.toFixed(2)}*\n` +
+            (booking.lastPaymentRef ? `• 🔖 *No. Rujukan Bank:* \`${booking.lastPaymentRef}\` (${booking.lastPaymentBank || 'Pindahan Bank'})\n` : '') +
             `----------------------------------------\n` +
             `💳 *Baki Bayaran Sebelum Daftar Masuk:* *${currency} ${booking.balance.toFixed(2)}*\n\n` +
             `🔑 *Kod PIN Kunci Pintu:* Akan diberikan selepas pengesahan bayaran penuh sebelum waktu daftar masuk. Terima kasih! 🏡✨`;
@@ -5366,6 +7087,7 @@ function generateWhatsAppMessage(booking, templateType) {
           `${unitTitleBM}\n` +
           `💰 *STATUS BAYARAN: SELESAI DIBAYAR PENUH (100%) ✅*\n` +
           `• Jumlah Dibayar: ${currency} ${booking.totalAmount.toFixed(2)}\n` +
+          (booking.lastPaymentRef ? `• 🔖 *No. Rujukan Bank:* \`${booking.lastPaymentRef}\` (${booking.lastPaymentBank || 'Pindahan Bank'})\n` : '') +
           `• Baki Bayaran: ${currency} 0.00\n\n` +
           `========================================\n` +
           `🔑 *MAKLUMAT AKSES & KUNCI PINTU PINTAR:*\n` +
@@ -5409,6 +7131,7 @@ function generateWhatsAppMessage(booking, templateType) {
           `${unitTitleBM}\n` +
           `📅 *Tempoh Sewaan:* ${startStr} hingga ${endStr} (Bulan ke-${mIndex})\n` +
           `💰 *Jumlah Diterima:* *${currency} ${totalMonthDue.toFixed(2)}*\n` +
+          (booking.lastPaymentRef ? `• 🔖 *No. Rujukan Bank:* \`${booking.lastPaymentRef}\` (${booking.lastPaymentBank || 'Pindahan Bank'})\n` : '') +
           `✅ *Status Bayaran:* SELESAI DIBAYAR (PAID)\n\n` +
           `Terima kasih atas pembayaran anda yang tepat pada masanya! 🙏✨`;
         break;
@@ -5540,6 +7263,7 @@ function generateWhatsAppMessage(booking, templateType) {
           `💰 *PAYMENT RECORD:*\n` +
           `• Total Move-In Package: ${currency} ${totalMoveIn.toFixed(2)}\n` +
           `• ✅ *Booking Fee Received:* *${currency} ${booking.depositPaid.toFixed(2)}*\n` +
+          (booking.lastPaymentRef ? `• 🔖 *Bank Reference No:* \`${booking.lastPaymentRef}\` (${booking.lastPaymentBank || 'Bank Transfer'})\n` : '') +
           `----------------------------------------\n` +
           `💳 *Remaining Balance Due Before Keys Handover:* *${currency} ${booking.balance.toFixed(2)}*\n\n` +
           `🔑 *Keys & Smart Lock PIN:* Will be released upon full settlement of the remaining move-in balance. Thank you! 🙏`;
@@ -5556,6 +7280,7 @@ function generateWhatsAppMessage(booking, templateType) {
           `💰 *PAYMENT RECORD:*\n` +
           `• Total Stay Amount: ${currency} ${booking.totalAmount.toFixed(2)}\n` +
           `• ✅ *Deposit / Booking Received:* *${currency} ${booking.depositPaid.toFixed(2)}*\n` +
+          (booking.lastPaymentRef ? `• 🔖 *Bank Reference No:* \`${booking.lastPaymentRef}\` (${booking.lastPaymentBank || 'Bank Transfer'})\n` : '') +
           `----------------------------------------\n` +
           `💳 *Remaining Balance to Pay Before Check-In:* *${currency} ${booking.balance.toFixed(2)}*\n\n` +
           `🔑 *Smart Lock Access Code:* Will be released upon full payment confirmation before check-in. Thank you! 🏡✨`;
@@ -5589,6 +7314,7 @@ function generateWhatsAppMessage(booking, templateType) {
         `${unitTitleEN}\n` +
         `💰 *PAYMENT STATUS: PAID IN FULL (100%) ✅*\n` +
         `• Total Paid: ${currency} ${booking.totalAmount.toFixed(2)}\n` +
+        (booking.lastPaymentRef ? `• 🔖 *Bank Reference No:* \`${booking.lastPaymentRef}\` (${booking.lastPaymentBank || 'Bank Transfer'})\n` : '') +
         `• Balance Due: ${currency} 0.00\n\n` +
         `========================================\n` +
         `🔑 *YOUR ACCESS & DOOR LOCK DETAILS:*\n` +
@@ -5632,6 +7358,7 @@ function generateWhatsAppMessage(booking, templateType) {
         `${unitTitleEN}\n` +
         `📅 *Rental Period:* ${startStr} to ${endStr} (Month ${mIndex})\n` +
         `💰 *Amount Received:* *${currency} ${totalMonthDue.toFixed(2)}*\n` +
+        (booking.lastPaymentRef ? `• 🔖 *Bank Reference No:* \`${booking.lastPaymentRef}\` (${booking.lastPaymentBank || 'Bank Transfer'})\n` : '') +
         `✅ *Status:* PAID IN FULL\n\n` +
         `Thank you for your prompt payment! 🙏✨`;
       break;
@@ -5817,6 +7544,7 @@ function exportDataBackup() {
     turnovers: appState.turnovers,
     expenses: appState.expenses,
     contacts: appState.contacts,
+    promotionalMedia: appState.promotionalMedia,
     settings: appState.settings
   };
 
@@ -5844,6 +7572,7 @@ function importDataBackup(event) {
         appState.turnovers = data.turnovers || [];
         appState.expenses = data.expenses || [];
         appState.contacts = data.contacts || [...DEFAULT_CONTACTS];
+        appState.promotionalMedia = data.promotionalMedia || [...DEFAULT_PROMO_MEDIA];
         appState.settings = data.settings || DEFAULT_SETTINGS;
         saveToStorage();
         renderApp();
@@ -5870,6 +7599,7 @@ function resetAllData() {
     appState.turnovers = [];
     appState.expenses = [];
     appState.contacts = [...DEFAULT_CONTACTS];
+    appState.promotionalMedia = [];
     appState.selectedPropertyId = 'all';
     appState.isLicensed = preservedIsLicensed;
     appState.licenseKey = preservedLicense;
@@ -6055,6 +7785,34 @@ const USER_GUIDE_DATA = {
         <div class="guide-step">
           <div class="guide-step-num">4</div>
           <div class="guide-step-text"><strong>Send Receipt:</strong> Tap <code>Receipt</code> to send an official WhatsApp payment confirmation (<code>REC-RENT-M2-XXXX</code>).</div>
+        </div>
+      `
+    },
+    {
+      id: 'guide-receipts',
+      icon: 'fa-receipt',
+      title: '5B. Digital Payment Receipts & Bank Reference Capture',
+      content: `
+        <p>When guests transfer booking deposits, balance settlements, or monthly rentals and share their bank slips, easily record and archive them:</p>
+        <div class="guide-callout success">
+          <strong>📸 Auto Image Compression:</strong><br>
+          Bank slips and camera photos are compressed by 97% down to ~40KB–70KB without losing text sharpness, preserving your browser storage indefinitely!
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text"><strong>Capture Receipt:</strong> Tap <code>+ Resit / + Receipt</code> on any booking card, or tap <code>Mark Deposit Paid</code> / <code>Mark Fully Paid</code>. The receipt capture modal opens with recommended amounts pre-filled.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text"><strong>Bank & Ref No:</strong> Select the bank (Maybank, CIMB, Bank Islam, DuitNow, etc.) and paste or type the tenant's transaction reference ID.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text"><strong>Upload Slip:</strong> Tap or drag the screenshot into the dropzone. It previews instantly with the compressed size.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text"><strong>Receipt Gallery:</strong> Tap the <code>🧾 X Receipt(s)</code> chip anytime to inspect all attached receipts, copy reference numbers with 1 tap, or zoom full-screen with the Lightbox viewer.</div>
         </div>
       `
     },
@@ -6286,6 +8044,34 @@ const USER_GUIDE_DATA = {
         <div class="guide-step">
           <div class="guide-step-num">4</div>
           <div class="guide-step-text"><strong>Hantar Resit:</strong> Tekan <code>Resit</code> untuk menghantar resit rasmi WhatsApp pengesahan bayaran sewa (<code>REC-RENT-M2-XXXX</code>).</div>
+        </div>
+      `
+    },
+    {
+      id: 'guide-receipts',
+      icon: 'fa-receipt',
+      title: '5B. Rekod Resit Digital & No. Rujukan Bank',
+      content: `
+        <p>Apabila tetamu atau penyewa memindahkan wang deposit, baki bayaran, atau sewa bulanan dan berkongsi slip transaksi di WhatsApp, anda boleh merekod dan menyimpannya terus di dalam aplikasi:</p>
+        <div class="guide-callout success">
+          <strong>📸 Pemampatan Imej Pintar:</strong><br>
+          Gambar slip bank dimampatkan secara automatik sebanyak 97% ke ~40KB–70KB tanpa menjejaskan kejelasan teks nombor akaun dan ID transaksi, mengelakkan memori peranti penuh!
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text"><strong>Buka Borang Resit:</strong> Tekan <code>+ Resit</code> pada mana-mana kad tempahan, atau tekan <code>Tanda Deposit Dibayar</code> / <code>Tanda Bayaran Penuh</code>. Jumlah bayaran dicadangkan automatik.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text"><strong>Pilih Bank & No. Rujukan:</strong> Pilih bank (Maybank, CIMB, Bank Islam, DuitNow, dll.) dan tekan <code>Tampal</code> atau taip ID Rujukan Transaksi bank.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text"><strong>Muat Naik Slip:</strong> Tekan atau seret tangkapan skrin resit. Pratonton imej dan saiz mampat dipaparkan serta-merta.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text"><strong>Galeri Resit & No. Rujukan:</strong> Tekan lencana <code>🧾 X Resit</code> bila-bila masa untuk semak semua resit yang disimpan, salin no rujukan dengan 1 sentuhan, atau lihat gambar skrin penuh (Lightbox) berserta butang Muat Turun.</div>
         </div>
       `
     },
