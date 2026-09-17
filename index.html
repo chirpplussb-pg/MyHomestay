@@ -61,16 +61,16 @@
           <button class="icon-btn lang-toggle-btn" id="btnLangToggle" title="Tukar Bahasa / Switch Language">
             <span id="currentLangLabel" style="font-size:11px; font-weight:800;">EN</span>
           </button>
-          <button class="icon-btn" id="btnOpenUserGuide" title="User Guide & Manual / Panduan Pengguna" aria-label="User Guide">
-            <i class="fa-solid fa-circle-question" style="color:var(--primary);"></i>
+          <button class="icon-btn" id="btnOpenUserGuide" title="User Manual & Guide / Panduan Pengguna" aria-label="User Guide">
+            <i class="fa-solid fa-book-open-reader" style="color:var(--primary);"></i>
           </button>
-          <button class="icon-btn" id="btnQuickGuestGuide" title="Digital Guest Guide" aria-label="Digital Guest Guide">
-            <i class="fa-solid fa-book-open"></i>
+          <button class="icon-btn" id="btnHeaderCheckUpdates" title="Check for Updates / Semak Kemas Kini" aria-label="Check for Updates">
+            <i class="fa-solid fa-rotate" style="color:var(--primary);"></i>
           </button>
           <button class="icon-btn" id="btnThemeToggle" title="Toggle Theme" aria-label="Toggle Theme">
             <i class="fa-solid fa-moon"></i>
           </button>
-          <button class="icon-btn demo-pill-btn" id="btnDemoToggle" title="Demo Mode">
+          <button class="icon-btn demo-pill-btn" id="btnDemoToggle" title="System Hub & Quick Tools">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
             <span class="demo-badge-text">Demo</span>
           </button>
@@ -559,7 +559,7 @@
               <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
               <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
             </div>
-            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.6.0</span>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.6.2</span>
           </div>
 
           <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
@@ -818,6 +818,7 @@
             <div class="form-group">
               <label class="form-label" data-i18n="deposit_paid">Advance / Deposit Paid</label>
               <input type="number" id="bookingDepositPaid" class="form-control" placeholder="0.00" value="0" step="any">
+              <span class="card-subtitle" id="bookingDepositPaidHint" style="font-size:11px; display:block; margin-top:2px;"></span>
             </div>
             <div class="form-group">
               <label class="form-label" data-i18n="booking_stage">Booking Stage / Status</label>
@@ -1836,9 +1837,74 @@
           </div>
         </div>
       </div>
+    <!-- 13. PRO SYSTEM & QUICK ACTIONS MODAL -->
+    <div class="modal-backdrop" id="proSystemModal">
+      <div class="modal-box" style="max-width: 440px;">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:34px; height:34px; border-radius:50%; background:var(--bg-surface-subtle); display:flex; align-items:center; justify-content:center; color:var(--primary); font-size:16px;">
+              <i class="fa-solid fa-circle-check" style="color:var(--success);" id="proModalIcon"></i>
+            </div>
+            <div>
+              <h3 class="modal-title" id="proModalTitle">StayManager Pro Hub</h3>
+              <p class="card-subtitle" style="font-size:11px; margin:0;" id="proModalSub">System Status & Quick Tools</p>
+            </div>
+          </div>
+          <button class="modal-close" id="btnCloseProSystemModal">&times;</button>
+        </div>
+
+        <div class="modal-body" style="padding-top: 10px;">
+          <!-- Status Banner -->
+          <div style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Account Status</div>
+              <div style="font-size:14px; font-weight:800; color:var(--success);" id="proModalStatusText">✨ Lifetime Pro Active</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">App Version</div>
+              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.6.2</div>
+            </div>
+          </div>
+
+          <!-- Quick Actions List -->
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button type="button" class="btn btn-primary btn-block" id="btnProModalReadGuide" style="justify-content:flex-start; padding:10px 14px; font-size:13px;">
+              <i class="fa-solid fa-book-open-reader" style="font-size:16px; margin-right:8px;"></i>
+              <div style="text-align:left;">
+                <div style="font-weight:700;">User Manual & Operational Guide</div>
+                <div style="font-size:10.5px; opacity:0.85;">Panduan lengkap setup, WhatsApp & kewangan</div>
+              </div>
+            </button>
+
+            <button type="button" class="btn btn-outline btn-block" id="btnProModalCheckUpdate" style="justify-content:flex-start; padding:10px 14px; font-size:13px;">
+              <i class="fa-solid fa-rotate" style="font-size:16px; margin-right:8px; color:var(--primary);"></i>
+              <div style="text-align:left;">
+                <div style="font-weight:700;">Check for App Updates</div>
+                <div style="font-size:10.5px; color:var(--text-muted);">Semak versi terkini (Zero Data Loss)</div>
+              </div>
+            </button>
+
+            <button type="button" class="btn btn-outline btn-block" id="btnProModalBackup" style="justify-content:flex-start; padding:10px 14px; font-size:13px;">
+              <i class="fa-solid fa-download" style="font-size:16px; margin-right:8px; color:var(--success);"></i>
+              <div style="text-align:left;">
+                <div style="font-weight:700;">Download Safety Backup (.json)</div>
+                <div style="font-size:10.5px; color:var(--text-muted);">Simpan rekod ke telefon / Google Drive</div>
+              </div>
+            </button>
+
+            <button type="button" class="btn btn-outline btn-block" id="btnProModalOpenSettings" style="justify-content:flex-start; padding:10px 14px; font-size:13px;">
+              <i class="fa-solid fa-gear" style="font-size:16px; margin-right:8px; color:var(--text-muted);"></i>
+              <div style="text-align:left;">
+                <div style="font-weight:700;">Full App Settings</div>
+                <div style="font-size:10.5px; color:var(--text-muted);">Urus profil, akaun bank & tetapan</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- 13. LIGHTBOX FULL-SCREEN VIEWER -->
+    <!-- 14. LIGHTBOX FULL-SCREEN VIEWER -->
     <div class="modal-backdrop" id="receiptLightboxModal" style="z-index: 9999;">
       <div style="position:relative; max-width:94vw; max-height:92vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
         <button type="button" id="btnCloseLightbox" style="position:absolute; top:-38px; right:0; background:rgba(0,0,0,0.6); color:#fff; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10;">&times;</button>

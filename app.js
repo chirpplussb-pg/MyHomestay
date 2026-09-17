@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.6.1';
+const APP_VERSION = '2.6.2';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -1313,13 +1313,18 @@ function runDataMigrations() {
         });
       }
 
-      // Ensure all bookings have rental types and tenant particulars
+      // Ensure all bookings have rental types and tenant particulars & auto-settle balances for confirmed / completed stays
       if (Array.isArray(appState.bookings)) {
         appState.bookings.forEach(b => {
           if (!b.rentalType) b.rentalType = 'daily';
           if (b.guestNric === undefined) b.guestNric = '';
           if (b.guestEmail === undefined) b.guestEmail = '';
           if (b.guestAddress === undefined) b.guestAddress = '';
+          // If status is Fully Paid (confirmed), In-House, or Checked-Out, ensure balance is 0 and depositPaid equals totalAmount
+          if ((b.status === 'confirmed' || b.status === 'checked-in' || b.status === 'checked-out') && (b.balance > 0 || b.depositPaid < b.totalAmount)) {
+            b.depositPaid = b.totalAmount;
+            b.balance = 0;
+          }
         });
       }
 
@@ -1715,13 +1720,52 @@ function setupEventListeners() {
   document.getElementById('btnThemeToggle').addEventListener('click', toggleTheme);
   document.getElementById('btnDemoToggle').addEventListener('click', () => {
     if (appState.isLicensed) {
-      switchTab('settings');
-      showToast(appState.isMasterAdmin ? '👑 Master Admin Mode Active' : '✨ Lifetime Pro License Active');
+      openProSystemModal();
     } else {
       openLicenseModal();
     }
   });
-  document.getElementById('btnQuickGuestGuide').addEventListener('click', openGuestGuideModal);
+
+  const btnHeaderCheckUp = document.getElementById('btnHeaderCheckUpdates');
+  if (btnHeaderCheckUp) {
+    btnHeaderCheckUp.addEventListener('click', () => checkForAppUpdates(true));
+  }
+
+  // Pro System Hub Modal Handlers
+  const btnClosePro = document.getElementById('btnCloseProSystemModal');
+  if (btnClosePro) btnClosePro.addEventListener('click', closeProSystemModal);
+
+  const btnProGuide = document.getElementById('btnProModalReadGuide');
+  if (btnProGuide) {
+    btnProGuide.addEventListener('click', () => {
+      closeProSystemModal();
+      openUserGuideModal();
+    });
+  }
+
+  const btnProUp = document.getElementById('btnProModalCheckUpdate');
+  if (btnProUp) {
+    btnProUp.addEventListener('click', () => {
+      closeProSystemModal();
+      checkForAppUpdates(true);
+    });
+  }
+
+  const btnProBak = document.getElementById('btnProModalBackup');
+  if (btnProBak) {
+    btnProBak.addEventListener('click', () => {
+      closeProSystemModal();
+      exportDataBackup();
+    });
+  }
+
+  const btnProSet = document.getElementById('btnProModalOpenSettings');
+  if (btnProSet) {
+    btnProSet.addEventListener('click', () => {
+      closeProSystemModal();
+      switchTab('settings');
+    });
+  }
 
   // Language selector in Settings
   const langSelect = document.getElementById('settingLanguageSelect');
@@ -1927,13 +1971,66 @@ function setupEventListeners() {
     renderWhatsAppPreview();
   });
 
-  // Booking Form Status Change -> Toggle Quotation Validity Group
+  // Booking Form Status Change -> Toggle Quotation Validity Group & Auto-Settle Full Balance
   const bookingStatusSel = document.getElementById('bookingStatusSelect');
   if (bookingStatusSel) {
     bookingStatusSel.addEventListener('change', () => {
+      const st = bookingStatusSel.value;
       const validityGroup = document.getElementById('bookingQuotationValidityGroup');
       if (validityGroup) {
-        validityGroup.style.display = bookingStatusSel.value === 'quotation' ? 'block' : 'none';
+        validityGroup.style.display = st === 'quotation' ? 'block' : 'none';
+      }
+
+      // Auto-compute current total in modal
+      const rType = document.getElementById('bookingRentalType')?.value || 'daily';
+      let currentTotal = 0;
+      if (rType === 'monthly') {
+        const mRate = parseFloat(document.getElementById('bookingMonthlyRate')?.value) || 0;
+        const rDep = parseFloat(document.getElementById('bookingRentalDeposit')?.value) || 0;
+        const uDep = parseFloat(document.getElementById('bookingUtilitiesDeposit')?.value) || 0;
+        const aFee = parseFloat(document.getElementById('bookingAgreementFee')?.value) || 0;
+        currentTotal = mRate + rDep + uDep + aFee;
+      } else {
+        const checkInVal = document.getElementById('bookingCheckIn')?.value;
+        const checkOutVal = document.getElementById('bookingCheckOut')?.value;
+        const rateVal = parseFloat(document.getElementById('bookingNightlyRate')?.value) || 0;
+        const cleanVal = parseFloat(document.getElementById('bookingCleaningFee')?.value) || 0;
+        const secDep = parseFloat(document.getElementById('bookingSecurityDeposit')?.value) || 0;
+        let nights = 0;
+        if (checkInVal && checkOutVal) {
+          const d1 = new Date(checkInVal);
+          const d2 = new Date(checkOutVal);
+          const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+          nights = diff > 0 ? diff : 0;
+        }
+        currentTotal = (nights * rateVal) + cleanVal + secDep;
+      }
+
+      const depInput = document.getElementById('bookingDepositPaid');
+      const hintEl = document.getElementById('bookingDepositPaidHint');
+      const isBM = appState.settings.language === 'bm';
+
+      if (st === 'confirmed' || st === 'checked-in' || st === 'checked-out') {
+        if (depInput && currentTotal > 0) {
+          depInput.value = currentTotal;
+        }
+        if (hintEl) {
+          hintEl.textContent = isBM ? '✓ Bayaran penuh disahkan. Baki akan menjadi RM 0.00' : '✓ Full payment confirmed. Balance will be settled to RM 0.00';
+          hintEl.style.color = 'var(--success)';
+        }
+      } else if (st === 'quotation') {
+        if (depInput) depInput.value = 0;
+        if (hintEl) {
+          hintEl.textContent = isBM ? 'Sebut harga sahaja — tiada bayaran dibuat.' : 'Quotation only — no payment made yet.';
+          hintEl.style.color = 'var(--text-muted)';
+        }
+      } else if (st === 'booked') {
+        if (hintEl) {
+          hintEl.textContent = isBM ? 'Deposit sebahagian dibayar. Baki akan dikutip sebelum daftar masuk.' : 'Partial deposit paid. Remaining balance due before check-in.';
+          hintEl.style.color = 'var(--warning)';
+        }
+      } else {
+        if (hintEl) hintEl.textContent = '';
       }
     });
   }
@@ -4075,9 +4172,13 @@ function renderBookingsTab() {
       const b = appState.bookings.find(x => x.id === bid);
       if (b) {
         b.status = 'checked-out';
+        if (b.balance > 0) {
+          b.depositPaid = b.totalAmount;
+          b.balance = 0;
+        }
         saveToStorage();
         renderBookingsTab();
-        showToast(isBM ? 'Tempahan selesai.' : 'Booking marked as completed.');
+        showToast(isBM ? 'Tempahan selesai & baki diselesaikan.' : 'Booking marked as completed & balance settled.');
       }
     });
   });
@@ -4875,7 +4976,21 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
     document.getElementById('bookingGuestCount').value = existingBooking.guestCount || 2;
     document.getElementById('bookingChannel').value = existingBooking.channel || 'whatsapp';
     document.getElementById('bookingDepositPaid').value = existingBooking.depositPaid || 0;
-    document.getElementById('bookingStatusSelect').value = existingBooking.status || 'booked';
+    const currentSt = existingBooking.status || 'booked';
+    document.getElementById('bookingStatusSelect').value = currentSt;
+    const isBM = appState.settings.language === 'bm';
+    const hintEl = document.getElementById('bookingDepositPaidHint');
+    if (hintEl) {
+      if (currentSt === 'confirmed' || currentSt === 'checked-in' || currentSt === 'checked-out') {
+        hintEl.textContent = isBM ? '✓ Bayaran penuh disahkan. Baki: RM 0.00' : '✓ Full payment confirmed. Balance: RM 0.00';
+        hintEl.style.color = 'var(--success)';
+      } else if (currentSt === 'booked') {
+        hintEl.textContent = isBM ? `Deposit: ${formatCurrency(existingBooking.depositPaid)}. Baki: ${formatCurrency(existingBooking.balance)}` : `Deposit: ${formatCurrency(existingBooking.depositPaid)}. Balance: ${formatCurrency(existingBooking.balance)}`;
+        hintEl.style.color = 'var(--warning)';
+      } else {
+        hintEl.textContent = '';
+      }
+    }
     document.getElementById('bookingNotes').value = existingBooking.notes || '';
 
     const qVal = existingBooking.quotationValidityDays || appState.settings.quotationValidityDays || 3;
@@ -5094,13 +5209,20 @@ function handleSaveBooking(e) {
     totalAmount = totalRental + securityDeposit;
   }
 
-  const balance = Math.max(0, totalAmount - depositPaid);
+  let finalDepositPaid = depositPaid;
+
+  // Auto-settle: If user picked Confirmed (Fully Paid), In-House, or Checked-Out (Ended), ensure depositPaid equals totalAmount and balance is 0
+  if ((status === 'confirmed' || status === 'checked-in' || status === 'checked-out') && finalDepositPaid < totalAmount) {
+    finalDepositPaid = totalAmount;
+  }
+
+  const balance = Math.max(0, totalAmount - finalDepositPaid);
 
   // Auto-refine status if user didn't manually pick a specific state
   if (!id) {
-    if (depositPaid >= totalAmount && totalAmount > 0) {
+    if (finalDepositPaid >= totalAmount && totalAmount > 0) {
       status = 'confirmed';
-    } else if (depositPaid > 0) {
+    } else if (finalDepositPaid > 0) {
       status = 'booked';
     } else {
       status = 'quotation';
@@ -5131,7 +5253,7 @@ function handleSaveBooking(e) {
     utilitiesDeposit,
     agreementFee,
     totalAmount,
-    depositPaid,
+    depositPaid: finalDepositPaid,
     balance,
     status,
     quotationValidityDays,
@@ -8369,6 +8491,47 @@ const USER_GUIDE_DATA = {
     }
   ]
 };
+
+function openProSystemModal() {
+  const modal = document.getElementById('proSystemModal');
+  if (!modal) return;
+
+  const isBM = appState.settings.language === 'bm';
+  const statusText = document.getElementById('proModalStatusText');
+  const verText = document.getElementById('proModalVersionText');
+  const titleEl = document.getElementById('proModalTitle');
+  const subEl = document.getElementById('proModalSub');
+
+  if (titleEl) {
+    titleEl.textContent = appState.isMasterAdmin 
+      ? (isBM ? 'Hab Pentadbir (Master Admin)' : 'Master Admin Hub') 
+      : (isBM ? 'Hab Sistem StayManager Pro' : 'StayManager Pro Hub');
+  }
+  if (subEl) {
+    subEl.textContent = isBM ? 'Status Akaun & Akses Pantas' : 'System Status & Quick Tools';
+  }
+
+  if (statusText) {
+    if (appState.isMasterAdmin) {
+      statusText.textContent = '👑 MASTER ADMIN';
+      statusText.style.color = 'var(--primary)';
+    } else {
+      statusText.textContent = isBM ? '✨ LESEN PRO SEUMUR HIDUP' : '✨ LIFETIME PRO ACTIVE';
+      statusText.style.color = 'var(--success)';
+    }
+  }
+
+  if (verText) {
+    verText.textContent = `v${APP_VERSION}`;
+  }
+
+  modal.classList.add('active');
+}
+
+function closeProSystemModal() {
+  const modal = document.getElementById('proSystemModal');
+  if (modal) modal.classList.remove('active');
+}
 
 function openUserGuideModal() {
   const currentAppLang = appState.settings.language || 'en';
