@@ -664,8 +664,25 @@
           <input type="hidden" id="bookingIdInput">
 
           <div class="form-group">
-            <label class="form-label required" data-i18n="select_property">Select Homestay Property</label>
-            <select id="bookingPropertySelect" class="form-select" required></select>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label class="form-label required" data-i18n="select_property" style="margin-bottom:0;">Select Homestay Property</label>
+              <button type="button" class="btn btn-outline btn-xs" id="btnBookingModalChangeUnit" style="display:none; color:var(--primary); font-weight:700;">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i> <span data-i18n="btn_change_homestay">Tukar Homestay</span>
+              </button>
+            </div>
+            <select id="bookingPropertySelect" class="form-select" style="margin-top:6px;" required></select>
+          </div>
+
+          <!-- Real-time Overlap Warning Banner -->
+          <div id="bookingModalOverlapAlert" class="booking-overlap-alert" style="display:none;">
+            <div class="overlap-alert-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="overlap-alert-content">
+              <strong id="bookingModalOverlapTitle">⚠️ Bertindih dengan Tempahan Sedia Ada!</strong>
+              <div id="bookingModalOverlapDetails" style="font-size:11.5px; margin:4px 0 6px 0; color:var(--text-main);"></div>
+              <button type="button" class="btn btn-outline btn-xs" id="btnModalSwitchHomestay" style="background:var(--bg-surface); border-color:#ef4444; color:#b91c1c; font-weight:700;">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i> <span data-i18n="overlap_action_change_unit">Pilih Homestay Kosong Lain</span>
+              </button>
+            </div>
           </div>
 
           <!-- Rental Type Switcher -->
@@ -1917,6 +1934,161 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- 15. BOOKING OVERLAP POPUP NOTIFICATION MODAL -->
+    <div class="modal-backdrop" id="overlapWarningModal" style="z-index: 9998;">
+      <div class="bottom-sheet" style="max-width: 520px;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header" style="background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(245,158,11,0.08)); border-bottom: 1px solid rgba(239,68,68,0.25);">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:34px; height:34px; border-radius:50%; background:#fee2e2; color:#dc2626; display:flex; align-items:center; justify-content:center; font-size:16px;">
+              <i class="fa-solid fa-ban"></i>
+            </div>
+            <div>
+              <h2 class="modal-title" style="color:#b91c1c;" data-i18n="overlap_detected_title">Pertindihan Tempahan Dihalang!</h2>
+              <p style="font-size:11.5px; color:var(--text-muted); margin:0;" data-i18n="overlap_detected_sub">Tarikh yang dipilih bertindih dengan tempahan sedia ada.</p>
+            </div>
+          </div>
+          <button class="modal-close" id="btnCloseOverlapModal">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:16px;">
+          <div class="overlap-notice-card" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; margin-bottom:14px;">
+            <div style="font-size:12px; font-weight:700; color:var(--text-main); margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+              <i class="fa-solid fa-house-chimney" style="color:var(--primary);"></i>
+              <span id="overlapModalPropName">Homestay Unit</span>
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:8px;" id="overlapModalDatesSummary">
+              Tarikh dipohon: <strong id="overlapModalDatesText">-</strong>
+            </div>
+            <p style="font-size:12px; color:var(--text-muted); margin:0 0 10px 0;">
+              Sistem menghalang tempahan bertindih (double-booking). Maklumat tempahan sedia ada yang bercanggah:
+            </p>
+
+            <!-- Conflict Summary Cards Container -->
+            <div id="overlapConflictDetailsList" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+
+          <!-- Available Alternative Units Suggestion -->
+          <div id="overlapAlternativesContainer" style="margin-bottom:14px;">
+            <label class="form-label" style="font-size:11.5px; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px;">
+              <i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Homestay Lain Yang Kosong Pada Tarikh Ini:
+            </label>
+            <div id="overlapAvailablePropsList" style="display:flex; flex-direction:column; gap:6px;"></div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button type="button" class="btn btn-primary btn-block" id="btnOverlapSwitchToAvailable" style="justify-content:center;">
+              <i class="fa-solid fa-arrow-right-arrow-left"></i> <span data-i18n="overlap_action_change_unit">Pilih & Tukar ke Homestay Tersedia</span>
+            </button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+              <button type="button" class="btn btn-outline" id="btnOverlapChangeDates" style="justify-content:center;">
+                <i class="fa-regular fa-calendar"></i> <span data-i18n="overlap_action_change_dates">Tukar Tarikh</span>
+              </button>
+              <button type="button" class="btn btn-outline" id="btnOverlapDismiss" style="justify-content:center;">
+                <span data-i18n="cancel">Batal</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 16. CHANGE / TRANSFER HOMESTAY MODAL -->
+    <div class="modal-backdrop" id="changeHomestayModal">
+      <div class="bottom-sheet" style="max-width: 520px;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:34px; height:34px; border-radius:50%; background:rgba(2,132,199,0.12); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:16px;">
+              <i class="fa-solid fa-arrow-right-arrow-left"></i>
+            </div>
+            <div>
+              <h2 class="modal-title" data-i18n="change_homestay_title">Tukar Unit Homestay</h2>
+              <p style="font-size:11.5px; color:var(--text-muted); margin:0;" data-i18n="change_homestay_subtitle">Pindahkan tempahan ini ke homestay lain dengan membawa semua butiran penyewa.</p>
+            </div>
+          </div>
+          <button class="modal-close" id="btnCloseChangeHomestayModal">&times;</button>
+        </div>
+        <form id="changeHomestayForm" class="modal-body" style="padding:16px;">
+          <input type="hidden" id="changeHomestayBookingId">
+
+          <!-- Tenant & Current Booking Overview Box -->
+          <div style="background:var(--bg-surface-subtle); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-color); margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+              <div>
+                <span style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-muted);" data-i18n="tenant_particulars_title">Butiran Tetamu</span>
+                <h3 id="changeHomestayGuestName" style="font-size:14px; font-weight:800; margin:2px 0;">Guest Name</h3>
+                <div id="changeHomestayGuestMeta" style="font-size:12px; color:var(--text-muted);">+60 12-345 6789 • 2 Tetamu</div>
+              </div>
+              <span id="changeHomestayStatusBadge" class="badge" style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:999px;">DITEMPAH</span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-main); margin-top:8px; padding-top:8px; border-top:1px dashed var(--border-color);">
+              <i class="fa-regular fa-calendar" style="color:var(--primary);"></i>
+              <span id="changeHomestayDatesText">2026-10-10 → 2026-10-12 (2 malam)</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-top:6px;">
+              <span style="color:var(--text-muted);">Unit Semasa: <strong id="changeHomestayCurrentPropName" style="color:var(--primary);">Villa 1</strong></span>
+              <span style="color:var(--text-muted);">Jumlah: <strong id="changeHomestayCurrentTotal" style="color:var(--text-main);">RM 500.00</strong></span>
+            </div>
+          </div>
+
+          <!-- Target Property Selector -->
+          <div class="form-group">
+            <label class="form-label required" data-i18n="target_homestay">Pilih Homestay Sasaran</label>
+            <select id="changeHomestayTargetSelect" class="form-select" required></select>
+            <div id="changeHomestayTargetFeedback" style="margin-top:6px; font-size:12px;"></div>
+          </div>
+
+          <!-- Pricing Options -->
+          <div class="form-group" style="background:var(--bg-surface-subtle); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+            <label class="form-label required" style="margin-bottom:8px; font-weight:700;" data-i18n="pricing_adjustment">Pilihan Pelarasan Harga</label>
+            
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-size:12.5px;">
+                <input type="radio" name="changePricingMode" value="keep" checked style="margin-top:3px;">
+                <div>
+                  <strong data-i18n="keep_existing_price">Kekalkan Harga & Bayaran Sedia Ada</strong>
+                  <div style="font-size:11px; color:var(--text-muted);" data-i18n="keep_existing_price_desc">
+                    Jumlah sewaan kekal sama seperti persetujuan awal dengan penyewa. Baki & bayaran tidak berubah.
+                  </div>
+                </div>
+              </label>
+
+              <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-size:12.5px;">
+                <input type="radio" name="changePricingMode" value="recalc" style="margin-top:3px;">
+                <div>
+                  <strong data-i18n="recalc_new_price">Kira Semula Ikut Kadar Homestay Baru</strong>
+                  <div id="changeHomestayRecalcPreview" style="font-size:11px; color:var(--text-muted);" data-i18n="recalc_new_price_desc">
+                    Kira semula jumlah sewaan mengikut kadar malam & fi pembersihan homestay sasaran. Deposit sedia ada dipotong dari baki baru.
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Particulars Carry-over Assurance Banner -->
+          <div style="background:rgba(2,132,199,0.06); border:1px solid rgba(2,132,199,0.25); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:14px; font-size:11.5px; color:var(--text-main); display:flex; gap:8px; align-items:flex-start;">
+            <i class="fa-solid fa-shield-check" style="color:var(--primary); font-size:15px; margin-top:2px;"></i>
+            <div>
+              <strong>Jaminan Pemindahan Butiran Penuh:</strong>
+              <div style="color:var(--text-muted); margin-top:2px;">
+                Nama tetamu, telefon WhatsApp, No. Kad Pengenalan/Pasport, emel, alamat surat-menyurat, bilangan tetamu, resit bayaran & nota tempahan akan dipindahkan secara automatik ke unit baru. Jadual pembersihan (turnover) juga akan dikemaskini.
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer" style="padding:0; margin-top:8px;">
+            <button type="button" class="btn btn-outline" id="btnCancelChangeHomestay" data-i18n="cancel">Batal</button>
+            <button type="submit" class="btn btn-primary" id="btnConfirmChangeHomestay" data-i18n="confirm_transfer_btn">
+              <i class="fa-solid fa-arrow-right-arrow-left"></i> Sahkan & Pindahkan
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 

@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.6.2';
+const APP_VERSION = '2.6.3';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -333,6 +333,22 @@ const TRANSLATIONS = {
     booking_stage: 'Booking Stage / Status',
     special_notes: 'Special Requests / Notes',
     btn_save_booking: 'Save Booking',
+
+    // Overlap Prevention & Change Homestay (v2.6.3)
+    overlap_detected_title: 'Booking Overlap Blocked!',
+    overlap_detected_sub: 'The selected dates clash with an existing booking for this homestay.',
+    overlap_action_change_unit: 'Switch to Available Unit',
+    overlap_action_change_dates: 'Change Stay Dates',
+    btn_change_homestay: 'Change Homestay',
+    change_homestay_title: 'Change Homestay Unit',
+    change_homestay_subtitle: 'Transfer this booking to another homestay while keeping all tenant particulars.',
+    target_homestay: 'Target Homestay Unit',
+    pricing_adjustment: 'Pricing Adjustment Option',
+    keep_existing_price: 'Keep Existing Price & Payments',
+    keep_existing_price_desc: 'Retain current total amount and balance. Ideal if price was already agreed upon.',
+    recalc_new_price: 'Recalculate with New Homestay Rate',
+    recalc_new_price_desc: 'Apply target homestay nightly rate & cleaning fee. Deposit paid is preserved.',
+    confirm_transfer_btn: 'Confirm & Transfer Booking',
 
     // Modals - Property
     prop_modal_add: 'Add Homestay Unit',
@@ -759,6 +775,22 @@ const TRANSLATIONS = {
     booking_stage: 'Status / Peringkat Tempahan',
     special_notes: 'Permintaan Khas / Catatan',
     btn_save_booking: 'Simpan Tempahan',
+
+    // Overlap Prevention & Change Homestay (v2.6.3)
+    overlap_detected_title: 'Pertindihan Tempahan Dihalang!',
+    overlap_detected_sub: 'Tarikh yang dipilih bertindih dengan tempahan sedia ada untuk homestay ini.',
+    overlap_action_change_unit: 'Tukar ke Unit Tersedia',
+    overlap_action_change_dates: 'Tukar Tarikh Menginap',
+    btn_change_homestay: 'Tukar Homestay',
+    change_homestay_title: 'Tukar Unit Homestay',
+    change_homestay_subtitle: 'Pindahkan tempahan ini ke unit homestay lain dengan mengekalkan semua butiran penyewa.',
+    target_homestay: 'Unit Homestay Sasaran',
+    pricing_adjustment: 'Pilihan Pelarasan Harga',
+    keep_existing_price: 'Kekalkan Harga & Bayaran Sedia Ada',
+    keep_existing_price_desc: 'Kekalkan jumlah sewaan dan baki sedia ada mengikut persetujuan awal.',
+    recalc_new_price: 'Kira Semula Ikut Kadar Homestay Baru',
+    recalc_new_price_desc: 'Guna kadar harian & caj pembersihan unit baru. Deposit dibayar dikekalkan.',
+    confirm_transfer_btn: 'Sahkan & Pindahkan Tempahan',
 
     // Modals - Property
     prop_modal_add: 'Tambah Unit Homestay / Bilik',
@@ -1842,6 +1874,20 @@ function setupEventListeners() {
   const closeMInv = document.getElementById('btnCloseMonthlyInvoicesModal');
   if (closeMInv) closeMInv.addEventListener('click', closeAllModals);
 
+  // Overlap Warning & Change Homestay Modals Close Handlers
+  const closeOverlap = document.getElementById('btnCloseOverlapModal');
+  if (closeOverlap) closeOverlap.addEventListener('click', closeAllModals);
+  const dismissOverlap = document.getElementById('btnOverlapDismiss');
+  if (dismissOverlap) dismissOverlap.addEventListener('click', closeAllModals);
+  const closeChange = document.getElementById('btnCloseChangeHomestayModal');
+  if (closeChange) closeChange.addEventListener('click', closeAllModals);
+  const cancelChange = document.getElementById('btnCancelChangeHomestay');
+  if (cancelChange) cancelChange.addEventListener('click', closeAllModals);
+
+  // Change Homestay Form Submission
+  const changeHomestayForm = document.getElementById('changeHomestayForm');
+  if (changeHomestayForm) changeHomestayForm.addEventListener('submit', handleConfirmChangeHomestay);
+
   // In-App User Guide Modal Handlers
   const btnOpenGuideHeader = document.getElementById('btnOpenUserGuide');
   if (btnOpenGuideHeader) btnOpenGuideHeader.addEventListener('click', () => openUserGuideModal());
@@ -1913,6 +1959,10 @@ function setupEventListeners() {
     if (el) {
       el.addEventListener('input', updateBookingModalPricing);
       el.addEventListener('change', updateBookingModalPricing);
+      if (['bookingCheckIn', 'bookingCheckOut', 'bookingMonthlyStart', 'bookingMonthlyDuration', 'bookingPropertySelect'].includes(id)) {
+        el.addEventListener('input', checkBookingModalOverlap);
+        el.addEventListener('change', checkBookingModalOverlap);
+      }
     }
   });
 
@@ -3726,6 +3776,9 @@ function createCalendarBookingCard(b, todayStr, isBM, isSelectedDayMode, selecte
         <i class="fa-regular fa-bell"></i> ${isBM ? 'Peringatan Masuk' : 'Check-In Reminder'}
       </button>
       ` : ''}
+      <button class="btn btn-outline btn-xs btn-change-homestay" data-bid="${b.id}" title="${t('btn_change_homestay')}">
+        <i class="fa-solid fa-arrow-right-arrow-left"></i> ${t('btn_change_homestay')}
+      </button>
       <button class="btn btn-outline btn-xs btn-edit-booking" data-bid="${b.id}">
         <i class="fa-solid fa-pen"></i> ${t('btn_edit')}
       </button>
@@ -3808,6 +3861,14 @@ function attachCalendarCardActions(container) {
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => x.id === bid);
       if (b) openWhatsAppModal(b, 'checkin_reminder');
+    });
+  });
+
+  container.querySelectorAll('.btn-change-homestay').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) openChangeHomestayModal(b);
     });
   });
 
@@ -4075,6 +4136,9 @@ function renderBookingsTab() {
         <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="payment" title="${t('btn_wa')}">
           <i class="fa-brands fa-whatsapp"></i>
         </button>
+        <button class="btn btn-outline btn-xs btn-change-homestay" data-bid="${b.id}" title="${t('btn_change_homestay')}">
+          <i class="fa-solid fa-arrow-right-arrow-left"></i> ${t('btn_change_homestay')}
+        </button>
         <button class="btn btn-outline btn-xs btn-edit-booking" data-bid="${b.id}" title="${t('edit')}">
           <i class="fa-solid fa-pen"></i> ${t('edit')}
         </button>
@@ -4180,6 +4244,14 @@ function renderBookingsTab() {
         renderBookingsTab();
         showToast(isBM ? 'Tempahan selesai & baki diselesaikan.' : 'Booking marked as completed & balance settled.');
       }
+    });
+  });
+
+  container.querySelectorAll('.btn-change-homestay').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) openChangeHomestayModal(b);
     });
   });
 
@@ -4846,6 +4918,409 @@ function handleSavePreferences() {
 }
 
 // ==========================================================================
+// 10B. BOOKING OVERLAP PREVENTION & CHANGE HOMESTAY (v2.6.3)
+// ==========================================================================
+
+function getBookingOverlaps(propertyId, checkIn, checkOut, excludeBookingId = null) {
+  if (!propertyId || !checkIn || !checkOut) return [];
+  if (checkIn >= checkOut) return [];
+
+  return appState.bookings.filter(b => {
+    if (b.propertyId !== propertyId) return false;
+    if (excludeBookingId && b.id === excludeBookingId) return false;
+    if (b.status === 'cancelled') return false;
+    // Standard hotel interval overlap: (checkInA < checkOutB) && (checkOutA > checkInB)
+    return (checkIn < b.checkOut) && (checkOut > b.checkIn);
+  });
+}
+
+function checkBookingModalOverlap() {
+  const alertEl = document.getElementById('bookingModalOverlapAlert');
+  if (!alertEl) return;
+
+  const modal = document.getElementById('bookingModal');
+  if (!modal || !modal.classList.contains('active')) {
+    alertEl.style.display = 'none';
+    return;
+  }
+
+  const propertyId = document.getElementById('bookingPropertySelect')?.value;
+  const rentalType = document.getElementById('bookingRentalType')?.value || 'daily';
+  const id = document.getElementById('bookingIdInput')?.value || null;
+  const status = document.getElementById('bookingStatusSelect')?.value || 'booked';
+
+  if (status === 'cancelled' || !propertyId) {
+    alertEl.style.display = 'none';
+    return;
+  }
+
+  let checkIn = '';
+  let checkOut = '';
+
+  if (rentalType === 'monthly') {
+    const mStart = document.getElementById('bookingMonthlyStart')?.value;
+    const mDuration = parseInt(document.getElementById('bookingMonthlyDuration')?.value) || 1;
+    if (!mStart) {
+      alertEl.style.display = 'none';
+      return;
+    }
+    checkIn = mStart;
+    const dStart = new Date(mStart + 'T00:00:00');
+    const dEnd = new Date(dStart);
+    dEnd.setMonth(dEnd.getMonth() + mDuration);
+    checkOut = dEnd.toISOString().split('T')[0];
+  } else {
+    checkIn = document.getElementById('bookingCheckIn')?.value;
+    checkOut = document.getElementById('bookingCheckOut')?.value;
+  }
+
+  if (!checkIn || !checkOut || checkIn >= checkOut) {
+    alertEl.style.display = 'none';
+    return;
+  }
+
+  const overlaps = getBookingOverlaps(propertyId, checkIn, checkOut, id);
+  if (overlaps.length > 0) {
+    const isBM = appState.settings.language === 'bm';
+    const c = overlaps[0];
+    const cDates = `${c.checkIn} → ${c.checkOut}`;
+    
+    document.getElementById('bookingModalOverlapTitle').textContent = isBM 
+      ? '⚠️ Perhatian: Tarikh Bertindih dengan Tempahan Sedia Ada!' 
+      : '⚠️ Warning: Clashes with an Existing Booking!';
+
+    document.getElementById('bookingModalOverlapDetails').innerHTML = isBM
+      ? `Unit ini telah ditempah oleh <strong>${c.guestName}</strong> (${cDates}). Sila pilih homestay lain atau tukar tarikh.`
+      : `This unit is already booked by <strong>${c.guestName}</strong> (${cDates}). Please switch homestay or select different dates.`;
+
+    const switchBtn = document.getElementById('btnModalSwitchHomestay');
+    if (switchBtn) {
+      const freeProps = appState.properties.filter(p => p.id !== propertyId && getBookingOverlaps(p.id, checkIn, checkOut, id).length === 0);
+      if (freeProps.length > 0) {
+        switchBtn.style.display = 'inline-flex';
+        switchBtn.innerHTML = `<i class="fa-solid fa-arrow-right-arrow-left"></i> ${isBM ? `Tukar ke ${freeProps[0].name}` : `Switch to ${freeProps[0].name}`}`;
+        switchBtn.onclick = () => {
+          document.getElementById('bookingPropertySelect').value = freeProps[0].id;
+          updateBookingModalPricing();
+          checkBookingModalOverlap();
+        };
+      } else {
+        switchBtn.style.display = 'none';
+      }
+    }
+
+    alertEl.style.display = 'flex';
+  } else {
+    alertEl.style.display = 'none';
+  }
+}
+
+function openOverlapWarningModal(overlaps, propertyId, checkIn, checkOut, guestName, currentBookingId) {
+  const isBM = appState.settings.language === 'bm';
+  const prop = getPropertyById(propertyId);
+
+  document.getElementById('overlapModalPropName').textContent = `${prop.name}`;
+  document.getElementById('overlapModalDatesText').textContent = `${checkIn} → ${checkOut} (${guestName || (isBM ? 'Tetamu Baru' : 'New Guest')})`;
+
+  const conflictList = document.getElementById('overlapConflictDetailsList');
+  conflictList.innerHTML = overlaps.map(c => {
+    const statusLabels = isBM ? {
+      'quotation': '📋 SEBUT HARGA',
+      'booked': '🟡 DITEMPAH',
+      'confirmed': '🟢 DISAHKAN',
+      'checked-in': '🔑 MENGINAP',
+      'checked-out': '🏁 SELESAI',
+      'blocked': '🚫 DISEKAT'
+    } : {
+      'quotation': '📋 QUOTATION',
+      'booked': '🟡 BOOKED',
+      'confirmed': '🟢 CONFIRMED',
+      'checked-in': '🔑 IN-HOUSE',
+      'checked-out': '🏁 COMPLETED',
+      'blocked': '🚫 BLOCKED'
+    };
+    return `
+      <div class="overlap-conflict-item">
+        <div>
+          <div class="overlap-conflict-guest">
+            <i class="fa-solid fa-user" style="color:var(--primary); font-size:11px; margin-right:4px;"></i>${c.guestName}
+            ${c.guestPhone ? `<span style="font-weight:normal; font-size:11.5px; color:var(--text-muted); margin-left:6px;">(${c.guestPhone})</span>` : ''}
+          </div>
+          <div class="overlap-conflict-dates">
+            <i class="fa-regular fa-calendar" style="margin-right:4px;"></i>${c.checkIn} → ${c.checkOut} (${c.rentalType === 'monthly' ? `${c.monthlyDuration} bln` : `${c.nights} mlm`})
+          </div>
+        </div>
+        <div>
+          <span style="font-size:10.5px; font-weight:800; padding:3px 8px; border-radius:999px; background:var(--bg-surface-subtle); border:1px solid var(--border-color); color:var(--text-main);">
+            ${statusLabels[c.status] || c.status.toUpperCase()}
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Find alternative properties available for this exact interval
+  const availableProps = appState.properties.filter(p => {
+    if (p.id === propertyId) return false;
+    const clashing = getBookingOverlaps(p.id, checkIn, checkOut, currentBookingId);
+    return clashing.length === 0;
+  });
+
+  const altContainer = document.getElementById('overlapAlternativesContainer');
+  const altList = document.getElementById('overlapAvailablePropsList');
+  const btnSwitchToAvail = document.getElementById('btnOverlapSwitchToAvailable');
+
+  if (availableProps.length > 0) {
+    altContainer.style.display = 'block';
+    altList.innerHTML = availableProps.map(p => `
+      <div class="avail-prop-item" data-pid="${p.id}">
+        <div class="avail-prop-name">
+          <span class="property-dot" style="background:${p.color};"></span>
+          <span>${p.name}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="avail-prop-rate">${formatCurrency(p.defaultRate)}/mlm</span>
+          <button type="button" class="btn btn-outline btn-xs btn-pick-alt-prop" data-pid="${p.id}" style="color:var(--primary); font-weight:700;">
+            ${isBM ? 'Pilih Unit Ini' : 'Select Unit'}
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    altList.querySelectorAll('.btn-pick-alt-prop').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const pid = e.currentTarget.getAttribute('data-pid');
+        document.getElementById('bookingPropertySelect').value = pid;
+        updateBookingModalPricing();
+        checkBookingModalOverlap();
+        document.getElementById('overlapWarningModal').classList.remove('active');
+        showToast(isBM ? `Unit ditukar ke ${getPropertyById(pid).name}` : `Unit changed to ${getPropertyById(pid).name}`);
+      });
+    });
+
+    btnSwitchToAvail.style.display = 'block';
+    btnSwitchToAvail.innerHTML = `<i class="fa-solid fa-arrow-right-arrow-left"></i> ${isBM ? `Tukar ke ${availableProps[0].name} (Tersedia)` : `Switch to ${availableProps[0].name} (Available)`}`;
+    btnSwitchToAvail.onclick = () => {
+      document.getElementById('bookingPropertySelect').value = availableProps[0].id;
+      updateBookingModalPricing();
+      checkBookingModalOverlap();
+      document.getElementById('overlapWarningModal').classList.remove('active');
+      showToast(isBM ? `Unit ditukar ke ${availableProps[0].name}` : `Unit changed to ${availableProps[0].name}`);
+    };
+  } else {
+    altContainer.style.display = 'none';
+    btnSwitchToAvail.style.display = 'none';
+  }
+
+  // Change dates action
+  document.getElementById('btnOverlapChangeDates').onclick = () => {
+    document.getElementById('overlapWarningModal').classList.remove('active');
+    const dIn = document.getElementById('bookingCheckIn');
+    if (dIn) dIn.focus();
+  };
+
+  document.getElementById('btnOverlapDismiss').onclick = () => {
+    document.getElementById('overlapWarningModal').classList.remove('active');
+  };
+
+  document.getElementById('btnCloseOverlapModal').onclick = () => {
+    document.getElementById('overlapWarningModal').classList.remove('active');
+  };
+
+  document.getElementById('overlapWarningModal').classList.add('active');
+}
+
+function openChangeHomestayModal(booking) {
+  if (!booking) return;
+
+  const isBM = appState.settings.language === 'bm';
+  const currentProp = getPropertyById(booking.propertyId);
+
+  document.getElementById('changeHomestayBookingId').value = booking.id;
+  document.getElementById('changeHomestayGuestName').textContent = booking.guestName;
+  document.getElementById('changeHomestayGuestMeta').textContent = 
+    `${booking.guestPhone || '-'} • ${booking.guestNric ? `KP: ${booking.guestNric} • ` : ''}${booking.guestCount || 2} ${isBM ? 'Tetamu' : 'Guests'}`;
+
+  const statusBadge = document.getElementById('changeHomestayStatusBadge');
+  statusBadge.textContent = (booking.status || 'booked').toUpperCase();
+  statusBadge.className = `badge badge-${booking.status || 'booked'}`;
+
+  const durationStr = booking.rentalType === 'monthly' 
+    ? `${booking.monthlyDuration || 1} ${isBM ? 'bulan' : 'months'}` 
+    : `${booking.nights || 1} ${isBM ? 'malam' : 'nights'}`;
+
+  document.getElementById('changeHomestayDatesText').textContent = 
+    `${booking.checkIn} → ${booking.checkOut} (${durationStr})`;
+
+  document.getElementById('changeHomestayCurrentPropName').textContent = currentProp.name;
+  document.getElementById('changeHomestayCurrentTotal').textContent = 
+    `${formatCurrency(booking.totalAmount)} (${isBM ? 'Dibayar' : 'Paid'}: ${formatCurrency(booking.depositPaid)})`;
+
+  // Populate Target Homestay Select with live availability inspection
+  const targetSelect = document.getElementById('changeHomestayTargetSelect');
+  targetSelect.innerHTML = '';
+
+  const otherProps = appState.properties.filter(p => p.id !== booking.propertyId);
+
+  if (otherProps.length === 0) {
+    alert(isBM 
+      ? 'Anda perlu mempunyai sekurang-kurangnya 2 unit homestay berdaftar untuk membuat pertukaran unit.' 
+      : 'You need at least 2 homestay units registered in the app to transfer bookings.');
+    return;
+  }
+
+  let firstAvailableId = null;
+
+  otherProps.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    const clashes = getBookingOverlaps(p.id, booking.checkIn, booking.checkOut, booking.id);
+    const isFree = clashes.length === 0;
+
+    if (isFree) {
+      if (!firstAvailableId) firstAvailableId = p.id;
+      opt.textContent = `✅ ${p.name} - ${isBM ? 'Tersedia' : 'Available'} (${formatCurrency(p.defaultRate)}/mlm)`;
+    } else {
+      const clashGuest = clashes[0].guestName;
+      opt.textContent = `❌ ${p.name} - [${isBM ? 'Bertindih' : 'Conflict'}: ${clashGuest}]`;
+      opt.disabled = true; // Cannot select occupied homestay
+    }
+    targetSelect.appendChild(opt);
+  });
+
+  // Select first available or first option
+  if (firstAvailableId) {
+    targetSelect.value = firstAvailableId;
+  } else {
+    targetSelect.selectedIndex = 0;
+  }
+
+  // Function to update live feedback and recalculation preview
+  function updateTargetFeedback() {
+    const selectedPropId = targetSelect.value;
+    const selectedProp = getPropertyById(selectedPropId);
+    const clashes = getBookingOverlaps(selectedPropId, booking.checkIn, booking.checkOut, booking.id);
+    const feedbackEl = document.getElementById('changeHomestayTargetFeedback');
+    const confirmBtn = document.getElementById('btnConfirmChangeHomestay');
+
+    if (clashes.length > 0) {
+      const c = clashes[0];
+      feedbackEl.innerHTML = `
+        <span style="color:var(--danger); font-weight:700;">
+          <i class="fa-solid fa-circle-xmark"></i> ${isBM ? 'Tidak boleh dipindahkan: Bertindih dengan tempahan tetamu' : 'Cannot transfer: Clashes with booking for'} ${c.guestName} (${c.checkIn} → ${c.checkOut}).
+        </span>
+      `;
+      confirmBtn.disabled = true;
+    } else {
+      feedbackEl.innerHTML = `
+        <span style="color:var(--success); font-weight:700;">
+          <i class="fa-solid fa-circle-check"></i> ${isBM ? 'Unit ini KOSONG & tersedia untuk tarikh tersebut.' : 'Unit is VACANT & available for these stay dates.'}
+        </span>
+      `;
+      confirmBtn.disabled = false;
+    }
+
+    // Recalculate preview
+    const previewEl = document.getElementById('changeHomestayRecalcPreview');
+    if (previewEl && selectedProp) {
+      if (booking.rentalType === 'monthly') {
+        const mRate = selectedProp.defaultRate ? selectedProp.defaultRate * 10 : (booking.monthlyRate || 1200);
+        const newTotal = mRate + (booking.rentalDeposit || mRate) + (booking.utilitiesDeposit || 300) + (booking.agreementFee || 150);
+        previewEl.innerHTML = isBM
+          ? `Kadar baru: <strong>${formatCurrency(mRate)}/bulan</strong> → Anggaran Jumlah Baru: <strong>${formatCurrency(newTotal)}</strong> (Deposit dibayar ${formatCurrency(booking.depositPaid)} kekal).`
+          : `New rate: <strong>${formatCurrency(mRate)}/month</strong> → Est. New Total: <strong>${formatCurrency(newTotal)}</strong> (Deposit paid ${formatCurrency(booking.depositPaid)} preserved).`;
+      } else {
+        const nRate = selectedProp.defaultRate || booking.nightlyRate || 250;
+        const cFee = selectedProp.cleaningFee || booking.cleaningFee || 0;
+        const sDep = booking.securityDeposit || 0;
+        const newRental = (booking.nights * nRate) + cFee;
+        const newTotal = newRental + sDep;
+        previewEl.innerHTML = isBM
+          ? `Kadar baru: <strong>${formatCurrency(nRate)}/mlm</strong> + Pembersihan <strong>${formatCurrency(cFee)}</strong> → Jumlah Baru: <strong>${formatCurrency(newTotal)}</strong> (Deposit dibayar ${formatCurrency(booking.depositPaid)} kekal).`
+          : `New rate: <strong>${formatCurrency(nRate)}/night</strong> + Cleaning <strong>${formatCurrency(cFee)}</strong> → New Total: <strong>${formatCurrency(newTotal)}</strong> (Deposit paid ${formatCurrency(booking.depositPaid)} preserved).`;
+      }
+    }
+  }
+
+  targetSelect.onchange = updateTargetFeedback;
+  updateTargetFeedback();
+
+  // Reset radio to 'keep' by default
+  const keepRadio = document.querySelector('input[name="changePricingMode"][value="keep"]');
+  if (keepRadio) keepRadio.checked = true;
+
+  document.getElementById('changeHomestayModal').classList.add('active');
+}
+
+function handleConfirmChangeHomestay(e) {
+  e.preventDefault();
+
+  const bookingId = document.getElementById('changeHomestayBookingId').value;
+  const targetPropId = document.getElementById('changeHomestayTargetSelect').value;
+  const pricingMode = document.querySelector('input[name="changePricingMode"]:checked')?.value || 'keep';
+
+  const booking = appState.bookings.find(b => b.id === bookingId);
+  if (!booking) {
+    alert('Booking not found!');
+    return;
+  }
+
+  const oldProp = getPropertyById(booking.propertyId);
+  const newProp = getPropertyById(targetPropId);
+
+  // Validate overlap one more time for safety
+  const clashes = getBookingOverlaps(targetPropId, booking.checkIn, booking.checkOut, booking.id);
+  if (clashes.length > 0) {
+    alert(appState.settings.language === 'bm'
+      ? `Pertindihan dikesan! Unit ${newProp.name} telah ditempah oleh ${clashes[0].guestName}.`
+      : `Overlap detected! Unit ${newProp.name} is already booked by ${clashes[0].guestName}.`);
+    return;
+  }
+
+  // Transfer property ID
+  booking.propertyId = targetPropId;
+
+  // Pricing adjustment
+  if (pricingMode === 'recalc') {
+    if (booking.rentalType === 'monthly') {
+      const mRate = newProp.defaultRate ? newProp.defaultRate * 10 : (booking.monthlyRate || 1200);
+      booking.monthlyRate = mRate;
+      booking.totalAmount = mRate + (booking.rentalDeposit || mRate) + (booking.utilitiesDeposit || 300) + (booking.agreementFee || 150);
+      booking.balance = Math.max(0, booking.totalAmount - (booking.depositPaid || 0));
+    } else {
+      booking.nightlyRate = newProp.defaultRate || booking.nightlyRate || 250;
+      booking.cleaningFee = newProp.cleaningFee || 0;
+      const totalRental = (booking.nights * booking.nightlyRate) + booking.cleaningFee;
+      booking.totalAmount = totalRental + (booking.securityDeposit || 0);
+      booking.balance = Math.max(0, booking.totalAmount - (booking.depositPaid || 0));
+    }
+  }
+
+  // Update turnover cleaning tasks associated with this booking
+  appState.turnovers.forEach(t => {
+    if (t.bookingId === booking.id) {
+      t.propertyId = targetPropId;
+    }
+  });
+
+  // Append audit note
+  const isBM = appState.settings.language === 'bm';
+  const timeStr = new Date().toLocaleDateString();
+  const auditNote = isBM
+    ? `[Tukar Homestay: ${oldProp.name} → ${newProp.name} pada ${timeStr}]`
+    : `[Transferred Unit: ${oldProp.name} → ${newProp.name} on ${timeStr}]`;
+  booking.notes = booking.notes ? `${booking.notes}\n${auditNote}` : auditNote;
+
+  saveToStorage();
+  closeAllModals();
+  renderApp();
+
+  const successMsg = isBM
+    ? `Tempahan untuk ${booking.guestName} berjaya dipindahkan ke "${newProp.name}"!`
+    : `Booking for ${booking.guestName} successfully transferred to "${newProp.name}"!`;
+  showToast(successMsg);
+}
+
 // ==========================================================================
 // 11. BOOKING MODAL LOGIC (DAILY & MONTHLY TENANCY)
 // ==========================================================================
@@ -5043,7 +5518,19 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
         };
       }
     }
+
+    const btnChangeUnit = document.getElementById('btnBookingModalChangeUnit');
+    if (btnChangeUnit) {
+      btnChangeUnit.style.display = 'inline-flex';
+      btnChangeUnit.onclick = () => {
+        closeAllModals();
+        openChangeHomestayModal(existingBooking);
+      };
+    }
   } else {
+    const btnChangeUnit = document.getElementById('btnBookingModalChangeUnit');
+    if (btnChangeUnit) btnChangeUnit.style.display = 'none';
+
     document.getElementById('bookingModalTitle').textContent = 'New Booking / Quotation';
     document.getElementById('bookingIdInput').value = '';
     document.getElementById('bookingGuestNric').value = '';
@@ -5093,6 +5580,7 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
   }
 
   updateBookingModalPricing();
+  checkBookingModalOverlap();
   document.getElementById('bookingModal').classList.add('active');
 }
 
@@ -5229,6 +5717,36 @@ function handleSaveBooking(e) {
     }
   }
 
+  // 1. STRICT OVERLAP CHECK: Prevent double-booking if status is not cancelled
+  if (status !== 'cancelled') {
+    const overlaps = getBookingOverlaps(propertyId, checkIn, checkOut, id);
+    if (overlaps.length > 0) {
+      openOverlapWarningModal(overlaps, propertyId, checkIn, checkOut, guestName, id);
+      return; // STRICTLY BLOCK SAVE!
+    }
+  }
+
+  const existingBooking = id ? appState.bookings.find(b => b.id === id) : null;
+  let finalNotes = notes;
+
+  // If changing homestay property on existing booking, update turnover tasks & append audit note
+  if (id && existingBooking && existingBooking.propertyId !== propertyId) {
+    const oldProp = getPropertyById(existingBooking.propertyId);
+    const newProp = getPropertyById(propertyId);
+    const isBM = appState.settings.language === 'bm';
+    const auditText = isBM 
+      ? `[Tukar Homestay: ${oldProp.name} → ${newProp.name} pada ${new Date().toLocaleDateString()}]`
+      : `[Transferred Unit: ${oldProp.name} → ${newProp.name} on ${new Date().toLocaleDateString()}]`;
+    finalNotes = finalNotes ? `${finalNotes}\n${auditText}` : auditText;
+
+    // Sync property on any associated turnover cleaning tasks
+    appState.turnovers.forEach(t => {
+      if (t.bookingId === id) {
+        t.propertyId = propertyId;
+      }
+    });
+  }
+
   const bookingData = {
     id: id || `b-${Date.now()}`,
     propertyId,
@@ -5257,7 +5775,7 @@ function handleSaveBooking(e) {
     balance,
     status,
     quotationValidityDays,
-    notes,
+    notes: finalNotes,
     createdAt: new Date().toISOString()
   };
 
