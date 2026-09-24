@@ -1180,7 +1180,6 @@ function loadFromStorage() {
     const savedContacts = localStorage.getItem(STORAGE_KEYS.CONTACTS);
     const savedPromo = localStorage.getItem(STORAGE_KEYS.PROMO_MEDIA);
     const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-    const savedLicense = localStorage.getItem(STORAGE_KEYS.LICENSE);
 
     if (savedProps) appState.properties = JSON.parse(savedProps);
     if (savedBookings) appState.bookings = JSON.parse(savedBookings);
@@ -1468,8 +1467,9 @@ function initPWAUpdateService() {
     window.location.reload();
   });
 
-  // Check for updates automatically in background every 30 minutes
-  setInterval(() => checkForAppUpdates(false), 30 * 60 * 1000);
+  // Check for updates automatically on startup and every 15 minutes
+  setTimeout(() => checkForAppUpdates(false), 1500);
+  setInterval(() => checkForAppUpdates(false), 15 * 60 * 1000);
 }
 
 function showUpdateBanner() {
@@ -1487,14 +1487,15 @@ function dismissUpdateBanner() {
 }
 
 function applyAppUpdate() {
-  showToast(t('toast_checking_updates'));
+  const isBM = appState.settings.language === 'bm';
+  showToast(isBM ? 'Mengemas kini aplikasi...' : 'Updating application...');
   if (newWorkerWaiting) {
     newWorkerWaiting.postMessage({ type: 'SKIP_WAITING' });
     setTimeout(() => {
       window.location.reload();
-    }, 800);
+    }, 600);
   } else {
-    // If running as regular browser tab, force a hard reload
+    // Force cache-busting reload
     window.location.reload();
   }
 }
@@ -1524,13 +1525,19 @@ async function checkForAppUpdates(isManual = false) {
     }
 
     if (isManual) {
+      const isBM = appState.settings.language === 'bm';
       setTimeout(() => {
-        showToast(t('toast_up_to_date'));
+        showToast(isBM 
+          ? `✨ Aplikasi adalah versi terkini (v${APP_VERSION})!` 
+          : `✨ App is up to date (v${APP_VERSION})!`);
       }, 400);
     }
   } catch (e) {
     if (isManual) {
-      showToast(t('toast_up_to_date'));
+      const isBM = appState.settings.language === 'bm';
+      showToast(isBM 
+        ? `✨ Aplikasi adalah versi terkini (v${APP_VERSION})!` 
+        : `✨ App is up to date (v${APP_VERSION})!`);
     }
   }
 }
@@ -1935,6 +1942,11 @@ function setupEventListeners() {
   if (btnCopyMagic) btnCopyMagic.addEventListener('click', handleCopyMagicLink);
   const btnSendBuyer = document.getElementById('btnSendBuyerWa');
   if (btnSendBuyer) btnSendBuyer.addEventListener('click', handleSendBuyerWa);
+
+  const btnAdminCheck = document.getElementById('btnAdminCheckUpdates');
+  if (btnAdminCheck) btnAdminCheck.addEventListener('click', () => checkForAppUpdates(true));
+  const btnAdminGuide = document.getElementById('btnAdminOpenGuide');
+  if (btnAdminGuide) btnAdminGuide.addEventListener('click', () => openUserGuideModal());
 
   // Rental Type Segmented Control (Daily vs Monthly)
   document.querySelectorAll('#rentalTypeSegmented .segment-btn').forEach(btn => {
@@ -4643,14 +4655,43 @@ function renderSettingsTab() {
     }
 
     actions.innerHTML = `
-      <p style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
-        <i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${isBM ? 'Unit tanpa had & data peribadi luar talian aktif.' : 'Unlimited homestays & offline private data unlocked.'}
-      </p>
-      <button class="btn btn-outline btn-xs" id="btnChangeLicenseKey">
-        <i class="fa-solid fa-arrows-rotate"></i> ${isBM ? 'Tukar / Masukkan Kunci Lesen' : 'Change / Re-enter License Key'}
-      </button>
+      <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span style="font-size:12px; font-weight:700; color:var(--text-main);">
+            <i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> ${isMaster ? 'Master Admin Pro System' : (isBM ? 'Sistem Pro Diaktifkan' : 'Pro Lifetime License')}
+          </span>
+          <span style="font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px; background:var(--primary-light); color:var(--primary-text);">
+            v${APP_VERSION}
+          </span>
+        </div>
+        <p style="font-size:11.5px; color:var(--text-muted); margin:0 0 10px 0;">
+          <i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${isBM ? 'Akses penuh tanpa had & data peribadi luar talian aktif.' : 'Full unlimited access & private offline data active.'}
+        </p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary btn-sm" id="btnLicenseCheckUpdates" style="font-weight:700; flex:1; min-width:140px; justify-content:center;">
+            <i class="fa-solid fa-rotate"></i> ${isBM ? 'Semak Kemas Kini' : 'Check for Updates'}
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" id="btnLicenseOpenGuide" style="color:var(--primary); font-weight:700; border-color:var(--primary); flex:1; min-width:140px; justify-content:center;">
+            <i class="fa-solid fa-book-open"></i> ${isBM ? 'Panduan Pengguna' : 'User Manual'}
+          </button>
+        </div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:11px; color:var(--text-muted);">
+            <i class="fa-solid fa-clock-rotate-left"></i> Zero Data Loss Update
+          </span>
+          <button type="button" class="btn btn-outline btn-xs" id="btnChangeLicenseKey">
+            <i class="fa-solid fa-arrows-rotate"></i> ${isBM ? 'Tukar Lesen' : 'Change Key'}
+          </button>
+        </div>
+      </div>
     `;
-    document.getElementById('btnChangeLicenseKey').addEventListener('click', openLicenseModal);
+    document.getElementById('btnLicenseCheckUpdates')?.addEventListener('click', () => checkForAppUpdates(true));
+    document.getElementById('btnLicenseOpenGuide')?.addEventListener('click', () => openUserGuideModal());
+    document.getElementById('btnChangeLicenseKey')?.addEventListener('click', openLicenseModal);
+
+    // Wire Admin License card update & guide buttons if present
+    document.getElementById('btnAdminCheckUpdates')?.addEventListener('click', () => checkForAppUpdates(true));
+    document.getElementById('btnAdminOpenGuide')?.addEventListener('click', () => openUserGuideModal());
   } else {
     subTitle.textContent = isBM ? 'Tiada Lesen (Mod Demo)' : 'Unlicensed (Demo Mode)';
     badge.textContent = isBM ? 'DEMO' : 'DEMO';
@@ -6129,7 +6170,7 @@ function handleReceiptFileSelected(file) {
 
       const previewImg = document.getElementById('receiptPreviewImg');
       if (result.isPdf) {
-        previewImg.src = 'data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\'%3E%3Crect width=\\'100\\' height=\\'100\\' fill=\\'%23ef4444\\'/ %3E%3Ctext x=\\'50\\' y=\\'55\\' font-size=\\'18\\' font-weight=\\'bold\\' text-anchor=\\'middle\\' fill=\\'%23ffffff\\'%3EPDF%3C/text%3E%3C/svg%3E';
+        previewImg.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23ef4444%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-size=%2218%22 font-weight=%22bold%22 text-anchor=%22middle%22 fill=%22%23ffffff%22%3EPDF%3C/text%3E%3C/svg%3E';
       } else {
         previewImg.src = result.dataUrl;
       }
@@ -8260,7 +8301,7 @@ function openGuestGuideModal() {
       <p class="card-subtitle"><i class="fa-solid fa-location-dot"></i> ${prop.address || 'Homestay Address'}${prop.gpsLocation ? ` • <a href="${prop.gpsLocation}" target="_blank" style="color:var(--primary); font-weight:700; text-decoration:none;"><i class="fa-solid fa-map-location-dot"></i> Maps / GPS</a>` : ''}</p>
       
       <div class="qr-code-box">
-        <img src="${qrUrl}" alt="WiFi QR Code" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\'%3E%3Crect width=\\'100\\' height=\\'100\\' fill=\\'%23f1f5f9\\'/ %3E%3Ctext x=\\'50\\' y=\\'55\\' font-size=\\'12\\' text-anchor=\\'middle\\' fill=\\'%2364748b\\'%3EWiFi QR%3C/text%3E%3C/svg%3E'">
+        <img src="${qrUrl}" alt="WiFi QR Code" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23f1f5f9%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-size=%2212%22 text-anchor=%22middle%22 fill=%22%2364748b%22%3EWiFi QR%3C/text%3E%3C/svg%3E'">
       </div>
       <p style="font-size:11px; font-weight:700; color:var(--primary);">📱 Scan to Connect to WiFi Automatically</p>
     </div>

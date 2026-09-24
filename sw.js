@@ -44,10 +44,10 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
-  // Bypass cache for version.json so update checks are always live
-  if (url.pathname.endsWith('version.json')) {
+  // Bypass cache completely for version.json so update checks are always 100% live
+  if (url.pathname.includes('version.json')) {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      fetch(event.request, { cache: 'no-store' }).catch(() => caches.match(event.request))
     );
     return;
   }
