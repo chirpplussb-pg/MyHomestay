@@ -3040,11 +3040,23 @@ body.theme-dark .overlap-alert-content strong {
    19. CORPORATE PDF DOCUMENT HUB & PRINT STYLING (v2.6.4)
    ========================================================================== */
 
+#pdfDocModal {
+  z-index: 9999 !important;
+}
+
 .pdf-modal-container {
   max-width: 900px !important;
   max-height: 94vh !important;
   display: flex;
   flex-direction: column;
+}
+
+.pdf-modal-container .modal-body {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: calc(94vh - 140px);
 }
 
 .pdf-toolbar-panel {

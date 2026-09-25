@@ -14,7 +14,7 @@
   <meta http-equiv="Expires" content="0">
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=2.6.4">
+  <link rel="stylesheet" href="styles.css?v=2.6.5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -520,7 +520,7 @@
           <!-- Master Admin Quick Tools Bar -->
           <div style="display:flex; gap:8px; margin-bottom:12px; padding-bottom:10px; border-bottom:1px dashed var(--border-color); flex-wrap:wrap;">
             <button type="button" class="btn btn-outline btn-xs" id="btnAdminCheckUpdates" style="color:var(--primary); font-weight:700; border-color:var(--primary);">
-              <i class="fa-solid fa-rotate"></i> <span data-i18n="btn_check_updates">Check for App Updates</span> (v2.6.4)
+              <i class="fa-solid fa-rotate"></i> <span data-i18n="btn_check_updates">Check for App Updates</span> (v2.6.5)
             </button>
             <button type="button" class="btn btn-outline btn-xs" id="btnAdminOpenGuide" style="color:var(--text-main); font-weight:700;">
               <i class="fa-solid fa-book-open"></i> <span data-i18n="btn_open_guide">User Manual & Operational Guide</span>
@@ -586,7 +586,7 @@
               <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
               <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
             </div>
-            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.6.4</span>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.6.5</span>
           </div>
 
           <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
@@ -1914,7 +1914,7 @@
             </div>
             <div style="text-align:right;">
               <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">App Version</div>
-              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.6.4</div>
+              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.6.5</div>
             </div>
           </div>
 
@@ -2127,8 +2127,8 @@
       </div>
     </div>
 
-    <!-- 17. CORPORATE & OFFICE PDF DOCUMENT MODAL (v2.6.4) -->
-    <div class="modal-backdrop" id="pdfDocModal">
+    <!-- 17. CORPORATE & OFFICE PDF DOCUMENT MODAL (v2.6.5) -->
+    <div class="modal-backdrop" id="pdfDocModal" style="z-index: 9999;">
       <div class="bottom-sheet pdf-modal-container">
         <div class="sheet-handle"></div>
         <div class="modal-header no-print">
@@ -2144,7 +2144,7 @@
           <button class="modal-close" id="btnClosePdfModal">&times;</button>
         </div>
 
-        <div class="modal-body" style="padding:16px;">
+        <div class="modal-body" style="padding:16px; overflow-y:auto; -webkit-overflow-scrolling:touch; max-height:calc(94vh - 140px);">
           <!-- Controls Panel -->
           <div class="pdf-toolbar-panel no-print">
             <!-- Document Selector Pills -->
@@ -2437,6 +2437,6 @@
 
   </div>
 
-  <script src="app.js?v=2.6.4"></script>
+  <script src="app.js?v=2.6.5"></script>
 </body>
 </html>

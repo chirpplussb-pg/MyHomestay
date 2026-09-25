@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.6.4';
+const APP_VERSION = '2.6.5';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -302,8 +302,8 @@ const TRANSLATIONS = {
     update_banner_title: 'New Update Available!',
     update_banner_desc: 'New improvements & features ready. Your data is 100% preserved.',
     btn_update_now: 'Update Now',
-    toast_app_updated: '🎉 App successfully updated to v2.6.4! All data is intact.',
-    toast_up_to_date: '✨ You are already using the latest version (v2.6.4)!',
+    toast_app_updated: '🎉 App successfully updated to v2.6.5! All data is intact.',
+    toast_up_to_date: '✨ You are already using the latest version (v2.6.5)!',
     toast_checking_updates: 'Checking for new updates...',
     toast_safety_saved: 'Safety backup snapshot downloaded!',
 
@@ -759,8 +759,8 @@ const TRANSLATIONS = {
     update_banner_title: 'Kemas Kini Baharu Tersedia!',
     update_banner_desc: 'Ciri baharu & penambahbaikan sedia dipasang. Data anda kekal 100% selamat.',
     btn_update_now: 'Kemas Kini Sekarang',
-    toast_app_updated: '🎉 Aplikasi berjaya dikemas kini ke v2.6.4! Semua data kekal selamat.',
-    toast_up_to_date: '✨ Anda sedang menggunakan versi terkini (v2.6.4)!',
+    toast_app_updated: '🎉 Aplikasi berjaya dikemas kini ke v2.6.5! Semua data kekal selamat.',
+    toast_up_to_date: '✨ Anda sedang menggunakan versi terkini (v2.6.5)!',
     toast_checking_updates: 'Menyemak kemas kini terkini...',
     toast_safety_saved: 'Salinan sandaran keselamatan berjaya dimuat turun!',
 
@@ -2090,12 +2090,16 @@ function setupEventListeners() {
     renderWhatsAppPreview();
   });
 
-  // Corporate & Office PDF Modal Wiring (v2.6.4)
+  // Corporate & Office PDF Modal Wiring (v2.6.5)
   document.getElementById('btnOpenPdfModalFromWa')?.addEventListener('click', () => {
-    if (appState.activeWaBooking) {
+    const b = appState.activeWaBooking || (appState.bookings && appState.bookings[0]);
+    if (b) {
       const tmpl = appState.activeWaTemplate;
       const docType = (tmpl === 'full_receipt' || tmpl === 'deposit_receipt' || tmpl === 'monthly_rent_receipt' || tmpl === 'refund_receipt') ? 'receipt' : (tmpl === 'monthly_invoice' || tmpl === 'payment') ? 'invoice' : 'quotation';
-      openPdfDocModal(appState.activeWaBooking, docType);
+      closeAllModals();
+      openPdfDocModal(b, docType);
+    } else {
+      showToast(appState.settings.language === 'bm' ? 'Sila pilih tempahan terlebih dahulu.' : 'Please select a booking first.');
     }
   });
 
@@ -3225,6 +3229,9 @@ function renderDashboardTab() {
             <button class="btn btn-whatsapp btn-xs btn-wa-trigger" data-bid="${item.booking.id}" data-type="${item.type}">
               <i class="fa-brands fa-whatsapp"></i> ${item.type === 'checkin' ? t('btn_send_full_receipt') : t('btn_checkout_reminder')}
             </button>
+            <button class="btn btn-outline btn-xs btn-open-pdf-doc" data-bid="${item.booking.id}" title="${appState.settings.language === 'bm' ? 'Jana Dokumen PDF Rasmi' : 'Generate Official PDF'}" style="color:var(--primary); font-weight:700;">
+              <i class="fa-solid fa-file-pdf"></i> PDF
+            </button>
           ` : ''}
           ${item.turnover ? `
             <button class="btn btn-whatsapp btn-xs btn-wa-cleaner" data-tid="${item.turnover.id}">
@@ -3241,6 +3248,17 @@ function renderDashboardTab() {
     });
 
     // Attach event listeners for action feed buttons
+    actionFeed.querySelectorAll('.btn-open-pdf-doc').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const bid = e.currentTarget.getAttribute('data-bid');
+        const b = appState.bookings.find(x => x.id === bid);
+        if (b) {
+          const docType = (b.status === 'confirmed' || b.status === 'completed' || b.status === 'checked-in') ? 'receipt' : b.status === 'booked' ? 'invoice' : 'quotation';
+          openPdfDocModal(b, docType);
+        }
+      });
+    });
+
     actionFeed.querySelectorAll('.btn-wa-trigger').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const bid = e.currentTarget.getAttribute('data-bid');
@@ -8534,7 +8552,17 @@ const PDF_DOC_I18N = {
 };
 
 function openPdfDocModal(booking, defaultDocType = 'quotation') {
-  if (!booking) return;
+  if (!booking) {
+    booking = appState.bookings && appState.bookings[0];
+    if (!booking) {
+      showToast(appState.settings.language === 'bm' ? 'Tiada rekod tempahan untuk dijana dokumen.' : 'No booking record available to generate document.');
+      return;
+    }
+  }
+
+  // Ensure any other open backdrops (e.g. WhatsApp modal) are cleanly closed first
+  closeAllModals();
+
   appState.activePdfBooking = booking;
   appState.activePdfDocType = defaultDocType || 'quotation';
   appState.activePdfLang = appState.settings.language || 'bm';
@@ -8556,8 +8584,12 @@ function openPdfDocModal(booking, defaultDocType = 'quotation') {
   updatePdfLangButtonsUI();
   updatePdfValidityPresetsUI(valDays);
 
-  // Render preview
-  updatePdfDocView();
+  // Render preview with error boundary
+  try {
+    updatePdfDocView();
+  } catch (err) {
+    console.error('Error updating PDF document view:', err);
+  }
 
   // Open modal
   const modal = document.getElementById('pdfDocModal');
@@ -8914,7 +8946,7 @@ function updatePdfDocView() {
     if (docType === 'invoice') {
       paidRow.style.display = 'flex';
       balRow.style.display = 'flex';
-      const paidAmt = booking.paidAmount || 0;
+      const paidAmt = Number(booking.paidAmount || booking.depositPaid || 0);
       const balAmt = Math.max(0, grandTotal - paidAmt);
       if (paidVal) paidVal.textContent = `(-) ${currency} ${Number(paidAmt).toFixed(2)}`;
       if (balVal) {
