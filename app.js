@@ -2141,7 +2141,13 @@ function setupEventListeners() {
   });
 
   document.getElementById('btnPrintPdfDoc')?.addEventListener('click', printPdfDocument);
+  document.getElementById('btnDownloadPdfDoc')?.addEventListener('click', downloadPdfDocument);
   document.getElementById('btnSharePdfWa')?.addEventListener('click', sharePdfViaWhatsApp);
+  document.getElementById('btnPromptSendWa')?.addEventListener('click', sharePdfViaWhatsApp);
+  document.getElementById('btnPromptDismiss')?.addEventListener('click', () => {
+    const banner = document.getElementById('pdfWaPromptBanner');
+    if (banner) banner.style.display = 'none';
+  });
 
   // Booking Form Status Change -> Toggle Quotation Validity Group & Auto-Settle Full Balance
   const bookingStatusSel = document.getElementById('bookingStatusSelect');
@@ -8439,50 +8445,64 @@ function handleSendWaDirect() {
 }
 
 // ==========================================================================
-// 14B. CORPORATE & OFFICE PDF DOCUMENT GENERATION (v2.6.4)
+// 14B. CORPORATE & OFFICE PDF DOCUMENT GENERATION (v2.6.5)
 // ==========================================================================
 
 const PDF_DOC_I18N = {
   bm: {
     docBadgeQuotation: 'SEBUT HARGA RASMI',
-    docTitleQuotation: 'SEBUT HARGA',
+    docTitleQuotation: 'Sebut Harga',
     docBadgeInvoice: 'INVOIS RASMI',
-    docTitleInvoice: 'INVOIS',
+    docTitleInvoice: 'Invois',
     docBadgeReceipt: 'RESIT RASMI PEMBAYARAN',
-    docTitleReceipt: 'RESIT RASMI',
+    docTitleReceipt: 'Resit Rasmi',
 
-    lblPdfDocNo: 'No. Dokumen:',
-    lblPdfDocDate: 'Tarikh:',
-    lblPdfValidity: 'Tempoh Sah:',
-    lblPdfLpo: 'No. LPO / Ruj:',
-    lblPdfPayMethod: 'Kaedah:',
-    lblPdfBilledTo: 'DIKELUARKAN KEPADA (BILLED TO):',
-    lblPdfStayParticulars: 'BUTIRAN PENGINAPAN & SEWAAN:',
-    lblPdfCheckIn: 'Daftar Masuk',
-    lblPdfCheckOut: 'Daftar Keluar',
-    lblPdfDuration: 'Tempoh & Tetamu:',
-    
-    thPdfItem: 'Huraian / Perkara (Item Description)',
-    thPdfRate: 'Kadar',
-    thPdfQty: 'Kuantiti / Malam',
+    lblPdfDocNoTitleQuotation: 'No. Sebut Harga:',
+    lblPdfDocNoTitleInvoice: 'No. Invois:',
+    lblPdfDocNoTitleReceipt: 'No. Resit:',
+    lblPdfDocDateTitleQuotation: 'Tarikh Sebut Harga:',
+    lblPdfDocDateTitleInvoice: 'Tarikh Invois:',
+    lblPdfDocDateTitleReceipt: 'Tarikh Resit:',
+    lblPdfValidityTitle: 'Tempoh Sah:',
+    lblPdfLpoTitle: 'No. LPO / Ruj:',
+    lblPdfBillTo: 'Dikeluarkan Kepada',
+
+    thPdfItem: 'Perkara / Huraian',
+    thPdfHsn: 'Kod / HSN',
+    thPdfQty: 'Kuantiti',
+    thPdfRate: 'Kadar Seunit',
+    thPdfTax: 'Cukai / SST',
     thPdfAmount: 'Jumlah',
 
-    lblPdfTermsTitle: 'Syarat & Catatan Dokumen:',
-    lblPdfSubtotal: 'Jumlah Kasar (Subtotal):',
-    lblPdfTax: 'Cukai / SST (0%):',
-    lblPdfGrandTotal: 'JUMLAH KESELURUHAN:',
+    lblPdfSubTotalTable: 'Jumlah Kasar (Sub Total)',
+    lblPdfExtraCharges: 'Caj Tambahan (+)',
+    lblPdfTaxableAmount: 'Jumlah Dikenakan Cukai',
+    lblPdfCgst: 'SST / Cukai Perkhidmatan @ 0%',
+    lblPdfSgst: 'Cukai Warisan / Pelancongan @ RM 0.00',
     lblPdfDepositReq: 'Deposit Komitmen Diperlukan:',
     lblPdfPaid: 'Jumlah Telah Dibayar:',
     lblPdfBalance: 'Baki Belum Jelas:',
-    lblPdfSecDeposit: '*Deposit Keselamatan (Dipulangkan):',
-    
-    lblPdfBankTitle: 'Butiran Pembayaran / Akaun Bank:',
-    lblPdfIssuedBy: 'DIKELUARKAN RASMI OLEH:',
-    lblPdfAuthorized: 'Tandatangan Sah Pengurus',
+    lblPdfDiscount: 'Diskaun (-)',
+    lblPdfGrandTotal: 'Jumlah Keseluruhan',
+    lblPdfWordsTitle: 'Jumlah Keseluruhan Dalam Perkataan',
+    lblPdfAuthorized: 'Tandatangan Pengurus',
+
+    lblPdfBankTitle: 'Butiran Akaun Bank',
+    lblPdfAccHolder: 'Penama Akaun:',
+    lblPdfAccNum: 'Nombor Akaun:',
+    lblPdfBankName: 'Nama Bank:',
+    lblPdfBranch: 'Cawangan:',
+    lblPdfDuitNow: 'DuitNow ID:',
+    lblPdfTermsTitle: 'Syarat & Catatan',
+
+    txtWaPromptTitle: 'Hantar Dokumen ini ke WhatsApp Tetamu?',
+    txtWaPromptSub: 'Fail PDF rasmi ini sedia untuk dihantar dan dilampirkan terus ke perbualan WhatsApp tetamu.',
+    txtBtnPromptYes: 'Ya, Hantar ke WhatsApp',
+    txtBtnPromptNo: 'Hanya Lihat / Muat Turun',
 
     termsQuotation: [
       'Sila kemukakan dokumen ini ke bahagian kewangan / pentadbiran bagi tujuan kelulusan atau pesanan tempatan (LPO).',
-      'Kadar tertakluk kepada kekosongan tarikh semasa pengesahan deposit dibuat.',
+      'Kadar dan tarikh tertakluk kepada kekosongan semasa pengesahan deposit dibuat.',
       'Waktu Daftar Masuk: 3:00 PM | Daftar Keluar: 12:00 PM.'
     ],
     termsInvoice: [
@@ -8498,44 +8518,58 @@ const PDF_DOC_I18N = {
   },
   en: {
     docBadgeQuotation: 'OFFICIAL QUOTATION',
-    docTitleQuotation: 'QUOTATION',
+    docTitleQuotation: 'Quotation',
     docBadgeInvoice: 'OFFICIAL INVOICE',
-    docTitleInvoice: 'TAX INVOICE',
+    docTitleInvoice: 'Invoice',
     docBadgeReceipt: 'OFFICIAL RECEIPT',
-    docTitleReceipt: 'OFFICIAL RECEIPT',
+    docTitleReceipt: 'Official Receipt',
 
-    lblPdfDocNo: 'Document No:',
-    lblPdfDocDate: 'Date Issued:',
-    lblPdfValidity: 'Validity Period:',
-    lblPdfLpo: 'LPO / Ref No:',
-    lblPdfPayMethod: 'Payment Mode:',
-    lblPdfBilledTo: 'BILLED TO (RECIPIENT):',
-    lblPdfStayParticulars: 'ACCOMMODATION & STAY DETAILS:',
-    lblPdfCheckIn: 'Check-In',
-    lblPdfCheckOut: 'Check-Out',
-    lblPdfDuration: 'Duration & Guests:',
-    
-    thPdfItem: 'Item Description / Scope',
-    thPdfRate: 'Rate',
-    thPdfQty: 'Qty / Nights',
+    lblPdfDocNoTitleQuotation: 'Quotation No:',
+    lblPdfDocNoTitleInvoice: 'Invoice No:',
+    lblPdfDocNoTitleReceipt: 'Receipt No:',
+    lblPdfDocDateTitleQuotation: 'Quotation Date:',
+    lblPdfDocDateTitleInvoice: 'Invoice Date:',
+    lblPdfDocDateTitleReceipt: 'Receipt Date:',
+    lblPdfValidityTitle: 'Validity Date:',
+    lblPdfLpoTitle: 'LPO / Ref No:',
+    lblPdfBillTo: 'Bill To',
+
+    thPdfItem: 'Items',
+    thPdfHsn: 'HSN/Code',
+    thPdfQty: 'Quantity',
+    thPdfRate: 'Rate Per Unit',
+    thPdfTax: 'Tax Per Unit',
     thPdfAmount: 'Amount',
 
-    lblPdfTermsTitle: 'Document Terms & Notes:',
-    lblPdfSubtotal: 'Subtotal Amount:',
-    lblPdfTax: 'Service Tax / SST (0%):',
-    lblPdfGrandTotal: 'GRAND TOTAL:',
-    lblPdfDepositReq: 'Commitment Deposit Required:',
-    lblPdfPaid: 'Total Amount Paid:',
-    lblPdfBalance: 'Outstanding Balance Due:',
-    lblPdfSecDeposit: '*Refundable Security Deposit:',
-    
-    lblPdfBankTitle: 'Banking & Remittance Details:',
-    lblPdfIssuedBy: 'OFFICIALLY ISSUED BY:',
-    lblPdfAuthorized: 'Authorized Manager Signature',
+    lblPdfSubTotalTable: 'Sub Total',
+    lblPdfExtraCharges: 'Extra Charges (+)',
+    lblPdfTaxableAmount: 'Taxable Amount',
+    lblPdfCgst: 'SST / Service Tax @ 0%',
+    lblPdfSgst: 'Tourism / Heritage Tax @ RM 0.00',
+    lblPdfDepositReq: 'Deposit Required:',
+    lblPdfPaid: 'Amount Paid:',
+    lblPdfBalance: 'Balance Due:',
+    lblPdfDiscount: 'Discount (-)',
+    lblPdfGrandTotal: 'Total Amount',
+    lblPdfWordsTitle: 'Total Amount in Words',
+    lblPdfAuthorized: 'Authorized Signature',
+
+    lblPdfBankTitle: 'Bank Details',
+    lblPdfAccHolder: 'Account holder:',
+    lblPdfAccNum: 'Account number:',
+    lblPdfBankName: 'Bank:',
+    lblPdfBranch: 'Branch:',
+    lblPdfDuitNow: 'DuitNow ID:',
+    lblPdfTermsTitle: 'Terms & Conditions',
+
+    txtWaPromptTitle: 'Send this Document to Guest via WhatsApp?',
+    txtWaPromptSub: 'This official PDF document is ready to be sent and attached directly to guest\'s WhatsApp.',
+    txtBtnPromptYes: 'Yes, Send to WhatsApp',
+    txtBtnPromptNo: 'View / Download Only',
 
     termsQuotation: [
       'Please submit this formal quotation to your accounts/finance department for LPO or disbursement processing.',
-      'Rates and dates remain subject to availability until the booking deposit is confirmed.',
+      'Rates and dates remain subject to availability until booking deposit is confirmed.',
       'Standard Check-In: 3:00 PM | Check-Out: 12:00 PM.'
     ],
     termsInvoice: [
@@ -8550,6 +8584,103 @@ const PDF_DOC_I18N = {
     ]
   }
 };
+
+/**
+ * Convert numeric Ringgit currency into words (Malay & English)
+ */
+function numberToWordsMYR(amount, lang = 'bm') {
+  amount = parseFloat(amount) || 0;
+  if (amount < 0) amount = Math.abs(amount);
+  const ringgit = Math.floor(amount);
+  const sen = Math.round((amount - ringgit) * 100);
+
+  const unitsBM = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Lapan', 'Sembilan'];
+  const unitsEN = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  const teensEN = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const tensEN = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  function convertBM(n) {
+    if (n === 0) return '';
+    if (n < 10) return unitsBM[n];
+    if (n === 10) return 'Sepuluh';
+    if (n === 11) return 'Sebelas';
+    if (n < 20) return unitsBM[n - 10] + ' Belas';
+    if (n < 100) {
+      const ten = Math.floor(n / 10);
+      const rem = n % 10;
+      return (ten === 1 ? 'Sepuluh' : unitsBM[ten] + ' Puluh') + (rem > 0 ? ' ' + unitsBM[rem] : '');
+    }
+    if (n < 1000) {
+      const hundred = Math.floor(n / 100);
+      const rem = n % 100;
+      return (hundred === 1 ? 'Seratus' : unitsBM[hundred] + ' Ratus') + (rem > 0 ? ' ' + convertBM(rem) : '');
+    }
+    if (n < 1000000) {
+      const thousand = Math.floor(n / 1000);
+      const rem = n % 1000;
+      return (thousand === 1 ? 'Seribu' : convertBM(thousand) + ' Ribu') + (rem > 0 ? ' ' + convertBM(rem) : '');
+    }
+    if (n < 1000000000) {
+      const million = Math.floor(n / 1000000);
+      const rem = n % 1000000;
+      return convertBM(million) + ' Juta' + (rem > 0 ? ' ' + convertBM(rem) : '');
+    }
+    return n.toString();
+  }
+
+  function convertEN(n) {
+    if (n === 0) return '';
+    if (n < 10) return unitsEN[n];
+    if (n < 20) return teensEN[n - 10];
+    if (n < 100) {
+      const ten = Math.floor(n / 10);
+      const rem = n % 10;
+      return tensEN[ten] + (rem > 0 ? '-' + unitsEN[rem] : '');
+    }
+    if (n < 1000) {
+      const hundred = Math.floor(n / 100);
+      const rem = n % 100;
+      return unitsEN[hundred] + ' Hundred' + (rem > 0 ? ' ' + convertEN(rem) : '');
+    }
+    if (n < 1000000) {
+      const thousand = Math.floor(n / 1000);
+      const rem = n % 1000;
+      return convertEN(thousand) + ' Thousand' + (rem > 0 ? ' ' + convertEN(rem) : '');
+    }
+    if (n < 1000000000) {
+      const million = Math.floor(n / 1000000);
+      const rem = n % 1000000;
+      return convertEN(million) + ' Million' + (rem > 0 ? ' ' + convertEN(rem) : '');
+    }
+    return n.toString();
+  }
+
+  if (lang === 'bm') {
+    let result = '';
+    if (ringgit === 0) {
+      result = 'Sifar Ringgit';
+    } else {
+      result = 'Ringgit Malaysia ' + convertBM(ringgit);
+    }
+    if (sen > 0) {
+      result += ' Dan ' + convertBM(sen) + ' Sen';
+    }
+    result += ' Sahaja';
+    return result.toUpperCase();
+  } else {
+    let result = '';
+    if (ringgit === 0) {
+      result = 'Zero Ringgit';
+    } else {
+      result = 'Malaysian Ringgit ' + convertEN(ringgit);
+    }
+    if (sen > 0) {
+      result += ' And ' + convertEN(sen) + ' Cents';
+    }
+    result += ' Only';
+    return result.toUpperCase();
+  }
+}
 
 function openPdfDocModal(booking, defaultDocType = 'quotation') {
   if (!booking) {
@@ -8578,6 +8709,10 @@ function openPdfDocModal(booking, defaultDocType = 'quotation') {
 
   const lpoInput = document.getElementById('pdfLpoRefInput');
   if (lpoInput) lpoInput.value = booking.lpoRef || '';
+
+  // Show WhatsApp prompt banner asking user if they want to send the file
+  const banner = document.getElementById('pdfWaPromptBanner');
+  if (banner) banner.style.display = 'flex';
 
   // Highlight active doc tab
   updatePdfTypeTabsUI();
@@ -8680,88 +8815,83 @@ function updatePdfDocView() {
   const ssmEl = document.getElementById('pdfHostSsm');
   if (ssmEl) {
     ssmEl.textContent = settings.businessSsm 
-      ? (lang === 'bm' ? `No. Pendaftaran SSM: ${settings.businessSsm}` : `SSM Reg. No: ${settings.businessSsm}`)
-      : (lang === 'bm' ? 'Perkhidmatan Penginapan & Homestay Berdaftar' : 'Registered Homestay & Accommodation Services');
+      ? settings.businessSsm
+      : '20260100988-X (SSM)';
   }
 
   const addrEl = document.getElementById('pdfHostAddress');
   if (addrEl) addrEl.textContent = settings.businessAddress || prop.address || 'Premis Homestay & Perkhidmatan Penginapan';
 
   const phoneEl = document.getElementById('pdfHostPhone');
-  if (phoneEl) phoneEl.textContent = settings.ownerPhone || '-';
+  if (phoneEl) phoneEl.textContent = settings.ownerPhone || prop.contactPhone || '-';
 
   const emailEl = document.getElementById('pdfHostEmail');
-  if (emailEl) emailEl.textContent = settings.businessEmail || (settings.ownerPhone ? `host@${settings.ownerPhone.replace(/\+/g, '')}.com` : 'host@myhomestay.com');
+  if (emailEl) emailEl.textContent = settings.businessEmail || (settings.ownerPhone ? `host@${settings.ownerPhone.replace(/\D/g, '')}.com` : 'host@myhomestay.com');
 
-  const signTitleEl = document.getElementById('pdfHostBizSignTitle');
-  if (signTitleEl) signTitleEl.textContent = settings.businessName || 'PENGURUSAN HOMESTAY';
+  const premisIdEl = document.getElementById('pdfHostPremisId');
+  if (premisIdEl) premisIdEl.textContent = prop.id ? `HM-${prop.id.replace(/\D/g, '')}` : 'HM-1088';
 
   // 2. Document Number & Date
   const year = new Date().getFullYear();
   const idShort = (booking.id || '').replace(/\D/g, '').slice(-4) || '1088';
   let docPrefix = 'QT';
-  if (docType === 'invoice') docPrefix = 'INV';
-  if (docType === 'receipt') docPrefix = 'REC';
+  let docTitle = t.docTitleQuotation;
+  let docNoTitle = t.lblPdfDocNoTitleQuotation;
+  let docDateTitle = t.lblPdfDocDateTitleQuotation;
+
+  if (docType === 'invoice') {
+    docPrefix = 'INV';
+    docTitle = t.docTitleInvoice;
+    docNoTitle = t.lblPdfDocNoTitleInvoice;
+    docDateTitle = t.lblPdfDocDateTitleInvoice;
+  } else if (docType === 'receipt') {
+    docPrefix = 'REC';
+    docTitle = t.docTitleReceipt;
+    docNoTitle = t.lblPdfDocNoTitleReceipt;
+    docDateTitle = t.lblPdfDocDateTitleReceipt;
+  }
   const fullDocNo = `${docPrefix}-${year}-${idShort}`;
+
+  const titleEl = document.getElementById('pdfDocTitle');
+  if (titleEl) titleEl.textContent = docTitle;
+
+  const lblDocNoEl = document.getElementById('lblPdfDocNoTitle');
+  if (lblDocNoEl) lblDocNoEl.textContent = docNoTitle;
 
   const docNoEl = document.getElementById('pdfDocNo');
   if (docNoEl) docNoEl.textContent = fullDocNo;
 
-  const refCodeEl = document.getElementById('pdfRefCodeText');
-  if (refCodeEl) refCodeEl.textContent = fullDocNo;
+  const lblDocDateEl = document.getElementById('lblPdfDocDateTitle');
+  if (lblDocDateEl) lblDocDateEl.textContent = docDateTitle;
 
   const docDateEl = document.getElementById('pdfDocDate');
   if (docDateEl) {
     const d = new Date();
-    docDateEl.textContent = d.toLocaleDateString(lang === 'bm' ? 'ms-MY' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    docDateEl.textContent = d.toLocaleDateString(lang === 'bm' ? 'ms-MY' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' 12:00 PM';
   }
 
-  // Document Badge & Title
-  const badgeEl = document.getElementById('pdfDocBadge');
-  const titleEl = document.getElementById('pdfDocTitle');
-  if (docType === 'quotation') {
-    if (badgeEl) {
-      badgeEl.textContent = t.docBadgeQuotation;
-      badgeEl.style.background = '#e0f2fe';
-      badgeEl.style.color = '#0369a1';
-    }
-    if (titleEl) titleEl.textContent = t.docTitleQuotation;
-  } else if (docType === 'invoice') {
-    if (badgeEl) {
-      badgeEl.textContent = t.docBadgeInvoice;
-      badgeEl.style.background = '#ede9fe';
-      badgeEl.style.color = '#5b21b6';
-    }
-    if (titleEl) titleEl.textContent = t.docTitleInvoice;
-  } else {
-    if (badgeEl) {
-      badgeEl.textContent = t.docBadgeReceipt;
-      badgeEl.style.background = '#d1fae5';
-      badgeEl.style.color = '#065f46';
-    }
-    if (titleEl) titleEl.textContent = t.docTitleReceipt;
-  }
-
-  // Validity calculation (for quotation)
+  // Validity calculation (Quotation only)
   const valDays = parseInt(document.getElementById('pdfQuotationValidityInput')?.value) || booking.quotationValidityDays || settings.quotationValidityDays || 3;
   const expDateObj = new Date();
   expDateObj.setDate(expDateObj.getDate() + valDays);
   const expFormatted = expDateObj.toLocaleDateString(lang === 'bm' ? 'ms-MY' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  const valDateText = lang === 'bm' ? `${valDays} Hari (Hingga ${expFormatted})` : `${valDays} Days (Until ${expFormatted})`;
+  const valRow = document.getElementById('pdfDocValidityRow');
+  const lblValTitle = document.getElementById('lblPdfValidityTitle');
   const docValEl = document.getElementById('pdfDocValidity');
-  if (docValEl) docValEl.textContent = valDateText;
+  if (lblValTitle) lblValTitle.textContent = t.lblPdfValidityTitle;
+  if (docValEl) docValEl.textContent = `${expFormatted} (${valDays} ${lang === 'bm' ? 'Hari' : 'Days'})`;
+  if (valRow) valRow.style.display = docType === 'quotation' ? 'block' : 'none';
 
   const calcDateEl = document.getElementById('pdfValidityCalculatedDate');
   if (calcDateEl) calcDateEl.textContent = lang === 'bm' ? `Hingga ${expFormatted}` : `Until ${expFormatted}`;
 
-  const valRow = document.getElementById('pdfDocValidityRow');
-  if (valRow) valRow.style.display = docType === 'quotation' ? 'block' : 'none';
-
   // LPO Row
   const lpoInputVal = document.getElementById('pdfLpoRefInput')?.value.trim() || booking.lpoRef || '';
   const lpoRow = document.getElementById('pdfDocLpoRow');
+  const lblLpoTitle = document.getElementById('lblPdfLpoTitle');
   const lpoText = document.getElementById('pdfDocLpo');
+  if (lblLpoTitle) lblLpoTitle.textContent = t.lblPdfLpoTitle;
   if (lpoRow && lpoText) {
     if (lpoInputVal) {
       lpoRow.style.display = 'block';
@@ -8769,12 +8899,6 @@ function updatePdfDocView() {
     } else {
       lpoRow.style.display = 'none';
     }
-  }
-
-  // Payment Method Row
-  const payMethodRow = document.getElementById('pdfDocPayMethodRow');
-  if (payMethodRow) {
-    payMethodRow.style.display = docType !== 'quotation' ? 'block' : 'none';
   }
 
   // Watermark (Visible on Receipt only)
@@ -8788,7 +8912,10 @@ function updatePdfDocView() {
     }
   }
 
-  // 3. Recipient Particulars
+  // 3. Recipient Particulars (Bill To)
+  const lblBillToEl = document.getElementById('lblPdfBillTo');
+  if (lblBillToEl) lblBillToEl.textContent = t.lblPdfBillTo;
+
   const companyInputVal = document.getElementById('pdfClientCompanyInput')?.value.trim() || booking.guestCompany || '';
   const clientCompanyEl = document.getElementById('pdfClientCompanyText');
   if (clientCompanyEl) {
@@ -8802,34 +8929,26 @@ function updatePdfDocView() {
 
   const clientNameEl = document.getElementById('pdfClientNameText');
   if (clientNameEl) {
-    clientNameEl.textContent = (companyInputVal ? (lang === 'bm' ? 'U.P: ' : 'Attn: ') : '') + booking.guestName;
+    clientNameEl.textContent = (companyInputVal ? (lang === 'bm' ? 'U.P: ' : 'Attn: ') : '') + (booking.guestName || 'Tetamu');
   }
-
-  const nricEl = document.getElementById('pdfClientNric');
-  if (nricEl) nricEl.textContent = booking.guestNric || '-';
 
   const custPhoneEl = document.getElementById('pdfClientPhone');
   if (custPhoneEl) custPhoneEl.textContent = booking.guestPhone || '-';
 
   const custEmailEl = document.getElementById('pdfClientEmail');
-  const custEmailRow = document.getElementById('pdfClientEmailRow');
-  if (custEmailRow && custEmailEl) {
-    if (booking.guestEmail) {
-      custEmailRow.style.display = 'block';
-      custEmailEl.textContent = booking.guestEmail;
-    } else {
-      custEmailRow.style.display = 'none';
-    }
-  }
+  if (custEmailEl) custEmailEl.textContent = booking.guestEmail || '-';
+
+  const nricEl = document.getElementById('pdfClientNric');
+  if (nricEl) nricEl.textContent = booking.guestNric || '-';
 
   const custAddrEl = document.getElementById('pdfClientAddress');
-  const custAddrRow = document.getElementById('pdfClientAddressRow');
-  if (custAddrRow && custAddrEl) {
+  const custAddrDiv = document.getElementById('pdfClientAddressDiv');
+  if (custAddrDiv && custAddrEl) {
     if (booking.guestAddress) {
-      custAddrRow.style.display = 'block';
+      custAddrDiv.style.display = 'block';
       custAddrEl.textContent = booking.guestAddress;
     } else {
-      custAddrRow.style.display = 'none';
+      custAddrDiv.style.display = 'none';
     }
   }
 
@@ -8838,7 +8957,7 @@ function updatePdfDocView() {
   if (propNameEl) propNameEl.textContent = prop.name;
 
   const propAddrEl = document.getElementById('pdfPropAddressText');
-  if (propAddrEl) propAddrEl.textContent = prop.address || 'Homestay Accommodation';
+  if (propAddrEl) propAddrEl.textContent = prop.address ? `(${prop.address})` : '';
 
   const checkInDateEl = document.getElementById('pdfCheckInDate');
   if (checkInDateEl) checkInDateEl.textContent = booking.checkIn || '-';
@@ -8853,12 +8972,12 @@ function updatePdfDocView() {
   if (checkOutTimeEl) checkOutTimeEl.textContent = prop.checkOutTime || '12:00 PM';
 
   const durTextEl = document.getElementById('pdfDurationGuestText');
+  const nights = booking.nights || 1;
+  const guests = booking.adults || booking.guests || 2;
   if (durTextEl) {
-    const n = booking.nights || 1;
-    const g = booking.adults || booking.guests || 2;
     durTextEl.textContent = lang === 'bm' 
-      ? `${n} Malam • ${g} Tetamu`
-      : `${n} Nights • ${g} Guests`;
+      ? `${nights} Malam • ${guests} Tetamu`
+      : `${nights} Nights • ${guests} Guests`;
   }
 
   // 5. Itemized Table
@@ -8866,62 +8985,80 @@ function updatePdfDocView() {
   let accommodationTotal = 0;
   if (tableBody) {
     tableBody.innerHTML = '';
-    const nights = booking.nights || 1;
     const ratePerNight = nights > 0 ? (booking.baseRate ? booking.baseRate / nights : (booking.totalAmount - (booking.cleaningFee || 0)) / nights) : booking.totalAmount;
     accommodationTotal = ratePerNight * nights;
 
     // Row 1: Stay
     const tr1 = document.createElement('tr');
-    tr1.style.borderBottom = '1px solid #e2e8f0';
+    tr1.style.borderBottom = '1px solid #f1f5f9';
     tr1.innerHTML = `
-      <td style="padding:8px; text-align:center; font-weight:700; color:#94a3b8;">1</td>
-      <td style="padding:8px;">
+      <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">1</td>
+      <td style="padding:8px 8px;">
         <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Sewa Penginapan Homestay (Accommodation Stay)' : 'Homestay Accommodation Rental'}</strong>
         <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? `Penginapan dari ${booking.checkIn} hingga ${booking.checkOut} (${nights} malam)` : `Stay from ${booking.checkIn} to ${booking.checkOut} (${nights} nights)`}</span>
       </td>
-      <td style="padding:8px; text-align:right;">${ratePerNight.toFixed(2)}</td>
-      <td style="padding:8px; text-align:center; font-weight:700;">${nights} ${lang === 'bm' ? 'Malam' : 'Nights'}</td>
-      <td style="padding:8px; text-align:right; font-weight:800; color:#0f172a;">${accommodationTotal.toFixed(2)}</td>
+      <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">996311</td>
+      <td style="padding:8px 8px; text-align:center; font-weight:700;">${nights}.00</td>
+      <td style="padding:8px 8px; text-align:right;">${ratePerNight.toFixed(2)}</td>
+      <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+      <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${accommodationTotal.toFixed(2)}</td>
     `;
     tableBody.appendChild(tr1);
 
     // Row 2: Cleaning fee (if any)
+    let rowIndex = 2;
     if (booking.cleaningFee && booking.cleaningFee > 0) {
       const tr2 = document.createElement('tr');
-      tr2.style.borderBottom = '1px solid #e2e8f0';
+      tr2.style.borderBottom = '1px solid #f1f5f9';
       tr2.innerHTML = `
-        <td style="padding:8px; text-align:center; font-weight:700; color:#94a3b8;">2</td>
-        <td style="padding:8px;">
-          <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Fi Pembersihan & Pengemasan (Sanitized Cleaning Fee)' : 'Sanitized Cleaning & Turnover Fee'}</strong>
-          <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penyediaan cadar bersih, tuala, sanitasi premis dan pengemasan' : 'Linen turnover, sanitization and departure turnover'}</span>
+        <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rowIndex++}</td>
+        <td style="padding:8px 8px;">
+          <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Fi Pembersihan & Pengemasan (Turnover Cleaning Fee)' : 'Sanitized Cleaning & Turnover Fee'}</strong>
+          <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penyediaan cadar bersih, tuala, sanitasi premis dan pengemasan' : 'Fresh linen, bath towels, room sanitization and turnover service'}</span>
         </td>
-        <td style="padding:8px; text-align:right;">${Number(booking.cleaningFee).toFixed(2)}</td>
-        <td style="padding:8px; text-align:center; font-weight:700;">1</td>
-        <td style="padding:8px; text-align:right; font-weight:800; color:#0f172a;">${Number(booking.cleaningFee).toFixed(2)}</td>
+        <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998533</td>
+        <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00</td>
+        <td style="padding:8px 8px; text-align:right;">${Number(booking.cleaningFee).toFixed(2)}</td>
+        <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+        <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${Number(booking.cleaningFee).toFixed(2)}</td>
       `;
       tableBody.appendChild(tr2);
     }
 
     // Row 3: Utilities & WiFi (Included)
     const tr3 = document.createElement('tr');
-    tr3.style.background = '#f8fafc';
+    tr3.style.background = '#fcfdfd';
+    tr3.style.borderBottom = '1px solid #f1f5f9';
     tr3.innerHTML = `
-      <td style="padding:8px; text-align:center; font-weight:700; color:#94a3b8;">${booking.cleaningFee && booking.cleaningFee > 0 ? 3 : 2}</td>
-      <td style="padding:8px;">
-        <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Utiliti & WiFi Berkelajuan Tinggi (Utilities & Internet)' : 'Utilities & High-Speed WiFi Access'}</strong>
-        <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Termasuk penghawa dingin, elektrik, air dan akses WiFi percuma' : 'Electricity, air conditioning, water and unlimited high-speed WiFi'}</span>
+      <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rowIndex}</td>
+      <td style="padding:8px 8px;">
+        <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Utiliti, Elektrik, Air & WiFi Berkelajuan Tinggi' : 'Utilities, Electricity, Water & High-Speed WiFi'}</strong>
+        <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penghawa dingin sepenuhnya, bekalan air bersih dan internet tanpa had' : 'Full air-conditioning, clean water supply and unlimited high-speed WiFi access'}</span>
       </td>
-      <td style="padding:8px; text-align:right;">0.00</td>
-      <td style="padding:8px; text-align:center; font-weight:700;">${lang === 'bm' ? 'Percuma' : 'Free'}</td>
-      <td style="padding:8px; text-align:right; font-weight:800; color:#059669;">${lang === 'bm' ? 'TERMASUK' : 'INCLUDED'}</td>
+      <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998412</td>
+      <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00</td>
+      <td style="padding:8px 8px; text-align:right;">0.00</td>
+      <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+      <td style="padding:8px 8px; text-align:right; font-weight:800; color:#059669;">${lang === 'bm' ? 'TERMASUK' : 'INCLUDED'}</td>
     `;
     tableBody.appendChild(tr3);
   }
 
-  // 6. Calculations & Summary
+  // 6. Calculations & Financial Summary
   const grandTotal = booking.totalAmount || (accommodationTotal + (booking.cleaningFee || 0));
+  const totalQty = (nights + (booking.cleaningFee && booking.cleaningFee > 0 ? 1 : 0)).toFixed(2);
+
+  const subtotalQtyEl = document.getElementById('pdfSubtotalQty');
+  if (subtotalQtyEl) subtotalQtyEl.textContent = totalQty;
+
   const subtotalEl = document.getElementById('pdfValSubtotal');
   if (subtotalEl) subtotalEl.textContent = `${currency} ${Number(grandTotal).toFixed(2)}`;
+
+  const taxSubtotalEl = document.getElementById('pdfValTaxableSubtotal');
+  if (taxSubtotalEl) taxSubtotalEl.textContent = `${currency} ${Number(grandTotal).toFixed(2)}`;
+
+  const extraChargesEl = document.getElementById('pdfValExtraCharges');
+  if (extraChargesEl) extraChargesEl.textContent = `${currency} 0.00`;
 
   const grandTotalEl = document.getElementById('pdfValGrandTotal');
   if (grandTotalEl) grandTotalEl.textContent = `${currency} ${Number(grandTotal).toFixed(2)}`;
@@ -8941,13 +9078,13 @@ function updatePdfDocView() {
   const paidVal = document.getElementById('pdfValPaid');
   const balRow = document.getElementById('pdfRowBalance');
   const balVal = document.getElementById('pdfValBalance');
+  const paidAmt = Number(booking.paidAmount || booking.depositPaid || 0);
+  const balAmt = Math.max(0, grandTotal - paidAmt);
 
   if (paidRow && balRow) {
     if (docType === 'invoice') {
       paidRow.style.display = 'flex';
       balRow.style.display = 'flex';
-      const paidAmt = Number(booking.paidAmount || booking.depositPaid || 0);
-      const balAmt = Math.max(0, grandTotal - paidAmt);
       if (paidVal) paidVal.textContent = `(-) ${currency} ${Number(paidAmt).toFixed(2)}`;
       if (balVal) {
         balVal.textContent = `${currency} ${Number(balAmt).toFixed(2)} (${balAmt <= 0 ? (lang === 'bm' ? 'LUNAS' : 'SETTLED') : (lang === 'bm' ? 'BELUM JELAS' : 'PENDING')})`;
@@ -8967,17 +9104,10 @@ function updatePdfDocView() {
     }
   }
 
-  // Security Deposit Row
-  const secDepRow = document.getElementById('pdfRowSecDeposit');
-  const secDepVal = document.getElementById('pdfValSecDeposit');
-  if (secDepRow && secDepVal) {
-    const sDep = booking.securityDeposit || 0;
-    if (sDep > 0) {
-      secDepRow.style.display = 'flex';
-      secDepVal.textContent = `${currency} ${Number(sDep).toFixed(2)}`;
-    } else {
-      secDepRow.style.display = 'none';
-    }
+  // Total Amount in Words
+  const wordsEl = document.getElementById('pdfTotalAmountInWords');
+  if (wordsEl) {
+    wordsEl.textContent = numberToWordsMYR(grandTotal, lang);
   }
 
   // 7. Terms & Notes
@@ -9002,11 +9132,14 @@ function updatePdfDocView() {
   const bankAccHolderEl = document.getElementById('pdfBankAccHolder');
   if (bankAccHolderEl) bankAccHolderEl.textContent = settings.bankAccHolder || settings.businessName || 'Homestay Host';
 
+  const bankBranchEl = document.getElementById('pdfBankBranch');
+  if (bankBranchEl) bankBranchEl.textContent = settings.bankBranch || 'Changlun / Cawangan Utama';
+
   const duitNowEl = document.getElementById('pdfDuitNow');
   const duitNowRow = document.getElementById('pdfDuitNowRow');
   if (duitNowRow && duitNowEl) {
     if (settings.duitNow) {
-      duitNowRow.style.display = 'block';
+      duitNowRow.style.display = 'flex';
       duitNowEl.textContent = settings.duitNow;
     } else {
       duitNowRow.style.display = 'none';
@@ -9018,31 +9151,96 @@ function updatePdfDocView() {
   if (uidEl) uidEl.textContent = `UID: MHY-${year}-${idShort}`;
 
   // Translated Labels
-  document.getElementById('lblPdfDocNo').textContent = t.lblPdfDocNo;
-  document.getElementById('lblPdfDocDate').textContent = t.lblPdfDocDate;
-  document.getElementById('lblPdfValidity').textContent = t.lblPdfValidity;
-  document.getElementById('lblPdfLpo').textContent = t.lblPdfLpo;
-  document.getElementById('lblPdfPayMethod').textContent = t.lblPdfPayMethod;
-  document.getElementById('lblPdfBilledTo').textContent = t.lblPdfBilledTo;
-  document.getElementById('lblPdfStayParticulars').textContent = t.lblPdfStayParticulars;
-  document.getElementById('lblPdfCheckIn').textContent = t.lblPdfCheckIn;
-  document.getElementById('lblPdfCheckOut').textContent = t.lblPdfCheckOut;
-  document.getElementById('lblPdfDuration').textContent = t.lblPdfDuration;
-  document.getElementById('thPdfItem').textContent = t.thPdfItem;
-  document.getElementById('thPdfRate').textContent = `${t.thPdfRate} (${currency})`;
-  document.getElementById('thPdfQty').textContent = t.thPdfQty;
-  document.getElementById('thPdfAmount').textContent = `${t.thPdfAmount} (${currency})`;
-  document.getElementById('lblPdfTermsTitle').innerHTML = `<i class="fa-solid fa-circle-info" style="color:#0284c7;"></i> ${t.lblPdfTermsTitle}`;
-  document.getElementById('lblPdfSubtotal').textContent = t.lblPdfSubtotal;
-  document.getElementById('lblPdfTax').textContent = t.lblPdfTax;
-  document.getElementById('lblPdfGrandTotal').textContent = t.lblPdfGrandTotal;
-  document.getElementById('lblPdfDepositReq').textContent = t.lblPdfDepositReq;
-  document.getElementById('lblPdfPaid').textContent = t.lblPdfPaid;
-  document.getElementById('lblPdfBalance').textContent = t.lblPdfBalance;
-  document.getElementById('lblPdfSecDeposit').textContent = t.lblPdfSecDeposit;
-  document.getElementById('lblPdfBankTitle').innerHTML = `<i class="fa-solid fa-building-columns"></i> ${t.lblPdfBankTitle}`;
-  document.getElementById('lblPdfIssuedBy').textContent = t.lblPdfIssuedBy;
-  document.getElementById('lblPdfAuthorized').textContent = t.lblPdfAuthorized;
+  const thItemEl = document.getElementById('thPdfItem');
+  if (thItemEl) thItemEl.textContent = t.thPdfItem;
+
+  const thHsnEl = document.getElementById('thPdfHsn');
+  if (thHsnEl) thHsnEl.textContent = t.thPdfHsn;
+
+  const thQtyEl = document.getElementById('thPdfQty');
+  if (thQtyEl) thQtyEl.textContent = t.thPdfQty;
+
+  const thRateEl = document.getElementById('thPdfRate');
+  if (thRateEl) thRateEl.textContent = `${t.thPdfRate} (${currency})`;
+
+  const thTaxEl = document.getElementById('thPdfTax');
+  if (thTaxEl) thTaxEl.textContent = `${t.thPdfTax} (${currency})`;
+
+  const thAmtEl = document.getElementById('thPdfAmount');
+  if (thAmtEl) thAmtEl.textContent = `${t.thPdfAmount} (${currency})`;
+
+  const subTotalTableLbl = document.getElementById('lblPdfSubTotalTable');
+  if (subTotalTableLbl) subTotalTableLbl.textContent = t.lblPdfSubTotalTable;
+
+  const extraChargesLbl = document.getElementById('lblPdfExtraCharges');
+  if (extraChargesLbl) extraChargesLbl.textContent = t.lblPdfExtraCharges;
+
+  const taxableLbl = document.getElementById('lblPdfTaxableAmount');
+  if (taxableLbl) taxableLbl.textContent = t.lblPdfTaxableAmount;
+
+  const cgstLbl = document.getElementById('lblPdfCgst');
+  if (cgstLbl) cgstLbl.textContent = t.lblPdfCgst;
+
+  const sgstLbl = document.getElementById('lblPdfSgst');
+  if (sgstLbl) sgstLbl.textContent = t.lblPdfSgst;
+
+  const depReqLbl = document.getElementById('lblPdfDepositReq');
+  if (depReqLbl) depReqLbl.textContent = t.lblPdfDepositReq;
+
+  const paidLbl = document.getElementById('lblPdfPaid');
+  if (paidLbl) paidLbl.textContent = t.lblPdfPaid;
+
+  const balLbl = document.getElementById('lblPdfBalance');
+  if (balLbl) balLbl.textContent = t.lblPdfBalance;
+
+  const discLbl = document.getElementById('lblPdfDiscount');
+  if (discLbl) discLbl.textContent = t.lblPdfDiscount;
+
+  const grandTotalLbl = document.getElementById('lblPdfGrandTotal');
+  if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotal;
+
+  const wordsTitleLbl = document.getElementById('lblPdfWordsTitle');
+  if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitle;
+
+  const bankTitleLbl = document.getElementById('lblPdfBankTitle');
+  if (bankTitleLbl) bankTitleLbl.textContent = t.lblPdfBankTitle;
+
+  const accHolderLbl = document.getElementById('lblPdfAccHolder');
+  if (accHolderLbl) accHolderLbl.textContent = t.lblPdfAccHolder;
+
+  const accNumLbl = document.getElementById('lblPdfAccNum');
+  if (accNumLbl) accNumLbl.textContent = t.lblPdfAccNum;
+
+  const bankNameLbl = document.getElementById('lblPdfBankName');
+  if (bankNameLbl) bankNameLbl.textContent = t.lblPdfBankName;
+
+  const branchLbl = document.getElementById('lblPdfBranch');
+  if (branchLbl) branchLbl.textContent = t.lblPdfBranch;
+
+  const duitNowLbl = document.getElementById('lblPdfDuitNow');
+  if (duitNowLbl) duitNowLbl.textContent = t.lblPdfDuitNow;
+
+  const termsTitleLbl = document.getElementById('lblPdfTermsTitle');
+  if (termsTitleLbl) termsTitleLbl.textContent = t.lblPdfTermsTitle;
+
+  const authLbl = document.getElementById('lblPdfAuthorized');
+  if (authLbl) authLbl.textContent = t.lblPdfAuthorized;
+
+  const sigTextEl = document.getElementById('pdfSignatureText');
+  if (sigTextEl) sigTextEl.textContent = settings.ownerName || (lang === 'bm' ? 'Pengurus Homestay' : 'Homestay Manager');
+
+  // WhatsApp Prompt Banner Translations
+  const waPromptTitle = document.getElementById('txtWaPromptTitle');
+  if (waPromptTitle) waPromptTitle.textContent = t.txtWaPromptTitle;
+
+  const waPromptSub = document.getElementById('txtWaPromptSub');
+  if (waPromptSub) waPromptSub.textContent = t.txtWaPromptSub;
+
+  const btnPromptYes = document.getElementById('txtBtnPromptYes');
+  if (btnPromptYes) btnPromptYes.textContent = t.txtBtnPromptYes;
+
+  const btnPromptNo = document.getElementById('txtBtnPromptNo');
+  if (btnPromptNo) btnPromptNo.textContent = t.txtBtnPromptNo;
 }
 
 function printPdfDocument() {
@@ -9053,6 +9251,46 @@ function printPdfDocument() {
   }, 350);
 }
 
+/**
+ * Direct file download as standard PDF
+ */
+function downloadPdfDocument() {
+  const booking = appState.activePdfBooking;
+  if (!booking) return;
+
+  const docType = appState.activePdfDocType || 'quotation';
+  const isBM = (appState.activePdfLang || appState.settings.language) === 'bm';
+  const element = document.getElementById('printablePdfSheet');
+  const year = new Date().getFullYear();
+  const idShort = (booking.id || '').replace(/\D/g, '').slice(-4) || '1088';
+  const prefix = docType === 'invoice' ? 'INV' : docType === 'receipt' ? 'REC' : 'QT';
+  const cleanName = (booking.guestName || 'Tetamu').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const fileName = `${prefix}_${year}_${idShort}_${cleanName}.pdf`;
+
+  showToast(isBM ? 'Menjana dan memuat turun fail PDF rasmi...' : 'Generating and downloading official PDF...');
+
+  if (window.html2pdf && element) {
+    const opt = {
+      margin: [6, 6, 6, 6],
+      filename: fileName,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    window.html2pdf().set(opt).from(element).save().then(() => {
+      showToast(isBM ? `Fail PDF berjaya dimuat turun: ${fileName}` : `PDF downloaded successfully: ${fileName}`);
+    }).catch(err => {
+      console.warn('html2pdf save error, fallback to print:', err);
+      window.print();
+    });
+  } else {
+    window.print();
+  }
+}
+
+/**
+ * Share PDF directly to WhatsApp with file attachment
+ */
 function sharePdfViaWhatsApp() {
   const booking = appState.activePdfBooking;
   if (!booking) return;
@@ -9074,26 +9312,84 @@ function sharePdfViaWhatsApp() {
     docName = isBM ? 'Resit Rasmi Pembayaran' : 'Official Payment Receipt';
   }
   const fullDocNo = `${docPrefix}-${year}-${idShort}`;
+  const cleanName = (booking.guestName || 'Tetamu').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const fileName = `${docPrefix}_${year}_${idShort}_${cleanName}.pdf`;
 
   const message = isBM
     ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docName}* (*No: ${fullDocNo}*) bagi penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
-    : `Greetings ${booking.guestName}.\n\nAttached is the *${docName}* (*Ref: ${fullDocNo}*) for your stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+    : `Greetings ${booking.guestName}.\n\nAttached is the official *${docName}* (*Ref: ${fullDocNo}*) for your stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
 
-  // Copy to clipboard
+  // Copy text to clipboard
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(message);
   }
 
-  showToast(isBM ? 'Mesej disalin! Membuka WhatsApp untuk melampirkan PDF...' : 'Message copied! Opening WhatsApp to attach PDF...');
-
   const cleanPhone = normalizePhoneNumber(booking.guestPhone);
-  setTimeout(() => {
-    if (cleanPhone) {
-      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
-    } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
-    }
-  }, 450);
+  const waUrl = cleanPhone 
+    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
+    : `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+  const element = document.getElementById('printablePdfSheet');
+
+  showToast(isBM ? 'Menjana fail PDF dan menyediakan lampiran WhatsApp...' : 'Generating PDF file and preparing WhatsApp attachment...');
+
+  if (window.html2pdf && element) {
+    const opt = {
+      margin: [6, 6, 6, 6],
+      filename: fileName,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    window.html2pdf().set(opt).from(element).output('blob').then(async (pdfBlob) => {
+      const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+      // If mobile browser supports Web Share API Level 2 with files, attach directly to WhatsApp
+      if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+        try {
+          await navigator.share({
+            title: `${docName} (${fullDocNo})`,
+            text: message,
+            files: [pdfFile]
+          });
+          showToast(isBM ? 'Berjaya dibuka untuk dihantar ke WhatsApp!' : 'Successfully shared to WhatsApp!');
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') return; // User closed sheet
+          console.warn('navigator.share failed, fallback to download + open WhatsApp:', shareErr);
+        }
+      }
+
+      // Desktop fallback: Download the PDF file directly to computer + open WhatsApp chat
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.href = blobUrl;
+      downloadAnchor.download = fileName;
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      setTimeout(() => {
+        document.body.removeChild(downloadAnchor);
+        URL.revokeObjectURL(blobUrl);
+      }, 2000);
+
+      showToast(isBM 
+        ? `Fail PDF (${fileName}) telah dimuat turun! Sila lampirkan fail ini di WhatsApp.` 
+        : `PDF file (${fileName}) downloaded! Please attach this file in WhatsApp.`, 5000);
+
+      setTimeout(() => {
+        window.open(waUrl, '_blank');
+      }, 650);
+
+    }).catch(err => {
+      console.error('Error generating PDF blob for WhatsApp:', err);
+      // Fallback
+      window.open(waUrl, '_blank');
+    });
+  } else {
+    // If html2pdf not available, open WhatsApp
+    window.open(waUrl, '_blank');
+  }
 }
 
 
