@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.6.3';
+const APP_VERSION = '2.6.4';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -112,6 +112,9 @@ function isMasterAdminKey(rawKey) {
 
 const DEFAULT_SETTINGS = {
   businessName: 'My Homestay',
+  businessSsm: '',
+  businessAddress: '',
+  businessEmail: '',
   currency: 'RM',
   theme: 'light',
   language: 'en',
@@ -274,18 +277,33 @@ const TRANSLATIONS = {
     buyer_phone_label: "Buyer's WhatsApp Phone Number",
     buyer_name_label: 'Buyer Name / Homestay Name (Optional)',
     btn_gen_license: 'Generate License & Magic Link',
+    business_ssm_label: 'Business Registration / SSM No. (For Official PDF Docs)',
+    business_address_label: 'Office / Business Address (For Quotations & Invoices)',
+    business_email_label: 'Official Host Email',
+    btn_generate_pdf_doc: 'Generate Official PDF Document (Quotation / Invoice / Receipt)',
+    pdf_modal_title: 'Corporate & Office PDF Document Hub',
+    pdf_modal_sub: 'Select document type, adjust quotation validity & save as standard A4 PDF.',
+    pdf_tab_quotation: '1. Quotation (Sebut Harga)',
+    pdf_tab_invoice: '2. Official Invoice (Invois)',
+    pdf_tab_receipt: '3. Official Receipt (Resit Rasmi)',
+    pdf_client_org_label: 'Company / Ministry / Agency Name (Optional)',
+    pdf_lpo_ref_label: 'Local Purchase Order / PO Ref (Optional)',
+    pdf_lang_label: 'Document Language',
+    btn_print_pdf: 'Print / Save as PDF',
+    btn_share_pdf_wa: 'Open WhatsApp & Share PDF',
     // App Updates & Version
     app_version_title: 'App Version & Updates',
     app_version_sub: 'Update to the latest version anytime without losing your homestay or booking data.',
     safe_update_guarantee_title: 'Zero Data Loss Guarantee:',
     safe_update_guarantee_desc: 'Your homestays, tenant records, financials, and license key stay privately stored on this device during updates.',
     btn_check_updates: 'Check for Updates',
+    btn_force_refresh: 'Force Fresh Reload',
     btn_safety_backup: 'Safety Snapshot',
     update_banner_title: 'New Update Available!',
     update_banner_desc: 'New improvements & features ready. Your data is 100% preserved.',
     btn_update_now: 'Update Now',
-    toast_app_updated: '🎉 App successfully updated to v2.6.1! All data is intact.',
-    toast_up_to_date: '✨ You are already using the latest version (v2.6.1)!',
+    toast_app_updated: '🎉 App successfully updated to v2.6.4! All data is intact.',
+    toast_up_to_date: '✨ You are already using the latest version (v2.6.4)!',
     toast_checking_updates: 'Checking for new updates...',
     toast_safety_saved: 'Safety backup snapshot downloaded!',
 
@@ -716,18 +734,33 @@ const TRANSLATIONS = {
     buyer_phone_label: 'Nombor WhatsApp Pembeli',
     buyer_name_label: 'Nama Pembeli / Nama Homestay (Pilihan)',
     btn_gen_license: 'Jana Kunci Lesen & Pautan Pintar',
+    business_ssm_label: 'No. Pendaftaran SSM / Perniagaan (Untuk Dokumen PDF Rasmi)',
+    business_address_label: 'Alamat Pejabat / Premis (Untuk Sebut Harga & Invois)',
+    business_email_label: 'Emel Rasmi Hos',
+    btn_generate_pdf_doc: 'Jana Dokumen PDF Rasmi (Quotation / Invois / Resit)',
+    pdf_modal_title: 'Jana Dokumen PDF Rasmi (Office & Claim Ready)',
+    pdf_modal_sub: 'Pilih jenis dokumen, sesuaikan tempoh sah sebut harga & muat turun sebagai PDF A4 standard.',
+    pdf_tab_quotation: '1. Sebut Harga (Quotation)',
+    pdf_tab_invoice: '2. Invois Rasmi (Invoice)',
+    pdf_tab_receipt: '3. Resit Rasmi (Receipt)',
+    pdf_client_org_label: 'Nama Syarikat / Kementerian / Jabatan (Pilihan)',
+    pdf_lpo_ref_label: 'No. Pesanan Tempatan / LPO Ref (Pilihan)',
+    pdf_lang_label: 'Bahasa Dokumen',
+    btn_print_pdf: 'Cetak / Simpan Sebagai PDF',
+    btn_share_pdf_wa: 'Buka WhatsApp & Kongsi PDF',
     // App Updates & Version
     app_version_title: 'Versi Aplikasi & Kemas Kini',
     app_version_sub: 'Kemas kini ke versi terkini pada bila-bila masa tanpa kehilangan data homestay atau tempahan anda.',
     safe_update_guarantee_title: 'Jaminan Sifar Kehilangan Data:',
     safe_update_guarantee_desc: 'Data unit homestay, rekod penyewa, kewangan dan lesen anda kekal tersimpan secara peribadi di peranti ini semasa kemas kini.',
     btn_check_updates: 'Semak Kemas Kini',
+    btn_force_refresh: 'Muat Semula Bersih',
     btn_safety_backup: 'Salinan Keselamatan',
     update_banner_title: 'Kemas Kini Baharu Tersedia!',
     update_banner_desc: 'Ciri baharu & penambahbaikan sedia dipasang. Data anda kekal 100% selamat.',
     btn_update_now: 'Kemas Kini Sekarang',
-    toast_app_updated: '🎉 Aplikasi berjaya dikemas kini ke v2.6.1! Semua data kekal selamat.',
-    toast_up_to_date: '✨ Anda sedang menggunakan versi terkini (v2.6.1)!',
+    toast_app_updated: '🎉 Aplikasi berjaya dikemas kini ke v2.6.4! Semua data kekal selamat.',
+    toast_up_to_date: '✨ Anda sedang menggunakan versi terkini (v2.6.4)!',
     toast_checking_updates: 'Menyemak kemas kini terkini...',
     toast_safety_saved: 'Salinan sandaran keselamatan berjaya dimuat turun!',
 
@@ -1094,6 +1127,9 @@ let appState = {
   calFilterMode: 'checkin',
   activeWaBooking: null,
   activeWaTemplate: 'confirm',
+  activePdfBooking: null,
+  activePdfDocType: 'quotation',
+  activePdfLang: 'bm',
   activeDispatchRecipientId: null,
   activeDispatchPropertyId: null,
   activeDispatchService: 'turnover_clean',
@@ -1498,6 +1534,27 @@ function applyAppUpdate() {
     // Force cache-busting reload
     window.location.reload();
   }
+}
+
+async function forcePurgeCacheAndReload() {
+  const isBM = appState.settings.language === 'bm';
+  showToast(isBM ? 'Membersihkan cache & memuat semula...' : 'Purging cache & reloading fresh...');
+  try {
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+  } catch (e) {
+    console.warn('Purge cache error:', e);
+  }
+  setTimeout(() => {
+    const cleanUrl = window.location.href.split('?')[0];
+    window.location.replace(`${cleanUrl}?v=${Date.now()}`);
+  }, 350);
 }
 
 async function checkForAppUpdates(isManual = false) {
@@ -2033,6 +2090,55 @@ function setupEventListeners() {
     renderWhatsAppPreview();
   });
 
+  // Corporate & Office PDF Modal Wiring (v2.6.4)
+  document.getElementById('btnOpenPdfModalFromWa')?.addEventListener('click', () => {
+    if (appState.activeWaBooking) {
+      const tmpl = appState.activeWaTemplate;
+      const docType = (tmpl === 'full_receipt' || tmpl === 'deposit_receipt' || tmpl === 'monthly_rent_receipt' || tmpl === 'refund_receipt') ? 'receipt' : (tmpl === 'monthly_invoice' || tmpl === 'payment') ? 'invoice' : 'quotation';
+      openPdfDocModal(appState.activeWaBooking, docType);
+    }
+  });
+
+  document.getElementById('btnClosePdfModal')?.addEventListener('click', closePdfDocModal);
+  document.getElementById('btnClosePdfModalBtn')?.addEventListener('click', closePdfDocModal);
+
+  document.getElementById('btnPdfTabQuotation')?.addEventListener('click', () => setPdfDocType('quotation'));
+  document.getElementById('btnPdfTabInvoice')?.addEventListener('click', () => setPdfDocType('invoice'));
+  document.getElementById('btnPdfTabReceipt')?.addEventListener('click', () => setPdfDocType('receipt'));
+
+  document.getElementById('btnPdfLangBM')?.addEventListener('click', () => setPdfLanguage('bm'));
+  document.getElementById('btnPdfLangEN')?.addEventListener('click', () => setPdfLanguage('en'));
+
+  document.getElementById('pdfQuotationValidityInput')?.addEventListener('input', (e) => {
+    setPdfQuotationValidity(e.target.value);
+  });
+
+  document.querySelectorAll('.pdf-validity-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const days = btn.getAttribute('data-days');
+      setPdfQuotationValidity(days);
+    });
+  });
+
+  document.getElementById('pdfClientCompanyInput')?.addEventListener('input', (e) => {
+    if (appState.activePdfBooking) {
+      appState.activePdfBooking.guestCompany = e.target.value;
+      saveToStorage();
+    }
+    updatePdfDocView();
+  });
+
+  document.getElementById('pdfLpoRefInput')?.addEventListener('input', (e) => {
+    if (appState.activePdfBooking) {
+      appState.activePdfBooking.lpoRef = e.target.value;
+      saveToStorage();
+    }
+    updatePdfDocView();
+  });
+
+  document.getElementById('btnPrintPdfDoc')?.addEventListener('click', printPdfDocument);
+  document.getElementById('btnSharePdfWa')?.addEventListener('click', sharePdfViaWhatsApp);
+
   // Booking Form Status Change -> Toggle Quotation Validity Group & Auto-Settle Full Balance
   const bookingStatusSel = document.getElementById('bookingStatusSelect');
   if (bookingStatusSel) {
@@ -2125,6 +2231,9 @@ function setupEventListeners() {
 
   const btnCheckUp = document.getElementById('btnCheckForUpdates');
   if (btnCheckUp) btnCheckUp.addEventListener('click', () => checkForAppUpdates(true));
+
+  const btnForcePurge = document.getElementById('btnForcePurgeCache');
+  if (btnForcePurge) btnForcePurge.addEventListener('click', forcePurgeCacheAndReload);
 
   const btnSafetySnap = document.getElementById('btnDownloadSafetySnapshot');
   if (btnSafetySnap) btnSafetySnap.addEventListener('click', downloadSafetySnapshot);
@@ -3791,6 +3900,9 @@ function createCalendarBookingCard(b, todayStr, isBM, isSelectedDayMode, selecte
       <button class="btn btn-outline btn-xs btn-change-homestay" data-bid="${b.id}" title="${t('btn_change_homestay')}">
         <i class="fa-solid fa-arrow-right-arrow-left"></i> ${t('btn_change_homestay')}
       </button>
+      <button class="btn btn-outline btn-xs btn-open-pdf-doc" data-bid="${b.id}" title="${isBM ? 'Jana Dokumen PDF Rasmi (Sebut Harga / Invois / Resit)' : 'Generate Official PDF (Quotation / Invoice / Receipt)'}" style="color:var(--primary); font-weight:700;">
+        <i class="fa-solid fa-file-pdf"></i> PDF
+      </button>
       <button class="btn btn-outline btn-xs btn-edit-booking" data-bid="${b.id}">
         <i class="fa-solid fa-pen"></i> ${t('btn_edit')}
       </button>
@@ -3881,6 +3993,17 @@ function attachCalendarCardActions(container) {
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => x.id === bid);
       if (b) openChangeHomestayModal(b);
+    });
+  });
+
+  container.querySelectorAll('.btn-open-pdf-doc').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) {
+        const docType = (b.status === 'confirmed' || b.status === 'completed') ? 'receipt' : b.status === 'booked' ? 'invoice' : 'quotation';
+        openPdfDocModal(b, docType);
+      }
     });
   });
 
@@ -4151,6 +4274,9 @@ function renderBookingsTab() {
         <button class="btn btn-outline btn-xs btn-change-homestay" data-bid="${b.id}" title="${t('btn_change_homestay')}">
           <i class="fa-solid fa-arrow-right-arrow-left"></i> ${t('btn_change_homestay')}
         </button>
+        <button class="btn btn-outline btn-xs btn-open-pdf-doc" data-bid="${b.id}" title="${isBM ? 'Jana Dokumen PDF Rasmi (Sebut Harga / Invois / Resit)' : 'Generate Official PDF (Quotation / Invoice / Receipt)'}" style="color:var(--primary); font-weight:700;">
+          <i class="fa-solid fa-file-pdf"></i> PDF
+        </button>
         <button class="btn btn-outline btn-xs btn-edit-booking" data-bid="${b.id}" title="${t('edit')}">
           <i class="fa-solid fa-pen"></i> ${t('edit')}
         </button>
@@ -4264,6 +4390,17 @@ function renderBookingsTab() {
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => x.id === bid);
       if (b) openChangeHomestayModal(b);
+    });
+  });
+
+  container.querySelectorAll('.btn-open-pdf-doc').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) {
+        const docType = (b.status === 'confirmed' || b.status === 'completed') ? 'receipt' : b.status === 'booked' ? 'invoice' : 'quotation';
+        openPdfDocModal(b, docType);
+      }
     });
   });
 
@@ -4541,6 +4678,12 @@ function renderFinancesTab() {
 
 function renderSettingsTab() {
   document.getElementById('settingBusinessNameInput').value = appState.settings.businessName || 'My Homestay';
+  const ssmInput = document.getElementById('settingBusinessSsmInput');
+  if (ssmInput) ssmInput.value = appState.settings.businessSsm || '';
+  const addrInput = document.getElementById('settingBusinessAddressInput');
+  if (addrInput) addrInput.value = appState.settings.businessAddress || '';
+  const emailInput = document.getElementById('settingBusinessEmailInput');
+  if (emailInput) emailInput.value = appState.settings.businessEmail || '';
   document.getElementById('settingCurrencySelect').value = appState.settings.currency || 'RM';
   
   const ownerPhoneInput = document.getElementById('settingOwnerPhoneInput');
@@ -4944,6 +5087,9 @@ function handleSavePreferences() {
   const oldOwnerPhone = appState.settings.ownerPhone;
 
   appState.settings.businessName = document.getElementById('settingBusinessNameInput').value || 'My Homestay';
+  appState.settings.businessSsm = document.getElementById('settingBusinessSsmInput') ? document.getElementById('settingBusinessSsmInput').value.trim() : (appState.settings.businessSsm || '');
+  appState.settings.businessAddress = document.getElementById('settingBusinessAddressInput') ? document.getElementById('settingBusinessAddressInput').value.trim() : (appState.settings.businessAddress || '');
+  appState.settings.businessEmail = document.getElementById('settingBusinessEmailInput') ? document.getElementById('settingBusinessEmailInput').value.trim() : (appState.settings.businessEmail || '');
   appState.settings.currency = document.getElementById('settingCurrencySelect').value || 'RM';
   appState.settings.ownerPhone = newOwnerPhone || '+60123456789';
   appState.settings.sellerPhone = newOwnerPhone || appState.settings.sellerPhone || '+60123456789';
@@ -8273,6 +8419,652 @@ function handleSendWaDirect() {
   const url = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
 }
+
+// ==========================================================================
+// 14B. CORPORATE & OFFICE PDF DOCUMENT GENERATION (v2.6.4)
+// ==========================================================================
+
+const PDF_DOC_I18N = {
+  bm: {
+    docBadgeQuotation: 'SEBUT HARGA RASMI',
+    docTitleQuotation: 'SEBUT HARGA',
+    docBadgeInvoice: 'INVOIS RASMI',
+    docTitleInvoice: 'INVOIS',
+    docBadgeReceipt: 'RESIT RASMI PEMBAYARAN',
+    docTitleReceipt: 'RESIT RASMI',
+
+    lblPdfDocNo: 'No. Dokumen:',
+    lblPdfDocDate: 'Tarikh:',
+    lblPdfValidity: 'Tempoh Sah:',
+    lblPdfLpo: 'No. LPO / Ruj:',
+    lblPdfPayMethod: 'Kaedah:',
+    lblPdfBilledTo: 'DIKELUARKAN KEPADA (BILLED TO):',
+    lblPdfStayParticulars: 'BUTIRAN PENGINAPAN & SEWAAN:',
+    lblPdfCheckIn: 'Daftar Masuk',
+    lblPdfCheckOut: 'Daftar Keluar',
+    lblPdfDuration: 'Tempoh & Tetamu:',
+    
+    thPdfItem: 'Huraian / Perkara (Item Description)',
+    thPdfRate: 'Kadar',
+    thPdfQty: 'Kuantiti / Malam',
+    thPdfAmount: 'Jumlah',
+
+    lblPdfTermsTitle: 'Syarat & Catatan Dokumen:',
+    lblPdfSubtotal: 'Jumlah Kasar (Subtotal):',
+    lblPdfTax: 'Cukai / SST (0%):',
+    lblPdfGrandTotal: 'JUMLAH KESELURUHAN:',
+    lblPdfDepositReq: 'Deposit Komitmen Diperlukan:',
+    lblPdfPaid: 'Jumlah Telah Dibayar:',
+    lblPdfBalance: 'Baki Belum Jelas:',
+    lblPdfSecDeposit: '*Deposit Keselamatan (Dipulangkan):',
+    
+    lblPdfBankTitle: 'Butiran Pembayaran / Akaun Bank:',
+    lblPdfIssuedBy: 'DIKELUARKAN RASMI OLEH:',
+    lblPdfAuthorized: 'Tandatangan Sah Pengurus',
+
+    termsQuotation: [
+      'Sila kemukakan dokumen ini ke bahagian kewangan / pentadbiran bagi tujuan kelulusan atau pesanan tempatan (LPO).',
+      'Kadar tertakluk kepada kekosongan tarikh semasa pengesahan deposit dibuat.',
+      'Waktu Daftar Masuk: 3:00 PM | Daftar Keluar: 12:00 PM.'
+    ],
+    termsInvoice: [
+      'Invois ini dikeluarkan untuk tujuan pembayaran sewaan penginapan homestay bagi urusan rasmi.',
+      'Sila jelaskan baki sewaan selewat-lewatnya sebelum atau semasa pendaftaran masuk.',
+      'Resit rasmi akan dikeluarkan serta-merta sebaik sahaja bayaran diterima.'
+    ],
+    termsReceipt: [
+      'Pengesahan rasmi penerimaan bayaran penuh untuk penginapan homestay bagi urusan rasmi seperti butiran di atas.',
+      'Deposit keselamatan (jika berkenaan) akan dipulangkan selepas semakan daftar keluar.',
+      'Terima kasih kerana memilih homestay kami untuk urusan rasmi organisasi anda.'
+    ]
+  },
+  en: {
+    docBadgeQuotation: 'OFFICIAL QUOTATION',
+    docTitleQuotation: 'QUOTATION',
+    docBadgeInvoice: 'OFFICIAL INVOICE',
+    docTitleInvoice: 'TAX INVOICE',
+    docBadgeReceipt: 'OFFICIAL RECEIPT',
+    docTitleReceipt: 'OFFICIAL RECEIPT',
+
+    lblPdfDocNo: 'Document No:',
+    lblPdfDocDate: 'Date Issued:',
+    lblPdfValidity: 'Validity Period:',
+    lblPdfLpo: 'LPO / Ref No:',
+    lblPdfPayMethod: 'Payment Mode:',
+    lblPdfBilledTo: 'BILLED TO (RECIPIENT):',
+    lblPdfStayParticulars: 'ACCOMMODATION & STAY DETAILS:',
+    lblPdfCheckIn: 'Check-In',
+    lblPdfCheckOut: 'Check-Out',
+    lblPdfDuration: 'Duration & Guests:',
+    
+    thPdfItem: 'Item Description / Scope',
+    thPdfRate: 'Rate',
+    thPdfQty: 'Qty / Nights',
+    thPdfAmount: 'Amount',
+
+    lblPdfTermsTitle: 'Document Terms & Notes:',
+    lblPdfSubtotal: 'Subtotal Amount:',
+    lblPdfTax: 'Service Tax / SST (0%):',
+    lblPdfGrandTotal: 'GRAND TOTAL:',
+    lblPdfDepositReq: 'Commitment Deposit Required:',
+    lblPdfPaid: 'Total Amount Paid:',
+    lblPdfBalance: 'Outstanding Balance Due:',
+    lblPdfSecDeposit: '*Refundable Security Deposit:',
+    
+    lblPdfBankTitle: 'Banking & Remittance Details:',
+    lblPdfIssuedBy: 'OFFICIALLY ISSUED BY:',
+    lblPdfAuthorized: 'Authorized Manager Signature',
+
+    termsQuotation: [
+      'Please submit this formal quotation to your accounts/finance department for LPO or disbursement processing.',
+      'Rates and dates remain subject to availability until the booking deposit is confirmed.',
+      'Standard Check-In: 3:00 PM | Check-Out: 12:00 PM.'
+    ],
+    termsInvoice: [
+      'This invoice is rendered for official corporate/department homestay accommodation claims.',
+      'Full settlement is respectfully requested prior to or upon guest check-in arrival.',
+      'An official payment receipt will be issued immediately upon receipt of bank remittance.'
+    ],
+    termsReceipt: [
+      'Official acknowledgement of full payment received for accommodation particulars stated above.',
+      'Refundable security deposit (if applicable) will be refunded within 24 hours following checkout inspection.',
+      'Thank you for staying with us for your official corporate engagement.'
+    ]
+  }
+};
+
+function openPdfDocModal(booking, defaultDocType = 'quotation') {
+  if (!booking) return;
+  appState.activePdfBooking = booking;
+  appState.activePdfDocType = defaultDocType || 'quotation';
+  appState.activePdfLang = appState.settings.language || 'bm';
+
+  // Quotation validity days
+  const valDays = booking.quotationValidityDays || appState.settings.quotationValidityDays || 3;
+  const valInput = document.getElementById('pdfQuotationValidityInput');
+  if (valInput) valInput.value = valDays;
+
+  // Client company and LPO
+  const compInput = document.getElementById('pdfClientCompanyInput');
+  if (compInput) compInput.value = booking.guestCompany || '';
+
+  const lpoInput = document.getElementById('pdfLpoRefInput');
+  if (lpoInput) lpoInput.value = booking.lpoRef || '';
+
+  // Highlight active doc tab
+  updatePdfTypeTabsUI();
+  updatePdfLangButtonsUI();
+  updatePdfValidityPresetsUI(valDays);
+
+  // Render preview
+  updatePdfDocView();
+
+  // Open modal
+  const modal = document.getElementById('pdfDocModal');
+  if (modal) modal.classList.add('active');
+}
+
+function closePdfDocModal() {
+  const modal = document.getElementById('pdfDocModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function setPdfDocType(type) {
+  appState.activePdfDocType = type;
+  updatePdfTypeTabsUI();
+  updatePdfDocView();
+}
+
+function setPdfLanguage(lang) {
+  appState.activePdfLang = lang;
+  updatePdfLangButtonsUI();
+  updatePdfDocView();
+}
+
+function setPdfQuotationValidity(days) {
+  const cleanDays = Math.max(1, parseInt(days) || 3);
+  const valInput = document.getElementById('pdfQuotationValidityInput');
+  if (valInput) valInput.value = cleanDays;
+
+  if (appState.activePdfBooking) {
+    appState.activePdfBooking.quotationValidityDays = cleanDays;
+    saveToStorage();
+  }
+
+  updatePdfValidityPresetsUI(cleanDays);
+  updatePdfDocView();
+}
+
+function updatePdfTypeTabsUI() {
+  const type = appState.activePdfDocType || 'quotation';
+  const tabs = [
+    { id: 'btnPdfTabQuotation', type: 'quotation' },
+    { id: 'btnPdfTabInvoice', type: 'invoice' },
+    { id: 'btnPdfTabReceipt', type: 'receipt' }
+  ];
+
+  tabs.forEach(t => {
+    const el = document.getElementById(t.id);
+    if (el) el.classList.toggle('active', t.type === type);
+  });
+
+  // Toggle validity controls (only relevant for quotation)
+  const validityGroup = document.getElementById('pdfQuotationValidityGroup');
+  if (validityGroup) {
+    validityGroup.style.display = type === 'quotation' ? 'block' : 'none';
+  }
+}
+
+function updatePdfLangButtonsUI() {
+  const lang = appState.activePdfLang || 'bm';
+  const btnBM = document.getElementById('btnPdfLangBM');
+  const btnEN = document.getElementById('btnPdfLangEN');
+  if (btnBM) btnBM.classList.toggle('active', lang === 'bm');
+  if (btnEN) btnEN.classList.toggle('active', lang === 'en');
+}
+
+function updatePdfValidityPresetsUI(days) {
+  document.querySelectorAll('.pdf-validity-preset').forEach(btn => {
+    const d = parseInt(btn.getAttribute('data-days'));
+    btn.classList.toggle('active', d === days);
+  });
+}
+
+function updatePdfDocView() {
+  const booking = appState.activePdfBooking;
+  if (!booking) return;
+
+  const prop = getPropertyById(booking.propertyId) || { name: 'Homestay Unit', address: '' };
+  const settings = appState.settings || {};
+  const docType = appState.activePdfDocType || 'quotation';
+  const lang = appState.activePdfLang || 'bm';
+  const t = PDF_DOC_I18N[lang] || PDF_DOC_I18N.bm;
+  const currency = settings.currency || 'RM';
+
+  // 1. Host Information
+  const bizNameEl = document.getElementById('pdfHostBizName');
+  if (bizNameEl) bizNameEl.textContent = settings.businessName || 'MY HOMESTAY';
+
+  const ssmEl = document.getElementById('pdfHostSsm');
+  if (ssmEl) {
+    ssmEl.textContent = settings.businessSsm 
+      ? (lang === 'bm' ? `No. Pendaftaran SSM: ${settings.businessSsm}` : `SSM Reg. No: ${settings.businessSsm}`)
+      : (lang === 'bm' ? 'Perkhidmatan Penginapan & Homestay Berdaftar' : 'Registered Homestay & Accommodation Services');
+  }
+
+  const addrEl = document.getElementById('pdfHostAddress');
+  if (addrEl) addrEl.textContent = settings.businessAddress || prop.address || 'Premis Homestay & Perkhidmatan Penginapan';
+
+  const phoneEl = document.getElementById('pdfHostPhone');
+  if (phoneEl) phoneEl.textContent = settings.ownerPhone || '-';
+
+  const emailEl = document.getElementById('pdfHostEmail');
+  if (emailEl) emailEl.textContent = settings.businessEmail || (settings.ownerPhone ? `host@${settings.ownerPhone.replace(/\+/g, '')}.com` : 'host@myhomestay.com');
+
+  const signTitleEl = document.getElementById('pdfHostBizSignTitle');
+  if (signTitleEl) signTitleEl.textContent = settings.businessName || 'PENGURUSAN HOMESTAY';
+
+  // 2. Document Number & Date
+  const year = new Date().getFullYear();
+  const idShort = (booking.id || '').replace(/\D/g, '').slice(-4) || '1088';
+  let docPrefix = 'QT';
+  if (docType === 'invoice') docPrefix = 'INV';
+  if (docType === 'receipt') docPrefix = 'REC';
+  const fullDocNo = `${docPrefix}-${year}-${idShort}`;
+
+  const docNoEl = document.getElementById('pdfDocNo');
+  if (docNoEl) docNoEl.textContent = fullDocNo;
+
+  const refCodeEl = document.getElementById('pdfRefCodeText');
+  if (refCodeEl) refCodeEl.textContent = fullDocNo;
+
+  const docDateEl = document.getElementById('pdfDocDate');
+  if (docDateEl) {
+    const d = new Date();
+    docDateEl.textContent = d.toLocaleDateString(lang === 'bm' ? 'ms-MY' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  // Document Badge & Title
+  const badgeEl = document.getElementById('pdfDocBadge');
+  const titleEl = document.getElementById('pdfDocTitle');
+  if (docType === 'quotation') {
+    if (badgeEl) {
+      badgeEl.textContent = t.docBadgeQuotation;
+      badgeEl.style.background = '#e0f2fe';
+      badgeEl.style.color = '#0369a1';
+    }
+    if (titleEl) titleEl.textContent = t.docTitleQuotation;
+  } else if (docType === 'invoice') {
+    if (badgeEl) {
+      badgeEl.textContent = t.docBadgeInvoice;
+      badgeEl.style.background = '#ede9fe';
+      badgeEl.style.color = '#5b21b6';
+    }
+    if (titleEl) titleEl.textContent = t.docTitleInvoice;
+  } else {
+    if (badgeEl) {
+      badgeEl.textContent = t.docBadgeReceipt;
+      badgeEl.style.background = '#d1fae5';
+      badgeEl.style.color = '#065f46';
+    }
+    if (titleEl) titleEl.textContent = t.docTitleReceipt;
+  }
+
+  // Validity calculation (for quotation)
+  const valDays = parseInt(document.getElementById('pdfQuotationValidityInput')?.value) || booking.quotationValidityDays || settings.quotationValidityDays || 3;
+  const expDateObj = new Date();
+  expDateObj.setDate(expDateObj.getDate() + valDays);
+  const expFormatted = expDateObj.toLocaleDateString(lang === 'bm' ? 'ms-MY' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  const valDateText = lang === 'bm' ? `${valDays} Hari (Hingga ${expFormatted})` : `${valDays} Days (Until ${expFormatted})`;
+  const docValEl = document.getElementById('pdfDocValidity');
+  if (docValEl) docValEl.textContent = valDateText;
+
+  const calcDateEl = document.getElementById('pdfValidityCalculatedDate');
+  if (calcDateEl) calcDateEl.textContent = lang === 'bm' ? `Hingga ${expFormatted}` : `Until ${expFormatted}`;
+
+  const valRow = document.getElementById('pdfDocValidityRow');
+  if (valRow) valRow.style.display = docType === 'quotation' ? 'block' : 'none';
+
+  // LPO Row
+  const lpoInputVal = document.getElementById('pdfLpoRefInput')?.value.trim() || booking.lpoRef || '';
+  const lpoRow = document.getElementById('pdfDocLpoRow');
+  const lpoText = document.getElementById('pdfDocLpo');
+  if (lpoRow && lpoText) {
+    if (lpoInputVal) {
+      lpoRow.style.display = 'block';
+      lpoText.textContent = lpoInputVal;
+    } else {
+      lpoRow.style.display = 'none';
+    }
+  }
+
+  // Payment Method Row
+  const payMethodRow = document.getElementById('pdfDocPayMethodRow');
+  if (payMethodRow) {
+    payMethodRow.style.display = docType !== 'quotation' ? 'block' : 'none';
+  }
+
+  // Watermark (Visible on Receipt only)
+  const watermark = document.getElementById('pdfPaidWatermark');
+  if (watermark) {
+    if (docType === 'receipt') {
+      watermark.classList.remove('hidden');
+      watermark.textContent = lang === 'bm' ? 'TELAH LUNAS' : 'PAID IN FULL';
+    } else {
+      watermark.classList.add('hidden');
+    }
+  }
+
+  // 3. Recipient Particulars
+  const companyInputVal = document.getElementById('pdfClientCompanyInput')?.value.trim() || booking.guestCompany || '';
+  const clientCompanyEl = document.getElementById('pdfClientCompanyText');
+  if (clientCompanyEl) {
+    if (companyInputVal) {
+      clientCompanyEl.textContent = companyInputVal;
+      clientCompanyEl.style.display = 'block';
+    } else {
+      clientCompanyEl.style.display = 'none';
+    }
+  }
+
+  const clientNameEl = document.getElementById('pdfClientNameText');
+  if (clientNameEl) {
+    clientNameEl.textContent = (companyInputVal ? (lang === 'bm' ? 'U.P: ' : 'Attn: ') : '') + booking.guestName;
+  }
+
+  const nricEl = document.getElementById('pdfClientNric');
+  if (nricEl) nricEl.textContent = booking.guestNric || '-';
+
+  const custPhoneEl = document.getElementById('pdfClientPhone');
+  if (custPhoneEl) custPhoneEl.textContent = booking.guestPhone || '-';
+
+  const custEmailEl = document.getElementById('pdfClientEmail');
+  const custEmailRow = document.getElementById('pdfClientEmailRow');
+  if (custEmailRow && custEmailEl) {
+    if (booking.guestEmail) {
+      custEmailRow.style.display = 'block';
+      custEmailEl.textContent = booking.guestEmail;
+    } else {
+      custEmailRow.style.display = 'none';
+    }
+  }
+
+  const custAddrEl = document.getElementById('pdfClientAddress');
+  const custAddrRow = document.getElementById('pdfClientAddressRow');
+  if (custAddrRow && custAddrEl) {
+    if (booking.guestAddress) {
+      custAddrRow.style.display = 'block';
+      custAddrEl.textContent = booking.guestAddress;
+    } else {
+      custAddrRow.style.display = 'none';
+    }
+  }
+
+  // 4. Homestay Stay Particulars
+  const propNameEl = document.getElementById('pdfPropNameText');
+  if (propNameEl) propNameEl.textContent = prop.name;
+
+  const propAddrEl = document.getElementById('pdfPropAddressText');
+  if (propAddrEl) propAddrEl.textContent = prop.address || 'Homestay Accommodation';
+
+  const checkInDateEl = document.getElementById('pdfCheckInDate');
+  if (checkInDateEl) checkInDateEl.textContent = booking.checkIn || '-';
+
+  const checkInTimeEl = document.getElementById('pdfCheckInTime');
+  if (checkInTimeEl) checkInTimeEl.textContent = prop.checkInTime || '3:00 PM';
+
+  const checkOutDateEl = document.getElementById('pdfCheckOutDate');
+  if (checkOutDateEl) checkOutDateEl.textContent = booking.checkOut || '-';
+
+  const checkOutTimeEl = document.getElementById('pdfCheckOutTime');
+  if (checkOutTimeEl) checkOutTimeEl.textContent = prop.checkOutTime || '12:00 PM';
+
+  const durTextEl = document.getElementById('pdfDurationGuestText');
+  if (durTextEl) {
+    const n = booking.nights || 1;
+    const g = booking.adults || booking.guests || 2;
+    durTextEl.textContent = lang === 'bm' 
+      ? `${n} Malam • ${g} Tetamu`
+      : `${n} Nights • ${g} Guests`;
+  }
+
+  // 5. Itemized Table
+  const tableBody = document.getElementById('pdfTableBody');
+  let accommodationTotal = 0;
+  if (tableBody) {
+    tableBody.innerHTML = '';
+    const nights = booking.nights || 1;
+    const ratePerNight = nights > 0 ? (booking.baseRate ? booking.baseRate / nights : (booking.totalAmount - (booking.cleaningFee || 0)) / nights) : booking.totalAmount;
+    accommodationTotal = ratePerNight * nights;
+
+    // Row 1: Stay
+    const tr1 = document.createElement('tr');
+    tr1.style.borderBottom = '1px solid #e2e8f0';
+    tr1.innerHTML = `
+      <td style="padding:8px; text-align:center; font-weight:700; color:#94a3b8;">1</td>
+      <td style="padding:8px;">
+        <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Sewa Penginapan Homestay (Accommodation Stay)' : 'Homestay Accommodation Rental'}</strong>
+        <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? `Penginapan dari ${booking.checkIn} hingga ${booking.checkOut} (${nights} malam)` : `Stay from ${booking.checkIn} to ${booking.checkOut} (${nights} nights)`}</span>
+      </td>
+      <td style="padding:8px; text-align:right;">${ratePerNight.toFixed(2)}</td>
+      <td style="padding:8px; text-align:center; font-weight:700;">${nights} ${lang === 'bm' ? 'Malam' : 'Nights'}</td>
+      <td style="padding:8px; text-align:right; font-weight:800; color:#0f172a;">${accommodationTotal.toFixed(2)}</td>
+    `;
+    tableBody.appendChild(tr1);
+
+    // Row 2: Cleaning fee (if any)
+    if (booking.cleaningFee && booking.cleaningFee > 0) {
+      const tr2 = document.createElement('tr');
+      tr2.style.borderBottom = '1px solid #e2e8f0';
+      tr2.innerHTML = `
+        <td style="padding:8px; text-align:center; font-weight:700; color:#94a3b8;">2</td>
+        <td style="padding:8px;">
+          <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Fi Pembersihan & Pengemasan (Sanitized Cleaning Fee)' : 'Sanitized Cleaning & Turnover Fee'}</strong>
+          <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penyediaan cadar bersih, tuala, sanitasi premis dan pengemasan' : 'Linen turnover, sanitization and departure turnover'}</span>
+        </td>
+        <td style="padding:8px; text-align:right;">${Number(booking.cleaningFee).toFixed(2)}</td>
+        <td style="padding:8px; text-align:center; font-weight:700;">1</td>
+        <td style="padding:8px; text-align:right; font-weight:800; color:#0f172a;">${Number(booking.cleaningFee).toFixed(2)}</td>
+      `;
+      tableBody.appendChild(tr2);
+    }
+
+    // Row 3: Utilities & WiFi (Included)
+    const tr3 = document.createElement('tr');
+    tr3.style.background = '#f8fafc';
+    tr3.innerHTML = `
+      <td style="padding:8px; text-align:center; font-weight:700; color:#94a3b8;">${booking.cleaningFee && booking.cleaningFee > 0 ? 3 : 2}</td>
+      <td style="padding:8px;">
+        <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Utiliti & WiFi Berkelajuan Tinggi (Utilities & Internet)' : 'Utilities & High-Speed WiFi Access'}</strong>
+        <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Termasuk penghawa dingin, elektrik, air dan akses WiFi percuma' : 'Electricity, air conditioning, water and unlimited high-speed WiFi'}</span>
+      </td>
+      <td style="padding:8px; text-align:right;">0.00</td>
+      <td style="padding:8px; text-align:center; font-weight:700;">${lang === 'bm' ? 'Percuma' : 'Free'}</td>
+      <td style="padding:8px; text-align:right; font-weight:800; color:#059669;">${lang === 'bm' ? 'TERMASUK' : 'INCLUDED'}</td>
+    `;
+    tableBody.appendChild(tr3);
+  }
+
+  // 6. Calculations & Summary
+  const grandTotal = booking.totalAmount || (accommodationTotal + (booking.cleaningFee || 0));
+  const subtotalEl = document.getElementById('pdfValSubtotal');
+  if (subtotalEl) subtotalEl.textContent = `${currency} ${Number(grandTotal).toFixed(2)}`;
+
+  const grandTotalEl = document.getElementById('pdfValGrandTotal');
+  if (grandTotalEl) grandTotalEl.textContent = `${currency} ${Number(grandTotal).toFixed(2)}`;
+
+  // Deposit Row (Quotation)
+  const depositPct = settings.defaultDepositPct || 30;
+  const depReqAmount = booking.depositAmount && booking.depositAmount > 0 ? booking.depositAmount : (grandTotal * depositPct / 100);
+  const depRow = document.getElementById('pdfRowDeposit');
+  const depVal = document.getElementById('pdfValDepositReq');
+  if (depRow && depVal) {
+    depRow.style.display = docType === 'quotation' ? 'flex' : 'none';
+    depVal.textContent = `${currency} ${Number(depReqAmount).toFixed(2)} (${depositPct}%)`;
+  }
+
+  // Paid & Balance Row (Invoice & Receipt)
+  const paidRow = document.getElementById('pdfRowPaid');
+  const paidVal = document.getElementById('pdfValPaid');
+  const balRow = document.getElementById('pdfRowBalance');
+  const balVal = document.getElementById('pdfValBalance');
+
+  if (paidRow && balRow) {
+    if (docType === 'invoice') {
+      paidRow.style.display = 'flex';
+      balRow.style.display = 'flex';
+      const paidAmt = booking.paidAmount || 0;
+      const balAmt = Math.max(0, grandTotal - paidAmt);
+      if (paidVal) paidVal.textContent = `(-) ${currency} ${Number(paidAmt).toFixed(2)}`;
+      if (balVal) {
+        balVal.textContent = `${currency} ${Number(balAmt).toFixed(2)} (${balAmt <= 0 ? (lang === 'bm' ? 'LUNAS' : 'SETTLED') : (lang === 'bm' ? 'BELUM JELAS' : 'PENDING')})`;
+        balVal.style.color = balAmt <= 0 ? '#059669' : '#b45309';
+      }
+    } else if (docType === 'receipt') {
+      paidRow.style.display = 'flex';
+      balRow.style.display = 'flex';
+      if (paidVal) paidVal.textContent = `(-) ${currency} ${Number(grandTotal).toFixed(2)} (FULL)`;
+      if (balVal) {
+        balVal.textContent = `${currency} 0.00 (${lang === 'bm' ? 'LUNAS / FULLY SETTLED' : 'FULLY SETTLED'})`;
+        balVal.style.color = '#059669';
+      }
+    } else {
+      paidRow.style.display = 'none';
+      balRow.style.display = 'none';
+    }
+  }
+
+  // Security Deposit Row
+  const secDepRow = document.getElementById('pdfRowSecDeposit');
+  const secDepVal = document.getElementById('pdfValSecDeposit');
+  if (secDepRow && secDepVal) {
+    const sDep = booking.securityDeposit || 0;
+    if (sDep > 0) {
+      secDepRow.style.display = 'flex';
+      secDepVal.textContent = `${currency} ${Number(sDep).toFixed(2)}`;
+    } else {
+      secDepRow.style.display = 'none';
+    }
+  }
+
+  // 7. Terms & Notes
+  const termsList = document.getElementById('pdfTermsList');
+  if (termsList) {
+    termsList.innerHTML = '';
+    const list = docType === 'quotation' ? t.termsQuotation : docType === 'invoice' ? t.termsInvoice : t.termsReceipt;
+    list.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item;
+      termsList.appendChild(li);
+    });
+  }
+
+  // 8. Bank Details
+  const bankNameEl = document.getElementById('pdfBankName');
+  if (bankNameEl) bankNameEl.textContent = settings.bankName || 'Maybank';
+
+  const bankAccNumEl = document.getElementById('pdfBankAccNum');
+  if (bankAccNumEl) bankAccNumEl.textContent = settings.bankAccNum || '5123 4567 8901';
+
+  const bankAccHolderEl = document.getElementById('pdfBankAccHolder');
+  if (bankAccHolderEl) bankAccHolderEl.textContent = settings.bankAccHolder || settings.businessName || 'Homestay Host';
+
+  const duitNowEl = document.getElementById('pdfDuitNow');
+  const duitNowRow = document.getElementById('pdfDuitNowRow');
+  if (duitNowRow && duitNowEl) {
+    if (settings.duitNow) {
+      duitNowRow.style.display = 'block';
+      duitNowEl.textContent = settings.duitNow;
+    } else {
+      duitNowRow.style.display = 'none';
+    }
+  }
+
+  // Document UID
+  const uidEl = document.getElementById('pdfDocUid');
+  if (uidEl) uidEl.textContent = `UID: MHY-${year}-${idShort}`;
+
+  // Translated Labels
+  document.getElementById('lblPdfDocNo').textContent = t.lblPdfDocNo;
+  document.getElementById('lblPdfDocDate').textContent = t.lblPdfDocDate;
+  document.getElementById('lblPdfValidity').textContent = t.lblPdfValidity;
+  document.getElementById('lblPdfLpo').textContent = t.lblPdfLpo;
+  document.getElementById('lblPdfPayMethod').textContent = t.lblPdfPayMethod;
+  document.getElementById('lblPdfBilledTo').textContent = t.lblPdfBilledTo;
+  document.getElementById('lblPdfStayParticulars').textContent = t.lblPdfStayParticulars;
+  document.getElementById('lblPdfCheckIn').textContent = t.lblPdfCheckIn;
+  document.getElementById('lblPdfCheckOut').textContent = t.lblPdfCheckOut;
+  document.getElementById('lblPdfDuration').textContent = t.lblPdfDuration;
+  document.getElementById('thPdfItem').textContent = t.thPdfItem;
+  document.getElementById('thPdfRate').textContent = `${t.thPdfRate} (${currency})`;
+  document.getElementById('thPdfQty').textContent = t.thPdfQty;
+  document.getElementById('thPdfAmount').textContent = `${t.thPdfAmount} (${currency})`;
+  document.getElementById('lblPdfTermsTitle').innerHTML = `<i class="fa-solid fa-circle-info" style="color:#0284c7;"></i> ${t.lblPdfTermsTitle}`;
+  document.getElementById('lblPdfSubtotal').textContent = t.lblPdfSubtotal;
+  document.getElementById('lblPdfTax').textContent = t.lblPdfTax;
+  document.getElementById('lblPdfGrandTotal').textContent = t.lblPdfGrandTotal;
+  document.getElementById('lblPdfDepositReq').textContent = t.lblPdfDepositReq;
+  document.getElementById('lblPdfPaid').textContent = t.lblPdfPaid;
+  document.getElementById('lblPdfBalance').textContent = t.lblPdfBalance;
+  document.getElementById('lblPdfSecDeposit').textContent = t.lblPdfSecDeposit;
+  document.getElementById('lblPdfBankTitle').innerHTML = `<i class="fa-solid fa-building-columns"></i> ${t.lblPdfBankTitle}`;
+  document.getElementById('lblPdfIssuedBy').textContent = t.lblPdfIssuedBy;
+  document.getElementById('lblPdfAuthorized').textContent = t.lblPdfAuthorized;
+}
+
+function printPdfDocument() {
+  const isBM = (appState.activePdfLang || appState.settings.language) === 'bm';
+  showToast(isBM ? 'Membuka dialog cetak... Sila pilih "Save as PDF" / "Simpan sebagai PDF".' : 'Opening print dialog... Please select "Save as PDF".');
+  setTimeout(() => {
+    window.print();
+  }, 350);
+}
+
+function sharePdfViaWhatsApp() {
+  const booking = appState.activePdfBooking;
+  if (!booking) return;
+
+  const docType = appState.activePdfDocType || 'quotation';
+  const lang = appState.activePdfLang || 'bm';
+  const isBM = lang === 'bm';
+  const prop = getPropertyById(booking.propertyId) || { name: 'Homestay' };
+  
+  const year = new Date().getFullYear();
+  const idShort = (booking.id || '').replace(/\D/g, '').slice(-4) || '1088';
+  let docPrefix = 'QT';
+  let docName = isBM ? 'Sebut Harga Rasmi' : 'Official Quotation';
+  if (docType === 'invoice') {
+    docPrefix = 'INV';
+    docName = isBM ? 'Invois Rasmi' : 'Official Invoice';
+  } else if (docType === 'receipt') {
+    docPrefix = 'REC';
+    docName = isBM ? 'Resit Rasmi Pembayaran' : 'Official Payment Receipt';
+  }
+  const fullDocNo = `${docPrefix}-${year}-${idShort}`;
+
+  const message = isBM
+    ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docName}* (*No: ${fullDocNo}*) bagi penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+    : `Greetings ${booking.guestName}.\n\nAttached is the *${docName}* (*Ref: ${fullDocNo}*) for your stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+
+  // Copy to clipboard
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(message);
+  }
+
+  showToast(isBM ? 'Mesej disalin! Membuka WhatsApp untuk melampirkan PDF...' : 'Message copied! Opening WhatsApp to attach PDF...');
+
+  const cleanPhone = normalizePhoneNumber(booking.guestPhone);
+  setTimeout(() => {
+    if (cleanPhone) {
+      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    }
+  }, 450);
+}
+
+
 
 // ==========================================================================
 // 15. DIGITAL GUEST GUIDE MODAL

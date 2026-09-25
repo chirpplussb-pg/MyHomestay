@@ -3036,5 +3036,221 @@ body.theme-dark .overlap-alert-content strong {
   color: var(--text-muted);
 }
 
+/* ==========================================================================
+   19. CORPORATE PDF DOCUMENT HUB & PRINT STYLING (v2.6.4)
+   ========================================================================== */
+
+.pdf-modal-container {
+  max-width: 900px !important;
+  max-height: 94vh !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdf-toolbar-panel {
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.pdf-type-pills {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pdf-type-btn {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pdf-type-btn:hover {
+  background: var(--bg-surface-subtle);
+}
+
+.pdf-type-btn.active[data-doc="quotation"] {
+  background: rgba(2, 132, 199, 0.12);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.15);
+}
+
+.pdf-type-btn.active[data-doc="invoice"] {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: #6366f1;
+  color: #4f46e5;
+  box-shadow: 0 1px 3px rgba(99, 102, 241, 0.15);
+}
+
+.pdf-type-btn.active[data-doc="receipt"] {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: #10b981;
+  color: #059669;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.15);
+}
+
+.pdf-validity-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.pdf-validity-preset {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pdf-validity-preset.active,
+.pdf-validity-preset:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+/* Printable A4 Paper Container */
+.pdf-doc-sheet {
+  background: #ffffff;
+  color: #1e293b;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  margin: 0 auto;
+  max-width: 820px;
+}
+
+.pdf-watermark-paid {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-25deg);
+  font-size: 58px;
+  font-weight: 900;
+  letter-spacing: 8px;
+  color: rgba(16, 185, 129, 0.14);
+  border: 6px solid rgba(16, 185, 129, 0.22);
+  padding: 8px 30px;
+  border-radius: 14px;
+  pointer-events: none;
+  text-transform: uppercase;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+/* Print CSS: Isolates the printable A4 sheet */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .app-container,
+  .toast-container,
+  .bottom-nav,
+  .bottom-sheet-handle,
+  .modal-close,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Make modal wrapper transparent and fullscreen */
+  .modal-backdrop#pdfDocModal {
+    display: block !important;
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 99999 !important;
+  }
+
+  .modal-backdrop#pdfDocModal .bottom-sheet {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    transform: none !important;
+  }
+
+  .modal-backdrop#pdfDocModal .modal-header,
+  .modal-backdrop#pdfDocModal .sheet-handle,
+  .modal-backdrop#pdfDocModal .pdf-toolbar-panel,
+  .modal-backdrop#pdfDocModal .modal-footer {
+    display: none !important;
+  }
+
+  .modal-backdrop#pdfDocModal .modal-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  #printablePdfSheet {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 6mm 10mm !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  #printablePdfSheet table,
+  #printablePdfSheet tr,
+  #printablePdfSheet td,
+  #printablePdfSheet th {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+}
+
+
 
 

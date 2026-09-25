@@ -9,8 +9,12 @@
   <meta name="apple-mobile-web-app-title" content="StayManager">
   <title>Homestay Manager - Smart Property & Booking Hub</title>
   
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2.6.4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -404,6 +408,18 @@
             <input type="text" id="settingBusinessNameInput" class="form-control" placeholder="e.g. Cozy Stay Management">
           </div>
           <div class="form-group">
+            <label class="form-label" data-i18n="business_ssm_label">Business Registration / SSM No. (For Official PDF Docs)</label>
+            <input type="text" id="settingBusinessSsmInput" class="form-control" placeholder="e.g. 202601018899 (SA0543210-X)">
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="business_address_label">Office / Business Address (For Quotations & Invoices)</label>
+            <input type="text" id="settingBusinessAddressInput" class="form-control" placeholder="e.g. No 12, Jalan Pantai, 11200 Tanjung Bungah, Penang">
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="business_email_label">Official Host Email</label>
+            <input type="email" id="settingBusinessEmailInput" class="form-control" placeholder="e.g. host@myhomestay.com">
+          </div>
+          <div class="form-group">
             <label class="form-label" data-i18n="seller_phone_label">Seller Support / Order WhatsApp Number</label>
             <input type="tel" id="settingSellerPhoneInput" class="form-control" placeholder="e.g. +60123456789">
             <span class="card-subtitle" style="font-size: 11px;" data-i18n="seller_phone_hint">Buyers will contact this WhatsApp number when clicking "Buy License".</span>
@@ -504,7 +520,7 @@
           <!-- Master Admin Quick Tools Bar -->
           <div style="display:flex; gap:8px; margin-bottom:12px; padding-bottom:10px; border-bottom:1px dashed var(--border-color); flex-wrap:wrap;">
             <button type="button" class="btn btn-outline btn-xs" id="btnAdminCheckUpdates" style="color:var(--primary); font-weight:700; border-color:var(--primary);">
-              <i class="fa-solid fa-rotate"></i> <span data-i18n="btn_check_updates">Check for App Updates</span> (v2.6.3)
+              <i class="fa-solid fa-rotate"></i> <span data-i18n="btn_check_updates">Check for App Updates</span> (v2.6.4)
             </button>
             <button type="button" class="btn btn-outline btn-xs" id="btnAdminOpenGuide" style="color:var(--text-main); font-weight:700;">
               <i class="fa-solid fa-book-open"></i> <span data-i18n="btn_open_guide">User Manual & Operational Guide</span>
@@ -570,7 +586,7 @@
               <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
               <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
             </div>
-            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.6.2</span>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.6.4</span>
           </div>
 
           <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
@@ -579,9 +595,12 @@
             </p>
           </div>
 
-          <div style="display:flex; gap:8px;">
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
             <button type="button" class="btn btn-primary btn-sm" id="btnCheckForUpdates" style="flex:1;">
               <i class="fa-solid fa-rotate"></i> <span data-i18n="btn_check_updates">Check for Updates</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="btnForcePurgeCache" title="Clear cached PWA files and reload fresh">
+              <i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="btn_force_refresh">Force Reload Fresh</span>
             </button>
             <button type="button" class="btn btn-outline btn-sm" id="btnDownloadSafetySnapshot" title="Download Safety Snapshot">
               <i class="fa-solid fa-download"></i> <span data-i18n="btn_safety_backup">Safety Snapshot</span>
@@ -1064,13 +1083,18 @@
             </div>
           </div>
 
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline" id="btnCopyWaText">
-              <i class="fa-solid fa-copy"></i> <span data-i18n="btn_copy_text">Copy Text</span>
+          <div class="modal-footer" style="display:flex; flex-direction:column; gap:8px;">
+            <button type="button" class="btn btn-primary btn-block" id="btnOpenPdfModalFromWa" style="justify-content:center; background:linear-gradient(135deg, #0284c7, #0369a1); font-weight:700;">
+              <i class="fa-solid fa-file-pdf"></i> <span data-i18n="btn_generate_pdf_doc">Jana Dokumen PDF Rasmi (Quotation / Invois / Resit)</span>
             </button>
-            <button type="button" class="btn btn-whatsapp" id="btnSendWaDirect">
-              <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_open_wa">Open WhatsApp</span>
-            </button>
+            <div style="display:flex; gap:8px; width:100%;">
+              <button type="button" class="btn btn-outline" id="btnCopyWaText" style="flex:1; justify-content:center;">
+                <i class="fa-solid fa-copy"></i> <span data-i18n="btn_copy_text">Copy Text</span>
+              </button>
+              <button type="button" class="btn btn-whatsapp" id="btnSendWaDirect" style="flex:1; justify-content:center;">
+                <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_open_wa">Open WhatsApp</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1890,7 +1914,7 @@
             </div>
             <div style="text-align:right;">
               <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">App Version</div>
-              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.6.2</div>
+              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.6.4</div>
             </div>
           </div>
 
@@ -2103,11 +2127,316 @@
       </div>
     </div>
 
+    <!-- 17. CORPORATE & OFFICE PDF DOCUMENT MODAL (v2.6.4) -->
+    <div class="modal-backdrop" id="pdfDocModal">
+      <div class="bottom-sheet pdf-modal-container">
+        <div class="sheet-handle"></div>
+        <div class="modal-header no-print">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; border-radius:50%; background:rgba(2,132,199,0.12); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:17px;">
+              <i class="fa-solid fa-file-invoice"></i>
+            </div>
+            <div>
+              <h2 class="modal-title" data-i18n="pdf_modal_title">Jana Dokumen PDF Rasmi (Office & Claim Ready)</h2>
+              <span class="modal-subtitle" data-i18n="pdf_modal_sub">Pilih jenis dokumen, sesuaikan tempoh sah sebut harga & muat turun sebagai PDF A4 standard.</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnClosePdfModal">&times;</button>
+        </div>
+
+        <div class="modal-body" style="padding:16px;">
+          <!-- Controls Panel -->
+          <div class="pdf-toolbar-panel no-print">
+            <!-- Document Selector Pills -->
+            <div class="pdf-type-pills">
+              <button type="button" class="pdf-type-btn active" data-doc="quotation" id="btnPdfTabQuotation">
+                <i class="fa-regular fa-file-lines"></i> <span data-i18n="pdf_tab_quotation">1. Sebut Harga (Quotation)</span>
+              </button>
+              <button type="button" class="pdf-type-btn" data-doc="invoice" id="btnPdfTabInvoice">
+                <i class="fa-solid fa-file-invoice"></i> <span data-i18n="pdf_tab_invoice">2. Invois Rasmi (Invoice)</span>
+              </button>
+              <button type="button" class="pdf-type-btn" data-doc="receipt" id="btnPdfTabReceipt">
+                <i class="fa-solid fa-receipt"></i> <span data-i18n="pdf_tab_receipt">3. Resit Rasmi (Receipt)</span>
+              </button>
+            </div>
+
+            <!-- Customization Form Grid -->
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-top:8px;">
+              
+              <!-- Quotation Validity Controls (Highlighted per User Request!) -->
+              <div id="pdfQuotationValidityGroup" style="background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                <label class="form-label mb-1" style="font-size:11.5px; font-weight:700; color:var(--primary); display:flex; justify-content:space-between;">
+                  <span><i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="quotation_validity_label">Tempoh Sah Sebut Harga (Hari)</span></span>
+                  <span id="pdfValidityCalculatedDate" style="font-weight:800; color:var(--text-main);">-</span>
+                </label>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <input type="number" id="pdfQuotationValidityInput" class="form-control form-control-sm" min="1" max="90" value="3" style="width:75px; font-weight:800; text-align:center;">
+                  <span style="font-size:11.5px; color:var(--text-muted);" data-i18n="days_label">hari dari tarikh dikeluarkan</span>
+                </div>
+                <div class="pdf-validity-pills">
+                  <span style="font-size:10px; color:var(--text-muted); align-self:center;">Pantas:</span>
+                  <button type="button" class="pdf-validity-preset" data-days="1">1 Hari</button>
+                  <button type="button" class="pdf-validity-preset active" data-days="3">3 Hari</button>
+                  <button type="button" class="pdf-validity-preset" data-days="7">7 Hari</button>
+                  <button type="button" class="pdf-validity-preset" data-days="14">14 Hari</button>
+                  <button type="button" class="pdf-validity-preset" data-days="30">30 Hari</button>
+                </div>
+              </div>
+
+              <!-- Recipient Organization / Department Name -->
+              <div style="background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                <label class="form-label mb-1" style="font-size:11.5px; font-weight:700;" data-i18n="pdf_client_org_label">Nama Syarikat / Kementerian / Jabatan (Optional)</label>
+                <input type="text" id="pdfClientCompanyInput" class="form-control form-control-sm" placeholder="e.g. Kementerian Pendidikan / Petronas Chemicals">
+                <span style="font-size:10.5px; color:var(--text-muted);">Akan tertera di bawah 'Dikeluarkan Kepada / Billed To'</span>
+              </div>
+
+              <!-- LPO / PO Reference Number -->
+              <div style="background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                <label class="form-label mb-1" style="font-size:11.5px; font-weight:700;" data-i18n="pdf_lpo_ref_label">No. Pesanan Tempatan / LPO Ref (Optional)</label>
+                <input type="text" id="pdfLpoRefInput" class="form-control form-control-sm" placeholder="e.g. LPO/2026/089 atau Ruj. Pejabat">
+                <span style="font-size:10.5px; color:var(--text-muted);">Untuk rujukan audit & tuntutan kewangan</span>
+              </div>
+
+              <!-- Language & Currency Toggle -->
+              <div style="background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; flex-direction:column; justify-content:space-between;">
+                <label class="form-label mb-1" style="font-size:11.5px; font-weight:700;" data-i18n="pdf_lang_label">Bahasa Dokumen (Language)</label>
+                <div style="display:flex; gap:6px;">
+                  <button type="button" class="btn btn-outline btn-sm active" id="btnPdfLangBM" style="flex:1; font-size:11px; padding:4px 8px;">🇲🇾 Melayu</button>
+                  <button type="button" class="btn btn-outline btn-sm" id="btnPdfLangEN" style="flex:1; font-size:11px; padding:4px 8px;">🇬🇧 English</button>
+                </div>
+                <span style="font-size:10.5px; color:var(--text-muted); margin-top:4px;">Tukar format teks dokumen secara serta-merta</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- PRINTABLE A4 SHEET -->
+          <div id="printablePdfSheet" class="pdf-doc-sheet">
+            <!-- Watermark for Paid Receipts -->
+            <div id="pdfPaidWatermark" class="pdf-watermark-paid hidden">PAID IN FULL</div>
+
+            <!-- Header: Host Business Profile & Doc Info -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:18px; border-bottom:2px solid #0f172a; gap:16px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                  <div style="width:36px; height:36px; border-radius:8px; background:#0284c7; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:16px;">
+                    MH
+                  </div>
+                  <div>
+                    <h2 id="pdfHostBizName" style="font-size:18px; font-weight:900; color:#0f172a; margin:0; line-height:1.2;">MY HOMESTAY</h2>
+                    <div id="pdfHostSsm" style="font-size:11px; color:#64748b; font-weight:700;">No. Pendaftaran SSM: -</div>
+                  </div>
+                </div>
+                <div style="font-size:11px; color:#475569; line-height:1.5; max-width:360px;">
+                  <div id="pdfHostAddress">Premis Homestay & Perkhidmatan Penginapan</div>
+                  <div><strong style="color:#0f172a;">Tel / WhatsApp:</strong> <span id="pdfHostPhone">+60 12-345 6789</span> • <strong style="color:#0f172a;">Emel:</strong> <span id="pdfHostEmail">host@myhomestay.com</span></div>
+                </div>
+              </div>
+
+              <div style="text-align:right;">
+                <span id="pdfDocBadge" style="display:inline-block; font-size:10.5px; font-weight:900; letter-spacing:1px; text-transform:uppercase; padding:3px 10px; border-radius:999px; background:#e0f2fe; color:#0369a1; margin-bottom:6px;">
+                  SEBUT HARGA RASMI
+                </span>
+                <h3 id="pdfDocTitle" style="font-size:24px; font-weight:900; color:#0f172a; margin:0; line-height:1.1;">SEBUT HARGA</h3>
+                <div style="font-size:11px; color:#475569; margin-top:8px; line-height:1.5;">
+                  <div><strong style="color:#0f172a;" id="lblPdfDocNo">No. Dokumen:</strong> <span id="pdfDocNo" style="font-family:monospace; font-weight:800; color:#0f172a;">QT-2026-0001</span></div>
+                  <div><strong style="color:#0f172a;" id="lblPdfDocDate">Tarikh:</strong> <span id="pdfDocDate">25 Sep 2026</span></div>
+                  <div id="pdfDocValidityRow"><strong style="color:#0f172a;" id="lblPdfValidity">Tempoh Sah:</strong> <span id="pdfDocValidity" style="color:#b45309; font-weight:800;">3 Hari (Hingga 28 Sep 2026)</span></div>
+                  <div id="pdfDocLpoRow" class="hidden"><strong style="color:#0f172a;" id="lblPdfLpo">No. LPO:</strong> <span id="pdfDocLpo" style="font-weight:700; color:#0f172a;">-</span></div>
+                  <div id="pdfDocPayMethodRow" class="hidden"><strong style="color:#0f172a;" id="lblPdfPayMethod">Kaedah:</strong> <span id="pdfDocPayMethod" style="color:#059669; font-weight:800;">DuitNow QR / Instant Transfer</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Billed To & Stay Particulars -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin:18px 0;">
+              
+              <!-- Recipient (Billed To) -->
+              <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0;">
+                <div style="font-size:9.5px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-bottom:4px;" id="lblPdfBilledTo">
+                  DIKELUARKAN KEPADA (BILLED TO):
+                </div>
+                <h4 id="pdfClientCompanyText" style="font-size:13.5px; font-weight:800; color:#0f172a; margin:0 0 2px 0;">-</h4>
+                <div id="pdfClientNameText" style="font-size:12.5px; font-weight:800; color:#0284c7;">Nama Tetamu</div>
+                <div style="font-size:11px; color:#475569; margin-top:6px; line-height:1.5;">
+                  <div><span style="color:#64748b;">No. KP / Pasport:</span> <strong id="pdfClientNric" style="color:#0f172a;">-</strong></div>
+                  <div><span style="color:#64748b;">WhatsApp / Tel:</span> <strong id="pdfClientPhone" style="color:#0f172a;">-</strong></div>
+                  <div id="pdfClientEmailRow"><span style="color:#64748b;">Emel:</span> <span id="pdfClientEmail">-</span></div>
+                  <div id="pdfClientAddressRow"><span style="color:#64748b;">Alamat:</span> <span id="pdfClientAddress">-</span></div>
+                </div>
+              </div>
+
+              <!-- Homestay Stay Particulars -->
+              <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0;">
+                <div style="font-size:9.5px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-bottom:4px;" id="lblPdfStayParticulars">
+                  BUTIRAN PENGINAPAN & SEWAAN:
+                </div>
+                <h4 id="pdfPropNameText" style="font-size:13.5px; font-weight:800; color:#0f172a; margin:0 0 2px 0;">Homestay Name</h4>
+                <div id="pdfPropAddressText" style="font-size:11px; color:#64748b;">Alamat Homestay</div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px; padding-top:8px; border-top:1px solid #e2e8f0; font-size:11px;">
+                  <div>
+                    <div style="font-size:9.5px; font-weight:700; color:#64748b; text-transform:uppercase;" id="lblPdfCheckIn">Daftar Masuk</div>
+                    <strong id="pdfCheckInDate" style="color:#0f172a;">-</strong>
+                    <div id="pdfCheckInTime" style="font-size:10px; color:#64748b;">3:00 PM</div>
+                  </div>
+                  <div>
+                    <div style="font-size:9.5px; font-weight:700; color:#64748b; text-transform:uppercase;" id="lblPdfCheckOut">Daftar Keluar</div>
+                    <strong id="pdfCheckOutDate" style="color:#0f172a;">-</strong>
+                    <div id="pdfCheckOutTime" style="font-size:10px; color:#64748b;">12:00 PM</div>
+                  </div>
+                </div>
+
+                <div style="margin-top:8px; padding-top:6px; border-top:1px dashed #e2e8f0; display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+                  <span style="color:#64748b;" id="lblPdfDuration">Tempoh & Tetamu:</span>
+                  <strong id="pdfDurationGuestText" style="color:#0f172a; background:#fff; padding:2px 8px; border-radius:4px; border:1px solid #e2e8f0;">2 Malam • 4 Tetamu</strong>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Itemized Table -->
+            <div style="margin:16px 0;">
+              <table style="width:100%; border-collapse:collapse; font-size:11.5px; text-align:left;">
+                <thead>
+                  <tr style="border-bottom:2px solid #0f172a; background:#f1f5f9; color:#0f172a;">
+                    <th style="padding:8px; width:36px; text-align:center; font-weight:800;">#</th>
+                    <th style="padding:8px; font-weight:800;" id="thPdfItem">Huraian / Perkara</th>
+                    <th style="padding:8px; text-align:right; width:90px; font-weight:800;" id="thPdfRate">Kadar (RM)</th>
+                    <th style="padding:8px; text-align:center; width:80px; font-weight:800;" id="thPdfQty">Kuantiti</th>
+                    <th style="padding:8px; text-align:right; width:100px; font-weight:800;" id="thPdfAmount">Jumlah (RM)</th>
+                  </tr>
+                </thead>
+                <tbody id="pdfTableBody" style="color:#334155;">
+                  <!-- Dynamically populated rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Summary & Terms -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-top:10px; padding-bottom:16px; border-bottom:1px solid #e2e8f0; gap:20px;">
+              <!-- Terms List -->
+              <div style="max-width:360px; font-size:10.5px; color:#475569;">
+                <div style="font-weight:800; color:#0f172a; text-transform:uppercase; margin-bottom:4px;" id="lblPdfTermsTitle">
+                  <i class="fa-solid fa-circle-info" style="color:#0284c7;"></i> Syarat & Catatan:
+                </div>
+                <ul id="pdfTermsList" style="margin:0; padding-left:16px; line-height:1.5; color:#64748b;">
+                  <!-- Dynamically populated -->
+                </ul>
+              </div>
+
+              <!-- Calculations -->
+              <div style="width:260px; font-size:11px; line-height:1.6;">
+                <div style="display:flex; justify-content:space-between; color:#475569;">
+                  <span id="lblPdfSubtotal">Jumlah Kasar (Subtotal):</span>
+                  <strong id="pdfValSubtotal" style="color:#0f172a;">RM 0.00</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; color:#475569;">
+                  <span id="lblPdfTax">Cukai / SST (0%):</span>
+                  <strong style="color:#0f172a;">RM 0.00</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-top:2px solid #0f172a; border-bottom:2px solid #0f172a; margin:4px 0; font-size:12.5px; font-weight:900;">
+                  <span id="lblPdfGrandTotal">JUMLAH KESELURUHAN:</span>
+                  <span id="pdfValGrandTotal" style="color:#0284c7;">RM 0.00</span>
+                </div>
+                <div id="pdfRowDeposit" style="display:flex; justify-content:space-between; color:#475569;">
+                  <span id="lblPdfDepositReq">Deposit Komitmen Diperlukan:</span>
+                  <strong id="pdfValDepositReq" style="color:#b45309;">RM 0.00</strong>
+                </div>
+                <div id="pdfRowPaid" class="hidden" style="display:flex; justify-content:space-between; color:#059669; font-weight:700;">
+                  <span id="lblPdfPaid">Jumlah Telah Dibayar:</span>
+                  <span id="pdfValPaid">(-) RM 0.00</span>
+                </div>
+                <div id="pdfRowBalance" class="hidden" style="display:flex; justify-content:space-between; padding:4px 6px; background:#f1f5f9; border-radius:4px; margin-top:4px; font-weight:900;">
+                  <span id="lblPdfBalance">Baki Belum Jelas:</span>
+                  <span id="pdfValBalance" style="color:#b45309;">RM 0.00</span>
+                </div>
+                <div id="pdfRowSecDeposit" style="display:flex; justify-content:space-between; color:#64748b; font-size:10px; font-style:italic; margin-top:4px;">
+                  <span id="lblPdfSecDeposit">*Deposit Keselamatan (Dipulangkan):</span>
+                  <span id="pdfValSecDeposit">RM 0.00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Host Bank Remittance & Official Signature -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px; padding-top:4px;">
+              
+              <!-- Host Bank Details -->
+              <div style="background:#f0f9ff; padding:12px; border-radius:8px; border:1px solid #bae6fd; font-size:11px;">
+                <div style="font-weight:900; color:#0369a1; text-transform:uppercase; margin-bottom:6px;" id="lblPdfBankTitle">
+                  <i class="fa-solid fa-building-columns"></i> Butiran Pembayaran / Akaun Bank:
+                </div>
+                <div style="color:#334155; line-height:1.5;">
+                  <div><span style="color:#64748b;">Nama Bank:</span> <strong id="pdfBankName" style="color:#0f172a;">Maybank</strong></div>
+                  <div><span style="color:#64748b;">No. Akaun:</span> <strong id="pdfBankAccNum" style="font-family:monospace; font-size:12px; color:#0f172a;">5123 4567 8901</strong></div>
+                  <div><span style="color:#64748b;">Penama Akaun:</span> <strong id="pdfBankAccHolder" style="color:#0f172a;">Homestay Host</strong></div>
+                  <div id="pdfDuitNowRow"><span style="color:#64748b;">DuitNow ID:</span> <strong id="pdfDuitNow" style="color:#0f172a;">0123456789</strong></div>
+                  <div style="font-size:9.5px; color:#0284c7; margin-top:4px; font-style:italic;">
+                    *Sila catatkan No. Rujukan (<span id="pdfRefCodeText" style="font-weight:800;">-</span>) semasa bayaran.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Official Seal & Signature -->
+              <div style="display:flex; flex-direction:column; justify-content:space-between; align-items:flex-end; text-align:right;">
+                <div>
+                  <div style="font-size:9.5px; font-weight:900; text-transform:uppercase; color:#64748b;" id="lblPdfIssuedBy">DIKELUARKAN RASMI OLEH:</div>
+                  <div id="pdfHostBizSignTitle" style="font-size:12.5px; font-weight:800; color:#0f172a;">PENGURUSAN HOMESTAY</div>
+                  <div style="font-size:10px; color:#64748b;">Bahagian Tempahan &amp; Kewangan</div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:12px; margin:8px 0;">
+                  <!-- Digital Stamp -->
+                  <div style="width:68px; height:68px; border-radius:50%; border:2px dashed #0284c7; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:#0369a1; padding:2px; font-size:8px; font-weight:900; transform:rotate(4deg); opacity:0.85;">
+                    <i class="fa-solid fa-certificate" style="font-size:12px; color:#0284c7;"></i>
+                    <span style="line-height:1;">VERIFIED</span>
+                    <span style="font-size:6.5px; color:#64748b;">DIGITAL SEAL</span>
+                  </div>
+
+                  <!-- Signature line -->
+                  <div style="width:130px; text-align:center;">
+                    <div style="font-family:serif; font-style:italic; font-size:16px; color:#64748b; line-height:1; margin-bottom:2px;" id="pdfSignatureText">Pengurus</div>
+                    <div style="border-bottom:1.5px solid #0f172a; padding-bottom:1px;"></div>
+                    <div style="font-size:9.5px; font-weight:700; color:#475569; margin-top:2px;" id="lblPdfAuthorized">Tandatangan Sah</div>
+                  </div>
+                </div>
+
+                <div style="font-size:8.5px; color:#94a3b8; font-style:italic;">
+                  Dokumen digital dijana secara rasmi melalui Sistem Pengurusan MyHomestay.
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Footer Strip -->
+            <div style="margin-top:18px; padding-top:8px; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; font-size:9px; color:#94a3b8;">
+              <div>MyHomestay Hub • Sistem Pengurusan Homestay Pintar</div>
+              <div>Halaman 1 / 1</div>
+              <div style="font-family:monospace;" id="pdfDocUid">UID: MHY-2026-X88902</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-footer no-print" style="display:flex; flex-wrap:wrap; gap:8px;">
+          <button type="button" class="btn btn-primary" id="btnPrintPdfDoc" style="flex:1 1 200px; justify-content:center; font-weight:800; background:linear-gradient(135deg, #0284c7, #0369a1);">
+            <i class="fa-solid fa-print"></i> <span data-i18n="btn_print_pdf">Cetak / Simpan Sebagai PDF</span>
+          </button>
+          <button type="button" class="btn btn-whatsapp" id="btnSharePdfWa" style="flex:1 1 200px; justify-content:center; font-weight:700;">
+            <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_share_pdf_wa">Buka WhatsApp &amp; Kongsi PDF</span>
+          </button>
+          <button type="button" class="btn btn-outline" id="btnClosePdfModalBtn" style="min-width:90px; justify-content:center;">
+            <span data-i18n="close">Tutup</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div class="toast-container" id="toastContainer"></div>
 
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2.6.4"></script>
 </body>
 </html>
