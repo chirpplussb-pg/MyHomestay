@@ -204,6 +204,9 @@ const TRANSLATIONS = {
     filter_confirmed: '🟢 Confirmed (Full)',
     filter_inhouse: '🔑 In-House',
     filter_completed: '🏁 Completed',
+    filter_historical_tenancy: '📜 Historical Tenancies',
+    btn_historical_tenancies: 'Historical Tenancies',
+    historical_tenancies_title: 'Historical Completed Tenancies',
     filter_blocked: '🚫 Blocked',
     search_placeholder: 'Search guest name, phone, ref...',
     no_bookings_found: 'No Bookings Found',
@@ -308,7 +311,7 @@ const TRANSLATIONS = {
     toast_safety_saved: 'Safety backup snapshot downloaded!',
 
     data_backup_title: 'Data & Backup',
-    data_backup_sub: 'All your data is saved privately on your device. Export a backup anytime.',
+    data_backup_sub: 'All your data (Homestays, Bookings, Payments, Maintenance Team & Suppliers) is saved privately on your device. Export a backup anytime.',
     btn_export: 'Export Backup (.json)',
     btn_restore: 'Restore Backup',
     btn_restore_snapshot: 'Restore Pre-Update Safety Snapshot',
@@ -661,6 +664,9 @@ const TRANSLATIONS = {
     filter_confirmed: '🟢 Disahkan (Penuh)',
     filter_inhouse: '🔑 Sedang Menginap',
     filter_completed: '🏁 Selesai',
+    filter_historical_tenancy: '📜 Sejarah Sewaan',
+    btn_historical_tenancies: 'Sejarah Sewaan',
+    historical_tenancies_title: 'Sejarah Sewaan Bulanan Tamat',
     filter_blocked: '🚫 Disekat',
     search_placeholder: 'Cari nama tetamu, telefon, rujukan...',
     no_bookings_found: 'Tiada Tempahan Dijumpai',
@@ -765,7 +771,7 @@ const TRANSLATIONS = {
     toast_safety_saved: 'Salinan sandaran keselamatan berjaya dimuat turun!',
 
     data_backup_title: 'Data & Salinan Sandaran',
-    data_backup_sub: 'Semua data disimpan secara peribadi pada peranti anda. Eksport salinan sandaran bila-bila masa.',
+    data_backup_sub: 'Semua data anda (Homestay, Tempahan, Rekod Bayaran, Pasukan Penyelenggaraan & Pembekal) disimpan dengan selamat pada peranti anda. Eksport salinan sandaran bila-bila masa.',
     btn_export: 'Eksport Salinan (.json)',
     btn_restore: 'Pulihkan Salinan',
     btn_restore_snapshot: 'Pulihkan Salinan Keselamatan Pra-Kemas Kini',
@@ -1360,6 +1366,8 @@ function runDataMigrations() {
           turnovers: appState.turnovers,
           expenses: appState.expenses,
           contacts: appState.contacts,
+          maintenanceTeam: appState.contacts,
+          maintenanceTasks: appState.turnovers,
           promotionalMedia: appState.promotionalMedia,
           settings: appState.settings,
           licenseKey: appState.licenseKey,
@@ -2095,7 +2103,13 @@ function setupEventListeners() {
     const b = appState.activeWaBooking || (appState.bookings && appState.bookings[0]);
     if (b) {
       const tmpl = appState.activeWaTemplate;
-      const docType = (tmpl === 'full_receipt' || tmpl === 'deposit_receipt' || tmpl === 'monthly_rent_receipt' || tmpl === 'refund_receipt') ? 'receipt' : (tmpl === 'monthly_invoice' || tmpl === 'payment') ? 'invoice' : 'quotation';
+      const docType = (tmpl === 'deposit_receipt') 
+        ? 'deposit_receipt' 
+        : (tmpl === 'full_receipt' || tmpl === 'monthly_rent_receipt' || tmpl === 'refund_receipt') 
+          ? 'receipt' 
+          : (tmpl === 'monthly_invoice' || tmpl === 'payment') 
+            ? 'invoice' 
+            : 'quotation';
       closeAllModals();
       openPdfDocModal(b, docType);
     } else {
@@ -2108,6 +2122,7 @@ function setupEventListeners() {
 
   document.getElementById('btnPdfTabQuotation')?.addEventListener('click', () => setPdfDocType('quotation'));
   document.getElementById('btnPdfTabInvoice')?.addEventListener('click', () => setPdfDocType('invoice'));
+  document.getElementById('btnPdfTabDeposit')?.addEventListener('click', () => setPdfDocType('deposit_receipt'));
   document.getElementById('btnPdfTabReceipt')?.addEventListener('click', () => setPdfDocType('receipt'));
 
   document.getElementById('btnPdfLangBM')?.addEventListener('click', () => setPdfLanguage('bm'));
@@ -2122,6 +2137,36 @@ function setupEventListeners() {
       const days = btn.getAttribute('data-days');
       setPdfQuotationValidity(days);
     });
+  });
+
+  document.getElementById('pdfDepositAmountInput')?.addEventListener('input', (e) => {
+    const val = parseFloat(e.target.value) || 0;
+    if (appState.activePdfBooking) {
+      appState.activePdfBooking.depositPaid = val;
+      appState.activePdfBooking.balance = Math.max(0, (appState.activePdfBooking.totalAmount || 0) - val);
+      saveToStorage();
+    }
+    updatePdfDocView();
+  });
+
+  document.getElementById('btnPdfResetDeposit')?.addEventListener('click', () => {
+    if (appState.activePdfBooking) {
+      const orig = Math.round((appState.activePdfBooking.totalAmount || 0) * (appState.settings.defaultDepositPct || 30) / 100);
+      appState.activePdfBooking.depositPaid = orig;
+      appState.activePdfBooking.balance = Math.max(0, (appState.activePdfBooking.totalAmount || 0) - orig);
+      const depInput = document.getElementById('pdfDepositAmountInput');
+      if (depInput) depInput.value = orig;
+      saveToStorage();
+      updatePdfDocView();
+    }
+  });
+
+  document.getElementById('pdfPaymentRefInput')?.addEventListener('input', (e) => {
+    if (appState.activePdfBooking) {
+      appState.activePdfBooking.lastPaymentRef = e.target.value;
+      saveToStorage();
+    }
+    updatePdfDocView();
   });
 
   document.getElementById('pdfClientCompanyInput')?.addEventListener('input', (e) => {
@@ -3100,6 +3145,22 @@ function getFilteredBookings() {
   return appState.bookings.filter(b => b.propertyId === appState.selectedPropertyId);
 }
 
+function isCompletedTenancy(b, todayStr = new Date().toISOString().split('T')[0]) {
+  if (!b) return false;
+  if (b.rentalType === 'monthly') {
+    return b.status === 'checked-out' || b.status === 'completed' || b.isHistorical === true || (b.checkOut && b.checkOut < todayStr);
+  }
+  return false;
+}
+
+function isHistoricalStay(b, todayStr = new Date().toISOString().split('T')[0]) {
+  if (!b) return false;
+  if (b.rentalType === 'monthly') {
+    return isCompletedTenancy(b, todayStr);
+  }
+  return b.status === 'checked-out' || b.status === 'completed' || b.isHistorical === true || (b.checkOut && b.checkOut < todayStr && b.status !== 'cancelled' && b.status !== 'quotation');
+}
+
 function getFilteredTurnovers() {
   if (appState.selectedPropertyId === 'all') return appState.turnovers;
   return appState.turnovers.filter(t => t.propertyId === appState.selectedPropertyId);
@@ -3128,10 +3189,10 @@ function renderDashboardTab() {
   const bookings = getFilteredBookings();
   const turnovers = getFilteredTurnovers();
 
-  // KPIs
-  const todayCheckIns = bookings.filter(b => b.checkIn === todayStr && b.status !== 'cancelled');
-  const todayCheckOuts = bookings.filter(b => b.checkOut === todayStr && b.status !== 'cancelled');
-  const inHouse = bookings.filter(b => b.checkIn <= todayStr && b.checkOut > todayStr && b.status !== 'cancelled');
+  // KPIs (completed historical tenancies and checked-out stays do not appear in active dashboard)
+  const todayCheckIns = bookings.filter(b => b.checkIn === todayStr && b.status !== 'cancelled' && !isHistoricalStay(b, todayStr));
+  const todayCheckOuts = bookings.filter(b => b.checkOut === todayStr && b.status !== 'cancelled' && b.status !== 'checked-out' && b.status !== 'completed' && !isCompletedTenancy(b, todayStr));
+  const inHouse = bookings.filter(b => b.checkIn <= todayStr && b.checkOut > todayStr && b.status !== 'cancelled' && b.status !== 'checked-out' && b.status !== 'completed' && !isCompletedTenancy(b, todayStr));
   const pendingTurnovers = turnovers.filter(t => t.status !== 'completed');
 
   document.getElementById('kpiCheckInsCount').textContent = todayCheckIns.length;
@@ -3259,7 +3320,7 @@ function renderDashboardTab() {
         const bid = e.currentTarget.getAttribute('data-bid');
         const b = appState.bookings.find(x => x.id === bid);
         if (b) {
-          const docType = (b.status === 'confirmed' || b.status === 'completed' || b.status === 'checked-in') ? 'receipt' : b.status === 'booked' ? 'invoice' : 'quotation';
+          const docType = (b.status === 'confirmed' || b.status === 'completed' || b.status === 'checked-in') ? 'receipt' : b.status === 'booked' ? 'deposit_receipt' : 'quotation';
           openPdfDocModal(b, docType);
         }
       });
@@ -3308,12 +3369,15 @@ function renderDashboardTab() {
     `;
   } else {
     displayProps.forEach(prop => {
-      // Check if property is currently occupied today
+      // Check if property is currently occupied today (completed tenancies do NOT mark property as occupied)
       const currentStay = appState.bookings.find(b => 
         b.propertyId === prop.id && 
         b.checkIn <= todayStr && 
         b.checkOut > todayStr && 
-        b.status !== 'cancelled'
+        b.status !== 'cancelled' &&
+        b.status !== 'checked-out' &&
+        b.status !== 'completed' &&
+        !isCompletedTenancy(b, todayStr)
       );
 
       const hasTurnover = appState.turnovers.some(tItem => tItem.propertyId === prop.id && tItem.status !== 'completed');
@@ -3343,6 +3407,24 @@ function renderDashboardTab() {
       `;
       propList.appendChild(card);
     });
+  }
+
+  // Update Dashboard Historical Tenancies quick link
+  const historicalTenancies = appState.bookings.filter(b => isCompletedTenancy(b, todayStr));
+  const btnHist = document.getElementById('btnDashHistoricalTenancies');
+  const histCountEl = document.getElementById('dashHistoricalTenancyCount');
+  if (btnHist && histCountEl) {
+    if (historicalTenancies.length > 0) {
+      btnHist.style.display = 'inline-flex';
+      histCountEl.textContent = historicalTenancies.length;
+      btnHist.onclick = () => {
+        switchTab('bookings');
+        const histPill = document.querySelector('#bookingStatusFilters .filter-pill[data-filter="historical_tenancy"]');
+        if (histPill) histPill.click();
+      };
+    } else {
+      btnHist.style.display = 'none';
+    }
   }
 }
 
@@ -3538,7 +3620,7 @@ function getIncomingBookings() {
   const todayStr = new Date().toISOString().split('T')[0];
   const calFilter = appState.calFilterMode || 'checkin';
 
-  const active = allBookings.filter(b => b.status !== 'cancelled');
+  const active = allBookings.filter(b => b.status !== 'cancelled' && b.status !== 'checked-out' && b.status !== 'completed' && !isCompletedTenancy(b, todayStr));
 
   if (calFilter === 'checkout') {
     // In checkout mode: show upcoming check-outs (from today onwards)
@@ -4025,7 +4107,7 @@ function attachCalendarCardActions(container) {
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => x.id === bid);
       if (b) {
-        const docType = (b.status === 'confirmed' || b.status === 'completed') ? 'receipt' : b.status === 'booked' ? 'invoice' : 'quotation';
+        const docType = (b.status === 'confirmed' || b.status === 'completed') ? 'receipt' : b.status === 'booked' ? 'deposit_receipt' : 'quotation';
         openPdfDocModal(b, docType);
       }
     });
@@ -4068,7 +4150,7 @@ function renderBookingsTab() {
   const container = document.getElementById('bookingsContainer');
   container.innerHTML = '';
 
-  const query = document.getElementById('bookingSearchInput').value.toLowerCase().trim();
+  const query = (document.getElementById('bookingSearchInput')?.value || '').toLowerCase().trim();
   const activeFilterBtn = document.querySelector('#bookingStatusFilters .filter-pill.active');
   const filterType = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
 
@@ -4076,16 +4158,21 @@ function renderBookingsTab() {
   const todayStr = new Date().toISOString().split('T')[0];
 
   // Apply status filter
-  if (filterType === 'quotation') {
+  if (filterType === 'all') {
+    // Active operational workflow: completed historical monthly tenancies are archived
+    bookings = bookings.filter(b => !isCompletedTenancy(b, todayStr));
+  } else if (filterType === 'quotation') {
     bookings = bookings.filter(b => b.status === 'quotation');
   } else if (filterType === 'booked') {
     bookings = bookings.filter(b => b.status === 'booked');
   } else if (filterType === 'confirmed') {
     bookings = bookings.filter(b => b.status === 'confirmed');
   } else if (filterType === 'active') {
-    bookings = bookings.filter(b => b.status === 'checked-in' || (b.checkIn <= todayStr && b.checkOut >= todayStr && b.status !== 'cancelled' && b.status !== 'quotation'));
+    bookings = bookings.filter(b => b.status === 'checked-in' || (b.checkIn <= todayStr && b.checkOut >= todayStr && b.status !== 'cancelled' && b.status !== 'quotation' && !isCompletedTenancy(b, todayStr)));
   } else if (filterType === 'completed') {
-    bookings = bookings.filter(b => b.status === 'checked-out' || b.checkOut < todayStr);
+    bookings = bookings.filter(b => b.status === 'checked-out' || b.status === 'completed' || b.checkOut < todayStr);
+  } else if (filterType === 'historical_tenancy') {
+    bookings = bookings.filter(b => isCompletedTenancy(b, todayStr));
   } else if (filterType === 'blocked') {
     bookings = bookings.filter(b => b.status === 'blocked');
   }
@@ -4102,18 +4189,37 @@ function renderBookingsTab() {
   // Sort by check-in date descending
   bookings.sort((a, b) => new Date(b.checkIn) - new Date(a.checkIn));
 
+  const isBM = appState.settings.language === 'bm';
+
   if (bookings.length === 0) {
+    const isHist = filterType === 'historical_tenancy';
     container.innerHTML = `
       <div class="card" style="text-align:center; padding:32px 16px;">
-        <i class="fa-solid fa-address-book" style="font-size:32px; color:var(--text-subtle); margin-bottom:8px;"></i>
-        <h4 style="font-size:14px; font-weight:700;">${t('no_bookings_found')}</h4>
-        <p class="card-subtitle">${t('no_bookings_hint')}</p>
+        <i class="fa-solid ${isHist ? 'fa-clock-rotate-left' : 'fa-address-book'}" style="font-size:32px; color:var(--text-subtle); margin-bottom:8px;"></i>
+        <h4 style="font-size:14px; font-weight:700;">${isHist ? (isBM ? 'Tiada Rekod Sejarah Sewaan' : 'No Historical Tenancies Found') : t('no_bookings_found')}</h4>
+        <p class="card-subtitle">${isHist ? (isBM ? 'Semua sewaan bulanan yang telah tamat atau diselesaikan akan disimpan secara automatik di sini.' : 'All monthly tenancies that have completed or ended will be archived here automatically.') : t('no_bookings_hint')}</p>
       </div>
     `;
     return;
   }
 
-  const isBM = appState.settings.language === 'bm';
+  // If in 'All' active view and historical tenancies exist, show helpful access banner
+  const allHistoricalTenancies = getFilteredBookings().filter(b => isCompletedTenancy(b, todayStr));
+  if (filterType === 'all' && allHistoricalTenancies.length > 0 && !query) {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; background:var(--bg-surface-subtle); border:1px dashed var(--border-color); border-radius:var(--radius-md); margin-bottom:12px; font-size:12px;';
+    banner.innerHTML = `
+      <span style="color:var(--text-muted);"><i class="fa-solid fa-clock-rotate-left" style="color:var(--primary); margin-right:4px;"></i> ${isBM ? `<strong>${allHistoricalTenancies.length}</strong> sewaan bulanan tamat diarkibkan dalam Sejarah Sewaan.` : `<strong>${allHistoricalTenancies.length}</strong> completed monthly tenancies archived in Historical.`}</span>
+      <button class="btn btn-outline btn-xs" id="btnBannerViewHistTenancies" style="font-weight:700; white-space:nowrap; border-radius:999px;">
+        ${isBM ? 'Lihat Sejarah Sewaan' : 'View Historical'}
+      </button>
+    `;
+    container.appendChild(banner);
+    banner.querySelector('#btnBannerViewHistTenancies')?.addEventListener('click', () => {
+      const histPill = document.querySelector('#bookingStatusFilters .filter-pill[data-filter="historical_tenancy"]');
+      if (histPill) histPill.click();
+    });
+  }
 
   bookings.forEach(b => {
     const prop = getPropertyById(b.propertyId);
@@ -4121,12 +4227,15 @@ function renderBookingsTab() {
     card.className = 'booking-card';
     card.style.borderLeft = `4px solid ${prop.color}`;
 
+    const isHistTenancy = isCompletedTenancy(b, todayStr);
+
     const statusBadgeColors = {
       'quotation': 'background: var(--primary-light); color: var(--primary-text);',
       'booked': 'background: var(--warning-light); color: var(--warning-text); border: 1px solid rgba(245,158,11,0.4);',
       'confirmed': 'background: var(--success-light); color: var(--success-text); border: 1px solid rgba(16,185,129,0.4);',
       'checked-in': 'background: #dbeafe; color: #1e40af;',
-      'checked-out': 'background: var(--bg-surface-subtle); color: var(--text-muted);',
+      'checked-out': isHistTenancy ? 'background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;' : 'background: var(--bg-surface-subtle); color: var(--text-muted);',
+      'completed': 'background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;',
       'blocked': 'background: var(--danger-light); color: var(--danger-text);',
       'cancelled': 'background: var(--danger-light); color: var(--danger-text);'
     };
@@ -4136,7 +4245,8 @@ function renderBookingsTab() {
       'booked': '🟡 DITEMPAH (DEPOSIT)',
       'confirmed': '🟢 DISAHKAN (PENUH)',
       'checked-in': '🔑 MENGINAP (CHECK-IN)',
-      'checked-out': '🏁 SELESAI',
+      'checked-out': isHistTenancy ? '📜 SEJARAH SEWAAN (TAMAT)' : '🏁 SELESAI',
+      'completed': isHistTenancy ? '📜 SEJARAH SEWAAN (SELESAI)' : '🏁 SELESAI',
       'blocked': '🚫 DISEKAT',
       'cancelled': '❌ DIBATALKAN'
     } : {
@@ -4144,7 +4254,8 @@ function renderBookingsTab() {
       'booked': '🟡 BOOKED (DEPOSIT PAID)',
       'confirmed': '🟢 CONFIRMED (PAID FULL)',
       'checked-in': '🔑 IN-HOUSE (CHECKED IN)',
-      'checked-out': '🏁 COMPLETED',
+      'checked-out': isHistTenancy ? '📜 HISTORICAL TENANCY (ENDED)' : '🏁 COMPLETED',
+      'completed': isHistTenancy ? '📜 HISTORICAL TENANCY (COMPLETED)' : '🏁 COMPLETED',
       'blocked': '🚫 BLOCKED',
       'cancelled': '❌ CANCELLED'
     };
@@ -4286,10 +4397,17 @@ function renderBookingsTab() {
           `}
         ` : ''}
 
-        ${b.status === 'checked-out' && (b.rentalDeposit || b.securityDeposit) ? `
-          <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="refund_receipt">
-            <i class="fa-solid fa-file-invoice-dollar"></i> ${isBM ? 'Lihat Penyata Pulangan' : 'View Refund Statement'}
-          </button>
+        ${(b.status === 'checked-out' || b.status === 'completed' || isHistTenancy) ? `
+          ${(b.rentalDeposit || b.securityDeposit) ? `
+            <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="refund_receipt">
+              <i class="fa-solid fa-file-invoice-dollar"></i> ${isBM ? 'Lihat Penyata Pulangan' : 'View Refund Statement'}
+            </button>
+          ` : ''}
+          ${isHistTenancy ? `
+            <button class="btn btn-outline btn-xs btn-reopen-tenancy" data-bid="${b.id}" style="color:var(--primary); font-weight:700;">
+              <i class="fa-solid fa-arrow-rotate-left"></i> ${isBM ? 'Aktifkan Semula' : 'Reactivate'}
+            </button>
+          ` : ''}
         ` : ''}
 
         <button class="btn btn-outline btn-xs btn-open-wa" data-bid="${b.id}" data-wa="payment" title="${t('btn_wa')}">
@@ -4398,13 +4516,36 @@ function renderBookingsTab() {
       const b = appState.bookings.find(x => x.id === bid);
       if (b) {
         b.status = 'checked-out';
+        if (b.rentalType === 'monthly') {
+          b.isHistorical = true;
+        }
         if (b.balance > 0) {
           b.depositPaid = b.totalAmount;
           b.balance = 0;
         }
         saveToStorage();
         renderBookingsTab();
-        showToast(isBM ? 'Tempahan selesai & baki diselesaikan.' : 'Booking marked as completed & balance settled.');
+        renderDashboardTab();
+        showToast(isBM 
+          ? (b.rentalType === 'monthly' ? 'Sewaan selesai & telah dimasukkan ke Sejarah Sewaan.' : 'Tempahan selesai & baki diselesaikan.') 
+          : (b.rentalType === 'monthly' ? 'Tenancy completed & archived into Historical Tenancies.' : 'Booking marked as completed & balance settled.'));
+      }
+    });
+  });
+
+  container.querySelectorAll('.btn-reopen-tenancy').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) {
+        if (confirm(isBM ? `Adakah anda ingin mengaktifkan semula sewaan bagi ${b.guestName}?` : `Do you want to reactivate the tenancy for ${b.guestName}?`)) {
+          b.status = 'confirmed';
+          b.isHistorical = false;
+          saveToStorage();
+          renderBookingsTab();
+          renderDashboardTab();
+          showToast(isBM ? 'Sewaan berjaya diaktifkan semula!' : 'Tenancy reactivated successfully!');
+        }
       }
     });
   });
@@ -4422,7 +4563,7 @@ function renderBookingsTab() {
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => x.id === bid);
       if (b) {
-        const docType = (b.status === 'confirmed' || b.status === 'completed') ? 'receipt' : b.status === 'booked' ? 'invoice' : 'quotation';
+        const docType = (b.status === 'confirmed' || b.status === 'completed') ? 'receipt' : b.status === 'booked' ? 'deposit_receipt' : 'quotation';
         openPdfDocModal(b, docType);
       }
     });
@@ -5136,10 +5277,14 @@ function getBookingOverlaps(propertyId, checkIn, checkOut, excludeBookingId = nu
   if (!propertyId || !checkIn || !checkOut) return [];
   if (checkIn >= checkOut) return [];
 
+  const todayStr = new Date().toISOString().split('T')[0];
+
   return appState.bookings.filter(b => {
     if (b.propertyId !== propertyId) return false;
     if (excludeBookingId && b.id === excludeBookingId) return false;
     if (b.status === 'cancelled') return false;
+    // Completed historical tenancies and ended stays should not block future reservations
+    if (b.status === 'checked-out' || b.status === 'completed' || isCompletedTenancy(b, todayStr)) return false;
     // Standard hotel interval overlap: (checkInA < checkOutB) && (checkOutA > checkInB)
     return (checkIn < b.checkOut) && (checkOut > b.checkIn);
   });
@@ -8454,17 +8599,22 @@ const PDF_DOC_I18N = {
     docTitleQuotation: 'Sebut Harga',
     docBadgeInvoice: 'INVOIS RASMI',
     docTitleInvoice: 'Invois',
+    docBadgeDepositReceipt: 'RESIT DEPOSIT DITERIMA',
+    docTitleDepositReceipt: 'Resit Bayaran Deposit',
     docBadgeReceipt: 'RESIT RASMI PEMBAYARAN',
-    docTitleReceipt: 'Resit Rasmi',
+    docTitleReceipt: 'Resit Rasmi Bayaran Penuh',
 
     lblPdfDocNoTitleQuotation: 'No. Sebut Harga:',
     lblPdfDocNoTitleInvoice: 'No. Invois:',
-    lblPdfDocNoTitleReceipt: 'No. Resit:',
+    lblPdfDocNoTitleDepositReceipt: 'No. Resit Deposit:',
+    lblPdfDocNoTitleReceipt: 'No. Resit Rasmi:',
     lblPdfDocDateTitleQuotation: 'Tarikh Sebut Harga:',
     lblPdfDocDateTitleInvoice: 'Tarikh Invois:',
+    lblPdfDocDateTitleDepositReceipt: 'Tarikh Resit:',
     lblPdfDocDateTitleReceipt: 'Tarikh Resit:',
     lblPdfValidityTitle: 'Tempoh Sah:',
     lblPdfLpoTitle: 'No. LPO / Ruj:',
+    lblPdfPayMethodTitle: 'Kaedah Bayaran:',
     lblPdfBillTo: 'Dikeluarkan Kepada',
 
     thPdfItem: 'Perkara / Huraian',
@@ -8474,17 +8624,26 @@ const PDF_DOC_I18N = {
     thPdfTax: 'Cukai / SST',
     thPdfAmount: 'Jumlah',
 
-    lblPdfSubTotalTable: 'Jumlah Kasar (Sub Total)',
+    lblPdfSubTotalTable: 'Jumlah Kasar Pakej',
     lblPdfExtraCharges: 'Caj Tambahan (+)',
-    lblPdfTaxableAmount: 'Jumlah Dikenakan Cukai',
+    lblPdfTaxableAmount: 'Jumlah Kasar Pakej Penginapan',
     lblPdfCgst: 'SST / Cukai Perkhidmatan @ 0%',
     lblPdfSgst: 'Cukai Warisan / Pelancongan @ RM 0.00',
     lblPdfDepositReq: 'Deposit Komitmen Diperlukan:',
+    lblPdfDepositPaidRow: 'Bayaran Deposit Diterima (+):',
+    lblPdfDepositDeductedRow: 'Tolak: Deposit Telah Dibayar (-):',
     lblPdfPaid: 'Jumlah Telah Dibayar:',
-    lblPdfBalance: 'Baki Belum Jelas:',
+    lblPdfBalance: 'Baki Belum Jelas (Sebelum Masuk):',
     lblPdfDiscount: 'Diskaun (-)',
-    lblPdfGrandTotal: 'Jumlah Keseluruhan',
-    lblPdfWordsTitle: 'Jumlah Keseluruhan Dalam Perkataan',
+    
+    lblPdfGrandTotalQuotation: 'Jumlah Anggaran Keseluruhan',
+    lblPdfGrandTotalInvoice: 'Baki Perlu Dijelaskan (Amount Due)',
+    lblPdfGrandTotalInvoiceNoDep: 'Jumlah Invois Keseluruhan',
+    lblPdfGrandTotalDepositReceipt: 'JUMLAH BAYARAN DEPOSIT DITERIMA',
+    lblPdfGrandTotalReceipt: 'JUMLAH BAYARAN PENUH DITERIMA',
+
+    lblPdfWordsTitleDeposit: 'Jumlah Bayaran Deposit Diterima Dalam Perkataan',
+    lblPdfWordsTitleGeneral: 'Jumlah Keseluruhan Dalam Perkataan',
     lblPdfAuthorized: 'Tandatangan Pengurus',
 
     lblPdfBankTitle: 'Butiran Akaun Bank',
@@ -8493,7 +8652,7 @@ const PDF_DOC_I18N = {
     lblPdfBankName: 'Nama Bank:',
     lblPdfBranch: 'Cawangan:',
     lblPdfDuitNow: 'DuitNow ID:',
-    lblPdfTermsTitle: 'Syarat & Catatan',
+    lblPdfTermsTitle: 'Syarat & Catatan Dokumen',
 
     txtWaPromptTitle: 'Hantar Dokumen ini ke WhatsApp Tetamu?',
     txtWaPromptSub: 'Fail PDF rasmi ini sedia untuk dihantar dan dilampirkan terus ke perbualan WhatsApp tetamu.',
@@ -8508,7 +8667,12 @@ const PDF_DOC_I18N = {
     termsInvoice: [
       'Invois ini dikeluarkan untuk tujuan pembayaran sewaan penginapan homestay bagi urusan rasmi.',
       'Sila jelaskan baki sewaan selewat-lewatnya sebelum atau semasa pendaftaran masuk.',
-      'Resit rasmi akan dikeluarkan serta-merta sebaik sahaja bayaran diterima.'
+      'Resit rasmi akan dikeluarkan serta-merta sebaik sahaja baki bayaran diterima.'
+    ],
+    termsDepositReceipt: [
+      'Resit rasmi pengesahan penerimaan bayaran deposit / tempahan awal bagi penginapan homestay seperti butiran di atas.',
+      'Tarikh penginapan anda kini telah dikunci dan disahkan di sistem kami.',
+      'Baki bayaran sewaan hendaklah dijelaskan selewat-lewatnya sebelum atau semasa penyerahan kunci / pendaftaran masuk.'
     ],
     termsReceipt: [
       'Pengesahan rasmi penerimaan bayaran penuh untuk penginapan homestay bagi urusan rasmi seperti butiran di atas.',
@@ -8521,17 +8685,22 @@ const PDF_DOC_I18N = {
     docTitleQuotation: 'Quotation',
     docBadgeInvoice: 'OFFICIAL INVOICE',
     docTitleInvoice: 'Invoice',
+    docBadgeDepositReceipt: 'DEPOSIT PAYMENT RECEIPT',
+    docTitleDepositReceipt: 'Deposit Payment Receipt',
     docBadgeReceipt: 'OFFICIAL RECEIPT',
-    docTitleReceipt: 'Official Receipt',
+    docTitleReceipt: 'Official Payment Receipt',
 
     lblPdfDocNoTitleQuotation: 'Quotation No:',
     lblPdfDocNoTitleInvoice: 'Invoice No:',
+    lblPdfDocNoTitleDepositReceipt: 'Deposit Receipt No:',
     lblPdfDocNoTitleReceipt: 'Receipt No:',
     lblPdfDocDateTitleQuotation: 'Quotation Date:',
     lblPdfDocDateTitleInvoice: 'Invoice Date:',
+    lblPdfDocDateTitleDepositReceipt: 'Receipt Date:',
     lblPdfDocDateTitleReceipt: 'Receipt Date:',
     lblPdfValidityTitle: 'Validity Date:',
     lblPdfLpoTitle: 'LPO / Ref No:',
+    lblPdfPayMethodTitle: 'Payment Mode / Ref:',
     lblPdfBillTo: 'Bill To',
 
     thPdfItem: 'Items',
@@ -8541,17 +8710,26 @@ const PDF_DOC_I18N = {
     thPdfTax: 'Tax Per Unit',
     thPdfAmount: 'Amount',
 
-    lblPdfSubTotalTable: 'Sub Total',
+    lblPdfSubTotalTable: 'Package Sub Total',
     lblPdfExtraCharges: 'Extra Charges (+)',
-    lblPdfTaxableAmount: 'Taxable Amount',
+    lblPdfTaxableAmount: 'Total Accommodation Package',
     lblPdfCgst: 'SST / Service Tax @ 0%',
     lblPdfSgst: 'Tourism / Heritage Tax @ RM 0.00',
     lblPdfDepositReq: 'Deposit Required:',
+    lblPdfDepositPaidRow: 'Deposit Payment Received (+):',
+    lblPdfDepositDeductedRow: 'Less: Deposit Paid (-):',
     lblPdfPaid: 'Amount Paid:',
-    lblPdfBalance: 'Balance Due:',
+    lblPdfBalance: 'Outstanding Balance Due:',
     lblPdfDiscount: 'Discount (-)',
-    lblPdfGrandTotal: 'Total Amount',
-    lblPdfWordsTitle: 'Total Amount in Words',
+
+    lblPdfGrandTotalQuotation: 'Total Estimated Amount',
+    lblPdfGrandTotalInvoice: 'Balance Amount Due',
+    lblPdfGrandTotalInvoiceNoDep: 'Total Invoice Amount',
+    lblPdfGrandTotalDepositReceipt: 'TOTAL DEPOSIT RECEIVED',
+    lblPdfGrandTotalReceipt: 'TOTAL AMOUNT SETTLED',
+
+    lblPdfWordsTitleDeposit: 'Total Deposit Received in Words',
+    lblPdfWordsTitleGeneral: 'Total Amount in Words',
     lblPdfAuthorized: 'Authorized Signature',
 
     lblPdfBankTitle: 'Bank Details',
@@ -8576,6 +8754,11 @@ const PDF_DOC_I18N = {
       'This invoice is rendered for official corporate/department homestay accommodation claims.',
       'Full settlement is respectfully requested prior to or upon guest check-in arrival.',
       'An official payment receipt will be issued immediately upon receipt of bank remittance.'
+    ],
+    termsDepositReceipt: [
+      'Official acknowledgement of booking deposit payment received for the homestay stay stated above.',
+      'Your reservation dates are now officially locked and secured in our calendar.',
+      'The remaining balance is due prior to or upon guest arrival / keys handover.'
     ],
     termsReceipt: [
       'Official acknowledgement of full payment received for accommodation particulars stated above.',
@@ -8695,6 +8878,21 @@ function openPdfDocModal(booking, defaultDocType = 'quotation') {
   closeAllModals();
 
   appState.activePdfBooking = booking;
+
+  // Intelligently select default document type
+  const paidAmt = Number(booking.depositPaid || (booking.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0) || 0);
+  const totalAmt = Number(booking.totalAmount || 0);
+
+  if (defaultDocType === 'deposit_receipt' || (booking.status === 'booked' && defaultDocType !== 'invoice' && defaultDocType !== 'quotation')) {
+    defaultDocType = 'deposit_receipt';
+  } else if (defaultDocType === 'receipt') {
+    if (paidAmt > 0 && paidAmt < totalAmt) {
+      defaultDocType = 'deposit_receipt';
+    } else {
+      defaultDocType = 'receipt';
+    }
+  }
+
   appState.activePdfDocType = defaultDocType || 'quotation';
   appState.activePdfLang = appState.settings.language || 'bm';
 
@@ -8702,6 +8900,17 @@ function openPdfDocModal(booking, defaultDocType = 'quotation') {
   const valDays = booking.quotationValidityDays || appState.settings.quotationValidityDays || 3;
   const valInput = document.getElementById('pdfQuotationValidityInput');
   if (valInput) valInput.value = valDays;
+
+  // Deposit amount input
+  const depAmt = paidAmt > 0 ? paidAmt : Math.round(totalAmt * (appState.settings.defaultDepositPct || 30) / 100);
+  const depInput = document.getElementById('pdfDepositAmountInput');
+  if (depInput) depInput.value = depAmt;
+
+  // Payment Reference input
+  const payRefInput = document.getElementById('pdfPaymentRefInput');
+  if (payRefInput) {
+    payRefInput.value = booking.lastPaymentRef ? `${booking.lastPaymentBank || 'Pindahan Bank'} - ${booking.lastPaymentRef}` : '';
+  }
 
   // Client company and LPO
   const compInput = document.getElementById('pdfClientCompanyInput');
@@ -8767,6 +8976,7 @@ function updatePdfTypeTabsUI() {
   const tabs = [
     { id: 'btnPdfTabQuotation', type: 'quotation' },
     { id: 'btnPdfTabInvoice', type: 'invoice' },
+    { id: 'btnPdfTabDeposit', type: 'deposit_receipt' },
     { id: 'btnPdfTabReceipt', type: 'receipt' }
   ];
 
@@ -8775,10 +8985,20 @@ function updatePdfTypeTabsUI() {
     if (el) el.classList.toggle('active', t.type === type);
   });
 
-  // Toggle validity controls (only relevant for quotation)
+  // Toggle visibility of customization controls based on active doc type
   const validityGroup = document.getElementById('pdfQuotationValidityGroup');
   if (validityGroup) {
     validityGroup.style.display = type === 'quotation' ? 'block' : 'none';
+  }
+
+  const depositGroup = document.getElementById('pdfDepositAmountGroup');
+  if (depositGroup) {
+    depositGroup.style.display = (type === 'deposit_receipt' || type === 'invoice') ? 'block' : 'none';
+  }
+
+  const payRefGroup = document.getElementById('pdfPaymentRefGroup');
+  if (payRefGroup) {
+    payRefGroup.style.display = (type === 'deposit_receipt' || type === 'receipt') ? 'block' : 'none';
   }
 }
 
@@ -8803,7 +9023,7 @@ function updatePdfDocView() {
 
   const prop = getPropertyById(booking.propertyId) || { name: 'Homestay Unit', address: '' };
   const settings = appState.settings || {};
-  const docType = appState.activePdfDocType || 'quotation';
+  let docType = appState.activePdfDocType || 'quotation';
   const lang = appState.activePdfLang || 'bm';
   const t = PDF_DOC_I18N[lang] || PDF_DOC_I18N.bm;
   const currency = settings.currency || 'RM';
@@ -8831,29 +9051,78 @@ function updatePdfDocView() {
   const premisIdEl = document.getElementById('pdfHostPremisId');
   if (premisIdEl) premisIdEl.textContent = prop.id ? `HM-${prop.id.replace(/\D/g, '')}` : 'HM-1088';
 
-  // 2. Document Number & Date
+  // 2. Financial Figures: Grand Total, Deposit Paid, Remaining Balance
+  const nights = booking.nights || 1;
+  const ratePerNight = nights > 0 ? (booking.baseRate ? booking.baseRate / nights : (booking.totalAmount - (booking.cleaningFee || 0)) / nights) : booking.totalAmount;
+  const accommodationTotal = ratePerNight * nights;
+  const grandTotal = booking.totalAmount || (accommodationTotal + (booking.cleaningFee || 0));
+
+  // Determine Deposit Paid Amount from custom input or booking object
+  let depositPaidAmt = parseFloat(document.getElementById('pdfDepositAmountInput')?.value);
+  if (isNaN(depositPaidAmt)) {
+    depositPaidAmt = Number(booking.depositPaid || (booking.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0) || 0);
+  }
+  // Fallback for deposit receipt if 0
+  if (depositPaidAmt === 0 && (docType === 'deposit_receipt' || booking.status === 'booked')) {
+    depositPaidAmt = Number(booking.depositAmount || Math.round(grandTotal * (settings.defaultDepositPct || 30) / 100));
+  }
+  const balAmt = Math.max(0, grandTotal - depositPaidAmt);
+
+  // Update Deposit balance hint in toolbar
+  const depBalHint = document.getElementById('pdfDepositBalanceHint');
+  if (depBalHint) {
+    depBalHint.textContent = lang === 'bm' ? `Baki: ${currency} ${balAmt.toFixed(2)}` : `Bal: ${currency} ${balAmt.toFixed(2)}`;
+    depBalHint.style.color = balAmt > 0 ? '#b45309' : '#059669';
+  }
+
+  // 3. Document Number & Date & Meta
   const year = new Date().getFullYear();
   const idShort = (booking.id || '').replace(/\D/g, '').slice(-4) || '1088';
   let docPrefix = 'QT';
   let docTitle = t.docTitleQuotation;
   let docNoTitle = t.lblPdfDocNoTitleQuotation;
   let docDateTitle = t.lblPdfDocDateTitleQuotation;
+  let docBadge = t.docBadgeQuotation;
+  let badgeBg = '#e0f2fe';
+  let badgeColor = '#0369a1';
+  let titleColor = '#ea580c';
 
   if (docType === 'invoice') {
     docPrefix = 'INV';
     docTitle = t.docTitleInvoice;
     docNoTitle = t.lblPdfDocNoTitleInvoice;
     docDateTitle = t.lblPdfDocDateTitleInvoice;
+    docBadge = t.docBadgeInvoice;
+    badgeBg = '#ede9fe';
+    badgeColor = '#5b21b6';
+    titleColor = '#5b21b6';
+  } else if (docType === 'deposit_receipt') {
+    docPrefix = 'REC-DEP';
+    docTitle = t.docTitleDepositReceipt;
+    docNoTitle = t.lblPdfDocNoTitleDepositReceipt;
+    docDateTitle = t.lblPdfDocDateTitleDepositReceipt;
+    docBadge = t.docBadgeDepositReceipt;
+    badgeBg = '#dbeafe';
+    badgeColor = '#1e40af';
+    titleColor = '#0284c7';
   } else if (docType === 'receipt') {
     docPrefix = 'REC';
     docTitle = t.docTitleReceipt;
     docNoTitle = t.lblPdfDocNoTitleReceipt;
     docDateTitle = t.lblPdfDocDateTitleReceipt;
+    docBadge = t.docBadgeReceipt;
+    badgeBg = '#d1fae5';
+    badgeColor = '#065f46';
+    titleColor = '#059669';
   }
+
   const fullDocNo = `${docPrefix}-${year}-${idShort}`;
 
   const titleEl = document.getElementById('pdfDocTitle');
-  if (titleEl) titleEl.textContent = docTitle;
+  if (titleEl) {
+    titleEl.textContent = docTitle;
+    titleEl.style.color = titleColor;
+  }
 
   const lblDocNoEl = document.getElementById('lblPdfDocNoTitle');
   if (lblDocNoEl) lblDocNoEl.textContent = docNoTitle;
@@ -8901,18 +9170,42 @@ function updatePdfDocView() {
     }
   }
 
-  // Watermark (Visible on Receipt only)
+  // Payment Method & Transaction Reference Row
+  const payMethodRow = document.getElementById('pdfDocPayMethodRow');
+  const lblPayMethodTitle = document.getElementById('lblPdfPayMethodTitle');
+  const payMethodText = document.getElementById('pdfDocPayMethodText');
+  const userPayRef = document.getElementById('pdfPaymentRefInput')?.value.trim();
+  const paymentRefStr = userPayRef || (booking.lastPaymentRef ? `${booking.lastPaymentBank || 'Bank'} - ${booking.lastPaymentRef}` : '');
+
+  if (lblPayMethodTitle) lblPayMethodTitle.textContent = t.lblPdfPayMethodTitle;
+  if (payMethodRow && payMethodText) {
+    if ((docType === 'deposit_receipt' || docType === 'receipt') && paymentRefStr) {
+      payMethodRow.style.display = 'block';
+      payMethodText.textContent = paymentRefStr;
+    } else {
+      payMethodRow.style.display = 'none';
+    }
+  }
+
+  // Watermark
   const watermark = document.getElementById('pdfPaidWatermark');
   if (watermark) {
-    if (docType === 'receipt') {
+    if (docType === 'deposit_receipt') {
+      watermark.classList.remove('hidden');
+      watermark.textContent = lang === 'bm' ? 'DEPOSIT DITERIMA' : 'DEPOSIT PAID';
+      watermark.style.color = 'rgba(2, 132, 199, 0.16)';
+      watermark.style.borderColor = 'rgba(2, 132, 199, 0.28)';
+    } else if (docType === 'receipt') {
       watermark.classList.remove('hidden');
       watermark.textContent = lang === 'bm' ? 'TELAH LUNAS' : 'PAID IN FULL';
+      watermark.style.color = 'rgba(16, 185, 129, 0.16)';
+      watermark.style.borderColor = 'rgba(16, 185, 129, 0.28)';
     } else {
       watermark.classList.add('hidden');
     }
   }
 
-  // 3. Recipient Particulars (Bill To)
+  // 4. Recipient Particulars (Bill To)
   const lblBillToEl = document.getElementById('lblPdfBillTo');
   if (lblBillToEl) lblBillToEl.textContent = t.lblPdfBillTo;
 
@@ -8952,7 +9245,7 @@ function updatePdfDocView() {
     }
   }
 
-  // 4. Homestay Stay Particulars
+  // 5. Homestay Stay Particulars
   const propNameEl = document.getElementById('pdfPropNameText');
   if (propNameEl) propNameEl.textContent = prop.name;
 
@@ -8972,7 +9265,6 @@ function updatePdfDocView() {
   if (checkOutTimeEl) checkOutTimeEl.textContent = prop.checkOutTime || '12:00 PM';
 
   const durTextEl = document.getElementById('pdfDurationGuestText');
-  const nights = booking.nights || 1;
   const guests = booking.adults || booking.guests || 2;
   if (durTextEl) {
     durTextEl.textContent = lang === 'bm' 
@@ -8980,15 +9272,12 @@ function updatePdfDocView() {
       : `${nights} Nights • ${guests} Guests`;
   }
 
-  // 5. Itemized Table
+  // 6. Itemized Table
   const tableBody = document.getElementById('pdfTableBody');
-  let accommodationTotal = 0;
   if (tableBody) {
     tableBody.innerHTML = '';
-    const ratePerNight = nights > 0 ? (booking.baseRate ? booking.baseRate / nights : (booking.totalAmount - (booking.cleaningFee || 0)) / nights) : booking.totalAmount;
-    accommodationTotal = ratePerNight * nights;
 
-    // Row 1: Stay
+    // Row 1: Accommodation Stay
     const tr1 = document.createElement('tr');
     tr1.style.borderBottom = '1px solid #f1f5f9';
     tr1.innerHTML = `
@@ -9030,7 +9319,7 @@ function updatePdfDocView() {
     tr3.style.background = '#fcfdfd';
     tr3.style.borderBottom = '1px solid #f1f5f9';
     tr3.innerHTML = `
-      <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rowIndex}</td>
+      <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rowIndex++}</td>
       <td style="padding:8px 8px;">
         <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Utiliti, Elektrik, Air & WiFi Berkelajuan Tinggi' : 'Utilities, Electricity, Water & High-Speed WiFi'}</strong>
         <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penghawa dingin sepenuhnya, bekalan air bersih dan internet tanpa had' : 'Full air-conditioning, clean water supply and unlimited high-speed WiFi access'}</span>
@@ -9044,10 +9333,8 @@ function updatePdfDocView() {
     tableBody.appendChild(tr3);
   }
 
-  // 6. Calculations & Financial Summary
-  const grandTotal = booking.totalAmount || (accommodationTotal + (booking.cleaningFee || 0));
+  // 7. Calculations & Financial Summary
   const totalQty = (nights + (booking.cleaningFee && booking.cleaningFee > 0 ? 1 : 0)).toFixed(2);
-
   const subtotalQtyEl = document.getElementById('pdfSubtotalQty');
   if (subtotalQtyEl) subtotalQtyEl.textContent = totalQty;
 
@@ -9060,61 +9347,154 @@ function updatePdfDocView() {
   const extraChargesEl = document.getElementById('pdfValExtraCharges');
   if (extraChargesEl) extraChargesEl.textContent = `${currency} 0.00`;
 
-  const grandTotalEl = document.getElementById('pdfValGrandTotal');
-  if (grandTotalEl) grandTotalEl.textContent = `${currency} ${Number(grandTotal).toFixed(2)}`;
-
-  // Deposit Row (Quotation)
   const depositPct = settings.defaultDepositPct || 30;
   const depReqAmount = booking.depositAmount && booking.depositAmount > 0 ? booking.depositAmount : (grandTotal * depositPct / 100);
+
   const depRow = document.getElementById('pdfRowDeposit');
   const depVal = document.getElementById('pdfValDepositReq');
-  if (depRow && depVal) {
-    depRow.style.display = docType === 'quotation' ? 'flex' : 'none';
-    depVal.textContent = `${currency} ${Number(depReqAmount).toFixed(2)} (${depositPct}%)`;
-  }
+  const depLbl = document.getElementById('lblPdfDepositReq');
 
-  // Paid & Balance Row (Invoice & Receipt)
   const paidRow = document.getElementById('pdfRowPaid');
   const paidVal = document.getElementById('pdfValPaid');
+  const paidLbl = document.getElementById('lblPdfPaid');
+
   const balRow = document.getElementById('pdfRowBalance');
   const balVal = document.getElementById('pdfValBalance');
-  const paidAmt = Number(booking.paidAmount || booking.depositPaid || 0);
-  const balAmt = Math.max(0, grandTotal - paidAmt);
+  const balLbl = document.getElementById('lblPdfBalance');
 
-  if (paidRow && balRow) {
-    if (docType === 'invoice') {
+  const grandTotalEl = document.getElementById('pdfValGrandTotal');
+  const grandTotalLbl = document.getElementById('lblPdfGrandTotal');
+  const wordsTitleLbl = document.getElementById('lblPdfWordsTitle');
+  const wordsEl = document.getElementById('pdfTotalAmountInWords');
+
+  if (docType === 'deposit_receipt') {
+    // --- DEPOSIT RECEIPT LOGIC ---
+    if (depRow) depRow.style.display = 'none';
+
+    if (paidRow && paidVal && paidLbl) {
       paidRow.style.display = 'flex';
+      paidLbl.textContent = t.lblPdfDepositPaidRow;
+      paidVal.textContent = `(+) ${currency} ${depositPaidAmt.toFixed(2)}`;
+      paidVal.style.color = '#059669';
+    }
+
+    if (balRow && balVal && balLbl) {
       balRow.style.display = 'flex';
-      if (paidVal) paidVal.textContent = `(-) ${currency} ${Number(paidAmt).toFixed(2)}`;
-      if (balVal) {
-        balVal.textContent = `${currency} ${Number(balAmt).toFixed(2)} (${balAmt <= 0 ? (lang === 'bm' ? 'LUNAS' : 'SETTLED') : (lang === 'bm' ? 'BELUM JELAS' : 'PENDING')})`;
+      balLbl.textContent = t.lblPdfBalance;
+      balVal.textContent = `${currency} ${balAmt.toFixed(2)} (${lang === 'bm' ? 'BELUM JELAS' : 'PENDING'})`;
+      balVal.style.color = '#b45309';
+    }
+
+    // Acknowledge the DEPOSIT amount as the primary receipt amount
+    if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalDepositReceipt;
+    if (grandTotalEl) {
+      grandTotalEl.textContent = `${currency} ${depositPaidAmt.toFixed(2)}`;
+      grandTotalEl.style.color = '#0284c7';
+    }
+
+    if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleDeposit;
+    if (wordsEl) wordsEl.textContent = numberToWordsMYR(depositPaidAmt, lang);
+
+  } else if (docType === 'receipt') {
+    // --- FULL RECEIPT LOGIC ---
+    if (depRow) depRow.style.display = 'none';
+
+    if (paidRow && paidVal && paidLbl) {
+      paidRow.style.display = 'flex';
+      paidLbl.textContent = t.lblPdfPaid;
+      paidVal.textContent = `${currency} ${grandTotal.toFixed(2)} (${lang === 'bm' ? 'PENUH' : 'FULL'})`;
+      paidVal.style.color = '#059669';
+    }
+
+    if (balRow && balVal && balLbl) {
+      balRow.style.display = 'flex';
+      balLbl.textContent = t.lblPdfBalance;
+      balVal.textContent = `${currency} 0.00 (${lang === 'bm' ? 'LUNAS / SELESAI' : 'SETTLED'})`;
+      balVal.style.color = '#059669';
+    }
+
+    if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalReceipt;
+    if (grandTotalEl) {
+      grandTotalEl.textContent = `${currency} ${grandTotal.toFixed(2)}`;
+      grandTotalEl.style.color = '#059669';
+    }
+
+    if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
+    if (wordsEl) wordsEl.textContent = numberToWordsMYR(grandTotal, lang);
+
+  } else if (docType === 'invoice') {
+    // --- INVOICE LOGIC ---
+    if (depRow) depRow.style.display = 'none';
+
+    if (depositPaidAmt > 0) {
+      if (paidRow && paidVal && paidLbl) {
+        paidRow.style.display = 'flex';
+        paidLbl.textContent = t.lblPdfDepositDeductedRow;
+        paidVal.textContent = `(-) ${currency} ${depositPaidAmt.toFixed(2)}`;
+        paidVal.style.color = '#059669';
+      }
+
+      if (balRow && balVal && balLbl) {
+        balRow.style.display = 'flex';
+        balLbl.textContent = t.lblPdfBalance;
+        balVal.textContent = `${currency} ${balAmt.toFixed(2)}`;
         balVal.style.color = balAmt <= 0 ? '#059669' : '#b45309';
       }
-    } else if (docType === 'receipt') {
-      paidRow.style.display = 'flex';
-      balRow.style.display = 'flex';
-      if (paidVal) paidVal.textContent = `(-) ${currency} ${Number(grandTotal).toFixed(2)} (FULL)`;
-      if (balVal) {
-        balVal.textContent = `${currency} 0.00 (${lang === 'bm' ? 'LUNAS / FULLY SETTLED' : 'FULLY SETTLED'})`;
-        balVal.style.color = '#059669';
+
+      if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalInvoice;
+      if (grandTotalEl) {
+        grandTotalEl.textContent = `${currency} ${balAmt.toFixed(2)}`;
+        grandTotalEl.style.color = balAmt <= 0 ? '#059669' : '#5b21b6';
       }
+
+      if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
+      if (wordsEl) wordsEl.textContent = numberToWordsMYR(balAmt, lang);
+
     } else {
-      paidRow.style.display = 'none';
-      balRow.style.display = 'none';
+      if (paidRow) paidRow.style.display = 'none';
+      if (balRow) balRow.style.display = 'none';
+
+      if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalInvoiceNoDep;
+      if (grandTotalEl) {
+        grandTotalEl.textContent = `${currency} ${grandTotal.toFixed(2)}`;
+        grandTotalEl.style.color = '#5b21b6';
+      }
+
+      if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
+      if (wordsEl) wordsEl.textContent = numberToWordsMYR(grandTotal, lang);
     }
+
+  } else {
+    // --- QUOTATION LOGIC ---
+    if (depRow && depVal && depLbl) {
+      depRow.style.display = 'flex';
+      depLbl.textContent = `${t.lblPdfDepositReq} (${depositPct}%):`;
+      depVal.textContent = `${currency} ${depReqAmount.toFixed(2)}`;
+    }
+    if (paidRow) paidRow.style.display = 'none';
+    if (balRow) balRow.style.display = 'none';
+
+    if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalQuotation;
+    if (grandTotalEl) {
+      grandTotalEl.textContent = `${currency} ${grandTotal.toFixed(2)}`;
+      grandTotalEl.style.color = '#ea580c';
+    }
+
+    if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
+    if (wordsEl) wordsEl.textContent = numberToWordsMYR(grandTotal, lang);
   }
 
-  // Total Amount in Words
-  const wordsEl = document.getElementById('pdfTotalAmountInWords');
-  if (wordsEl) {
-    wordsEl.textContent = numberToWordsMYR(grandTotal, lang);
-  }
-
-  // 7. Terms & Notes
+  // 8. Terms & Notes
   const termsList = document.getElementById('pdfTermsList');
   if (termsList) {
     termsList.innerHTML = '';
-    const list = docType === 'quotation' ? t.termsQuotation : docType === 'invoice' ? t.termsInvoice : t.termsReceipt;
+    const list = docType === 'deposit_receipt' 
+      ? t.termsDepositReceipt 
+      : docType === 'quotation' 
+        ? t.termsQuotation 
+        : docType === 'invoice' 
+          ? t.termsInvoice 
+          : t.termsReceipt;
     list.forEach(item => {
       const li = document.createElement('li');
       li.textContent = item;
@@ -9122,7 +9502,7 @@ function updatePdfDocView() {
     });
   }
 
-  // 8. Bank Details
+  // 9. Bank Details
   const bankNameEl = document.getElementById('pdfBankName');
   if (bankNameEl) bankNameEl.textContent = settings.bankName || 'Maybank';
 
@@ -9184,23 +9564,8 @@ function updatePdfDocView() {
   const sgstLbl = document.getElementById('lblPdfSgst');
   if (sgstLbl) sgstLbl.textContent = t.lblPdfSgst;
 
-  const depReqLbl = document.getElementById('lblPdfDepositReq');
-  if (depReqLbl) depReqLbl.textContent = t.lblPdfDepositReq;
-
-  const paidLbl = document.getElementById('lblPdfPaid');
-  if (paidLbl) paidLbl.textContent = t.lblPdfPaid;
-
-  const balLbl = document.getElementById('lblPdfBalance');
-  if (balLbl) balLbl.textContent = t.lblPdfBalance;
-
   const discLbl = document.getElementById('lblPdfDiscount');
   if (discLbl) discLbl.textContent = t.lblPdfDiscount;
-
-  const grandTotalLbl = document.getElementById('lblPdfGrandTotal');
-  if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotal;
-
-  const wordsTitleLbl = document.getElementById('lblPdfWordsTitle');
-  if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitle;
 
   const bankTitleLbl = document.getElementById('lblPdfBankTitle');
   if (bankTitleLbl) bankTitleLbl.textContent = t.lblPdfBankTitle;
@@ -9263,7 +9628,11 @@ function downloadPdfDocument() {
   const element = document.getElementById('printablePdfSheet');
   const year = new Date().getFullYear();
   const idShort = (booking.id || '').replace(/\D/g, '').slice(-4) || '1088';
-  const prefix = docType === 'invoice' ? 'INV' : docType === 'receipt' ? 'REC' : 'QT';
+  let prefix = 'QT';
+  if (docType === 'invoice') prefix = 'INV';
+  else if (docType === 'deposit_receipt') prefix = 'REC_DEP';
+  else if (docType === 'receipt') prefix = 'REC';
+
   const cleanName = (booking.guestName || 'Tetamu').replace(/[^a-zA-Z0-9_-]/g, '_');
   const fileName = `${prefix}_${year}_${idShort}_${cleanName}.pdf`;
 
@@ -9299,25 +9668,48 @@ function sharePdfViaWhatsApp() {
   const lang = appState.activePdfLang || 'bm';
   const isBM = lang === 'bm';
   const prop = getPropertyById(booking.propertyId) || { name: 'Homestay' };
+  const currency = appState.settings.currency || 'RM';
   
   const year = new Date().getFullYear();
   const idShort = (booking.id || '').replace(/\D/g, '').slice(-4) || '1088';
   let docPrefix = 'QT';
   let docName = isBM ? 'Sebut Harga Rasmi' : 'Official Quotation';
+
+  const grandTotal = booking.totalAmount || 0;
+  let depositPaidAmt = parseFloat(document.getElementById('pdfDepositAmountInput')?.value);
+  if (isNaN(depositPaidAmt)) {
+    depositPaidAmt = Number(booking.depositPaid || (booking.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0) || 0);
+  }
+  if (depositPaidAmt === 0 && (docType === 'deposit_receipt' || booking.status === 'booked')) {
+    depositPaidAmt = Number(booking.depositAmount || Math.round(grandTotal * (appState.settings.defaultDepositPct || 30) / 100));
+  }
+  const balAmt = Math.max(0, grandTotal - depositPaidAmt);
+
   if (docType === 'invoice') {
     docPrefix = 'INV';
     docName = isBM ? 'Invois Rasmi' : 'Official Invoice';
+  } else if (docType === 'deposit_receipt') {
+    docPrefix = 'REC-DEP';
+    docName = isBM ? 'Resit Bayaran Deposit' : 'Deposit Payment Receipt';
   } else if (docType === 'receipt') {
     docPrefix = 'REC';
-    docName = isBM ? 'Resit Rasmi Pembayaran' : 'Official Payment Receipt';
+    docName = isBM ? 'Resit Bayaran Penuh' : 'Official Payment Receipt';
   }
+
   const fullDocNo = `${docPrefix}-${year}-${idShort}`;
   const cleanName = (booking.guestName || 'Tetamu').replace(/[^a-zA-Z0-9_-]/g, '_');
-  const fileName = `${docPrefix}_${year}_${idShort}_${cleanName}.pdf`;
+  const fileName = `${docPrefix.replace('-', '_')}_${year}_${idShort}_${cleanName}.pdf`;
 
-  const message = isBM
-    ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docName}* (*No: ${fullDocNo}*) bagi penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
-    : `Greetings ${booking.guestName}.\n\nAttached is the official *${docName}* (*Ref: ${fullDocNo}*) for your stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+  let message = '';
+  if (docType === 'deposit_receipt') {
+    message = isBM
+      ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docName}* (*No: ${fullDocNo}*) bagi bayaran deposit penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Rekod Bayaran:*\n• Jumlah Pakej: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Diterima:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Baki Sebelum Masuk:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+      : `Greetings ${booking.guestName}.\n\nAttached is the official *${docName}* (*Ref: ${fullDocNo}*) confirming your deposit payment for the stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Payment Record:*\n• Total Package: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Received:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Remaining Balance:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+  } else {
+    message = isBM
+      ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docName}* (*No: ${fullDocNo}*) bagi penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+      : `Greetings ${booking.guestName}.\n\nAttached is the official *${docName}* (*Ref: ${fullDocNo}*) for your stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+  }
 
   // Copy text to clipboard
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -9383,11 +9775,9 @@ function sharePdfViaWhatsApp() {
 
     }).catch(err => {
       console.error('Error generating PDF blob for WhatsApp:', err);
-      // Fallback
       window.open(waUrl, '_blank');
     });
   } else {
-    // If html2pdf not available, open WhatsApp
     window.open(waUrl, '_blank');
   }
 }
@@ -9467,6 +9857,7 @@ function openGuestGuideModal() {
 // ==========================================================================
 
 function exportDataBackup() {
+  const isLangBm = appState.settings.language === 'bm';
   const exportObject = {
     version: APP_VERSION,
     exportDate: new Date().toISOString(),
@@ -9475,6 +9866,8 @@ function exportDataBackup() {
     turnovers: appState.turnovers,
     expenses: appState.expenses,
     contacts: appState.contacts,
+    maintenanceTeam: appState.contacts, // Explicitly named Maintenance Team & Suppliers directory
+    maintenanceTasks: appState.turnovers, // Maintenance and turnover cleaning records
     promotionalMedia: appState.promotionalMedia,
     settings: appState.settings,
     licenseKey: appState.licenseKey,
@@ -9489,13 +9882,16 @@ function exportDataBackup() {
   document.body.appendChild(downloadAnchor);
   downloadAnchor.click();
   downloadAnchor.remove();
-  showToast('Backup file downloaded safely!');
+  showToast(isLangBm 
+    ? '🎉 Fail sandaran (termasuk Pasukan Penyelenggaraan & Tempahan) berjaya dimuat turun!' 
+    : '🎉 Backup file (including Maintenance Team, Bookings & Payments) downloaded safely!');
 }
 
 function importDataBackup(event) {
   const file = event.target.files[0];
   if (!file) return;
 
+  const isLangBm = appState.settings.language === 'bm';
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
@@ -9503,9 +9899,11 @@ function importDataBackup(event) {
       if (data.properties && Array.isArray(data.properties)) {
         appState.properties = data.properties;
         appState.bookings = data.bookings || [];
-        appState.turnovers = data.turnovers || [];
+        appState.turnovers = data.turnovers || data.maintenanceTasks || [];
         appState.expenses = data.expenses || [];
-        appState.contacts = data.contacts || [...DEFAULT_CONTACTS];
+        appState.contacts = (Array.isArray(data.maintenanceTeam) && data.maintenanceTeam.length > 0)
+          ? data.maintenanceTeam
+          : (Array.isArray(data.contacts) ? data.contacts : [...DEFAULT_CONTACTS]);
         appState.promotionalMedia = data.promotionalMedia || [...DEFAULT_PROMO_MEDIA];
         appState.settings = data.settings || DEFAULT_SETTINGS;
         if (data.licenseKey) {
@@ -9521,12 +9919,14 @@ function importDataBackup(event) {
         }
         saveToStorage();
         renderApp();
-        showToast('Backup restored successfully!');
+        showToast(isLangBm 
+          ? '🎉 Salinan sandaran (termasuk Pasukan Penyelenggaraan & Tempahan) berjaya dipulihkan!' 
+          : '🎉 Backup (including Maintenance Team & Bookings) restored successfully!');
       } else {
-        alert('Invalid backup file format.');
+        alert(isLangBm ? 'Format fail sandaran tidak sah.' : 'Invalid backup file format.');
       }
     } catch (err) {
-      alert('Error parsing JSON backup file.');
+      alert(isLangBm ? 'Ralat membaca fail sandaran JSON.' : 'Error parsing JSON backup file.');
     }
   };
   reader.readAsText(file);
@@ -9553,7 +9953,11 @@ function restoreAutoBackup() {
       if (Array.isArray(data.bookings)) appState.bookings = data.bookings;
       if (Array.isArray(data.turnovers)) appState.turnovers = data.turnovers;
       if (Array.isArray(data.expenses)) appState.expenses = data.expenses;
-      if (Array.isArray(data.contacts)) appState.contacts = data.contacts;
+      if (Array.isArray(data.maintenanceTeam) && data.maintenanceTeam.length > 0) {
+        appState.contacts = data.maintenanceTeam;
+      } else if (Array.isArray(data.contacts)) {
+        appState.contacts = data.contacts;
+      }
       if (Array.isArray(data.promotionalMedia)) appState.promotionalMedia = data.promotionalMedia;
       if (data.settings) appState.settings = { ...DEFAULT_SETTINGS, ...data.settings };
       if (data.licenseKey) {
@@ -9569,7 +9973,7 @@ function restoreAutoBackup() {
       }
       saveToStorage();
       renderApp();
-      showToast(isLangBm ? '🎉 Salinan keselamatan berjaya dipulihkan!' : '🎉 Safety snapshot successfully restored!');
+      showToast(isLangBm ? '🎉 Salinan keselamatan (termasuk Pasukan Penyelenggaraan) berjaya dipulihkan!' : '🎉 Safety snapshot (including Maintenance Team) successfully restored!');
     }
   } catch (err) {
     alert('Error restoring safety snapshot: ' + err.message);

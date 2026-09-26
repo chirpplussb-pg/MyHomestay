@@ -178,7 +178,12 @@
         <!-- Property Status Overview Cards -->
         <div class="section-heading">
           <h2 class="section-title" data-i18n="homestay_units_title">Homestay Units Overview</h2>
-          <span class="section-action" id="btnManageProperties" data-i18n="manage_btn">Manage</span>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn btn-outline btn-xs" id="btnDashHistoricalTenancies" style="display:none; font-size:11px; padding:3px 9px; border-radius:999px; border-color:var(--primary); color:var(--primary); font-weight:700;">
+              <i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="btn_historical_tenancies">Historical Tenancies</span> (<span id="dashHistoricalTenancyCount">0</span>)
+            </button>
+            <span class="section-action" id="btnManageProperties" data-i18n="manage_btn">Manage</span>
+          </div>
         </div>
         <div class="property-overview-list" id="dashboardPropertyStatusList">
           <!-- Populated dynamically -->
@@ -261,6 +266,7 @@
             <button class="filter-pill" data-filter="confirmed" data-i18n="filter_confirmed">🟢 Confirmed (Full)</button>
             <button class="filter-pill" data-filter="active" data-i18n="filter_inhouse">In-House</button>
             <button class="filter-pill" data-filter="completed" data-i18n="filter_completed">Completed</button>
+            <button class="filter-pill" data-filter="historical_tenancy" id="btnFilterHistoricalTenancy" data-i18n="filter_historical_tenancy"><i class="fa-solid fa-clock-rotate-left"></i> Historical Tenancies</button>
             <button class="filter-pill" data-filter="blocked" data-i18n="filter_blocked">Blocked</button>
           </div>
         </div>
@@ -611,7 +617,7 @@
         <!-- Data Backup & Offline Storage -->
         <div class="card">
           <h3 class="card-title mb-2" data-i18n="data_backup_title">Data & Backup</h3>
-          <p class="card-subtitle mb-3" data-i18n="data_backup_sub">All your data is saved privately on your device. Export a backup anytime.</p>
+          <p class="card-subtitle mb-3" data-i18n="data_backup_sub">All your data (Homestays, Bookings, Payments, Maintenance Team & Suppliers) is saved privately on your device. Export a backup anytime.</p>
           
           <div class="settings-btn-grid">
             <button class="btn btn-outline" id="btnRestoreAutoBackup" style="grid-column: 1 / -1; border-color: var(--primary); color: var(--primary); font-weight: 600;">
@@ -2150,13 +2156,16 @@
             <!-- Document Selector Pills -->
             <div class="pdf-type-pills">
               <button type="button" class="pdf-type-btn active" data-doc="quotation" id="btnPdfTabQuotation">
-                <i class="fa-regular fa-file-lines"></i> <span data-i18n="pdf_tab_quotation">1. Sebut Harga (Quotation)</span>
+                <i class="fa-regular fa-file-lines"></i> <span data-i18n="pdf_tab_quotation">1. Sebut Harga</span>
               </button>
               <button type="button" class="pdf-type-btn" data-doc="invoice" id="btnPdfTabInvoice">
-                <i class="fa-solid fa-file-invoice"></i> <span data-i18n="pdf_tab_invoice">2. Invois Rasmi (Invoice)</span>
+                <i class="fa-solid fa-file-invoice"></i> <span data-i18n="pdf_tab_invoice">2. Invois Rasmi</span>
+              </button>
+              <button type="button" class="pdf-type-btn" data-doc="deposit_receipt" id="btnPdfTabDeposit">
+                <i class="fa-solid fa-hand-holding-dollar"></i> <span data-i18n="pdf_tab_deposit">3. Resit Deposit</span>
               </button>
               <button type="button" class="pdf-type-btn" data-doc="receipt" id="btnPdfTabReceipt">
-                <i class="fa-solid fa-receipt"></i> <span data-i18n="pdf_tab_receipt">3. Resit Rasmi (Receipt)</span>
+                <i class="fa-solid fa-receipt"></i> <span data-i18n="pdf_tab_receipt">4. Resit Bayaran Penuh</span>
               </button>
             </div>
 
@@ -2181,6 +2190,26 @@
                   <button type="button" class="pdf-validity-preset" data-days="14">14 Hari</button>
                   <button type="button" class="pdf-validity-preset" data-days="30">30 Hari</button>
                 </div>
+              </div>
+
+              <!-- Deposit Amount Paid Control (Shown for Deposit Receipt & Invoice) -->
+              <div id="pdfDepositAmountGroup" style="display:none; background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                <label class="form-label mb-1" style="font-size:11.5px; font-weight:700; color:#059669; display:flex; justify-content:space-between;">
+                  <span><i class="fa-solid fa-hand-holding-dollar"></i> <span data-i18n="pdf_deposit_amount_label">Jumlah Bayaran Deposit Diterima (RM)</span></span>
+                  <span id="pdfDepositBalanceHint" style="font-weight:800; color:#b45309;">-</span>
+                </label>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <input type="number" id="pdfDepositAmountInput" class="form-control form-control-sm" min="0" step="any" placeholder="0.00" style="font-weight:800; color:#059669; font-size:13.5px;">
+                  <button type="button" class="btn btn-outline btn-xs" id="btnPdfResetDeposit" style="white-space:nowrap; font-size:11px; padding:3px 8px;">Auto Deposit</button>
+                </div>
+                <span style="font-size:10px; color:var(--text-muted); margin-top:3px; display:block;">Jumlah ini akan disahkan diterima dan dicetak di atas resit deposit</span>
+              </div>
+
+              <!-- Payment Channel & Bank Ref Input -->
+              <div id="pdfPaymentRefGroup" style="display:none; background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                <label class="form-label mb-1" style="font-size:11.5px; font-weight:700;" data-i18n="pdf_pay_ref_label">Kaedah & No. Rujukan Bank (Optional)</label>
+                <input type="text" id="pdfPaymentRefInput" class="form-control form-control-sm" placeholder="e.g. Maybank - M2U-99218291 atau DuitNow QR">
+                <span style="font-size:10.5px; color:var(--text-muted);">Akan tertera pada resit untuk rujukan audit perakaunan</span>
               </div>
 
               <!-- Recipient Organization / Department Name -->
@@ -2270,6 +2299,7 @@
                   <div><strong style="color:#0f172a;" id="lblPdfDocDateTitle">Quotation Date:</strong> <span id="pdfDocDate">25 Sep, 2026 12:00 PM</span></div>
                   <div id="pdfDocValidityRow"><strong style="color:#ea580c;" id="lblPdfValidityTitle">Validity Date:</strong> <span id="pdfDocValidity" style="color:#ea580c; font-weight:800;">02 Okt 2026 (7 Hari)</span></div>
                   <div id="pdfDocLpoRow" style="display:none;"><strong style="color:#0f172a;" id="lblPdfLpoTitle">LPO / Ref No:</strong> <span id="pdfDocLpo" style="font-weight:700;">-</span></div>
+                  <div id="pdfDocPayMethodRow" style="display:none;"><strong style="color:#059669;" id="lblPdfPayMethodTitle">Kaedah Bayaran:</strong> <span id="pdfDocPayMethodText" style="font-weight:700; color:#059669;">-</span></div>
                 </div>
               </div>
             </div>

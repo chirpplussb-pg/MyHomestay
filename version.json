@@ -1,1 +1,1 @@
-{"version":"2.6.5","releaseDate":"2026-09-25","changelog":"Corporate PDF Document Engine: Instant top-level modal activation with touch/scroll optimization, cross-modal cleanup, and direct PDF access from Dashboard, Calendar, and Bookings."}
+{"version":"2.6.5","releaseDate":"2026-09-26","changelog":"Backup & Tenancy Historical Engine: Maintenance team included in JSON backups & snapshot restore; completed tenancies archived into Historical view and excluded from active Dashboard; verified hotel-standard double-booking overlap prevention."}
