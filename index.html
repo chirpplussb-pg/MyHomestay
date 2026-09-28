@@ -2197,6 +2197,24 @@
                 </div>
               </div>
 
+              <!-- Monthly Tenancy Scope Selector (Shown for Monthly Rentals) -->
+              <div id="pdfMonthlyTenancyGroup" style="display:none; background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                <label class="form-label mb-1" style="font-size:11.5px; font-weight:700; color:var(--primary); display:flex; justify-content:space-between;">
+                  <span><i class="fa-solid fa-calendar-days"></i> <span id="lblPdfMonthlyScope">Pilihan Dokumen Sewaan Bulanan</span></span>
+                  <span id="pdfMonthlyBadge" style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#e0e7ff; color:#3730a3;">Sewaan Bulanan</span>
+                </label>
+                <select id="pdfMonthlyDocScopeSelect" class="form-control form-control-sm" style="font-size:12px; font-weight:700; color:var(--text-main);">
+                  <!-- Populated dynamically by JS -->
+                </select>
+                <div id="pdfMonthlyUtilityExtraWrap" style="display:none; margin-top:8px;">
+                  <label class="form-label mb-1" style="font-size:11px; font-weight:700; color:#b45309;">
+                    <i class="fa-solid fa-bolt"></i> Caj Utiliti Bulan Ini (RM - Elektrik & Air)
+                  </label>
+                  <input type="number" id="pdfMonthlyUtilityExtraInput" class="form-control form-control-sm" placeholder="0.00" value="0" min="0" step="any" style="font-weight:800;">
+                </div>
+                <span style="font-size:10px; color:var(--text-muted); margin-top:3px; display:block;">Pilih Pakej Kemasukan (Sebut Harga) atau Invois Sewaan bagi bulan tertentu</span>
+              </div>
+
               <!-- Deposit Amount Paid Control (Shown for Deposit Receipt & Invoice) -->
               <div id="pdfDepositAmountGroup" style="display:none; background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
                 <label class="form-label mb-1" style="font-size:11.5px; font-weight:700; color:#059669; display:flex; justify-content:space-between;">
@@ -2341,8 +2359,8 @@
                 <span id="pdfPropAddressText" style="color:#64748b; font-size:10.5px; margin-left:6px;">(Alamat Premis)</span>
               </div>
               <div style="display:flex; gap:12px; align-items:center;">
-                <div><span style="color:#64748b;">Masuk:</span> <strong id="pdfCheckInDate" style="color:#0f172a;">-</strong> <span style="font-size:10px; color:#64748b;" id="pdfCheckInTime">3:00 PM</span></div>
-                <div><span style="color:#64748b;">Keluar:</span> <strong id="pdfCheckOutDate" style="color:#0f172a;">-</strong> <span style="font-size:10px; color:#64748b;" id="pdfCheckOutTime">12:00 PM</span></div>
+                <div><span style="color:#64748b;" id="lblPdfCheckInDate">Masuk:</span> <strong id="pdfCheckInDate" style="color:#0f172a;">-</strong> <span style="font-size:10px; color:#64748b;" id="pdfCheckInTime">3:00 PM</span></div>
+                <div><span style="color:#64748b;" id="lblPdfCheckOutDate">Keluar:</span> <strong id="pdfCheckOutDate" style="color:#0f172a;">-</strong> <span style="font-size:10px; color:#64748b;" id="pdfCheckOutTime">12:00 PM</span></div>
                 <div style="background:#ea580c15; color:#ea580c; font-weight:800; padding:2px 8px; border-radius:4px; font-size:10.5px;" id="pdfDurationGuestText">2 Malam • 4 Tetamu</div>
               </div>
             </div>

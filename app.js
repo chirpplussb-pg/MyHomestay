@@ -2059,6 +2059,20 @@ function setupEventListeners() {
     }
   });
 
+  // Auto-sync Rental Deposit to 1 Month Rental by default
+  const mRateEl = document.getElementById('bookingMonthlyRate');
+  const rDepEl = document.getElementById('bookingRentalDeposit');
+  if (mRateEl && rDepEl) {
+    mRateEl.addEventListener('input', () => {
+      if (rDepEl.dataset.customized !== 'true') {
+        rDepEl.value = mRateEl.value;
+      }
+    });
+    rDepEl.addEventListener('input', () => {
+      rDepEl.dataset.customized = (rDepEl.value !== mRateEl.value) ? 'true' : 'false';
+    });
+  }
+
   // Tenancy Deposit Refund Form
   const refundForm = document.getElementById('depositRefundForm');
   if (refundForm) refundForm.addEventListener('submit', handleProcessDepositRefund);
@@ -6386,6 +6400,9 @@ function renderMonthlyInvoicesList(booking) {
               <i class="fa-solid fa-receipt"></i> ${isBM ? 'Resit' : 'Receipt'}
             </button>
           ` : ''}
+          <button class="btn btn-outline btn-xs btn-open-month-pdf" data-m="${inv.monthIndex}" title="${isBM ? 'Jana / Cetak Fail PDF Rasmi' : 'Generate / Print Official PDF'}">
+            <i class="fa-solid fa-file-pdf" style="color:var(--danger, #dc2626);"></i> PDF
+          </button>
           <button class="btn btn-outline btn-xs btn-toggle-month-paid" data-m="${inv.monthIndex}">
             <i class="fa-solid fa-${isPaid ? 'rotate-left' : 'check'}" style="color:${isPaid ? 'var(--warning)' : 'var(--success)'};"></i>
             ${isPaid ? (isBM ? 'Batal Tanda' : 'Unmark') : (isBM ? 'Tanda Bayar' : 'Mark Paid')}
@@ -6409,6 +6426,15 @@ function renderMonthlyInvoicesList(booking) {
     btn.addEventListener('click', (e) => {
       const mIdx = parseInt(e.currentTarget.getAttribute('data-m')) || 1;
       openWhatsAppModal(booking, 'monthly_rent_receipt', mIdx);
+    });
+  });
+
+  container.querySelectorAll('.btn-open-month-pdf').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const mIdx = parseInt(e.currentTarget.getAttribute('data-m')) || 1;
+      const inv = invoices.find(x => x.monthIndex === mIdx);
+      const isPaid = inv && inv.status === 'paid';
+      openPdfDocModal(booking, isPaid ? 'receipt' : 'invoice', mIdx);
     });
   });
 
@@ -8061,11 +8087,11 @@ function handleCopyServiceDispatchText() {
   }
 }
 
-function generateWhatsAppMessage(booking, templateType) {
+function generateWhatsAppMessage(booking, templateType, langOverride = null) {
   const prop = getPropertyById(booking.propertyId);
   const currency = appState.settings.currency || 'RM';
   const settings = appState.settings;
-  const isBM = settings.language === 'bm';
+  const isBM = langOverride ? (langOverride === 'bm') : ((appState.activeWaLang || settings.language || 'bm') === 'bm');
   const isMonthly = booking.rentalType === 'monthly';
   const isRoom = prop.propType && prop.propType.startsWith('room');
 
@@ -8111,7 +8137,9 @@ function generateWhatsAppMessage(booking, templateType) {
 
   // Dynamic multi-month period calculation
   const mIndex = appState.activeWaMonthIndex || 1;
-  const startD = new Date(booking.checkIn + 'T00:00:00');
+  const rawDateStr = booking.checkIn || booking.monthlyStart || new Date().toISOString().split('T')[0];
+  const parsedStart = new Date(rawDateStr.includes('T') ? rawDateStr : rawDateStr + 'T00:00:00');
+  const startD = isNaN(parsedStart.getTime()) ? new Date() : parsedStart;
   const curMonthStart = new Date(startD);
   curMonthStart.setMonth(curMonthStart.getMonth() + (mIndex - 1));
   const curMonthEnd = new Date(curMonthStart);
@@ -8155,15 +8183,19 @@ function generateWhatsAppMessage(booking, templateType) {
             tenantParticularsBM +
             `💰 *PERINCIAN PAKEJ KEMASUKAN (MOVE-IN):*\n` +
             `• Sewa Bulan Pertama (Pendahuluan): ${currency} ${mRate.toFixed(2)}\n` +
-            `• Deposit Sewa (Boleh Dipulangkan): ${currency} ${rDep.toFixed(2)}\n` +
-            `• Deposit Utiliti (Boleh Dipulangkan): ${currency} ${uDep.toFixed(2)}\n` +
-            `• Yuran Perjanjian Sewa & Duti Setem: ${currency} ${aFee.toFixed(2)}\n` +
+            `• Deposit Keselamatan Sewaan (1 Bulan Sewa): ${currency} ${rDep.toFixed(2)}\n` +
+            `• Deposit Utiliti / Air & Elektrik (Dipulangkan): ${currency} ${uDep.toFixed(2)}\n` +
+            (aFee > 0 ? `• Yuran Perjanjian Sewa & Duti Setem: ${currency} ${aFee.toFixed(2)}\n` : '') +
             `----------------------------------------\n` +
             `💵 *JUMLAH BAYARAN KEMASUKAN:* *${currency} ${totalMoveIn.toFixed(2)}*\n` +
-            `🔒 *Bayaran Booking Diperlukan untuk Kunci Unit:* *${currency} ${(booking.depositPaid > 0 ? booking.depositPaid : mRate * 0.5).toFixed(2)}*\n` +
-            `⏳ *Baki Bayaran Sebelum Serahan Kunci:* ${currency} ${(totalMoveIn - (booking.depositPaid > 0 ? booking.depositPaid : mRate * 0.5)).toFixed(2)}\n` +
+            `🔒 *Bayaran Booking Diperlukan untuk Kunci Unit:* *${currency} ${(booking.depositPaid > 0 ? booking.depositPaid : Math.round(mRate * 0.5)).toFixed(2)}*\n` +
+            `⏳ *Baki Bayaran Sebelum Serahan Kunci:* ${currency} ${(totalMoveIn - (booking.depositPaid > 0 ? booking.depositPaid : Math.round(mRate * 0.5))).toFixed(2)}\n` +
             bankInfoBM +
-            `\n📌 *Nota Deposit:* Deposit Sewa dan Deposit Utiliti akan dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada bil utiliti dan keadaan bilik/rumah. Sebut harga ini sah selama *${validityDays} hari* sehingga *${expDateStr}*. ✨🏡`;
+            `\n📌 *SYARAT & POLISI SEWAAN BULANAN:*\n` +
+            `1. Bayaran sewa bulanan dikutip secara pendahuluan (advance) pada awal setiap bulan sewaan melalui Invois Rasmi.\n` +
+            `2. Bagi sewaan jangka panjang melebihi 1 bulan, bil utiliti (elektrik & air) adalah mengikut kadar penggunaan bulanan sebenar (dibayar terus oleh penyewa atau dimasukkan ke dalam invois sewa bulanan).\n` +
+            `3. Deposit Keselamatan (1 bulan sewa: RM ${rDep.toFixed(2)}) dan Deposit Utiliti (RM ${uDep.toFixed(2)}) akan dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada penyelesaian bil utiliti dan pemeriksaan unit.\n` +
+            `4. Sebut harga ini sah selama *${validityDays} hari* sehingga *${expDateStr}*. ✨🏡`;
         } else {
           msg = `📋 *SEBUT HARGA RASMI - ${prop.name.toUpperCase()}*\n` +
             `No Rujukan: QUO-${booking.id.slice(-6).toUpperCase()}\n\n` +
@@ -8364,6 +8396,7 @@ function generateWhatsAppMessage(booking, templateType) {
         msg = '';
         break;
     }
+    return msg;
   }
 
   // English Templates
@@ -8382,15 +8415,19 @@ function generateWhatsAppMessage(booking, templateType) {
           tenantParticularsEN +
           `💰 *MOVE-IN INITIAL PACKAGE BREAKDOWN:*\n` +
           `• 1st Month Advance Rent: ${currency} ${mRate.toFixed(2)}\n` +
-          `• Rental Deposit (Refundable): ${currency} ${rDep.toFixed(2)}\n` +
-          `• Utilities Deposit (Refundable): ${currency} ${uDep.toFixed(2)}\n` +
-          `• Tenancy Agreement & Stamp Duty: ${currency} ${aFee.toFixed(2)}\n` +
+          `• Rental Security Deposit (1 Month Rent): ${currency} ${rDep.toFixed(2)}\n` +
+          `• Utilities Deposit (Water & Electricity): ${currency} ${uDep.toFixed(2)}\n` +
+          (aFee > 0 ? `• Tenancy Agreement & Stamp Duty: ${currency} ${aFee.toFixed(2)}\n` : '') +
           `----------------------------------------\n` +
           `💵 *TOTAL MOVE-IN PACKAGE:* *${currency} ${totalMoveIn.toFixed(2)}*\n` +
-          `🔒 *Booking Fee to Reserve Unit:* *${currency} ${(booking.depositPaid > 0 ? booking.depositPaid : mRate * 0.5).toFixed(2)}*\n` +
-          `⏳ *Balance Due upon Key Handover:* ${currency} ${(totalMoveIn - (booking.depositPaid > 0 ? booking.depositPaid : mRate * 0.5)).toFixed(2)}\n` +
+          `🔒 *Booking Fee Required to Reserve Unit:* *${currency} ${(booking.depositPaid > 0 ? booking.depositPaid : Math.round(mRate * 0.5)).toFixed(2)}*\n` +
+          `⏳ *Balance Due upon Key Handover:* ${currency} ${(totalMoveIn - (booking.depositPaid > 0 ? booking.depositPaid : Math.round(mRate * 0.5))).toFixed(2)}\n` +
           bankInfoEN +
-          `\n📌 *Deposit Refund Terms:* Rental & Utilities deposits are 100% refundable at the end of tenancy subject to utility arrears & unit inspection. Quotation is valid for *${validityDays} day(s)* until *${expDateStr}*. ✨🏡`;
+          `\n📌 *MONTHLY TENANCY TERMS & POLICIES:*\n` +
+          `1. Monthly rental is collected in advance at the beginning of each rental month via official invoice.\n` +
+          `2. For long-term rentals exceeding 1 month, utilities (electricity & water) are charged based on actual monthly usage (paid directly by tenant or added into monthly rental invoice).\n` +
+          `3. Rental Deposit (1 month rent: ${currency} ${rDep.toFixed(2)}) and Utilities Deposit (${currency} ${uDep.toFixed(2)}) are fully refundable at the end of tenancy subject to utility clearance and unit inspection.\n` +
+          `4. Quotation is valid for *${validityDays} day(s)* until *${expDateStr}*. ✨🏡`;
       } else {
         msg = `📋 *OFFICIAL QUOTATION - ${prop.name.toUpperCase()}*\n` +
           `Ref: QUO-${booking.id.slice(-6).toUpperCase()}\n\n` +
@@ -8719,6 +8756,28 @@ const PDF_DOC_I18N = {
       'Pengesahan rasmi penerimaan bayaran penuh untuk penginapan homestay bagi urusan rasmi seperti butiran di atas.',
       'Deposit keselamatan (jika berkenaan) akan dipulangkan selepas semakan daftar keluar.',
       'Terima kasih kerana memilih homestay kami untuk urusan rasmi organisasi anda.'
+    ],
+    docBadgeQuotationMonthly: 'SEBUT HARGA SEWAAN BULANAN',
+    docTitleQuotationMonthly: 'Sebut Harga Sewaan Bulanan',
+    docBadgeInvoiceMonthly: 'INVOIS SEWAAN BULANAN',
+    docTitleInvoiceMonthly: 'Invois Sewaan Bulanan',
+    docBadgeDepositReceiptMonthly: 'RESIT BAYARAN BOOKING SEWAAN',
+    docTitleDepositReceiptMonthly: 'Resit Bayaran Booking Sewaan',
+    docBadgeReceiptMonthly: 'RESIT RASMI BAYARAN KEMASUKAN',
+    docTitleReceiptMonthly: 'Resit Rasmi Bayaran Kemasukan',
+
+    termsQuotationMonthly: [
+      'Bayaran Sewa Pendahuluan: Sewa bulanan dikutip secara pendahuluan bagi setiap bulan (bukan bayaran sekaligus bagi keseluruhan tempoh sewaan).',
+      'Invois Sewaan Bulanan: Invois sewaan bulanan bagi bulan-bulan seterusnya akan dikeluarkan pada setiap awal bulan sebelum tarikh akhir bayaran.',
+      'Caj Bil Utiliti: Bagi sewaan jangka panjang melebihi 1 bulan, penyewa membayar bil utiliti (elektrik & air) terus kepada pembekal atau ditambah ke dalam invois sewa bulanan mengikut kadar penggunaan bulanan sebenar.',
+      'Pemulangan Deposit: Deposit Sewaan (1 bulan sewa) dan Deposit Utiliti (RM 300.00) akan dipulangkan sepenuhnya dalam tempoh 14 hari selepas tamat tempoh sewaan dan penyerahan kunci, tertakluk kepada penyelesaian bil utiliti tertunggak dan pemeriksaan keadaan unit yang baik.',
+      'Pengesahan Tempahan: Dokumen ini sah selama tempoh yang dinyatakan. Unit hanya disahkan dan dikunci selepas bayaran tempahan/booking awal diterima.'
+    ],
+    termsInvoiceMonthly: [
+      'Invois ini dikeluarkan untuk bayaran sewaan bulanan bagi kitaran bulan yang dinyatakan di atas.',
+      'Sila jelaskan bayaran selewat-lewatnya sebelum atau pada tarikh akhir bayaran (Due Date).',
+      'Caj bil utiliti (elektrik & air) dicaj secara berasingan mengikut penggunaan bulanan sebenar.',
+      'Resit rasmi pembayaran sewaan bulanan akan dikeluarkan serta-merta sebaik sahaja transaksi bank disahkan.'
     ]
   },
   en: {
@@ -8805,6 +8864,28 @@ const PDF_DOC_I18N = {
       'Official acknowledgement of full payment received for accommodation particulars stated above.',
       'Refundable security deposit (if applicable) will be refunded within 24 hours following checkout inspection.',
       'Thank you for staying with us for your official corporate engagement.'
+    ],
+    docBadgeQuotationMonthly: 'MONTHLY TENANCY QUOTATION',
+    docTitleQuotationMonthly: 'Monthly Tenancy Quotation',
+    docBadgeInvoiceMonthly: 'MONTHLY RENTAL INVOICE',
+    docTitleInvoiceMonthly: 'Monthly Rental Invoice',
+    docBadgeDepositReceiptMonthly: 'TENANCY BOOKING RECEIPT',
+    docTitleDepositReceiptMonthly: 'Tenancy Booking Receipt',
+    docBadgeReceiptMonthly: 'MOVE-IN PAYMENT RECEIPT',
+    docTitleReceiptMonthly: 'Move-in Payment Receipt',
+
+    termsQuotationMonthly: [
+      'Advance Monthly Rental: Rental is collected in advance for each month and not as a lump sum for the entire tenancy duration.',
+      'Subsequent Monthly Invoices: Rental invoice for each subsequent month will be issued at the beginning of each month prior to payment due date.',
+      'Utility Usage Policy: For long-term rental exceeding 1 month, tenant will pay utility bills (electricity & water) directly to utility providers or added into the monthly rental invoice based on actual usage charges.',
+      'Refundable Deposits: Rental Deposit (1 month rental) and Utilities Deposit (RM 300.00) are fully refundable at the end of tenancy subject to utility arrears settlement and satisfactory unit condition.',
+      'Reservation Confirmation: Unit is secured and confirmed only upon receipt of the initial booking commitment fee.'
+    ],
+    termsInvoiceMonthly: [
+      'This invoice is issued for monthly rental charges covering the billing period stated above.',
+      'Please settle payment on or before the specified due date.',
+      'Utility charges (electricity & water) are billed based on actual monthly consumption.',
+      'An official payment receipt will be issued immediately upon payment verification.'
     ]
   }
 };
@@ -8906,7 +8987,7 @@ function numberToWordsMYR(amount, lang = 'bm') {
   }
 }
 
-function openPdfDocModal(booking, defaultDocType = 'quotation') {
+function openPdfDocModal(booking, defaultDocType = 'quotation', monthIndex = null) {
   if (!booking) {
     booking = appState.bookings && appState.bookings[0];
     if (!booking) {
@@ -8919,23 +9000,114 @@ function openPdfDocModal(booking, defaultDocType = 'quotation') {
   closeAllModals();
 
   appState.activePdfBooking = booking;
+  appState.activePdfMonthIndex = monthIndex ? parseInt(monthIndex) : null;
+  const isMonthly = booking.rentalType === 'monthly';
 
   // Intelligently select default document type
   const paidAmt = Number(booking.depositPaid || (booking.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0) || 0);
   const totalAmt = Number(booking.totalAmount || 0);
 
-  if (defaultDocType === 'deposit_receipt' || (booking.status === 'booked' && defaultDocType !== 'invoice' && defaultDocType !== 'quotation')) {
-    defaultDocType = 'deposit_receipt';
-  } else if (defaultDocType === 'receipt') {
-    if (paidAmt > 0 && paidAmt < totalAmt) {
-      defaultDocType = 'deposit_receipt';
-    } else {
+  if (monthIndex) {
+    const invs = getOrInitMonthlyInvoices(booking);
+    const targetInv = invs.find(x => x.monthIndex === parseInt(monthIndex));
+    if (targetInv && targetInv.status === 'paid' && defaultDocType !== 'invoice') {
       defaultDocType = 'receipt';
+    } else {
+      defaultDocType = 'invoice';
+    }
+  } else {
+    if (defaultDocType === 'deposit_receipt' || (booking.status === 'booked' && defaultDocType !== 'invoice' && defaultDocType !== 'quotation')) {
+      defaultDocType = 'deposit_receipt';
+    } else if (defaultDocType === 'receipt') {
+      if (paidAmt > 0 && paidAmt < totalAmt) {
+        defaultDocType = 'deposit_receipt';
+      } else {
+        defaultDocType = 'receipt';
+      }
     }
   }
 
   appState.activePdfDocType = defaultDocType || 'quotation';
   appState.activePdfLang = appState.settings.language || 'bm';
+
+  // Setup monthly tenancy scope controls
+  const monthlyGroup = document.getElementById('pdfMonthlyTenancyGroup');
+  const scopeSelect = document.getElementById('pdfMonthlyDocScopeSelect');
+  const utilityWrap = document.getElementById('pdfMonthlyUtilityExtraWrap');
+  const utilityInput = document.getElementById('pdfMonthlyUtilityExtraInput');
+
+  if (monthlyGroup && scopeSelect) {
+    if (isMonthly) {
+      monthlyGroup.style.display = 'block';
+      scopeSelect.innerHTML = '';
+
+      const optMoveIn = document.createElement('option');
+      optMoveIn.value = 'move_in';
+      optMoveIn.textContent = appState.activePdfLang === 'bm'
+        ? '📋 Pakej Kemasukan Awal (Sebut Harga / Move-In Package)'
+        : '📋 Move-In Initial Package (Quotation Statement)';
+      scopeSelect.appendChild(optMoveIn);
+
+      const invs = getOrInitMonthlyInvoices(booking);
+      invs.forEach(inv => {
+        const opt = document.createElement('option');
+        opt.value = inv.monthIndex;
+        const isPaid = inv.status === 'paid';
+        opt.textContent = appState.activePdfLang === 'bm'
+          ? `📅 Invois Bulan ke-${inv.monthIndex} (${inv.periodStart} → ${inv.periodEnd}) [${isPaid ? 'DIBAYAR' : 'BELUM'}]`
+          : `📅 Month ${inv.monthIndex} Invoice (${inv.periodStart} → ${inv.periodEnd}) [${isPaid ? 'PAID' : 'DUE'}]`;
+        scopeSelect.appendChild(opt);
+      });
+
+      if (monthIndex) {
+        scopeSelect.value = String(monthIndex);
+        if (utilityWrap) utilityWrap.style.display = 'block';
+        const targetInv = invs.find(x => x.monthIndex === parseInt(monthIndex));
+        if (utilityInput && targetInv) utilityInput.value = targetInv.utilityCharges || 0;
+      } else {
+        scopeSelect.value = 'move_in';
+        if (utilityWrap) utilityWrap.style.display = 'none';
+      }
+
+      scopeSelect.onchange = () => {
+        if (scopeSelect.value === 'move_in') {
+          appState.activePdfMonthIndex = null;
+          if (utilityWrap) utilityWrap.style.display = 'none';
+          if (appState.activePdfDocType !== 'quotation') {
+            setPdfDocType('quotation');
+            return;
+          }
+        } else {
+          appState.activePdfMonthIndex = parseInt(scopeSelect.value);
+          if (utilityWrap) utilityWrap.style.display = 'block';
+          const targetInv = invs.find(x => x.monthIndex === appState.activePdfMonthIndex);
+          if (utilityInput && targetInv) utilityInput.value = targetInv.utilityCharges || 0;
+          if (appState.activePdfDocType === 'quotation') {
+            setPdfDocType('invoice');
+            return;
+          }
+        }
+        updatePdfDocView();
+      };
+
+      if (utilityInput) {
+        utilityInput.oninput = () => {
+          if (appState.activePdfMonthIndex) {
+            const targetInv = invs.find(x => x.monthIndex === appState.activePdfMonthIndex);
+            if (targetInv) {
+              targetInv.utilityCharges = parseFloat(utilityInput.value) || 0;
+              targetInv.totalAmount = (targetInv.rentAmount || 0) + targetInv.utilityCharges;
+              saveToStorage();
+              updatePdfDocView();
+            }
+          }
+        };
+      }
+    } else {
+      monthlyGroup.style.display = 'none';
+      if (utilityWrap) utilityWrap.style.display = 'none';
+    }
+  }
 
   // Quotation validity days
   const valDays = booking.quotationValidityDays || appState.settings.quotationValidityDays || 3;
@@ -8943,7 +9115,9 @@ function openPdfDocModal(booking, defaultDocType = 'quotation') {
   if (valInput) valInput.value = valDays;
 
   // Deposit amount input
-  const depAmt = paidAmt > 0 ? paidAmt : Math.round(totalAmt * (appState.settings.defaultDepositPct || 30) / 100);
+  const depAmt = paidAmt > 0 
+    ? paidAmt 
+    : (isMonthly ? (booking.depositAmount || Math.round((booking.monthlyRate || 1200) * 0.5)) : Math.round(totalAmt * (appState.settings.defaultDepositPct || 30) / 100));
   const depInput = document.getElementById('pdfDepositAmountInput');
   if (depInput) depInput.value = depAmt;
 
@@ -9081,9 +9255,7 @@ function updatePdfDocView() {
 
   const ssmEl = document.getElementById('pdfHostSsm');
   if (ssmEl) {
-    ssmEl.textContent = settings.businessSsm 
-      ? settings.businessSsm
-      : '20260100988-X (SSM)';
+    ssmEl.textContent = settings.businessSsm ? settings.businessSsm : '20260100988-X (SSM)';
   }
 
   const addrEl = document.getElementById('pdfHostAddress');
@@ -9098,22 +9270,62 @@ function updatePdfDocView() {
   const premisIdEl = document.getElementById('pdfHostPremisId');
   if (premisIdEl) premisIdEl.textContent = prop.id ? `HM-${prop.id.replace(/\D/g, '')}` : 'HM-1088';
 
-  // 2. Financial Figures: Grand Total, Deposit Paid, Remaining Balance
-  const nights = booking.nights || 1;
-  const ratePerNight = nights > 0 ? (booking.baseRate ? booking.baseRate / nights : (booking.totalAmount - (booking.cleaningFee || 0)) / nights) : booking.totalAmount;
-  const accommodationTotal = ratePerNight * nights;
-  const grandTotal = booking.totalAmount || (accommodationTotal + (booking.cleaningFee || 0));
+  // 2. Tenancy & Rental Type Determination
+  const isMonthly = booking.rentalType === 'monthly';
+  const mRate = Number(booking.monthlyRate || 0);
+  const rDep = (booking.rentalDeposit !== undefined && booking.rentalDeposit !== null && booking.rentalDeposit !== '') 
+    ? Number(booking.rentalDeposit) 
+    : mRate;
+  const uDep = (booking.utilitiesDeposit !== undefined && booking.utilitiesDeposit !== null && booking.utilitiesDeposit !== '') 
+    ? Number(booking.utilitiesDeposit) 
+    : 300;
+  const aFee = Number(booking.agreementFee || 0);
+  const totalMoveIn = mRate + rDep + uDep + aFee;
 
-  // Determine Deposit Paid Amount from custom input or booking object
-  let depositPaidAmt = parseFloat(document.getElementById('pdfDepositAmountInput')?.value);
-  if (isNaN(depositPaidAmt)) {
-    depositPaidAmt = Number(booking.depositPaid || (booking.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0) || 0);
+  const activeMonthIdx = appState.activePdfMonthIndex;
+  const monthlyInvoices = isMonthly ? getOrInitMonthlyInvoices(booking) : [];
+  const currentMonthInv = (isMonthly && activeMonthIdx) 
+    ? monthlyInvoices.find(x => x.monthIndex === activeMonthIdx) 
+    : null;
+
+  // Financial figures calculation
+  let grandTotal = 0;
+  let depositPaidAmt = 0;
+  let balAmt = 0;
+
+  if (isMonthly) {
+    if (currentMonthInv) {
+      const curMonthTotal = Number((currentMonthInv.rentAmount || mRate) + (currentMonthInv.utilityCharges || 0));
+      grandTotal = curMonthTotal;
+      const isPaid = currentMonthInv.status === 'paid';
+      depositPaidAmt = isPaid ? curMonthTotal : 0;
+      balAmt = isPaid ? 0 : curMonthTotal;
+    } else {
+      grandTotal = totalMoveIn;
+      depositPaidAmt = parseFloat(document.getElementById('pdfDepositAmountInput')?.value);
+      if (isNaN(depositPaidAmt)) {
+        depositPaidAmt = Number(booking.depositPaid || (booking.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0) || 0);
+      }
+      if (depositPaidAmt === 0 && (docType === 'deposit_receipt' || booking.status === 'booked')) {
+        depositPaidAmt = Number(booking.depositAmount || Math.round(mRate * 0.5));
+      }
+      balAmt = Math.max(0, grandTotal - depositPaidAmt);
+    }
+  } else {
+    const nights = booking.nights || 1;
+    const ratePerNight = nights > 0 ? (booking.baseRate ? booking.baseRate / nights : (booking.totalAmount - (booking.cleaningFee || 0)) / nights) : booking.totalAmount;
+    const accommodationTotal = ratePerNight * nights;
+    grandTotal = booking.totalAmount || (accommodationTotal + (booking.cleaningFee || 0));
+
+    depositPaidAmt = parseFloat(document.getElementById('pdfDepositAmountInput')?.value);
+    if (isNaN(depositPaidAmt)) {
+      depositPaidAmt = Number(booking.depositPaid || (booking.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0) || 0);
+    }
+    if (depositPaidAmt === 0 && (docType === 'deposit_receipt' || booking.status === 'booked')) {
+      depositPaidAmt = Number(booking.depositAmount || Math.round(grandTotal * (settings.defaultDepositPct || 30) / 100));
+    }
+    balAmt = Math.max(0, grandTotal - depositPaidAmt);
   }
-  // Fallback for deposit receipt if 0
-  if (depositPaidAmt === 0 && (docType === 'deposit_receipt' || booking.status === 'booked')) {
-    depositPaidAmt = Number(booking.depositAmount || Math.round(grandTotal * (settings.defaultDepositPct || 30) / 100));
-  }
-  const balAmt = Math.max(0, grandTotal - depositPaidAmt);
 
   // Update Deposit balance hint in toolbar
   const depBalHint = document.getElementById('pdfDepositBalanceHint');
@@ -9134,33 +9346,77 @@ function updatePdfDocView() {
   let badgeColor = '#0369a1';
   let titleColor = '#ea580c';
 
-  if (docType === 'invoice') {
-    docPrefix = 'INV';
-    docTitle = t.docTitleInvoice;
-    docNoTitle = t.lblPdfDocNoTitleInvoice;
-    docDateTitle = t.lblPdfDocDateTitleInvoice;
-    docBadge = t.docBadgeInvoice;
-    badgeBg = '#ede9fe';
-    badgeColor = '#5b21b6';
-    titleColor = '#5b21b6';
-  } else if (docType === 'deposit_receipt') {
-    docPrefix = 'REC-DEP';
-    docTitle = t.docTitleDepositReceipt;
-    docNoTitle = t.lblPdfDocNoTitleDepositReceipt;
-    docDateTitle = t.lblPdfDocDateTitleDepositReceipt;
-    docBadge = t.docBadgeDepositReceipt;
-    badgeBg = '#dbeafe';
-    badgeColor = '#1e40af';
-    titleColor = '#0284c7';
-  } else if (docType === 'receipt') {
-    docPrefix = 'REC';
-    docTitle = t.docTitleReceipt;
-    docNoTitle = t.lblPdfDocNoTitleReceipt;
-    docDateTitle = t.lblPdfDocDateTitleReceipt;
-    docBadge = t.docBadgeReceipt;
-    badgeBg = '#d1fae5';
-    badgeColor = '#065f46';
-    titleColor = '#059669';
+  if (isMonthly) {
+    if (currentMonthInv) {
+      if (docType === 'receipt' || currentMonthInv.status === 'paid') {
+        docPrefix = `REC-M${currentMonthInv.monthIndex}`;
+        docTitle = lang === 'bm' ? `Resit Bayaran Sewa Bulan ke-${currentMonthInv.monthIndex}` : `Monthly Rent Receipt Month ${currentMonthInv.monthIndex}`;
+        docNoTitle = t.lblPdfDocNoTitleReceipt;
+        docDateTitle = t.lblPdfDocDateTitleReceipt;
+        docBadge = lang === 'bm' ? `RESIT SEWA BULAN KE-${currentMonthInv.monthIndex}` : `RENT RECEIPT MONTH ${currentMonthInv.monthIndex}`;
+        badgeBg = '#d1fae5'; badgeColor = '#065f46'; titleColor = '#059669';
+      } else {
+        docPrefix = `INV-M${currentMonthInv.monthIndex}`;
+        docTitle = lang === 'bm' ? `Invois Sewa Bulan ke-${currentMonthInv.monthIndex}` : `Monthly Rent Invoice Month ${currentMonthInv.monthIndex}`;
+        docNoTitle = t.lblPdfDocNoTitleInvoice;
+        docDateTitle = t.lblPdfDocDateTitleInvoice;
+        docBadge = lang === 'bm' ? `INVOIS SEWA BULAN KE-${currentMonthInv.monthIndex}` : `MONTHLY RENT INVOICE MONTH ${currentMonthInv.monthIndex}`;
+        badgeBg = '#ede9fe'; badgeColor = '#5b21b6'; titleColor = '#5b21b6';
+      }
+    } else {
+      if (docType === 'invoice') {
+        docPrefix = 'INV-M';
+        docTitle = t.docTitleInvoiceMonthly || (lang === 'bm' ? 'Invois Kemasukan Sewaan Bulanan' : 'Monthly Tenancy Move-in Invoice');
+        docNoTitle = t.lblPdfDocNoTitleInvoice;
+        docDateTitle = t.lblPdfDocDateTitleInvoice;
+        docBadge = t.docBadgeInvoiceMonthly || (lang === 'bm' ? 'INVOIS SEWAAN BULANAN' : 'MONTHLY TENANCY INVOICE');
+        badgeBg = '#ede9fe'; badgeColor = '#5b21b6'; titleColor = '#5b21b6';
+      } else if (docType === 'deposit_receipt') {
+        docPrefix = 'REC-BOOK-M';
+        docTitle = t.docTitleDepositReceiptMonthly || (lang === 'bm' ? 'Resit Bayaran Booking Sewaan' : 'Tenancy Booking Receipt');
+        docNoTitle = t.lblPdfDocNoTitleDepositReceipt;
+        docDateTitle = t.lblPdfDocDateTitleDepositReceipt;
+        docBadge = t.docBadgeDepositReceiptMonthly || (lang === 'bm' ? 'RESIT BAYARAN BOOKING SEWAAN' : 'TENANCY BOOKING RECEIPT');
+        badgeBg = '#dbeafe'; badgeColor = '#1e40af'; titleColor = '#0284c7';
+      } else if (docType === 'receipt') {
+        docPrefix = 'REC-M';
+        docTitle = t.docTitleReceiptMonthly || (lang === 'bm' ? 'Resit Rasmi Bayaran Kemasukan' : 'Move-in Payment Receipt');
+        docNoTitle = t.lblPdfDocNoTitleReceipt;
+        docDateTitle = t.lblPdfDocDateTitleReceipt;
+        docBadge = t.docBadgeReceiptMonthly || (lang === 'bm' ? 'RESIT RASMI BAYARAN KEMASUKAN' : 'MOVE-IN PAYMENT RECEIPT');
+        badgeBg = '#d1fae5'; badgeColor = '#065f46'; titleColor = '#059669';
+      } else {
+        docPrefix = 'QUO-M';
+        docTitle = t.docTitleQuotationMonthly || (lang === 'bm' ? 'Sebut Harga Sewaan Bulanan' : 'Monthly Tenancy Quotation');
+        docNoTitle = t.lblPdfDocNoTitleQuotation;
+        docDateTitle = t.lblPdfDocDateTitleQuotation;
+        docBadge = t.docBadgeQuotationMonthly || (lang === 'bm' ? 'SEBUT HARGA SEWAAN BULANAN' : 'MONTHLY TENANCY QUOTATION');
+        badgeBg = '#e0f2fe'; badgeColor = '#0369a1'; titleColor = '#ea580c';
+      }
+    }
+  } else {
+    if (docType === 'invoice') {
+      docPrefix = 'INV';
+      docTitle = t.docTitleInvoice;
+      docNoTitle = t.lblPdfDocNoTitleInvoice;
+      docDateTitle = t.lblPdfDocDateTitleInvoice;
+      docBadge = t.docBadgeInvoice;
+      badgeBg = '#ede9fe'; badgeColor = '#5b21b6'; titleColor = '#5b21b6';
+    } else if (docType === 'deposit_receipt') {
+      docPrefix = 'REC-DEP';
+      docTitle = t.docTitleDepositReceipt;
+      docNoTitle = t.lblPdfDocNoTitleDepositReceipt;
+      docDateTitle = t.lblPdfDocDateTitleDepositReceipt;
+      docBadge = t.docBadgeDepositReceipt;
+      badgeBg = '#dbeafe'; badgeColor = '#1e40af'; titleColor = '#0284c7';
+    } else if (docType === 'receipt') {
+      docPrefix = 'REC';
+      docTitle = t.docTitleReceipt;
+      docNoTitle = t.lblPdfDocNoTitleReceipt;
+      docDateTitle = t.lblPdfDocDateTitleReceipt;
+      docBadge = t.docBadgeReceipt;
+      badgeBg = '#d1fae5'; badgeColor = '#065f46'; titleColor = '#059669';
+    }
   }
 
   const fullDocNo = `${docPrefix}-${year}-${idShort}`;
@@ -9197,7 +9453,7 @@ function updatePdfDocView() {
   const docValEl = document.getElementById('pdfDocValidity');
   if (lblValTitle) lblValTitle.textContent = t.lblPdfValidityTitle;
   if (docValEl) docValEl.textContent = `${expFormatted} (${valDays} ${lang === 'bm' ? 'Hari' : 'Days'})`;
-  if (valRow) valRow.style.display = docType === 'quotation' ? 'block' : 'none';
+  if (valRow) valRow.style.display = (docType === 'quotation' && !currentMonthInv) ? 'block' : 'none';
 
   const calcDateEl = document.getElementById('pdfValidityCalculatedDate');
   if (calcDateEl) calcDateEl.textContent = lang === 'bm' ? `Hingga ${expFormatted}` : `Until ${expFormatted}`;
@@ -9237,12 +9493,12 @@ function updatePdfDocView() {
   // Watermark
   const watermark = document.getElementById('pdfPaidWatermark');
   if (watermark) {
-    if (docType === 'deposit_receipt') {
+    if (docType === 'deposit_receipt' || (isMonthly && docType === 'deposit_receipt')) {
       watermark.classList.remove('hidden');
       watermark.textContent = lang === 'bm' ? 'DEPOSIT DITERIMA' : 'DEPOSIT PAID';
       watermark.style.color = 'rgba(2, 132, 199, 0.16)';
       watermark.style.borderColor = 'rgba(2, 132, 199, 0.28)';
-    } else if (docType === 'receipt') {
+    } else if (docType === 'receipt' || (isMonthly && currentMonthInv && currentMonthInv.status === 'paid')) {
       watermark.classList.remove('hidden');
       watermark.textContent = lang === 'bm' ? 'TELAH LUNAS' : 'PAID IN FULL';
       watermark.style.color = 'rgba(16, 185, 129, 0.16)';
@@ -9292,31 +9548,61 @@ function updatePdfDocView() {
     }
   }
 
-  // 5. Homestay Stay Particulars
+  // 5. Homestay / Tenancy Stay Particulars
   const propNameEl = document.getElementById('pdfPropNameText');
   if (propNameEl) propNameEl.textContent = prop.name;
 
   const propAddrEl = document.getElementById('pdfPropAddressText');
   if (propAddrEl) propAddrEl.textContent = prop.address ? `(${prop.address})` : '';
 
+  const lblCheckInDate = document.getElementById('lblPdfCheckInDate');
+  const lblCheckOutDate = document.getElementById('lblPdfCheckOutDate');
   const checkInDateEl = document.getElementById('pdfCheckInDate');
-  if (checkInDateEl) checkInDateEl.textContent = booking.checkIn || '-';
-
   const checkInTimeEl = document.getElementById('pdfCheckInTime');
-  if (checkInTimeEl) checkInTimeEl.textContent = prop.checkInTime || '3:00 PM';
-
   const checkOutDateEl = document.getElementById('pdfCheckOutDate');
-  if (checkOutDateEl) checkOutDateEl.textContent = booking.checkOut || '-';
-
   const checkOutTimeEl = document.getElementById('pdfCheckOutTime');
-  if (checkOutTimeEl) checkOutTimeEl.textContent = prop.checkOutTime || '12:00 PM';
-
   const durTextEl = document.getElementById('pdfDurationGuestText');
-  const guests = booking.adults || booking.guests || 2;
-  if (durTextEl) {
-    durTextEl.textContent = lang === 'bm' 
-      ? `${nights} Malam • ${guests} Tetamu`
-      : `${nights} Nights • ${guests} Guests`;
+  const guests = booking.guestCount || booking.adults || 1;
+
+  if (isMonthly) {
+    if (currentMonthInv) {
+      if (lblCheckInDate) lblCheckInDate.textContent = lang === 'bm' ? 'Tempoh Mula:' : 'Period Start:';
+      if (lblCheckOutDate) lblCheckOutDate.textContent = lang === 'bm' ? 'Tempoh Akhir:' : 'Period End:';
+      if (checkInDateEl) checkInDateEl.textContent = currentMonthInv.periodStart || '-';
+      if (checkInTimeEl) checkInTimeEl.textContent = `${lang === 'bm' ? 'Akhir Bayar' : 'Due'}: ${currentMonthInv.dueDate}`;
+      if (checkOutDateEl) checkOutDateEl.textContent = currentMonthInv.periodEnd || '-';
+      if (checkOutTimeEl) checkOutTimeEl.textContent = currentMonthInv.status === 'paid' ? (lang === 'bm' ? 'LUNAS' : 'PAID') : (lang === 'bm' ? 'BELUM' : 'DUE');
+      if (durTextEl) {
+        durTextEl.textContent = lang === 'bm'
+          ? `Bulan ke-${currentMonthInv.monthIndex} drpd ${booking.monthlyDuration || 6} Bulan • ${guests} Penyewa`
+          : `Month ${currentMonthInv.monthIndex} of ${booking.monthlyDuration || 6} • ${guests} Tenant(s)`;
+      }
+    } else {
+      if (lblCheckInDate) lblCheckInDate.textContent = lang === 'bm' ? 'Mula Sewa:' : 'Start Date:';
+      if (lblCheckOutDate) lblCheckOutDate.textContent = lang === 'bm' ? 'Tamat Sewa:' : 'End Date:';
+      if (checkInDateEl) checkInDateEl.textContent = booking.checkIn || '-';
+      if (checkInTimeEl) checkInTimeEl.textContent = lang === 'bm' ? 'Kemasukan' : 'Move-in';
+      if (checkOutDateEl) checkOutDateEl.textContent = booking.checkOut || '-';
+      if (checkOutTimeEl) checkOutTimeEl.textContent = lang === 'bm' ? 'Serahan Kunci' : 'Handover';
+      if (durTextEl) {
+        durTextEl.textContent = lang === 'bm'
+          ? `${booking.monthlyDuration || 1} Bulan • ${guests} Penyewa`
+          : `${booking.monthlyDuration || 1} Month(s) • ${guests} Tenant(s)`;
+      }
+    }
+  } else {
+    const nights = booking.nights || 1;
+    if (lblCheckInDate) lblCheckInDate.textContent = lang === 'bm' ? 'Masuk:' : 'Check-In:';
+    if (lblCheckOutDate) lblCheckOutDate.textContent = lang === 'bm' ? 'Keluar:' : 'Check-Out:';
+    if (checkInDateEl) checkInDateEl.textContent = booking.checkIn || '-';
+    if (checkInTimeEl) checkInTimeEl.textContent = prop.checkInTime || '3:00 PM';
+    if (checkOutDateEl) checkOutDateEl.textContent = booking.checkOut || '-';
+    if (checkOutTimeEl) checkOutTimeEl.textContent = prop.checkOutTime || '12:00 PM';
+    if (durTextEl) {
+      durTextEl.textContent = lang === 'bm' 
+        ? `${nights} Malam • ${guests} Tetamu`
+        : `${nights} Nights • ${guests} Guests`;
+    }
   }
 
   // 6. Itemized Table
@@ -9324,224 +9610,508 @@ function updatePdfDocView() {
   if (tableBody) {
     tableBody.innerHTML = '';
 
-    // Row 1: Accommodation Stay
-    const tr1 = document.createElement('tr');
-    tr1.style.borderBottom = '1px solid #f1f5f9';
-    tr1.innerHTML = `
-      <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">1</td>
-      <td style="padding:8px 8px;">
-        <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Sewa Penginapan Homestay (Accommodation Stay)' : 'Homestay Accommodation Rental'}</strong>
-        <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? `Penginapan dari ${booking.checkIn} hingga ${booking.checkOut} (${nights} malam)` : `Stay from ${booking.checkIn} to ${booking.checkOut} (${nights} nights)`}</span>
-      </td>
-      <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">996311</td>
-      <td style="padding:8px 8px; text-align:center; font-weight:700;">${nights}.00</td>
-      <td style="padding:8px 8px; text-align:right;">${ratePerNight.toFixed(2)}</td>
-      <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
-      <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${accommodationTotal.toFixed(2)}</td>
-    `;
-    tableBody.appendChild(tr1);
+    if (isMonthly) {
+      if (currentMonthInv) {
+        // Specific Month Invoice Table
+        let rIdx = 1;
+        const tr1 = document.createElement('tr');
+        tr1.style.borderBottom = '1px solid #f1f5f9';
+        tr1.innerHTML = `
+          <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rIdx++}</td>
+          <td style="padding:8px 8px;">
+            <strong style="color:#0f172a; display:block;">${lang === 'bm' ? `Sewa Bulanan (Bulan ke-${currentMonthInv.monthIndex})` : `Monthly Rental (Month ${currentMonthInv.monthIndex})`}</strong>
+            <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? `Kitaran sewaan dari ${currentMonthInv.periodStart} hingga ${currentMonthInv.periodEnd}` : `Rental billing period from ${currentMonthInv.periodStart} to ${currentMonthInv.periodEnd}`}</span>
+          </td>
+          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">997212</td>
+          <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Bulan' : 'Mth'}</td>
+          <td style="padding:8px 8px; text-align:right;">${Number(currentMonthInv.rentAmount || mRate).toFixed(2)}</td>
+          <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+          <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${Number(currentMonthInv.rentAmount || mRate).toFixed(2)}</td>
+        `;
+        tableBody.appendChild(tr1);
 
-    // Row 2: Cleaning fee (if any)
-    let rowIndex = 2;
-    if (booking.cleaningFee && booking.cleaningFee > 0) {
-      const tr2 = document.createElement('tr');
-      tr2.style.borderBottom = '1px solid #f1f5f9';
-      tr2.innerHTML = `
+        if (currentMonthInv.utilityCharges && currentMonthInv.utilityCharges > 0) {
+          const tr2 = document.createElement('tr');
+          tr2.style.borderBottom = '1px solid #f1f5f9';
+          tr2.innerHTML = `
+            <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rIdx++}</td>
+            <td style="padding:8px 8px;">
+              <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Caj Penggunaan Utiliti Sebenar (Air & Elektrik)' : 'Actual Utility Usage Charges (Water & Electricity)'}</strong>
+              <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Caj bil utiliti sebenar yang ditambah ke dalam sewa bulanan mengikut penggunaan' : 'Actual utility usage charges added into monthly rental invoice per usage'}</span>
+            </td>
+            <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998412</td>
+            <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Pakej' : 'Unit'}</td>
+            <td style="padding:8px 8px; text-align:right;">${Number(currentMonthInv.utilityCharges).toFixed(2)}</td>
+            <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+            <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${Number(currentMonthInv.utilityCharges).toFixed(2)}</td>
+          `;
+          tableBody.appendChild(tr2);
+        }
+      } else {
+        // Move-in Package Quotation / Move-in Statement
+        let rIdx = 1;
+
+        // Row 1: Advance Monthly Rental (1 Month)
+        const tr1 = document.createElement('tr');
+        tr1.style.borderBottom = '1px solid #f1f5f9';
+        tr1.innerHTML = `
+          <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rIdx++}</td>
+          <td style="padding:8px 8px;">
+            <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Sewa Bulan Pertama (Bayaran Pendahuluan)' : '1st Month Advance Rental'}</strong>
+            <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Bayaran sewa bulan pertama dikutip secara pendahuluan (sewa bagi setiap bulan berikutnya diinvois pada awal bulan)' : 'Advance payment for 1st month rental (subsequent months invoiced at the beginning of each month)'}</span>
+          </td>
+          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">997212</td>
+          <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Bulan' : 'Mth'}</td>
+          <td style="padding:8px 8px; text-align:right;">${mRate.toFixed(2)}</td>
+          <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+          <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${mRate.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(tr1);
+
+        // Row 2: Rental Security Deposit (1 Month Rent)
+        const tr2 = document.createElement('tr');
+        tr2.style.borderBottom = '1px solid #f1f5f9';
+        tr2.innerHTML = `
+          <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rIdx++}</td>
+          <td style="padding:8px 8px;">
+            <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Deposit Keselamatan Sewaan (1 Bulan Sewa)' : 'Rental Security Deposit (1 Month Rent)'}</strong>
+            <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Deposit sekuriti 1 bulan sewa (Boleh dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada keadaan premis)' : 'Security deposit equal to 1 month rent (Fully refundable at end of tenancy subject to unit handover)'}</span>
+          </td>
+          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">997219</td>
+          <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Bulan' : 'Mth'}</td>
+          <td style="padding:8px 8px; text-align:right;">${rDep.toFixed(2)}</td>
+          <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+          <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${rDep.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(tr2);
+
+        // Row 3: Utilities Deposit (RM 300)
+        const tr3 = document.createElement('tr');
+        tr3.style.borderBottom = '1px solid #f1f5f9';
+        tr3.innerHTML = `
+          <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rIdx++}</td>
+          <td style="padding:8px 8px;">
+            <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Deposit Utiliti / Air & Elektrik (Boleh Dipulangkan)' : 'Utilities Deposit / Water & Electricity (Refundable)'}</strong>
+            <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Deposit cagaran utiliti RM300 (Boleh dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada penyelesaian bil utiliti)' : 'Utility security deposit of RM300 (Fully refundable at end of tenancy subject to utility arrears settlement)'}</span>
+          </td>
+          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">997220</td>
+          <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Pakej' : 'Unit'}</td>
+          <td style="padding:8px 8px; text-align:right;">${uDep.toFixed(2)}</td>
+          <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+          <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${uDep.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(tr3);
+
+        // Row 4: Agreement Fee (if any)
+        if (aFee > 0) {
+          const tr4 = document.createElement('tr');
+          tr4.style.borderBottom = '1px solid #f1f5f9';
+          tr4.innerHTML = `
+            <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rIdx++}</td>
+            <td style="padding:8px 8px;">
+              <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Yuran Perjanjian Sewa & Duti Setem' : 'Tenancy Agreement & Legal Stamp Duty'}</strong>
+              <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penyediaan dokumen kontrak perjanjian sewaan & duti setem sah' : 'Tenancy contract preparation, administrative documentation & legal stamp duty'}</span>
+            </td>
+            <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998211</td>
+            <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Dok' : 'Doc'}</td>
+            <td style="padding:8px 8px; text-align:right;">${aFee.toFixed(2)}</td>
+            <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+            <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${aFee.toFixed(2)}</td>
+          `;
+          tableBody.appendChild(tr4);
+        }
+
+        // Row 5: Monthly Utilities Policy Row
+        const tr5 = document.createElement('tr');
+        tr5.style.background = '#fcfdfd';
+        tr5.style.borderBottom = '1px solid #f1f5f9';
+        tr5.innerHTML = `
+          <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rIdx++}</td>
+          <td style="padding:8px 8px;">
+            <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Kadar Caj Bil Utiliti Bulanan (Elektrik & Air)' : 'Monthly Utilities Billing Policy (Electricity & Water)'}</strong>
+            <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Bagi sewaan jangka panjang melebihi 1 bulan, penyewa membayar bil utiliti terus kepada pembekal atau ditambah ke dalam invois sewa bulanan mengikut kadar penggunaan sebenar setiap bulan' : 'In long term rental over 1 month, tenant will pay direct or plus in monthly rental per usage charges'}</span>
+          </td>
+          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998412</td>
+          <td style="padding:8px 8px; text-align:center; font-weight:700;">-</td>
+          <td style="padding:8px 8px; text-align:right; font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Kadar Sebenar' : 'Actual Rate'}</td>
+          <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+          <td style="padding:8px 8px; text-align:right; font-weight:800; color:#059669;">${lang === 'bm' ? 'IKUT PENGGUNAAN' : 'PER USAGE'}</td>
+        `;
+        tableBody.appendChild(tr5);
+      }
+    } else {
+      const nights = booking.nights || 1;
+      const ratePerNight = nights > 0 ? (booking.baseRate ? booking.baseRate / nights : (booking.totalAmount - (booking.cleaningFee || 0)) / nights) : booking.totalAmount;
+      const accommodationTotal = ratePerNight * nights;
+
+      // Row 1: Accommodation Stay
+      const tr1 = document.createElement('tr');
+      tr1.style.borderBottom = '1px solid #f1f5f9';
+      tr1.innerHTML = `
+        <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">1</td>
+        <td style="padding:8px 8px;">
+          <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Sewa Penginapan Homestay (Accommodation Stay)' : 'Homestay Accommodation Rental'}</strong>
+          <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? `Penginapan dari ${booking.checkIn} hingga ${booking.checkOut} (${nights} malam)` : `Stay from ${booking.checkIn} to ${booking.checkOut} (${nights} nights)`}</span>
+        </td>
+        <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">996311</td>
+        <td style="padding:8px 8px; text-align:center; font-weight:700;">${nights}.00</td>
+        <td style="padding:8px 8px; text-align:right;">${ratePerNight.toFixed(2)}</td>
+        <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+        <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${accommodationTotal.toFixed(2)}</td>
+      `;
+      tableBody.appendChild(tr1);
+
+      // Row 2: Cleaning fee (if any)
+      let rowIndex = 2;
+      if (booking.cleaningFee && booking.cleaningFee > 0) {
+        const tr2 = document.createElement('tr');
+        tr2.style.borderBottom = '1px solid #f1f5f9';
+        tr2.innerHTML = `
+          <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rowIndex++}</td>
+          <td style="padding:8px 8px;">
+            <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Fi Pembersihan & Pengemasan (Turnover Cleaning Fee)' : 'Sanitized Cleaning & Turnover Fee'}</strong>
+            <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penyediaan cadar bersih, tuala, sanitasi premis dan pengemasan' : 'Fresh linen, bath towels, room sanitization and turnover service'}</span>
+          </td>
+          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998533</td>
+          <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00</td>
+          <td style="padding:8px 8px; text-align:right;">${Number(booking.cleaningFee).toFixed(2)}</td>
+          <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
+          <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${Number(booking.cleaningFee).toFixed(2)}</td>
+        `;
+        tableBody.appendChild(tr2);
+      }
+
+      // Row 3: Utilities & WiFi (Included)
+      const tr3 = document.createElement('tr');
+      tr3.style.background = '#fcfdfd';
+      tr3.style.borderBottom = '1px solid #f1f5f9';
+      tr3.innerHTML = `
         <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rowIndex++}</td>
         <td style="padding:8px 8px;">
-          <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Fi Pembersihan & Pengemasan (Turnover Cleaning Fee)' : 'Sanitized Cleaning & Turnover Fee'}</strong>
-          <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penyediaan cadar bersih, tuala, sanitasi premis dan pengemasan' : 'Fresh linen, bath towels, room sanitization and turnover service'}</span>
+          <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Utiliti, Elektrik, Air & WiFi Berkelajuan Tinggi' : 'Utilities, Electricity, Water & High-Speed WiFi'}</strong>
+          <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penghawa dingin sepenuhnya, bekalan air bersih dan internet tanpa had' : 'Full air-conditioning, clean water supply and unlimited high-speed WiFi access'}</span>
         </td>
-        <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998533</td>
+        <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998412</td>
         <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00</td>
-        <td style="padding:8px 8px; text-align:right;">${Number(booking.cleaningFee).toFixed(2)}</td>
+        <td style="padding:8px 8px; text-align:right;">0.00</td>
         <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
-        <td style="padding:8px 8px; text-align:right; font-weight:800; color:#0f172a;">${Number(booking.cleaningFee).toFixed(2)}</td>
+        <td style="padding:8px 8px; text-align:right; font-weight:800; color:#059669;">${lang === 'bm' ? 'TERMASUK' : 'INCLUDED'}</td>
       `;
-      tableBody.appendChild(tr2);
+      tableBody.appendChild(tr3);
     }
-
-    // Row 3: Utilities & WiFi (Included)
-    const tr3 = document.createElement('tr');
-    tr3.style.background = '#fcfdfd';
-    tr3.style.borderBottom = '1px solid #f1f5f9';
-    tr3.innerHTML = `
-      <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rowIndex++}</td>
-      <td style="padding:8px 8px;">
-        <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Utiliti, Elektrik, Air & WiFi Berkelajuan Tinggi' : 'Utilities, Electricity, Water & High-Speed WiFi'}</strong>
-        <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penghawa dingin sepenuhnya, bekalan air bersih dan internet tanpa had' : 'Full air-conditioning, clean water supply and unlimited high-speed WiFi access'}</span>
-      </td>
-      <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998412</td>
-      <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00</td>
-      <td style="padding:8px 8px; text-align:right;">0.00</td>
-      <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
-      <td style="padding:8px 8px; text-align:right; font-weight:800; color:#059669;">${lang === 'bm' ? 'TERMASUK' : 'INCLUDED'}</td>
-    `;
-    tableBody.appendChild(tr3);
   }
 
   // 7. Calculations & Financial Summary
-  const totalQty = (nights + (booking.cleaningFee && booking.cleaningFee > 0 ? 1 : 0)).toFixed(2);
   const subtotalQtyEl = document.getElementById('pdfSubtotalQty');
-  if (subtotalQtyEl) subtotalQtyEl.textContent = totalQty;
-
   const subtotalEl = document.getElementById('pdfValSubtotal');
-  if (subtotalEl) subtotalEl.textContent = `${currency} ${Number(grandTotal).toFixed(2)}`;
-
   const taxSubtotalEl = document.getElementById('pdfValTaxableSubtotal');
-  if (taxSubtotalEl) taxSubtotalEl.textContent = `${currency} ${Number(grandTotal).toFixed(2)}`;
-
   const extraChargesEl = document.getElementById('pdfValExtraCharges');
-  if (extraChargesEl) extraChargesEl.textContent = `${currency} 0.00`;
-
-  const depositPct = settings.defaultDepositPct || 30;
-  const depReqAmount = booking.depositAmount && booking.depositAmount > 0 ? booking.depositAmount : (grandTotal * depositPct / 100);
-
   const depRow = document.getElementById('pdfRowDeposit');
   const depVal = document.getElementById('pdfValDepositReq');
   const depLbl = document.getElementById('lblPdfDepositReq');
-
   const paidRow = document.getElementById('pdfRowPaid');
   const paidVal = document.getElementById('pdfValPaid');
   const paidLbl = document.getElementById('lblPdfPaid');
-
   const balRow = document.getElementById('pdfRowBalance');
   const balVal = document.getElementById('pdfValBalance');
   const balLbl = document.getElementById('lblPdfBalance');
-
   const grandTotalEl = document.getElementById('pdfValGrandTotal');
   const grandTotalLbl = document.getElementById('lblPdfGrandTotal');
   const wordsTitleLbl = document.getElementById('lblPdfWordsTitle');
   const wordsEl = document.getElementById('pdfTotalAmountInWords');
 
-  if (docType === 'deposit_receipt') {
-    // --- DEPOSIT RECEIPT LOGIC ---
-    if (depRow) depRow.style.display = 'none';
+  if (isMonthly) {
+    if (currentMonthInv) {
+      const curMonthTotal = Number((currentMonthInv.rentAmount || mRate) + (currentMonthInv.utilityCharges || 0));
+      const isPaid = currentMonthInv.status === 'paid';
 
-    if (paidRow && paidVal && paidLbl) {
-      paidRow.style.display = 'flex';
-      paidLbl.textContent = t.lblPdfDepositPaidRow;
-      paidVal.textContent = `(+) ${currency} ${depositPaidAmt.toFixed(2)}`;
-      paidVal.style.color = '#059669';
-    }
+      if (subtotalQtyEl) subtotalQtyEl.textContent = currentMonthInv.utilityCharges > 0 ? '2.00' : '1.00';
+      if (subtotalEl) subtotalEl.textContent = `${currency} ${curMonthTotal.toFixed(2)}`;
+      if (taxSubtotalEl) taxSubtotalEl.textContent = `${currency} ${curMonthTotal.toFixed(2)}`;
+      if (extraChargesEl) extraChargesEl.textContent = `${currency} ${(currentMonthInv.utilityCharges || 0).toFixed(2)}`;
 
-    if (balRow && balVal && balLbl) {
-      balRow.style.display = 'flex';
-      balLbl.textContent = t.lblPdfBalance;
-      balVal.textContent = `${currency} ${balAmt.toFixed(2)} (${lang === 'bm' ? 'BELUM JELAS' : 'PENDING'})`;
-      balVal.style.color = '#b45309';
-    }
+      if (depRow) depRow.style.display = 'none';
 
-    // Acknowledge the DEPOSIT amount as the primary receipt amount
-    if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalDepositReceipt;
-    if (grandTotalEl) {
-      grandTotalEl.textContent = `${currency} ${depositPaidAmt.toFixed(2)}`;
-      grandTotalEl.style.color = '#0284c7';
-    }
-
-    if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleDeposit;
-    if (wordsEl) wordsEl.textContent = numberToWordsMYR(depositPaidAmt, lang);
-
-  } else if (docType === 'receipt') {
-    // --- FULL RECEIPT LOGIC ---
-    if (depRow) depRow.style.display = 'none';
-
-    if (paidRow && paidVal && paidLbl) {
-      paidRow.style.display = 'flex';
-      paidLbl.textContent = t.lblPdfPaid;
-      paidVal.textContent = `${currency} ${grandTotal.toFixed(2)} (${lang === 'bm' ? 'PENUH' : 'FULL'})`;
-      paidVal.style.color = '#059669';
-    }
-
-    if (balRow && balVal && balLbl) {
-      balRow.style.display = 'flex';
-      balLbl.textContent = t.lblPdfBalance;
-      balVal.textContent = `${currency} 0.00 (${lang === 'bm' ? 'LUNAS / SELESAI' : 'SETTLED'})`;
-      balVal.style.color = '#059669';
-    }
-
-    if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalReceipt;
-    if (grandTotalEl) {
-      grandTotalEl.textContent = `${currency} ${grandTotal.toFixed(2)}`;
-      grandTotalEl.style.color = '#059669';
-    }
-
-    if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
-    if (wordsEl) wordsEl.textContent = numberToWordsMYR(grandTotal, lang);
-
-  } else if (docType === 'invoice') {
-    // --- INVOICE LOGIC ---
-    if (depRow) depRow.style.display = 'none';
-
-    if (depositPaidAmt > 0) {
-      if (paidRow && paidVal && paidLbl) {
-        paidRow.style.display = 'flex';
-        paidLbl.textContent = t.lblPdfDepositDeductedRow;
-        paidVal.textContent = `(-) ${currency} ${depositPaidAmt.toFixed(2)}`;
-        paidVal.style.color = '#059669';
+      if (isPaid) {
+        if (paidRow && paidVal && paidLbl) {
+          paidRow.style.display = 'flex';
+          paidLbl.textContent = lang === 'bm' ? 'Bayaran Diterima (+):' : 'Payment Received (+):';
+          paidVal.textContent = `${currency} ${curMonthTotal.toFixed(2)} (${lang === 'bm' ? 'LUNAS' : 'PAID'})`;
+          paidVal.style.color = '#059669';
+        }
+        if (balRow && balVal && balLbl) {
+          balRow.style.display = 'flex';
+          balLbl.textContent = lang === 'bm' ? 'Baki Belum Jelas:' : 'Balance Due:';
+          balVal.textContent = `${currency} 0.00`;
+          balVal.style.color = '#059669';
+        }
+        if (grandTotalLbl) grandTotalLbl.textContent = lang === 'bm' ? 'JUMLAH SEWA BULANAN DIBAYAR' : 'MONTHLY RENT PAID';
+        if (grandTotalEl) {
+          grandTotalEl.textContent = `${currency} ${curMonthTotal.toFixed(2)}`;
+          grandTotalEl.style.color = '#059669';
+        }
+      } else {
+        if (paidRow) paidRow.style.display = 'none';
+        if (balRow && balVal && balLbl) {
+          balRow.style.display = 'flex';
+          balLbl.textContent = lang === 'bm' ? 'Baki Perlu Dijelaskan:' : 'Amount Due:';
+          balVal.textContent = `${currency} ${curMonthTotal.toFixed(2)}`;
+          balVal.style.color = '#b45309';
+        }
+        if (grandTotalLbl) grandTotalLbl.textContent = lang === 'bm' ? 'JUMLAH PERLU DIBAYAR (AMOUNT DUE)' : 'TOTAL AMOUNT DUE';
+        if (grandTotalEl) {
+          grandTotalEl.textContent = `${currency} ${curMonthTotal.toFixed(2)}`;
+          grandTotalEl.style.color = '#5b21b6';
+        }
       }
 
+      if (wordsTitleLbl) wordsTitleLbl.textContent = lang === 'bm' ? 'Jumlah Sewa Bulanan Dalam Perkataan' : 'Monthly Rent Amount in Words';
+      if (wordsEl) wordsEl.textContent = numberToWordsMYR(curMonthTotal, lang);
+
+    } else {
+      // Move-in Package Quotation / Move-in Statement
+      const totalQty = (1 + 1 + 1 + (aFee > 0 ? 1 : 0)).toFixed(2);
+      if (subtotalQtyEl) subtotalQtyEl.textContent = totalQty;
+      if (subtotalEl) subtotalEl.textContent = `${currency} ${totalMoveIn.toFixed(2)}`;
+      if (taxSubtotalEl) taxSubtotalEl.textContent = `${currency} ${totalMoveIn.toFixed(2)}`;
+      if (extraChargesEl) extraChargesEl.textContent = `${currency} 0.00`;
+
+      const bookingFee = booking.depositPaid > 0 
+        ? booking.depositPaid 
+        : (booking.depositAmount && booking.depositAmount > 0 ? booking.depositAmount : Math.round(mRate * 0.5));
+      const balMoveIn = Math.max(0, totalMoveIn - (docType === 'deposit_receipt' ? depositPaidAmt : (booking.depositPaid > 0 ? booking.depositPaid : bookingFee)));
+
+      if (docType === 'quotation') {
+        if (depRow && depVal && depLbl) {
+          depRow.style.display = 'flex';
+          depLbl.textContent = lang === 'bm' ? 'Bayaran Booking (Kunci Unit):' : 'Booking Fee to Reserve Unit:';
+          depVal.textContent = `${currency} ${bookingFee.toFixed(2)}`;
+        }
+        if (paidRow) paidRow.style.display = 'none';
+        if (balRow && balVal && balLbl) {
+          balRow.style.display = 'flex';
+          balLbl.textContent = lang === 'bm' ? 'Baki Bayaran Sebelum Kunci/Masuk:' : 'Balance Due before Move-in:';
+          balVal.textContent = `${currency} ${balMoveIn.toFixed(2)}`;
+          balVal.style.color = '#b45309';
+        }
+        if (grandTotalLbl) grandTotalLbl.textContent = lang === 'bm' ? 'JUMLAH PAKEJ KEMASUKAN (MOVE-IN)' : 'TOTAL MOVE-IN PACKAGE';
+        if (grandTotalEl) {
+          grandTotalEl.textContent = `${currency} ${totalMoveIn.toFixed(2)}`;
+          grandTotalEl.style.color = '#ea580c';
+        }
+        if (wordsTitleLbl) wordsTitleLbl.textContent = lang === 'bm' ? 'Jumlah Pakej Kemasukan Dalam Perkataan' : 'Total Move-in Package in Words';
+        if (wordsEl) wordsEl.textContent = numberToWordsMYR(totalMoveIn, lang);
+
+      } else if (docType === 'deposit_receipt') {
+        if (depRow) depRow.style.display = 'none';
+        if (paidRow && paidVal && paidLbl) {
+          paidRow.style.display = 'flex';
+          paidLbl.textContent = t.lblPdfDepositPaidRow;
+          paidVal.textContent = `(+) ${currency} ${depositPaidAmt.toFixed(2)}`;
+          paidVal.style.color = '#059669';
+        }
+        if (balRow && balVal && balLbl) {
+          balRow.style.display = 'flex';
+          balLbl.textContent = lang === 'bm' ? 'Baki Sebelum Serahan Kunci:' : 'Balance Due before Handover:';
+          balVal.textContent = `${currency} ${Math.max(0, totalMoveIn - depositPaidAmt).toFixed(2)} (${lang === 'bm' ? 'BELUM JELAS' : 'PENDING'})`;
+          balVal.style.color = '#b45309';
+        }
+        if (grandTotalLbl) grandTotalLbl.textContent = lang === 'bm' ? 'JUMLAH BAYARAN BOOKING DITERIMA' : 'BOOKING DEPOSIT RECEIVED';
+        if (grandTotalEl) {
+          grandTotalEl.textContent = `${currency} ${depositPaidAmt.toFixed(2)}`;
+          grandTotalEl.style.color = '#0284c7';
+        }
+        if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleDeposit;
+        if (wordsEl) wordsEl.textContent = numberToWordsMYR(depositPaidAmt, lang);
+
+      } else if (docType === 'receipt') {
+        if (depRow) depRow.style.display = 'none';
+        if (paidRow && paidVal && paidLbl) {
+          paidRow.style.display = 'flex';
+          paidLbl.textContent = t.lblPdfPaid;
+          paidVal.textContent = `${currency} ${totalMoveIn.toFixed(2)} (${lang === 'bm' ? 'PENUH' : 'FULL'})`;
+          paidVal.style.color = '#059669';
+        }
+        if (balRow && balVal && balLbl) {
+          balRow.style.display = 'flex';
+          balLbl.textContent = t.lblPdfBalance;
+          balVal.textContent = `${currency} 0.00 (${lang === 'bm' ? 'LUNAS / SELESAI' : 'SETTLED'})`;
+          balVal.style.color = '#059669';
+        }
+        if (grandTotalLbl) grandTotalLbl.textContent = lang === 'bm' ? 'JUMLAH BAYARAN PENUH KEMASUKAN' : 'FULL MOVE-IN SETTLEMENT';
+        if (grandTotalEl) {
+          grandTotalEl.textContent = `${currency} ${totalMoveIn.toFixed(2)}`;
+          grandTotalEl.style.color = '#059669';
+        }
+        if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
+        if (wordsEl) wordsEl.textContent = numberToWordsMYR(totalMoveIn, lang);
+
+      } else if (docType === 'invoice') {
+        if (depRow) depRow.style.display = 'none';
+        if (depositPaidAmt > 0) {
+          if (paidRow && paidVal && paidLbl) {
+            paidRow.style.display = 'flex';
+            paidLbl.textContent = t.lblPdfDepositDeductedRow;
+            paidVal.textContent = `(-) ${currency} ${depositPaidAmt.toFixed(2)}`;
+            paidVal.style.color = '#059669';
+          }
+          if (balRow && balVal && balLbl) {
+            balRow.style.display = 'flex';
+            balLbl.textContent = t.lblPdfBalance;
+            balVal.textContent = `${currency} ${balAmt.toFixed(2)}`;
+            balVal.style.color = balAmt <= 0 ? '#059669' : '#b45309';
+          }
+          if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalInvoice;
+          if (grandTotalEl) {
+            grandTotalEl.textContent = `${currency} ${balAmt.toFixed(2)}`;
+            grandTotalEl.style.color = balAmt <= 0 ? '#059669' : '#5b21b6';
+          }
+          if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
+          if (wordsEl) wordsEl.textContent = numberToWordsMYR(balAmt, lang);
+        } else {
+          if (paidRow) paidRow.style.display = 'none';
+          if (balRow) balRow.style.display = 'none';
+          if (grandTotalLbl) grandTotalLbl.textContent = lang === 'bm' ? 'JUMLAH PAKEJ KEMASUKAN' : 'TOTAL MOVE-IN PACKAGE';
+          if (grandTotalEl) {
+            grandTotalEl.textContent = `${currency} ${totalMoveIn.toFixed(2)}`;
+            grandTotalEl.style.color = '#5b21b6';
+          }
+          if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
+          if (wordsEl) wordsEl.textContent = numberToWordsMYR(totalMoveIn, lang);
+        }
+      }
+    }
+  } else {
+    // Existing daily booking calculations
+    const nights = booking.nights || 1;
+    const totalQty = (nights + (booking.cleaningFee && booking.cleaningFee > 0 ? 1 : 0)).toFixed(2);
+    if (subtotalQtyEl) subtotalQtyEl.textContent = totalQty;
+    if (subtotalEl) subtotalEl.textContent = `${currency} ${Number(grandTotal).toFixed(2)}`;
+    if (taxSubtotalEl) taxSubtotalEl.textContent = `${currency} ${Number(grandTotal).toFixed(2)}`;
+    if (extraChargesEl) extraChargesEl.textContent = `${currency} 0.00`;
+
+    const depositPct = settings.defaultDepositPct || 30;
+    const depReqAmount = booking.depositAmount && booking.depositAmount > 0 ? booking.depositAmount : (grandTotal * depositPct / 100);
+
+    if (docType === 'deposit_receipt') {
+      if (depRow) depRow.style.display = 'none';
+      if (paidRow && paidVal && paidLbl) {
+        paidRow.style.display = 'flex';
+        paidLbl.textContent = t.lblPdfDepositPaidRow;
+        paidVal.textContent = `(+) ${currency} ${depositPaidAmt.toFixed(2)}`;
+        paidVal.style.color = '#059669';
+      }
       if (balRow && balVal && balLbl) {
         balRow.style.display = 'flex';
         balLbl.textContent = t.lblPdfBalance;
-        balVal.textContent = `${currency} ${balAmt.toFixed(2)}`;
-        balVal.style.color = balAmt <= 0 ? '#059669' : '#b45309';
+        balVal.textContent = `${currency} ${balAmt.toFixed(2)} (${lang === 'bm' ? 'BELUM JELAS' : 'PENDING'})`;
+        balVal.style.color = '#b45309';
       }
-
-      if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalInvoice;
+      if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalDepositReceipt;
       if (grandTotalEl) {
-        grandTotalEl.textContent = `${currency} ${balAmt.toFixed(2)}`;
-        grandTotalEl.style.color = balAmt <= 0 ? '#059669' : '#5b21b6';
+        grandTotalEl.textContent = `${currency} ${depositPaidAmt.toFixed(2)}`;
+        grandTotalEl.style.color = '#0284c7';
       }
+      if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleDeposit;
+      if (wordsEl) wordsEl.textContent = numberToWordsMYR(depositPaidAmt, lang);
 
+    } else if (docType === 'receipt') {
+      if (depRow) depRow.style.display = 'none';
+      if (paidRow && paidVal && paidLbl) {
+        paidRow.style.display = 'flex';
+        paidLbl.textContent = t.lblPdfPaid;
+        paidVal.textContent = `${currency} ${grandTotal.toFixed(2)} (${lang === 'bm' ? 'PENUH' : 'FULL'})`;
+        paidVal.style.color = '#059669';
+      }
+      if (balRow && balVal && balLbl) {
+        balRow.style.display = 'flex';
+        balLbl.textContent = t.lblPdfBalance;
+        balVal.textContent = `${currency} 0.00 (${lang === 'bm' ? 'LUNAS / SELESAI' : 'SETTLED'})`;
+        balVal.style.color = '#059669';
+      }
+      if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalReceipt;
+      if (grandTotalEl) {
+        grandTotalEl.textContent = `${currency} ${grandTotal.toFixed(2)}`;
+        grandTotalEl.style.color = '#059669';
+      }
       if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
-      if (wordsEl) wordsEl.textContent = numberToWordsMYR(balAmt, lang);
+      if (wordsEl) wordsEl.textContent = numberToWordsMYR(grandTotal, lang);
 
+    } else if (docType === 'invoice') {
+      if (depRow) depRow.style.display = 'none';
+      if (depositPaidAmt > 0) {
+        if (paidRow && paidVal && paidLbl) {
+          paidRow.style.display = 'flex';
+          paidLbl.textContent = t.lblPdfDepositDeductedRow;
+          paidVal.textContent = `(-) ${currency} ${depositPaidAmt.toFixed(2)}`;
+          paidVal.style.color = '#059669';
+        }
+        if (balRow && balVal && balLbl) {
+          balRow.style.display = 'flex';
+          balLbl.textContent = t.lblPdfBalance;
+          balVal.textContent = `${currency} ${balAmt.toFixed(2)}`;
+          balVal.style.color = balAmt <= 0 ? '#059669' : '#b45309';
+        }
+        if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalInvoice;
+        if (grandTotalEl) {
+          grandTotalEl.textContent = `${currency} ${balAmt.toFixed(2)}`;
+          grandTotalEl.style.color = balAmt <= 0 ? '#059669' : '#5b21b6';
+        }
+        if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
+        if (wordsEl) wordsEl.textContent = numberToWordsMYR(balAmt, lang);
+      } else {
+        if (paidRow) paidRow.style.display = 'none';
+        if (balRow) balRow.style.display = 'none';
+        if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalInvoiceNoDep;
+        if (grandTotalEl) {
+          grandTotalEl.textContent = `${currency} ${grandTotal.toFixed(2)}`;
+          grandTotalEl.style.color = '#5b21b6';
+        }
+        if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
+        if (wordsEl) wordsEl.textContent = numberToWordsMYR(grandTotal, lang);
+      }
     } else {
+      // Quotation
+      if (depRow && depVal && depLbl) {
+        depRow.style.display = 'flex';
+        depLbl.textContent = `${t.lblPdfDepositReq} (${depositPct}%):`;
+        depVal.textContent = `${currency} ${depReqAmount.toFixed(2)}`;
+      }
       if (paidRow) paidRow.style.display = 'none';
       if (balRow) balRow.style.display = 'none';
 
-      if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalInvoiceNoDep;
+      if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalQuotation;
       if (grandTotalEl) {
         grandTotalEl.textContent = `${currency} ${grandTotal.toFixed(2)}`;
-        grandTotalEl.style.color = '#5b21b6';
+        grandTotalEl.style.color = '#ea580c';
       }
-
       if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
       if (wordsEl) wordsEl.textContent = numberToWordsMYR(grandTotal, lang);
     }
-
-  } else {
-    // --- QUOTATION LOGIC ---
-    if (depRow && depVal && depLbl) {
-      depRow.style.display = 'flex';
-      depLbl.textContent = `${t.lblPdfDepositReq} (${depositPct}%):`;
-      depVal.textContent = `${currency} ${depReqAmount.toFixed(2)}`;
-    }
-    if (paidRow) paidRow.style.display = 'none';
-    if (balRow) balRow.style.display = 'none';
-
-    if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalQuotation;
-    if (grandTotalEl) {
-      grandTotalEl.textContent = `${currency} ${grandTotal.toFixed(2)}`;
-      grandTotalEl.style.color = '#ea580c';
-    }
-
-    if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
-    if (wordsEl) wordsEl.textContent = numberToWordsMYR(grandTotal, lang);
   }
 
   // 8. Terms & Notes
   const termsList = document.getElementById('pdfTermsList');
   if (termsList) {
     termsList.innerHTML = '';
-    const list = docType === 'deposit_receipt' 
-      ? t.termsDepositReceipt 
-      : docType === 'quotation' 
-        ? t.termsQuotation 
-        : docType === 'invoice' 
-          ? t.termsInvoice 
-          : t.termsReceipt;
+    let list;
+    if (isMonthly) {
+      if (currentMonthInv) {
+        list = t.termsInvoiceMonthly || PDF_DOC_I18N.bm.termsInvoiceMonthly;
+      } else {
+        list = docType === 'quotation' 
+          ? (t.termsQuotationMonthly || PDF_DOC_I18N.bm.termsQuotationMonthly)
+          : (docType === 'deposit_receipt' ? t.termsDepositReceipt : (docType === 'invoice' ? (t.termsInvoiceMonthly || PDF_DOC_I18N.bm.termsInvoiceMonthly) : t.termsReceipt));
+      }
+    } else {
+      list = docType === 'deposit_receipt' 
+        ? t.termsDepositReceipt 
+        : docType === 'quotation' 
+          ? t.termsQuotation 
+          : docType === 'invoice' 
+            ? t.termsInvoice 
+            : t.termsReceipt;
+    }
     list.forEach(item => {
       const li = document.createElement('li');
       li.textContent = item;
@@ -9675,22 +10245,53 @@ function getPdfDocMeta() {
   const prop = getPropertyById(booking.propertyId) || { name: 'Homestay Unit' };
   const year = new Date().getFullYear();
   const idShort = (booking.id || '').replace(/\D/g, '').slice(-4) || '1088';
+  const isMonthly = (booking.rentalType === 'monthly');
+  const activeMonth = appState.activePdfMonthIndex;
+
   let prefix = 'QT';
   let docTitle = isBM ? 'Sebut Harga Rasmi' : 'Official Quotation';
-  if (docType === 'invoice') {
-    prefix = 'INV';
-    docTitle = isBM ? 'Invois Rasmi' : 'Official Invoice';
-  } else if (docType === 'deposit_receipt') {
-    prefix = 'REC_DEP';
-    docTitle = isBM ? 'Resit Bayaran Deposit' : 'Deposit Payment Receipt';
-  } else if (docType === 'receipt') {
-    prefix = 'REC';
-    docTitle = isBM ? 'Resit Bayaran Penuh' : 'Official Payment Receipt';
+
+  if (isMonthly) {
+    if (activeMonth !== null && activeMonth !== undefined) {
+      if (docType === 'receipt') {
+        prefix = `REC_M${activeMonth}`;
+        docTitle = isBM ? `Resit Bayaran Sewa Bulan ke-${activeMonth}` : `Month ${activeMonth} Rent Payment Receipt`;
+      } else {
+        prefix = `INV_M${activeMonth}`;
+        docTitle = isBM ? `Invois Sewa Bulan ke-${activeMonth}` : `Month ${activeMonth} Rent Invoice`;
+      }
+    } else {
+      if (docType === 'invoice') {
+        prefix = 'INV_M';
+        docTitle = isBM ? 'Invois Kemasukan Sewaan Bulanan' : 'Monthly Tenancy Move-in Invoice';
+      } else if (docType === 'deposit_receipt') {
+        prefix = 'REC_BOOK_M';
+        docTitle = isBM ? 'Resit Bayaran Booking Sewaan' : 'Tenancy Booking Receipt';
+      } else if (docType === 'receipt') {
+        prefix = 'REC_M';
+        docTitle = isBM ? 'Resit Rasmi Bayaran Kemasukan' : 'Move-in Payment Receipt';
+      } else {
+        prefix = 'QUO_M';
+        docTitle = isBM ? 'Sebut Harga Pakej Kemasukan Sewaan Bulanan' : 'Monthly Tenancy Move-In Quotation';
+      }
+    }
+  } else {
+    if (docType === 'invoice') {
+      prefix = 'INV';
+      docTitle = isBM ? 'Invois Rasmi' : 'Official Invoice';
+    } else if (docType === 'deposit_receipt') {
+      prefix = 'REC_DEP';
+      docTitle = isBM ? 'Resit Bayaran Deposit' : 'Deposit Payment Receipt';
+    } else if (docType === 'receipt') {
+      prefix = 'REC';
+      docTitle = isBM ? 'Resit Bayaran Penuh' : 'Official Payment Receipt';
+    }
   }
+
   const cleanName = (booking.guestName || 'Tetamu').replace(/[^a-zA-Z0-9_-]/g, '_');
   const fileName = `${prefix}_${year}_${idShort}_${cleanName}.pdf`;
-  const fullDocNo = `${prefix.replace('_', '-')}-${year}-${idShort}`;
-  return { booking, docType, lang, isBM, prop, year, idShort, prefix, docTitle, cleanName, fileName, fullDocNo };
+  const fullDocNo = `${prefix.replace(/_/g, '-')}-${year}-${idShort}`;
+  return { booking, docType, lang, isBM, prop, year, idShort, prefix, docTitle, cleanName, fileName, fullDocNo, isMonthly, activeMonth };
 }
 
 /**
@@ -10017,15 +10618,46 @@ function sharePdfViaWhatsApp() {
   }
   const balAmt = Math.max(0, grandTotal - depositPaidAmt);
 
+  const isMonthly = (booking.rentalType === 'monthly');
+  const activeMonth = appState.activePdfMonthIndex;
+
   let message = '';
-  if (docType === 'deposit_receipt') {
-    message = isBM
-      ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi bayaran deposit penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Rekod Bayaran:*\n• Jumlah Pakej: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Diterima:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Baki Sebelum Masuk:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
-      : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) confirming your deposit payment for the stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Payment Record:*\n• Total Package: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Received:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Remaining Balance:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+  if (isMonthly) {
+    if (activeMonth !== null && activeMonth !== undefined) {
+      const inv = (booking.monthlyInvoices || []).find(x => x.monthIndex === activeMonth);
+      const invTotal = inv ? (inv.totalAmount || inv.rentAmount) : (booking.monthlyRate || 0);
+      const isPaid = inv && inv.status === 'paid';
+      message = isBM
+        ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi bayaran sewaan *Bulan ke-${activeMonth}* di *${prop.name}* (${inv ? `${inv.periodStart} → ${inv.periodEnd}` : ''}).\n\n💰 *Jumlah: ${currency} ${invTotal.toFixed(2)}* (${isPaid ? 'TELAH DIBAYAR' : `Tarikh Akhir: ${inv ? inv.dueDate : '-'}`})\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Terima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+        : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) for *Month ${activeMonth}* rental at *${prop.name}* (${inv ? `${inv.periodStart} → ${inv.periodEnd}` : ''}).\n\n💰 *Amount: ${currency} ${invTotal.toFixed(2)}* (${isPaid ? 'PAID' : `Due Date: ${inv ? inv.dueDate : '-'}`})\n\n📄 *Please refer to the attached PDF file.* Thank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+    } else if (docType === 'deposit_receipt') {
+      message = isBM
+        ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi pengesahan bayaran booking sewaan bulanan di *${prop.name}* (${booking.monthlyStart || booking.checkIn}, tempoh ${booking.monthlyDuration || 6} Bulan).\n\n💰 *Rekod Bayaran:*\n• Pakej Kemasukan: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Booking Diterima:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Baki Sebelum Serahan Kunci:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Sila rujuk fail PDF yang dilampirkan.*\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+        : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) confirming your booking payment for monthly tenancy at *${prop.name}* (${booking.monthlyStart || booking.checkIn}, duration ${booking.monthlyDuration || 6} Months).\n\n💰 *Payment Record:*\n• Move-in Package: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Booking Received:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Balance Due upon Key Handover:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Please refer to the attached PDF file.*\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+    } else {
+      // Monthly Move-in Quotation or Move-in Invoice
+      const mRate = booking.monthlyRate || 0;
+      const rDep = booking.rentalDeposit !== undefined ? booking.rentalDeposit : mRate;
+      const uDep = booking.utilitiesDeposit !== undefined ? booking.utilitiesDeposit : 300;
+      const aFee = booking.agreementFee !== undefined ? booking.agreementFee : 0;
+      const totalMoveIn = mRate + rDep + uDep + aFee;
+      const bookingFee = (booking.depositPaid > 0) ? booking.depositPaid : Math.round(mRate * 0.5);
+      const balHandover = Math.max(0, totalMoveIn - bookingFee);
+
+      message = isBM
+        ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi sewaan bulanan di *${prop.name}* (${booking.monthlyStart || booking.checkIn}, tempoh ${booking.monthlyDuration || 6} Bulan).\n\n💰 *Perincian Pakej Kemasukan (Move-In):*\n• Sewa Bulan Pertama (Pendahuluan): ${currency} ${mRate.toFixed(2)}\n• Deposit Keselamatan Sewa (1 Bulan Sewa): ${currency} ${rDep.toFixed(2)}\n• Deposit Utiliti (Air & Elektrik): ${currency} ${uDep.toFixed(2)}\n${aFee > 0 ? `• Yuran Perjanjian Sewa & Duti Setem: ${currency} ${aFee.toFixed(2)}\n` : ''}----------------------------------------\n💵 *Jumlah Bayaran Kemasukan:* *${currency} ${totalMoveIn.toFixed(2)}*\n🔒 *Bayaran Booking Diperlukan untuk Kunci Unit:* ${currency} ${bookingFee.toFixed(2)}\n⏳ *Baki Sebelum Serahan Kunci:* ${currency} ${balHandover.toFixed(2)}\n\n📌 *Syarat & Polisi Sewaan Bulanan:*\n1. Bayaran sewa bulanan dikutip secara pendahuluan (advance) pada awal setiap bulan sewaan melalui Invois Rasmi.\n2. Bagi sewaan jangka panjang melebihi 1 bulan, bil utiliti (elektrik & air) adalah mengikut kadar penggunaan bulanan sebenar (dibayar terus oleh penyewa atau dimasukkan ke dalam invois sewa bulanan).\n3. Deposit Keselamatan (1 bulan sewa) dan Deposit Utiliti (RM 300) akan dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada bil utiliti dan pemeriksaan unit.\n\n📄 *Sila rujuk fail PDF yang dilampirkan.*\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+        : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) for the monthly tenancy at *${prop.name}* (${booking.monthlyStart || booking.checkIn}, duration ${booking.monthlyDuration || 6} Months).\n\n💰 *Move-in Initial Package Breakdown:*\n• 1st Month Advance Rent: ${currency} ${mRate.toFixed(2)}\n• Rental Security Deposit (1 Month Rent): ${currency} ${rDep.toFixed(2)}\n• Utilities Deposit (Electricity & Water): ${currency} ${uDep.toFixed(2)}\n${aFee > 0 ? `• Tenancy Agreement & Stamp Duty: ${currency} ${aFee.toFixed(2)}\n` : ''}----------------------------------------\n💵 *Total Move-in Package:* *${currency} ${totalMoveIn.toFixed(2)}*\n🔒 *Booking Fee to Reserve Unit:* ${currency} ${bookingFee.toFixed(2)}\n⏳ *Balance Due upon Key Handover:* ${currency} ${balHandover.toFixed(2)}\n\n📌 *Monthly Tenancy Terms & Policies:*\n1. Monthly rental is collected in advance at the beginning of each rental month via official invoice.\n2. In long-term rentals over 1 month, utilities (electricity & water) are charged per actual usage (paid directly by tenant or added into monthly invoice).\n3. Rental Deposit (1 month rent) and Utilities Deposit (RM 300) are fully refundable at the end of tenancy subject to utility clearance and unit inspection.\n\n📄 *Please refer to the attached PDF file.*\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+    }
   } else {
-    message = isBM
-      ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
-      : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) for your stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+    if (docType === 'deposit_receipt') {
+      message = isBM
+        ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi bayaran deposit penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Rekod Bayaran:*\n• Jumlah Pakej: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Diterima:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Baki Sebelum Masuk:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+        : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) confirming your deposit payment for the stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Payment Record:*\n• Total Package: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Received:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Remaining Balance:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+    } else {
+      message = isBM
+        ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+        : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) for your stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+    }
   }
 
   // Copy text to clipboard
