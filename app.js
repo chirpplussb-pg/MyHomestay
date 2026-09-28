@@ -9694,7 +9694,8 @@ function getPdfDocMeta() {
 }
 
 /**
- * Reliable PDF Blob generator using html2pdf with timeout fallback
+ * Reliable PDF Blob generator using isolated A4 off-screen sandbox
+ * Guarantees standard 794px A4 layout, zero blank pages, and full particulars on Mobile & PC!
  */
 function generatePdfBlob(onSuccess, onError) {
   const element = document.getElementById('printablePdfSheet');
@@ -9707,33 +9708,87 @@ function generatePdfBlob(onSuccess, onError) {
   const fileName = meta ? meta.fileName : 'Dokumen.pdf';
 
   if (typeof window.html2pdf === 'function') {
+    // 1. Create isolated off-screen A4 sandbox container
+    // This isolates rendering completely from mobile viewports, mobile scrolling, and responsive CSS compression
+    const sandbox = document.createElement('div');
+    sandbox.id = 'pdfRenderSandbox_' + Date.now();
+    sandbox.style.position = 'fixed';
+    sandbox.style.left = '-9999px';
+    sandbox.style.top = '0';
+    sandbox.style.width = '794px'; // Standard A4 pixel width at 96 DPI (210mm)
+    sandbox.style.minHeight = '1120px'; // Standard A4 pixel height (297mm)
+    sandbox.style.background = '#ffffff';
+    sandbox.style.zIndex = '-9999';
+    sandbox.style.margin = '0';
+    sandbox.style.padding = '0';
+    sandbox.style.opacity = '1';
+    sandbox.style.visibility = 'visible';
+
+    // 2. Clone the printable sheet with fixed A4 dimensions
+    const clone = element.cloneNode(true);
+    clone.id = 'printablePdfSheet_sandbox_clone';
+    clone.style.width = '794px';
+    clone.style.minWidth = '794px';
+    clone.style.maxWidth = '794px';
+    clone.style.boxSizing = 'border-box';
+    clone.style.padding = '24px 28px';
+    clone.style.margin = '0 auto';
+    clone.style.background = '#ffffff';
+    clone.style.color = '#0f172a';
+    clone.style.overflow = 'visible';
+    clone.style.boxShadow = 'none';
+    clone.style.border = 'none';
+    clone.style.transform = 'none';
+
+    sandbox.appendChild(clone);
+    document.body.appendChild(sandbox);
+
+    // 3. Configure html2pdf with fixed A4 viewport & zero margin
     const opt = {
-      margin: [6, 6, 6, 6],
+      margin: 0,
       filename: fileName,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        scrollY: 0,
+        scrollX: 0,
+        windowWidth: 794,
+        width: 794,
+        backgroundColor: '#ffffff'
+      },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     let resolved = false;
+    const cleanup = () => {
+      if (sandbox && sandbox.parentNode) {
+        sandbox.parentNode.removeChild(sandbox);
+      }
+    };
+
     const timer = setTimeout(() => {
       if (!resolved) {
         resolved = true;
+        cleanup();
         console.warn('html2pdf took longer than 4.5s, triggering fallback');
         if (onError) onError(new Error('timeout'));
       }
     }, 4500);
 
-    window.html2pdf().set(opt).from(element).output('blob').then(blob => {
+    window.html2pdf().set(opt).from(clone).output('blob').then(blob => {
       if (!resolved) {
         resolved = true;
         clearTimeout(timer);
+        cleanup();
         if (onSuccess) onSuccess(blob, fileName);
       }
     }).catch(err => {
       if (!resolved) {
         resolved = true;
         clearTimeout(timer);
+        cleanup();
         console.warn('html2pdf generation error:', err);
         if (onError) onError(err);
       }
@@ -9752,6 +9807,7 @@ function downloadPdfDocument() {
 
   const isBM = meta.isBM;
   const fileName = meta.fileName;
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   const statusCard = document.getElementById('pdfActionStatusCard');
 
   if (statusCard) {
@@ -9798,21 +9854,33 @@ function downloadPdfDocument() {
               </h4>
               <p style="margin:4px 0 0 0; font-size:12px; color:#047857; line-height:1.5;">
                 ${isBM 
-                  ? `Fail telah disimpan terus ke folder <strong>Downloads</strong> komputer / peranti anda sebagai:<br><strong style="font-family:monospace; color:#0f172a; background:#e2e8f0; padding:2px 6px; border-radius:4px;">${fName}</strong>`
+                  ? `Fail telah disimpan terus ke folder <strong>Downloads</strong> komputer / telefon anda sebagai:<br><strong style="font-family:monospace; color:#0f172a; background:#e2e8f0; padding:2px 6px; border-radius:4px;">${fName}</strong>`
                   : `File saved directly into your <strong>Downloads</strong> folder as:<br><strong style="font-family:monospace; color:#0f172a; background:#e2e8f0; padding:2px 6px; border-radius:4px;">${fName}</strong>`}
               </p>
-              <div style="margin-top:6px; font-size:11px; color:#64748b;">
-                ${isBM ? '💡 Tip: Tekan <kbd style="background:#f1f5f9; border:1px solid #cbd5e1; padding:1px 5px; border-radius:3px;">Ctrl</kbd> + <kbd style="background:#f1f5f9; border:1px solid #cbd5e1; padding:1px 5px; border-radius:3px;">J</kbd> (Windows) atau semak ikon muat turun pelayar.' : '💡 Tip: Press Ctrl + J to see downloaded files.'}
-              </div>
+              ${!isMobile ? `
+                <div style="margin-top:6px; font-size:11px; color:#64748b;">
+                  ${isBM ? '💡 Tip: Tekan <kbd style="background:#f1f5f9; border:1px solid #cbd5e1; padding:1px 5px; border-radius:3px;">Ctrl</kbd> + <kbd style="background:#f1f5f9; border:1px solid #cbd5e1; padding:1px 5px; border-radius:3px;">J</kbd> (Windows) atau semak ikon muat turun pelayar.' : '💡 Tip: Press Ctrl + J to see downloaded files.'}
+                </div>
+              ` : `
+                <div style="margin-top:8px; font-size:11.5px; color:#14532d; background:#dcfce7; border:1px solid #86efac; border-radius:8px; padding:8px 12px; line-height:1.5;">
+                  📱 <strong>Pengguna Telefon:</strong> Fail PDF telah disimpan ke folder <strong>Downloads</strong> peranti anda. Anda boleh membukanya daripada notifikasi muat turun di bar atas skrin atau kongsi terus ke WhatsApp.
+                </div>
+              `}
             </div>
           </div>
           <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-            <a href="${blobUrl}" target="_blank" class="btn btn-primary btn-sm" style="font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #0284c7, #0369a1);">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i> ${isBM ? '👁️ Buka & Lihat PDF Sekarang' : '👁️ View PDF Now'}
-            </a>
-            <a href="${blobUrl}" download="${fName}" class="btn btn-outline btn-sm" style="font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px; color:#065f46; border-color:#059669; background:#fff;">
-              <i class="fa-solid fa-download"></i> ${isBM ? 'Muat Turun Semula' : 'Download Again'}
-            </a>
+            ${!isMobile ? `
+              <a href="${blobUrl}" target="_blank" class="btn btn-primary btn-sm" style="font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #0284c7, #0369a1);">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> ${isBM ? '👁️ Buka & Lihat PDF Sekarang' : '👁️ View PDF Now'}
+              </a>
+              <a href="${blobUrl}" download="${fName}" class="btn btn-outline btn-sm" style="font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px; color:#065f46; border-color:#059669; background:#fff;">
+                <i class="fa-solid fa-download"></i> ${isBM ? 'Muat Turun Semula' : 'Download Again'}
+              </a>
+            ` : `
+              <a href="${blobUrl}" download="${fName}" class="btn btn-primary btn-sm" style="font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #ea580c, #c2410c);">
+                <i class="fa-solid fa-file-arrow-down"></i> ${isBM ? '📥 Muat Turun Semula' : '📥 Download Again'}
+              </a>
+            `}
             <button type="button" class="btn btn-whatsapp btn-sm" id="btnStatusCardWa" style="font-weight:800; display:inline-flex; align-items:center; gap:6px;">
               <i class="fa-brands fa-whatsapp"></i> ${isBM ? '📲 Hantar ke WhatsApp Tetamu' : 'Send via WhatsApp'}
             </button>
@@ -9865,6 +9933,15 @@ function viewPdfInNewTab() {
 
   const isBM = meta.isBM;
   const fileName = meta.fileName;
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  // On Mobile: Browsers cannot render blob: PDFs in new tabs (results in blank white tab).
+  // Automatically trigger download so phone opens it in native PDF viewer.
+  if (isMobile) {
+    showToast(isBM ? 'Menjana & memuat turun fail PDF untuk telefon...' : 'Generating & downloading PDF for mobile...');
+    downloadPdfDocument();
+    return;
+  }
 
   // Pre-open window synchronously to avoid popup blocker
   let newTab = null;
