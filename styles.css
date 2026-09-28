@@ -3174,6 +3174,53 @@ body.theme-dark .overlap-alert-content strong {
   white-space: nowrap;
 }
 
+/* Snapshot mode applied temporarily during html2pdf snapshot */
+.pdf-rendering-mode {
+  padding: 12px 22px !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  width: 794px !important;
+  min-width: 794px !important;
+  max-width: 794px !important;
+  box-sizing: border-box !important;
+  background: #ffffff !important;
+}
+
+.pdf-rendering-mode #pdfDocTitle {
+  font-size: 24px !important;
+  margin-bottom: 2px !important;
+}
+
+.pdf-rendering-mode #pdfHostBizName {
+  font-size: 18px !important;
+}
+
+.pdf-rendering-mode table th,
+.pdf-rendering-mode table td {
+  padding-top: 2.5px !important;
+  padding-bottom: 2.5px !important;
+  font-size: 10px !important;
+}
+
+.pdf-rendering-mode #pdfTermsList {
+  line-height: 1.2 !important;
+  font-size: 8.5px !important;
+}
+
+.pdf-rendering-mode #pdfTermsList li {
+  margin-bottom: 1px !important;
+}
+
+.pdf-rendering-mode #pdfTotalAmountInWords {
+  font-size: 9.5px !important;
+}
+
+.pdf-rendering-mode > div:last-child {
+  margin-top: 6px !important;
+  padding-top: 4px !important;
+}
+
 /* Print CSS: Isolates the printable A4 sheet */
 @media print {
   body {

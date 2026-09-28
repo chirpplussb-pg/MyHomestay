@@ -10295,8 +10295,8 @@ function getPdfDocMeta() {
 }
 
 /**
- * Reliable PDF Blob generator using isolated A4 off-screen sandbox
- * Guarantees standard 794px A4 layout, zero blank pages, and full particulars on Mobile & PC!
+ * Reliable PDF Blob generator using direct, scroll-safe A4 element capture.
+ * Guarantees standard 794px A4 layout, zero blank pages, zero horizontal cutoffs on PC & Mobile!
  */
 function generatePdfBlob(onSuccess, onError) {
   const element = document.getElementById('printablePdfSheet');
@@ -10309,42 +10309,20 @@ function generatePdfBlob(onSuccess, onError) {
   const fileName = meta ? meta.fileName : 'Dokumen.pdf';
 
   if (typeof window.html2pdf === 'function') {
-    // 1. Create isolated off-screen A4 sandbox container
-    // This isolates rendering completely from mobile viewports, mobile scrolling, and responsive CSS compression
-    const sandbox = document.createElement('div');
-    sandbox.id = 'pdfRenderSandbox_' + Date.now();
-    sandbox.style.position = 'fixed';
-    sandbox.style.left = '-9999px';
-    sandbox.style.top = '0';
-    sandbox.style.width = '794px'; // Standard A4 pixel width at 96 DPI (210mm)
-    sandbox.style.minHeight = '1120px'; // Standard A4 pixel height (297mm)
-    sandbox.style.background = '#ffffff';
-    sandbox.style.zIndex = '-9999';
-    sandbox.style.margin = '0';
-    sandbox.style.padding = '0';
-    sandbox.style.opacity = '1';
-    sandbox.style.visibility = 'visible';
+    // 1. Capture current scroll offsets so we can restore them seamlessly
+    const modalBody = document.querySelector('#pdfDocModal .modal-body') || document.querySelector('.modal-body');
+    const savedModalScroll = modalBody ? modalBody.scrollTop : 0;
+    const savedWinScrollY = window.scrollY || window.pageYOffset || 0;
+    const savedWinScrollX = window.scrollX || window.pageXOffset || 0;
 
-    // 2. Clone the printable sheet with fixed A4 dimensions
-    const clone = element.cloneNode(true);
-    clone.id = 'printablePdfSheet_sandbox_clone';
-    clone.style.width = '794px';
-    clone.style.minWidth = '794px';
-    clone.style.maxWidth = '794px';
-    clone.style.boxSizing = 'border-box';
-    clone.style.padding = '24px 28px';
-    clone.style.margin = '0 auto';
-    clone.style.background = '#ffffff';
-    clone.style.color = '#0f172a';
-    clone.style.overflow = 'visible';
-    clone.style.boxShadow = 'none';
-    clone.style.border = 'none';
-    clone.style.transform = 'none';
+    // 2. Temporarily reset scroll to 0 so html2canvas renders from exact top without viewport clipping
+    if (modalBody) modalBody.scrollTop = 0;
+    window.scrollTo(0, 0);
 
-    sandbox.appendChild(clone);
-    document.body.appendChild(sandbox);
+    // 3. Temporarily apply compact A4 1-page rendering class & enforce standard 794px width
+    element.classList.add('pdf-rendering-mode');
 
-    // 3. Configure html2pdf with fixed A4 viewport & zero margin
+    // 4. Configure html2pdf with zero margins and origin coordinates
     const opt = {
       margin: 0,
       filename: fileName,
@@ -10355,41 +10333,39 @@ function generatePdfBlob(onSuccess, onError) {
         logging: false,
         scrollY: 0,
         scrollX: 0,
-        windowWidth: 794,
-        width: 794,
         backgroundColor: '#ffffff'
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     let resolved = false;
-    const cleanup = () => {
-      if (sandbox && sandbox.parentNode) {
-        sandbox.parentNode.removeChild(sandbox);
-      }
+    const restore = () => {
+      element.classList.remove('pdf-rendering-mode');
+      if (modalBody) modalBody.scrollTop = savedModalScroll;
+      window.scrollTo(savedWinScrollX, savedWinScrollY);
     };
 
     const timer = setTimeout(() => {
       if (!resolved) {
         resolved = true;
-        cleanup();
-        console.warn('html2pdf took longer than 4.5s, triggering fallback');
+        restore();
+        console.warn('html2pdf took longer than 6s, triggering fallback');
         if (onError) onError(new Error('timeout'));
       }
-    }, 4500);
+    }, 6000);
 
-    window.html2pdf().set(opt).from(clone).output('blob').then(blob => {
+    window.html2pdf().set(opt).from(element).output('blob').then(blob => {
       if (!resolved) {
         resolved = true;
         clearTimeout(timer);
-        cleanup();
+        restore();
         if (onSuccess) onSuccess(blob, fileName);
       }
     }).catch(err => {
       if (!resolved) {
         resolved = true;
         clearTimeout(timer);
-        cleanup();
+        restore();
         console.warn('html2pdf generation error:', err);
         if (onError) onError(err);
       }
