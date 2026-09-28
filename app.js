@@ -1139,8 +1139,9 @@ let appState = {
   activeDispatchRecipientId: null,
   activeDispatchPropertyId: null,
   activeDispatchService: 'turnover_clean',
-  activeDispatchTurnover: null
 };
+window.appState = appState;
+
 
 // ==========================================================================
 // 2. INITIALIZATION & DEMO DATA SEEDING
@@ -2187,11 +2188,36 @@ function setupEventListeners() {
 
   document.getElementById('btnPrintPdfDoc')?.addEventListener('click', printPdfDocument);
   document.getElementById('btnDownloadPdfDoc')?.addEventListener('click', downloadPdfDocument);
+  document.getElementById('btnViewPdfTab')?.addEventListener('click', viewPdfInNewTab);
   document.getElementById('btnSharePdfWa')?.addEventListener('click', sharePdfViaWhatsApp);
   document.getElementById('btnPromptSendWa')?.addEventListener('click', sharePdfViaWhatsApp);
+  document.getElementById('btnPromptDownload')?.addEventListener('click', downloadPdfDocument);
+  document.getElementById('btnPromptViewTab')?.addEventListener('click', viewPdfInNewTab);
   document.getElementById('btnPromptDismiss')?.addEventListener('click', () => {
     const banner = document.getElementById('pdfWaPromptBanner');
     if (banner) banner.style.display = 'none';
+  });
+
+  // Direct 1-Click PDF Download from WhatsApp Modal
+  document.getElementById('btnDirectDownloadPdfFromWa')?.addEventListener('click', () => {
+    const b = appState.activeWaBooking || (appState.bookings && appState.bookings[0]);
+    if (b) {
+      const tmpl = appState.activeWaTemplate;
+      const docType = (tmpl === 'deposit_receipt') 
+        ? 'deposit_receipt' 
+        : (tmpl === 'full_receipt' || tmpl === 'monthly_rent_receipt' || tmpl === 'refund_receipt') 
+          ? 'receipt' 
+          : (tmpl === 'monthly_invoice' || tmpl === 'payment') 
+            ? 'invoice' 
+            : 'quotation';
+      closeAllModals();
+      openPdfDocModal(b, docType);
+      setTimeout(() => {
+        downloadPdfDocument();
+      }, 350);
+    } else {
+      showToast(appState.settings.language === 'bm' ? 'Sila pilih tempahan terlebih dahulu.' : 'Please select a booking first.');
+    }
   });
 
   // Booking Form Status Change -> Toggle Quotation Validity Group & Auto-Settle Full Balance
@@ -8923,6 +8949,12 @@ function openPdfDocModal(booking, defaultDocType = 'quotation') {
   const banner = document.getElementById('pdfWaPromptBanner');
   if (banner) banner.style.display = 'flex';
 
+  const statusCard = document.getElementById('pdfActionStatusCard');
+  if (statusCard) {
+    statusCard.style.display = 'none';
+    statusCard.innerHTML = '';
+  }
+
   // Highlight active doc tab
   updatePdfTypeTabsUI();
   updatePdfLangButtonsUI();
@@ -9617,28 +9649,49 @@ function printPdfDocument() {
 }
 
 /**
- * Direct file download as standard PDF
+ * Helper: Extract structured metadata and filenames for current PDF document
  */
-function downloadPdfDocument() {
+function getPdfDocMeta() {
   const booking = appState.activePdfBooking;
-  if (!booking) return;
-
+  if (!booking) return null;
   const docType = appState.activePdfDocType || 'quotation';
-  const isBM = (appState.activePdfLang || appState.settings.language) === 'bm';
-  const element = document.getElementById('printablePdfSheet');
+  const lang = appState.activePdfLang || appState.settings.language || 'bm';
+  const isBM = lang === 'bm';
+  const prop = getPropertyById(booking.propertyId) || { name: 'Homestay Unit' };
   const year = new Date().getFullYear();
   const idShort = (booking.id || '').replace(/\D/g, '').slice(-4) || '1088';
   let prefix = 'QT';
-  if (docType === 'invoice') prefix = 'INV';
-  else if (docType === 'deposit_receipt') prefix = 'REC_DEP';
-  else if (docType === 'receipt') prefix = 'REC';
-
+  let docTitle = isBM ? 'Sebut Harga Rasmi' : 'Official Quotation';
+  if (docType === 'invoice') {
+    prefix = 'INV';
+    docTitle = isBM ? 'Invois Rasmi' : 'Official Invoice';
+  } else if (docType === 'deposit_receipt') {
+    prefix = 'REC_DEP';
+    docTitle = isBM ? 'Resit Bayaran Deposit' : 'Deposit Payment Receipt';
+  } else if (docType === 'receipt') {
+    prefix = 'REC';
+    docTitle = isBM ? 'Resit Bayaran Penuh' : 'Official Payment Receipt';
+  }
   const cleanName = (booking.guestName || 'Tetamu').replace(/[^a-zA-Z0-9_-]/g, '_');
   const fileName = `${prefix}_${year}_${idShort}_${cleanName}.pdf`;
+  const fullDocNo = `${prefix.replace('_', '-')}-${year}-${idShort}`;
+  return { booking, docType, lang, isBM, prop, year, idShort, prefix, docTitle, cleanName, fileName, fullDocNo };
+}
 
-  showToast(isBM ? 'Menjana dan memuat turun fail PDF rasmi...' : 'Generating and downloading official PDF...');
+/**
+ * Reliable PDF Blob generator using html2pdf with timeout fallback
+ */
+function generatePdfBlob(onSuccess, onError) {
+  const element = document.getElementById('printablePdfSheet');
+  if (!element) {
+    if (onError) onError(new Error('Elemen PDF tidak ditemui'));
+    return;
+  }
 
-  if (window.html2pdf && element) {
+  const meta = getPdfDocMeta();
+  const fileName = meta ? meta.fileName : 'Dokumen.pdf';
+
+  if (typeof window.html2pdf === 'function') {
     const opt = {
       margin: [6, 6, 6, 6],
       filename: fileName,
@@ -9646,36 +9699,223 @@ function downloadPdfDocument() {
       html2canvas: { scale: 2, useCORS: true, logging: false },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    window.html2pdf().set(opt).from(element).save().then(() => {
-      showToast(isBM ? `Fail PDF berjaya dimuat turun: ${fileName}` : `PDF downloaded successfully: ${fileName}`);
+
+    let resolved = false;
+    const timer = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        console.warn('html2pdf took longer than 4.5s, triggering fallback');
+        if (onError) onError(new Error('timeout'));
+      }
+    }, 4500);
+
+    window.html2pdf().set(opt).from(element).output('blob').then(blob => {
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        if (onSuccess) onSuccess(blob, fileName);
+      }
     }).catch(err => {
-      console.warn('html2pdf save error, fallback to print:', err);
-      window.print();
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        console.warn('html2pdf generation error:', err);
+        if (onError) onError(err);
+      }
     });
   } else {
-    window.print();
+    if (onError) onError(new Error('html2pdf_not_loaded'));
   }
 }
 
 /**
- * Share PDF directly to WhatsApp with file attachment
+ * Direct file download as standard PDF with interactive feedback card
+ */
+function downloadPdfDocument() {
+  const meta = getPdfDocMeta();
+  if (!meta) return;
+
+  const isBM = meta.isBM;
+  const fileName = meta.fileName;
+  const statusCard = document.getElementById('pdfActionStatusCard');
+
+  if (statusCard) {
+    statusCard.style.display = 'block';
+    statusCard.innerHTML = `
+      <div style="background:#eff6ff; border:1.5px solid #3b82f6; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 12px rgba(59,130,246,0.1);">
+        <div class="loading-spinner" style="width:26px; height:26px; border-width:3px; border-color:#3b82f6; border-top-color:transparent; flex-shrink:0;"></div>
+        <div>
+          <strong style="color:#1d4ed8; font-size:13.5px; display:block;">${isBM ? 'Sedang Menjana Fail PDF Standard A4...' : 'Generating Official A4 PDF Document...'}</strong>
+          <span style="font-size:11.5px; color:#2563eb;">${isBM ? `Fail "${fileName}" sedang diproses untuk muat turun terus ke komputer/peranti anda.` : `Processing "${fileName}" for download.`}</span>
+        </div>
+      </div>
+    `;
+    statusCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  showToast(isBM ? 'Menjana fail PDF rasmi...' : 'Generating official PDF...');
+
+  generatePdfBlob((blob, fName) => {
+    const blobUrl = URL.createObjectURL(blob);
+
+    // 1. Direct Anchor Download (Guaranteed download to user's Downloads folder)
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.href = blobUrl;
+    downloadAnchor.download = fName;
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    setTimeout(() => {
+      document.body.removeChild(downloadAnchor);
+    }, 1500);
+
+    // 2. Rich Interactive Status Card with Direct Links & Shortcuts
+    if (statusCard) {
+      statusCard.style.display = 'block';
+      statusCard.innerHTML = `
+        <div style="background:#ecfdf5; border:2px solid #10b981; border-radius:12px; padding:18px; box-shadow:0 6px 16px rgba(16,185,129,0.12);">
+          <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:14px;">
+            <div style="width:44px; height:44px; border-radius:50%; background:#10b981; color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:0 3px 8px rgba(16,185,129,0.35);">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div style="flex:1;">
+              <h4 style="margin:0; color:#065f46; font-size:15px; font-weight:800;">
+                ${isBM ? '✅ Fail PDF Berjaya Dijana & Dimuat Turun!' : '✅ PDF Document Generated & Downloaded!'}
+              </h4>
+              <p style="margin:4px 0 0 0; font-size:12px; color:#047857; line-height:1.5;">
+                ${isBM 
+                  ? `Fail telah disimpan terus ke folder <strong>Downloads</strong> komputer / peranti anda sebagai:<br><strong style="font-family:monospace; color:#0f172a; background:#e2e8f0; padding:2px 6px; border-radius:4px;">${fName}</strong>`
+                  : `File saved directly into your <strong>Downloads</strong> folder as:<br><strong style="font-family:monospace; color:#0f172a; background:#e2e8f0; padding:2px 6px; border-radius:4px;">${fName}</strong>`}
+              </p>
+              <div style="margin-top:6px; font-size:11px; color:#64748b;">
+                ${isBM ? '💡 Tip: Tekan <kbd style="background:#f1f5f9; border:1px solid #cbd5e1; padding:1px 5px; border-radius:3px;">Ctrl</kbd> + <kbd style="background:#f1f5f9; border:1px solid #cbd5e1; padding:1px 5px; border-radius:3px;">J</kbd> (Windows) atau semak ikon muat turun pelayar.' : '💡 Tip: Press Ctrl + J to see downloaded files.'}
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+            <a href="${blobUrl}" target="_blank" class="btn btn-primary btn-sm" style="font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #0284c7, #0369a1);">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> ${isBM ? '👁️ Buka & Lihat PDF Sekarang' : '👁️ View PDF Now'}
+            </a>
+            <a href="${blobUrl}" download="${fName}" class="btn btn-outline btn-sm" style="font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px; color:#065f46; border-color:#059669; background:#fff;">
+              <i class="fa-solid fa-download"></i> ${isBM ? 'Muat Turun Semula' : 'Download Again'}
+            </a>
+            <button type="button" class="btn btn-whatsapp btn-sm" id="btnStatusCardWa" style="font-weight:800; display:inline-flex; align-items:center; gap:6px;">
+              <i class="fa-brands fa-whatsapp"></i> ${isBM ? '📲 Hantar ke WhatsApp Tetamu' : 'Send via WhatsApp'}
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="btnDismissStatusCard" style="font-size:11px; background:#fff; color:#64748b; margin-left:auto;">
+              ${isBM ? 'Tutup' : 'Dismiss'}
+            </button>
+          </div>
+        </div>
+      `;
+      document.getElementById('btnStatusCardWa')?.addEventListener('click', sharePdfViaWhatsApp);
+      document.getElementById('btnDismissStatusCard')?.addEventListener('click', () => {
+        statusCard.style.display = 'none';
+      });
+      statusCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    showToast(isBM 
+      ? `✅ Fail dimuat turun: "${fName}" (Disimpan di Downloads)` 
+      : `✅ Downloaded: "${fName}"`, 6000);
+
+  }, (err) => {
+    console.warn('PDF blob generation error, fallback to print:', err);
+    if (statusCard) {
+      statusCard.style.display = 'block';
+      statusCard.innerHTML = `
+        <div style="background:#fffbeb; border:1.5px solid #f59e0b; border-radius:12px; padding:16px;">
+          <strong style="color:#b45309; display:block; font-size:13.5px;">⚠️ Menggunakan Cetakan Sistem Pelayar</strong>
+          <p style="margin:4px 0 10px 0; font-size:12px; color:#92400e;">
+            ${isBM 
+              ? 'Tetingkap cetakan dibuka. Sila pilih <strong>"Save as PDF" / "Simpan sebagai PDF"</strong> pada pilihan Destination/Pencetak untuk menyimpan fail.'
+              : 'Print dialog opened. Please select "Save as PDF" to save the file.'}
+          </p>
+          <button type="button" class="btn btn-primary btn-sm" id="btnRetryPrint" style="font-weight:700;">
+            <i class="fa-solid fa-print"></i> ${isBM ? 'Buka Cetak / Simpan PDF' : 'Print / Save as PDF'}
+          </button>
+        </div>
+      `;
+      document.getElementById('btnRetryPrint')?.addEventListener('click', () => window.print());
+    }
+    window.print();
+  });
+}
+
+/**
+ * Open generated PDF directly in a new browser tab for immediate viewing/printing
+ */
+function viewPdfInNewTab() {
+  const meta = getPdfDocMeta();
+  if (!meta) return;
+
+  const isBM = meta.isBM;
+  const fileName = meta.fileName;
+
+  // Pre-open window synchronously to avoid popup blocker
+  let newTab = null;
+  try {
+    newTab = window.open('about:blank', '_blank');
+    if (newTab) {
+      newTab.document.write(`
+        <!DOCTYPE html><html><body style="font-family:system-ui,sans-serif; text-align:center; padding:50px; background:#f8fafc; color:#0f172a;">
+          <h3 style="color:#0284c7;">Menjana Fail PDF...</h3><p style="color:#64748b;">Sila tunggu sebentar, dokumen akan dibuka serta-merta.</p>
+        </body></html>
+      `);
+    }
+  } catch(e) {
+    console.warn('Could not pre-open new tab:', e);
+  }
+
+  showToast(isBM ? 'Menjana PDF untuk dibuka di tab baru...' : 'Generating PDF to open in new tab...');
+
+  generatePdfBlob((blob, fName) => {
+    const blobUrl = URL.createObjectURL(blob);
+    if (newTab && !newTab.closed) {
+      newTab.location.href = blobUrl;
+    } else {
+      window.open(blobUrl, '_blank');
+    }
+
+    const statusCard = document.getElementById('pdfActionStatusCard');
+    if (statusCard) {
+      statusCard.style.display = 'block';
+      statusCard.innerHTML = `
+        <div style="background:#f0fdf4; border:1.5px solid #10b981; border-radius:12px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fa-solid fa-circle-check" style="color:#059669; font-size:20px;"></i>
+            <span style="font-size:12.5px; color:#065f46; font-weight:700;">
+              ${isBM ? 'PDF telah dibuka di tab baru pelayar anda!' : 'PDF opened in a new browser tab!'}
+            </span>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <a href="${blobUrl}" target="_blank" class="btn btn-primary btn-xs" style="font-weight:700; text-decoration:none;">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> ${isBM ? 'Klik Sini Jika Tab Tidak Terbuka' : 'Click Here If Tab Did Not Open'}
+            </a>
+            <a href="${blobUrl}" download="${fName}" class="btn btn-outline btn-xs" style="font-weight:700; text-decoration:none; background:#fff;">
+              <i class="fa-solid fa-download"></i> ${isBM ? 'Muat Turun' : 'Download'}
+            </a>
+          </div>
+        </div>
+      `;
+    }
+    showToast(isBM ? 'PDF dibuka di tab baru pelayar anda!' : 'PDF opened in a new browser tab!');
+  }, (err) => {
+    console.warn('Error generating PDF for new tab:', err);
+    window.print();
+  });
+}
+
+/**
+ * Share PDF directly to WhatsApp with file attachment & unblockable popup prevention
  */
 function sharePdfViaWhatsApp() {
-  const booking = appState.activePdfBooking;
-  if (!booking) return;
+  const meta = getPdfDocMeta();
+  if (!meta) return;
 
-  const docType = appState.activePdfDocType || 'quotation';
-  const lang = appState.activePdfLang || 'bm';
-  const isBM = lang === 'bm';
-  const prop = getPropertyById(booking.propertyId) || { name: 'Homestay' };
+  const { booking, docType, lang, isBM, prop, fullDocNo, fileName, docTitle } = meta;
   const currency = appState.settings.currency || 'RM';
-  
-  const year = new Date().getFullYear();
-  const idShort = (booking.id || '').replace(/\D/g, '').slice(-4) || '1088';
-  let docPrefix = 'QT';
-  let docName = isBM ? 'Sebut Harga Rasmi' : 'Official Quotation';
-
   const grandTotal = booking.totalAmount || 0;
+
   let depositPaidAmt = parseFloat(document.getElementById('pdfDepositAmountInput')?.value);
   if (isNaN(depositPaidAmt)) {
     depositPaidAmt = Number(booking.depositPaid || (booking.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0) || 0);
@@ -9685,30 +9925,15 @@ function sharePdfViaWhatsApp() {
   }
   const balAmt = Math.max(0, grandTotal - depositPaidAmt);
 
-  if (docType === 'invoice') {
-    docPrefix = 'INV';
-    docName = isBM ? 'Invois Rasmi' : 'Official Invoice';
-  } else if (docType === 'deposit_receipt') {
-    docPrefix = 'REC-DEP';
-    docName = isBM ? 'Resit Bayaran Deposit' : 'Deposit Payment Receipt';
-  } else if (docType === 'receipt') {
-    docPrefix = 'REC';
-    docName = isBM ? 'Resit Bayaran Penuh' : 'Official Payment Receipt';
-  }
-
-  const fullDocNo = `${docPrefix}-${year}-${idShort}`;
-  const cleanName = (booking.guestName || 'Tetamu').replace(/[^a-zA-Z0-9_-]/g, '_');
-  const fileName = `${docPrefix.replace('-', '_')}_${year}_${idShort}_${cleanName}.pdf`;
-
   let message = '';
   if (docType === 'deposit_receipt') {
     message = isBM
-      ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docName}* (*No: ${fullDocNo}*) bagi bayaran deposit penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Rekod Bayaran:*\n• Jumlah Pakej: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Diterima:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Baki Sebelum Masuk:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
-      : `Greetings ${booking.guestName}.\n\nAttached is the official *${docName}* (*Ref: ${fullDocNo}*) confirming your deposit payment for the stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Payment Record:*\n• Total Package: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Received:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Remaining Balance:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+      ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi bayaran deposit penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Rekod Bayaran:*\n• Jumlah Pakej: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Diterima:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Baki Sebelum Masuk:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+      : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) confirming your deposit payment for the stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Payment Record:*\n• Total Package: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Received:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Remaining Balance:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
   } else {
     message = isBM
-      ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docName}* (*No: ${fullDocNo}*) bagi penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
-      : `Greetings ${booking.guestName}.\n\nAttached is the official *${docName}* (*Ref: ${fullDocNo}*) for your stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+      ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+      : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) for your stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
   }
 
   // Copy text to clipboard
@@ -9721,65 +9946,149 @@ function sharePdfViaWhatsApp() {
     ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
     : `https://wa.me/?text=${encodeURIComponent(message)}`;
 
-  const element = document.getElementById('printablePdfSheet');
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  let waWindow = null;
 
-  showToast(isBM ? 'Menjana fail PDF dan menyediakan lampiran WhatsApp...' : 'Generating PDF file and preparing WhatsApp attachment...');
-
-  if (window.html2pdf && element) {
-    const opt = {
-      margin: [6, 6, 6, 6],
-      filename: fileName,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    window.html2pdf().set(opt).from(element).output('blob').then(async (pdfBlob) => {
-      const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-      // If mobile browser supports Web Share API Level 2 with files, attach directly to WhatsApp
-      if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-        try {
-          await navigator.share({
-            title: `${docName} (${fullDocNo})`,
-            text: message,
-            files: [pdfFile]
-          });
-          showToast(isBM ? 'Berjaya dibuka untuk dihantar ke WhatsApp!' : 'Successfully shared to WhatsApp!');
-          return;
-        } catch (shareErr) {
-          if (shareErr.name === 'AbortError') return; // User closed sheet
-          console.warn('navigator.share failed, fallback to download + open WhatsApp:', shareErr);
-        }
+  // ON DESKTOP: Pre-open the window synchronously within the user click gesture!
+  // This guarantees that browser popup blockers will NEVER block WhatsApp Web!
+  if (!isMobile) {
+    try {
+      waWindow = window.open('about:blank', '_blank');
+      if (waWindow) {
+        waWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head><title>Menghubungkan ke WhatsApp...</title></head>
+          <body style="font-family:system-ui,sans-serif; text-align:center; padding:50px; background:#f8fafc; color:#0f172a;">
+            <div style="max-width:480px; margin:0 auto; background:#fff; padding:30px; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1px solid #e2e8f0;">
+              <div style="font-size:36px; margin-bottom:12px;">📲</div>
+              <h2 style="color:#15803d; margin:0 0 8px 0; font-size:20px;">Menghubungkan ke WhatsApp Tetamu...</h2>
+              <p style="color:#64748b; font-size:13px; line-height:1.5; margin:0 0 16px 0;">Fail PDF sedang dijana dan dimuat turun ke komputer anda.</p>
+              <div style="display:inline-block; border:3px solid #e2e8f0; border-top-color:#15803d; border-radius:50%; width:24px; height:24px; animation:spin 0.8s linear infinite;"></div>
+              <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+            </div>
+          </body>
+          </html>
+        `);
       }
-
-      // Desktop fallback: Download the PDF file directly to computer + open WhatsApp chat
-      const blobUrl = URL.createObjectURL(pdfBlob);
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.href = blobUrl;
-      downloadAnchor.download = fileName;
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      setTimeout(() => {
-        document.body.removeChild(downloadAnchor);
-        URL.revokeObjectURL(blobUrl);
-      }, 2000);
-
-      showToast(isBM 
-        ? `Fail PDF (${fileName}) telah dimuat turun! Sila lampirkan fail ini di WhatsApp.` 
-        : `PDF file (${fileName}) downloaded! Please attach this file in WhatsApp.`, 5000);
-
-      setTimeout(() => {
-        window.open(waUrl, '_blank');
-      }, 650);
-
-    }).catch(err => {
-      console.error('Error generating PDF blob for WhatsApp:', err);
-      window.open(waUrl, '_blank');
-    });
-  } else {
-    window.open(waUrl, '_blank');
+    } catch(e) {
+      console.warn('Could not pre-open blank window:', e);
+    }
   }
+
+  const statusCard = document.getElementById('pdfActionStatusCard');
+  if (statusCard) {
+    statusCard.style.display = 'block';
+    statusCard.innerHTML = `
+      <div style="background:#eff6ff; border:1.5px solid #3b82f6; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 12px rgba(59,130,246,0.1);">
+        <div class="loading-spinner" style="width:26px; height:26px; border-width:3px; border-color:#3b82f6; border-top-color:transparent; flex-shrink:0;"></div>
+        <div>
+          <strong style="color:#1d4ed8; font-size:13.5px; display:block;">${isBM ? 'Menjana Fail PDF & Menghubungkan ke WhatsApp...' : 'Generating PDF & Connecting to WhatsApp...'}</strong>
+          <span style="font-size:11.5px; color:#2563eb;">${isBM ? 'Sila tunggu sebentar, fail sedang disediakan...' : 'Please wait a moment...'}</span>
+        </div>
+      </div>
+    `;
+    statusCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  showToast(isBM ? 'Menjana fail PDF dan menghubungkan ke WhatsApp...' : 'Generating PDF & connecting to WhatsApp...');
+
+  generatePdfBlob(async (pdfBlob, fName) => {
+    const pdfFile = new File([pdfBlob], fName, { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(pdfBlob);
+
+    // 1. If mobile browser supports Web Share API Level 2 with files, attach directly to WhatsApp
+    if (isMobile && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+      try {
+        if (waWindow) waWindow.close();
+        await navigator.share({
+          title: `${docTitle} (${fullDocNo})`,
+          text: message,
+          files: [pdfFile]
+        });
+        showToast(isBM ? '✅ Berjaya dikongsi ke WhatsApp!' : '✅ Shared to WhatsApp successfully!');
+        if (statusCard) statusCard.style.display = 'none';
+        return;
+      } catch (shareErr) {
+        if (shareErr.name === 'AbortError') return;
+        console.warn('navigator.share failed, fallback to download + open WhatsApp:', shareErr);
+      }
+    }
+
+    // 2. Desktop & Mobile fallback:
+    // Download PDF directly to Downloads folder
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.href = blobUrl;
+    downloadAnchor.download = fName;
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    setTimeout(() => {
+      document.body.removeChild(downloadAnchor);
+    }, 1500);
+
+    // Redirect the pre-opened window directly to waUrl
+    if (waWindow && !waWindow.closed) {
+      waWindow.location.href = waUrl;
+    }
+
+    // Render unblockable, crystal-clear Step-by-Step Card
+    if (statusCard) {
+      statusCard.style.display = 'block';
+      statusCard.innerHTML = `
+        <div style="background:#f0fdf4; border:2px solid #22c55e; border-radius:12px; padding:18px; box-shadow:0 6px 18px rgba(34,197,94,0.15);">
+          <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:14px;">
+            <div style="width:46px; height:46px; border-radius:50%; background:#22c55e; color:#fff; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; box-shadow:0 3px 10px rgba(34,197,94,0.4);">
+              <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <div style="flex:1;">
+              <h4 style="margin:0; color:#14532d; font-size:15px; font-weight:800;">
+                ${isBM ? '✅ Fail PDF Dimuat Turun & WhatsApp Sedia Dihantar!' : '✅ PDF Downloaded & WhatsApp Ready!'}
+              </h4>
+              <p style="margin:4px 0 8px 0; font-size:12px; color:#166534; line-height:1.5;">
+                ${isBM 
+                  ? `Fail rasmi <strong>${fName}</strong> telah dimuat turun ke folder <strong>Downloads</strong> anda.` 
+                  : `Official file <strong>${fName}</strong> has been saved into your <strong>Downloads</strong> folder.`}
+              </p>
+              <div style="background:#dcfce7; border:1px solid #86efac; border-radius:8px; padding:10px 12px; font-size:12px; color:#14532d; line-height:1.6;">
+                <strong>${isBM ? '👉 2 Langkah Mudah Untuk Menghantar:' : '👉 2 Easy Steps to Send:'}</strong><br>
+                1. ${isBM ? 'Tetingkap WhatsApp telah dibuka (atau klik butang hijau di bawah).' : 'WhatsApp window is opened (or click the green button below).'}<br>
+                2. ${isBM ? `Di WhatsApp tetamu, klik ikon <strong>Lampiran (📎 atau +)</strong> dan pilih fail <strong style="font-family:monospace;">${fName}</strong> dari folder Downloads.` : `In WhatsApp chat, click <strong>Attachment (📎 or +)</strong> and select the downloaded PDF.`}
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+            <a href="${waUrl}" target="_blank" class="btn btn-whatsapp btn-sm" style="font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:8px; padding:8px 16px; font-size:13px;">
+              <i class="fa-brands fa-whatsapp"></i> ${isBM ? '📲 Buka WhatsApp Sekarang (Pautan Langsung)' : '📲 Open WhatsApp Now'}
+            </a>
+            <a href="${blobUrl}" target="_blank" class="btn btn-primary btn-sm" style="font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> ${isBM ? '👁️ Lihat Fail PDF' : '👁️ View PDF'}
+            </a>
+            <a href="${blobUrl}" download="${fName}" class="btn btn-outline btn-sm" style="font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:#fff; color:#065f46; border-color:#059669;">
+              <i class="fa-solid fa-download"></i> ${isBM ? 'Muat Turun Semula' : 'Download Again'}
+            </a>
+            <button type="button" class="btn btn-outline btn-sm" id="btnDismissWaStatus" style="font-size:11px; background:#fff; color:#64748b; margin-left:auto;">
+              ${isBM ? 'Tutup' : 'Dismiss'}
+            </button>
+          </div>
+        </div>
+      `;
+      document.getElementById('btnDismissWaStatus')?.addEventListener('click', () => {
+        statusCard.style.display = 'none';
+      });
+      statusCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    showToast(isBM ? `Fail PDF (${fName}) dimuat turun ke Downloads!` : `PDF (${fName}) downloaded!`, 6000);
+
+  }, (err) => {
+    console.error('Error generating PDF for WhatsApp:', err);
+    if (waWindow && !waWindow.closed) {
+      waWindow.location.href = waUrl;
+    } else {
+      window.open(waUrl, '_blank');
+    }
+  });
 }
 
 
