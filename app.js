@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.6.5';
+const APP_VERSION = '2.6.6';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -305,8 +305,8 @@ const TRANSLATIONS = {
     update_banner_title: 'New Update Available!',
     update_banner_desc: 'New improvements & features ready. Your data is 100% preserved.',
     btn_update_now: 'Update Now',
-    toast_app_updated: '🎉 App successfully updated to v2.6.5! All data is intact.',
-    toast_up_to_date: '✨ You are already using the latest version (v2.6.5)!',
+    toast_app_updated: '🎉 App successfully updated to v2.6.6! All data is intact.',
+    toast_up_to_date: '✨ You are already using the latest version (v2.6.6)!',
     toast_checking_updates: 'Checking for new updates...',
     toast_safety_saved: 'Safety backup snapshot downloaded!',
 
@@ -765,8 +765,8 @@ const TRANSLATIONS = {
     update_banner_title: 'Kemas Kini Baharu Tersedia!',
     update_banner_desc: 'Ciri baharu & penambahbaikan sedia dipasang. Data anda kekal 100% selamat.',
     btn_update_now: 'Kemas Kini Sekarang',
-    toast_app_updated: '🎉 Aplikasi berjaya dikemas kini ke v2.6.5! Semua data kekal selamat.',
-    toast_up_to_date: '✨ Anda sedang menggunakan versi terkini (v2.6.5)!',
+    toast_app_updated: '🎉 Aplikasi berjaya dikemas kini ke v2.6.6! Semua data kekal selamat.',
+    toast_up_to_date: '✨ Anda sedang menggunakan versi terkini (v2.6.6)!',
     toast_checking_updates: 'Menyemak kemas kini terkini...',
     toast_safety_saved: 'Salinan sandaran keselamatan berjaya dimuat turun!',
 
@@ -1531,18 +1531,31 @@ function dismissUpdateBanner() {
   }
 }
 
-function applyAppUpdate() {
+async function applyAppUpdate() {
   const isBM = appState.settings.language === 'bm';
-  showToast(isBM ? 'Mengemas kini aplikasi...' : 'Updating application...');
-  if (newWorkerWaiting) {
-    newWorkerWaiting.postMessage({ type: 'SKIP_WAITING' });
-    setTimeout(() => {
-      window.location.reload();
-    }, 600);
-  } else {
-    // Force cache-busting reload
-    window.location.reload();
+  showToast(isBM ? 'Mengemas kini aplikasi ke versi terkini...' : 'Updating application to latest version...');
+  try {
+    if (newWorkerWaiting) {
+      newWorkerWaiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const r of regs) {
+        await r.update();
+      }
+    }
+  } catch (e) {
+    console.warn('Update note:', e);
   }
+
+  setTimeout(() => {
+    const cleanUrl = window.location.href.split('?')[0];
+    window.location.replace(`${cleanUrl}?v=${Date.now()}`);
+  }, 450);
 }
 
 async function forcePurgeCacheAndReload() {
@@ -1587,6 +1600,8 @@ async function checkForAppUpdates(isManual = false) {
           showToast(`${t('update_banner_title')} (v${verData.version})`);
         }
         return;
+      } else {
+        dismissUpdateBanner();
       }
     }
 
