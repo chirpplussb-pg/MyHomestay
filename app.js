@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.6.6';
+const APP_VERSION = '2.7.0';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -588,7 +588,67 @@ const TRANSLATIONS = {
     copy_pitch: 'Copy Pitch',
     pitch_copied: 'Promotional pitch copied to clipboard!',
     link_copied: 'Media link copied to clipboard!',
-    delete_promo_confirm: 'Are you sure you want to delete this promotional media asset?'
+    delete_promo_confirm: 'Are you sure you want to delete this promotional media asset?',
+
+    // Tenancy Agreement Generator
+    agr_modal_title: 'Residential Tenancy Agreement Generator',
+    agr_modal_subtitle: 'Generate official A4 tenancy agreements with Muslim-friendly covenants, schedule of terms, fixtures inventory & signatures.',
+    tenancy_agreement_banner_title: 'Residential Tenancy Agreement',
+    tenancy_agreement_banner_sub: 'Generate official A4 tenancy agreement with Muslim-friendly covenants, inventory & signatures.',
+    btn_generate_agreement: 'Generate Agreement',
+    agr_tab_form: '1. Setup & Particulars',
+    agr_tab_preview: '2. Live Preview & Export',
+    agr_lbl_select_booking: 'Select Tenant / Monthly Booking Record:',
+    agr_btn_autofill: 'Auto-Fill',
+    agr_sec_parties: '1. Parties (Landlord & Tenant Particulars)',
+    agr_title_landlord: 'Landlord (Lessor / Tuan Rumah)',
+    agr_lbl_landlord_name: 'Full Name / Business Name:',
+    agr_lbl_landlord_ic: 'NRIC / Passport / Company Reg (SSM):',
+    agr_lbl_landlord_phone: 'Phone / WhatsApp:',
+    agr_lbl_landlord_addr: 'Landlord Correspondence Address:',
+    agr_title_tenant: 'Tenant (Lessee / Penyewa)',
+    agr_lbl_tenant_name: 'Full Name of Tenant:',
+    agr_lbl_tenant_ic: 'NRIC / Passport / Reg No:',
+    agr_lbl_tenant_phone: 'Phone Number:',
+    agr_lbl_tenant_email: 'Email Address (Optional):',
+    agr_lbl_tenant_addr: 'Tenant Permanent Address:',
+    agr_sec_property_terms: '2. Demised Property & Tenancy Financial Terms',
+    agr_lbl_prop_name: 'Homestay / Property Name:',
+    agr_lbl_prop_type: 'Property Type:',
+    agr_lbl_prop_addr: 'Full Address of Demised Premises:',
+    agr_lbl_agr_date: 'Agreement Execution Date:',
+    agr_lbl_start_date: 'Tenancy Commencement Date:',
+    agr_lbl_end_date: 'Tenancy Expiry Date:',
+    agr_lbl_duration: 'Tenancy Duration (Months):',
+    agr_lbl_monthly_rent: 'Monthly Rent (RM / Month):',
+    agr_lbl_due_day: 'Monthly Payment Due Date:',
+    agr_lbl_rental_deposit: 'Rental Security Deposit (1 Month - RM):',
+    agr_lbl_util_deposit: 'Utilities Deposit (Electricity/Water - RM):',
+    agr_lbl_advance_rent: 'Advance 1st Month Rent (RM):',
+    agr_lbl_fee: 'Agreement & Stamping Fee (RM):',
+    agr_lbl_renewal_notice: 'Renewal Option Notice Period:',
+    agr_lbl_payment_account: 'Landlord Bank Account Details:',
+    agr_sec_muslim_title: '3. Special Muslim-Friendly House Covenants',
+    agr_switch_muslim: 'Activate Muslim-Friendly House Requirement',
+    agr_muslim_desc_title: 'Strict Covenants for Maintaining Muslim Living Condition:',
+    agr_lbl_custom_clauses: 'Custom Additional House Rules / Covenants (Optional):',
+    agr_sec_inventory: '4. Fixtures, Furniture & Inventory Schedule',
+    agr_btn_add_item: '+ Add Inventory Item',
+    agr_th_item_name: 'Item / Fixture Description',
+    agr_th_qty: 'Quantity',
+    agr_th_condition: 'Current Condition',
+    agr_sec_witnesses: '5. Witnesses Particulars',
+    agr_title_witness_landlord: "Landlord's Witness",
+    agr_title_witness_tenant: "Tenant's Witness",
+    agr_lbl_wit_name: 'Witness Full Name:',
+    agr_lbl_wit_ic: 'Witness NRIC / Passport:',
+    agr_btn_go_preview: 'Generate & View Live Agreement Preview →',
+    agr_lbl_lang: 'Document Language:',
+    agr_btn_edit_details: '← Edit Details',
+    agr_btn_save_draft: 'Save Draft',
+    agr_btn_print: 'Print Document',
+    agr_btn_share_wa: 'WhatsApp Tenant',
+    agr_btn_download_pdf: 'Download A4 PDF'
   },
   bm: {
     // Navigation
@@ -1048,7 +1108,67 @@ const TRANSLATIONS = {
     copy_pitch: 'Salin Ayat',
     pitch_copied: 'Ayat promosi berjaya disalin ke papan keratan!',
     link_copied: 'Pautan media berjaya disalin ke papan keratan!',
-    delete_promo_confirm: 'Adakah anda pasti mahu memadamkan media promosi ini?'
+    delete_promo_confirm: 'Adakah anda pasti mahu memadamkan media promosi ini?',
+
+    // Tenancy Agreement Generator
+    agr_modal_title: 'Penjana Perjanjian Sewaan Kediaman',
+    agr_modal_subtitle: 'Jana surat perjanjian rasmi A4 lengkap dengan syarat rumah mesra Muslim, jadual terma, inventori & tandatangan.',
+    tenancy_agreement_banner_title: 'Perjanjian Sewaan Kediaman (Tenancy Agreement)',
+    tenancy_agreement_banner_sub: 'Auto-jana perjanjian rasmi A4, klausa mesra Muslim, inventori & tandatangan.',
+    btn_generate_agreement: 'Jana Perjanjian',
+    agr_tab_form: '1. Butiran & Syarat Perjanjian',
+    agr_tab_preview: '2. Pratonton & Jana Dokumen A4',
+    agr_lbl_select_booking: 'Pilih Rekod Penyewa / Tempahan Bulanan:',
+    agr_btn_autofill: 'Isi Semula Auto',
+    agr_sec_parties: '1. Butiran Pihak-Pihak (Tuan Rumah & Penyewa)',
+    agr_title_landlord: 'Tuan Rumah (Landlord / Lessor)',
+    agr_lbl_landlord_name: 'Nama Penuh Tuan Rumah / Syarikat:',
+    agr_lbl_landlord_ic: 'No. K/P / No. Syarikat (SSM):',
+    agr_lbl_landlord_phone: 'No. Telefon / WhatsApp:',
+    agr_lbl_landlord_addr: 'Alamat Surat-Menyurat Tuan Rumah:',
+    agr_title_tenant: 'Penyewa (Tenant / Lessee)',
+    agr_lbl_tenant_name: 'Nama Penuh Penyewa:',
+    agr_lbl_tenant_ic: 'No. K/P / Pasport:',
+    agr_lbl_tenant_phone: 'No. Telefon:',
+    agr_lbl_tenant_email: 'Alamat Emel (Jika Ada):',
+    agr_lbl_tenant_addr: 'Alamat Tetap Penyewa (K/P / Asal):',
+    agr_sec_property_terms: '2. Maklumat Premis Demis & Terma Kewangan',
+    agr_lbl_prop_name: 'Nama Unit / Homestay:',
+    agr_lbl_prop_type: 'Jenis Hartanah:',
+    agr_lbl_prop_addr: 'Alamat Penuh Premis Yang Disewakan (Premis Demis):',
+    agr_lbl_agr_date: 'Tarikh Perjanjian Dibuat:',
+    agr_lbl_start_date: 'Tarikh Mula Sewaan:',
+    agr_lbl_end_date: 'Tarikh Tamat Sewaan:',
+    agr_lbl_duration: 'Tempoh Sewaan (Bulan):',
+    agr_lbl_monthly_rent: 'Sewa Bulanan (RM / Bulan):',
+    agr_lbl_due_day: 'Hari Genap Masa Bayaran:',
+    agr_lbl_rental_deposit: 'Cagaran Sewa (1 Bulan - RM):',
+    agr_lbl_util_deposit: 'Cagaran Utiliti (Elektrik/Air - RM):',
+    agr_lbl_advance_rent: 'Sewa Bulan Pertama (RM):',
+    agr_lbl_fee: 'Duti Setem & Yuran (RM):',
+    agr_lbl_renewal_notice: 'Notis Opsyen Pembaharuan:',
+    agr_lbl_payment_account: 'Akaun Bank Tuan Rumah:',
+    agr_sec_muslim_title: '3. Klausa Khas Pemeliharaan Keadaan Rumah Mesra Muslim',
+    agr_switch_muslim: 'Aktifkan Klausa Syarat Mesra Muslim',
+    agr_muslim_desc_title: 'Syarat Mutlak Pemeliharaan Status & Kesucian Rumah Sewa:',
+    agr_lbl_custom_clauses: 'Klausa / Syarat Khas Tambahan Tuan Rumah (Optional):',
+    agr_sec_inventory: '4. Senarai Perkakas, Perabot & Inventori Premis',
+    agr_btn_add_item: '+ Tambah Item',
+    agr_th_item_name: 'Perkara / Inventori',
+    agr_th_qty: 'Kuantiti',
+    agr_th_condition: 'Keadaan Semasa',
+    agr_sec_witnesses: '5. Maklumat Saksi-Saksi (Witnesses)',
+    agr_title_witness_landlord: 'Saksi Tuan Rumah',
+    agr_title_witness_tenant: 'Saksi Penyewa',
+    agr_lbl_wit_name: 'Nama Saksi:',
+    agr_lbl_wit_ic: 'No. K/P Saksi:',
+    agr_btn_go_preview: 'Jana & Lihat Pratonton Dokumen Perjanjian →',
+    agr_lbl_lang: 'Bahasa Dokumen:',
+    agr_btn_edit_details: '← Edit Butiran',
+    agr_btn_save_draft: 'Simpan Draf',
+    agr_btn_print: 'Cetak Dokumen',
+    agr_btn_share_wa: 'WhatsApp Penyewa',
+    agr_btn_download_pdf: 'Muat Turun PDF A4'
   }
 };
 
@@ -1199,6 +1319,7 @@ function initApp() {
 
   try {
     setupEventListeners();
+    initAgreementGenerator();
   } catch (e) { console.error('Listeners init error:', e); }
 
   try {
@@ -1849,6 +1970,13 @@ function setupEventListeners() {
   const btnHeaderCheckUp = document.getElementById('btnHeaderCheckUpdates');
   if (btnHeaderCheckUp) {
     btnHeaderCheckUp.addEventListener('click', () => checkForAppUpdates(true));
+  }
+
+  const btnOpenAgrGen = document.getElementById('btnOpenAgreementGen');
+  if (btnOpenAgrGen) {
+    btnOpenAgrGen.addEventListener('click', () => {
+      openAgreementModal();
+    });
   }
 
   // Pro System Hub Modal Handlers
@@ -4380,6 +4508,9 @@ function renderBookingsTab() {
           <button class="btn btn-outline btn-xs btn-open-monthly-invoices" data-bid="${b.id}" style="color:var(--primary); font-weight:700; border-color:var(--primary);">
             <i class="fa-solid fa-file-invoice-dollar"></i> ${t('btn_view_invoices')}
           </button>
+          <button class="btn btn-outline btn-xs btn-open-agreement" data-bid="${b.id}" style="color:#0284c7; font-weight:700; border-color:#0284c7;" title="${isBM ? 'Penjana Surat Perjanjian Sewa (Tenancy Agreement)' : 'Residential Tenancy Agreement Generator'}">
+            <i class="fa-solid fa-file-signature"></i> ${isBM ? 'Perjanjian' : 'Agreement'}
+          </button>
         ` : ''}
 
         ${b.status === 'quotation' ? `
@@ -4492,6 +4623,14 @@ function renderBookingsTab() {
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => x.id === bid);
       if (b) openMonthlyInvoicesModal(b);
+    });
+  });
+
+  container.querySelectorAll('.btn-open-agreement').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) openAgreementModal(b);
     });
   });
 
@@ -6340,6 +6479,13 @@ function openMonthlyInvoicesModal(booking) {
   document.getElementById('monthlyInvoicesTenantSubtitle').textContent = `${isBM ? 'Penyewa' : 'Tenant'}: ${booking.guestName} (${booking.guestPhone || '-'}) • ${prop.name}`;
   document.getElementById('mInvRateDisplay').textContent = `${formatCurrency(booking.monthlyRate || 0)} / ${isBM ? 'bulan' : 'month'}`;
   document.getElementById('mInvPeriodDisplay').textContent = `${booking.checkIn} → ${booking.checkOut} (${booking.monthlyDuration || 6} ${t('months')})`;
+
+  const btnAgr = document.getElementById('btnOpenTenancyAgreementFromHub');
+  if (btnAgr) {
+    btnAgr.onclick = () => {
+      openAgreementModal(booking);
+    };
+  }
 
   renderMonthlyInvoicesList(booking);
   document.getElementById('monthlyInvoicesModal').classList.add('active');
@@ -11672,5 +11818,1251 @@ function renderUserGuideAccordion(lang = 'en') {
   });
 }
 
+// ==========================================================================
+// 19. RESIDENTIAL TENANCY AGREEMENT GENERATOR MODULE (v2.7.0)
+// Automated legal Malaysian Tenancy Agreement with Muslim-friendly covenants
+// ==========================================================================
+
+const DEFAULT_AGREEMENT_INVENTORY = [
+  { item: 'Air Conditioner & Remote / Pendingin Hawa', qty: 2, condition: 'Good & Functional / Baik' },
+  { item: 'Refrigerator (2-Door) / Peti Sejuk', qty: 1, condition: 'Good & Functional / Baik' },
+  { item: 'Automatic Washing Machine / Mesin Basuh', qty: 1, condition: 'Good & Functional / Baik' },
+  { item: 'Smart Television & Remote / TV Pintar', qty: 1, condition: 'Good & Functional / Baik' },
+  { item: 'Queen Bed Frame, Mattress & Wardrobe / Katil & Tilam', qty: 2, condition: 'Clean & Good / Baik' },
+  { item: 'Single Bed Frame & Mattress / Katil Bujang', qty: 1, condition: 'Clean & Good / Baik' },
+  { item: 'Dining Table & 4 Chairs / Set Meja Makan', qty: 1, condition: 'Good & Sturdy / Baik' },
+  { item: 'Living Room Sofa & Coffee Table / Set Sofa', qty: 1, condition: 'Good & Clean / Baik' },
+  { item: 'Kitchen Gas Stove & Cylinder / Dapur Gas & Tong', qty: 1, condition: 'Clean & Functional / Baik' },
+  { item: 'Bathroom Water Heater / Pemanas Air Mandi', qty: 2, condition: 'Good & Functional / Baik' },
+  { item: 'Ceiling / Wall Fans / Kipas Siling & Dinding', qty: 4, condition: 'Good & Working / Baik' },
+  { item: 'House Keys & Gate Access / Kunci Rumah & Akses', qty: 2, condition: 'Complete Sets / Lengkap' }
+];
+
+const AGREEMENT_DOC_I18N = {
+  bm: {
+    docHeaderTitle: 'SURAT PERJANJIAN PENYEWAAN KEDIAMAN',
+    docHeaderSub: 'RESIDENTIAL TENANCY AGREEMENT',
+    preambleP1: (date, landlordName, landlordIc, tenantName, tenantIc) =>
+      `PERJANJIAN INI diperbuat pada tarikh <strong>${date}</strong> DI ANTARA <strong>${landlordName}</strong> (No. K/P / SSM: <strong>${landlordIc || '-'}</strong>) yang beralamat di tempat yang dinyatakan dalam Seksyen 2 Jadual Pertama (selepas ini dirujuk sebagai <strong>"Tuan Rumah"</strong>) di satu pihak; DAN <strong>${tenantName}</strong> (No. K/P / Pasport: <strong>${tenantIc || '-'}</strong>) yang beralamat tetap seperti dalam Seksyen 3 Jadual Pertama (selepas ini dirujuk sebagai <strong>"Penyewa"</strong>) di pihak yang satu lagi.`,
+    preambleP2: (propName, propAddress) =>
+      `BAHAWASANYA Tuan Rumah adalah pemilik berdaftar bagi premis kediaman yang dikenali sebagai <strong>"${propName}"</strong> yang beralamat di <strong>${propAddress}</strong> (selepas ini dirujuk sebagai <strong>"Premis Demis"</strong>) bersama segala lekapan, perabot dan inventori yang disenaraikan dalam Jadual Kedua. Tuan Rumah dengan ini bersetuju memberi sewaan dan Penyewa bersetuju menerima sewaan Premis Demis tersebut tertakluk kepada syarat-syarat dan fasal-fasal yang ditetapkan di bawah.`,
+    
+    // First Schedule
+    firstScheduleTitle: 'JADUAL PERTAMA (FIRST SCHEDULE)',
+    firstScheduleSub: 'JADUAL BUTIR-BUTIR PERJANJIAN PENYEWAAN',
+    thItemNo: 'Item',
+    thSubject: 'Perkara',
+    thParticulars: 'Butir-Butir / Perincian',
+    
+    schDate: 'Tarikh Perjanjian',
+    schLandlord: 'Tuan Rumah (Lessor)',
+    schTenant: 'Penyewa (Lessee)',
+    schProperty: 'Premis Yang Disewakan (Premis Demis)',
+    schTerm: 'Tempoh Sewaan',
+    schDates: 'Tarikh Permulaan & Tamat',
+    schRent: 'Kadar Sewa Bulanan',
+    schDue: 'Tarikh Genap Masa Bayaran',
+    schRentalDep: 'Wang Cagaran Sewa (1 Bulan)',
+    schUtilDep: 'Wang Cagaran Utiliti (Elektrik & Air)',
+    schAdvance: 'Bayaran Sewa Pendahuluan (Bulan Pertama)',
+    schFee: 'Duti Setem & Yuran Perjanjian',
+    schUse: 'Kegunaan Premis Dibenarkan',
+    schUseVal: 'Kediaman Persendirian Sahaja (Ditegah Perusahaan / Komersial)',
+    schRenew: 'Opsyen Pembaharuan Sewaan',
+
+    // Covenants
+    sec1Title: 'FASAL 1: TANGGUNGJAWAB & AKU JANJI PENYEWA',
+    sec1Clauses: [
+      'Membayar sewa bulanan tepat pada tarikh yang ditetapkan tanpa sebarang tuntutan atau penolakan ke dalam akaun bank Tuan Rumah.',
+      'Membayar semua bil penggunaan elektrik, air, caj perkhidmatan pembetungan (Indah Water) dan sebarang bil utiliti lain mengikut meter bacaan atau invois bulanan yang dikemukakan.',
+      'Menjaga kebersihan dan keselamatan bahagian dalaman dan luaran premis, perabot, dan perkakas elektrik yang disenaraikan dalam Jadual Kedua agar sentiasa berada dalam keadaan baik, bersih dan berfungsi.',
+      'Dilarang melakukan sebarang ubah suai struktur, meruntuhkan dinding, mengecat warna lain, atau menebuk lubang pada dinding tanpa mendapat persetujuan bertulis terlebih dahulu daripada Tuan Rumah.',
+      'Dilarang sama sekali menyewakan semula (sublet), menyerahkan hak sewaan, atau berkongsi kediaman dengan mana-mana pihak ketiga tanpa kebenaran bertulis daripada Tuan Rumah.',
+      'Membenarkan Tuan Rumah atau wakil yang diberikuasa memasuki premis pada bila-bila masa yang munasabah untuk tujuan pemeriksaan atau pembaikan dengan memberi notis awal sekurang-kurangnya 24 jam.',
+      'Tidak menyimpan atau membenarkan disimpan sebarang barangan berbahaya, mudah terbakar, bahan letupan atau bahan terlarang di sisi undang-undang Malaysia di dalam premis.'
+    ],
+
+    // Special Muslim-Friendly Condition Clause (CRITICAL REQUIREMENT)
+    secMuslimTitle: 'FASAL 2: KLAUSA KHAS PEMELIHARAAN KEADAAN RUMAH MESRA MUSLIM',
+    secMuslimSub: 'Syarat pematuhan kesucian kediaman dan ketenteraman masyarakat Islam',
+    secMuslimClauses: [
+      '<strong>Makanan & Minuman Halal Sahaja:</strong> Penyewa, penghuni, dan mana-mana tetamu dilarang sama sekali membawa masuk, memasak, menyimpan atau memakan apa-apa makanan yang tidak halal, termasuk daging babi dan apa-apa produk atau ramuan yang berasaskannya di dalam premis sewaan.',
+      '<strong>Larangan Mutlak Minuman Keras & Alkohol:</strong> Dilarang sama sekali membawa masuk, menyimpan, meminum, menghidang atau menjual arak, bir, wiski, atau sebarang minuman beralkohol yang memabukkan di dalam mana-mana bahagian premis.',
+      '<strong>Larangan Haiwan Peliharaan Tidak Patuh Syarak:</strong> Dilarang sama sekali membawa masuk, memelihara atau membiarkan anjing atau apa-apa haiwan peliharaan yang tidak mematuhi hukum syarak di dalam kawasan rumah atau sekitarnya.',
+      '<strong>Pemeliharaan Adab, Keharmonian Kejiranan & Larangan Maksiat:</strong> Penyewa bertanggungjawab memastikan premis digunakan secara beradab dan bermoral selaras dengan undang-undang negara dan tatasusila masyarakat setempat. Dilarang sama sekali melakukan perbuatan maksiat, pergaulan bebas / khalwat, aktiviti perjudian, dadah atau sebarang aktiviti yang melanggar hukum syarak.',
+      '<strong>Hak Penamatan Serta-Merta & Kos Pensucian (Sertu):</strong> Sekiranya Penyewa didapati melanggar mana-mana peruntukan di bawah Fasal Khas ini, Tuan Rumah berhak menamatkan Perjanjian Sewaan ini serta-merta tanpa sebarang notis pemulangan sewa, mengarahkan Penyewa mengosongkan premis dalam tempoh 48 jam, dan menggunakan wang cagaran sewa/deposit untuk menanggung kos pembersihan menyeluruh premis termasuk kos pensucian (sertu/samak) jika perlu.'
+    ],
+
+    sec3Title: 'FASAL 3: TANGGUNGJAWAB & AKU JANJI TUAN RUMAH',
+    sec3Clauses: [
+      'Menyerahkan milikan kosong Premis Demis bersama kunci dan inventori dalam keadaan bersih, elok dan selamat untuk diduduki pada tarikh permulaan sewaan.',
+      'Membayar cukai tanah (Quit Rent), cukai taksiran (Assessment Tax) dan sebarang caj penyelenggaraan bangunan/strata (jika ada).',
+      'Menjamin bahawa Penyewa yang membayar sewa dan mematuhi terma perjanjian berhak menikmati dan mendiami Premis Demis dengan aman dan tenteram tanpa gangguan (Quiet Enjoyment).',
+      'Membaiki sebarang kerosakan struktur utama bangunan (seperti bumbung bocor, retakan dinding utama, paip utama pecah) yang bukan disebabkan oleh salah laku atau kecuaian Penyewa.'
+    ],
+
+    sec4Title: 'FASAL 4: WANG CAGARAN (DEPOSIT) & POLISI PEMULANGAN',
+    sec4Clauses: [
+      'Wang Cagaran Sewa dan Utiliti hendaklah dibayar semasa menandatangani perjanjian ini dan dipegang oleh Tuan Rumah sebagai jaminan pematuhan syarat perjanjian.',
+      'Wang cagaran ini tidak boleh sekali-kali dianggap atau digunakan oleh Penyewa sebagai bayaran sewa bulanan.',
+      'Tuan Rumah akan memulangkan baki Wang Cagaran Sewa dan Cagaran Utiliti tanpa faedah kepada Penyewa dalam tempoh empat belas (14) hari selepas tarikh tamat sewaan dan penyerahan kunci, setelah ditolak sebarang tunggakan bil utiliti, kos pembaikan kerosakan fizikal, atau kos pembersihan premis.'
+    ],
+
+    sec5Title: 'FASAL 5: PENAMATAN SEWAAN, KEMUNGKIRAN & PENGOSONGAN',
+    sec5Clauses: [
+      'Sekiranya sewa bulanan tertunggak melebihi tempoh empat belas (14) hari daripada tarikh genap masa bayaran, Tuan Rumah berhak menuntut penamatan perjanjian dan mengambil semula milikan sah ke atas Premis Demis.',
+      'Jika mana-mana pihak berhasrat menamatkan sewaan sebelum tamat tempoh yang dipersetujui, pihak tersebut hendaklah memberi notis bertulis sekurang-kurangnya dua (2) bulan atau membayar gantirugi sewa sebanyak dua (2) bulan.',
+      'Pada hari terakhir sewaan, Penyewa hendaklah menyerahkan semula premis dan semua inventori dalam keadaan bersih dan baik (kehausan munasabah dikecualikan) bersama semua set kunci asal.'
+    ],
+
+    // Second Schedule: Inventory
+    secondScheduleTitle: 'JADUAL KEDUA (SECOND SCHEDULE)',
+    secondScheduleSub: 'SENARAI LEKAPAN, PERABOT & INVENTORI PREMIS',
+    thInvNo: 'No.',
+    thInvItem: 'Perkara / Perkakas / Perabot',
+    thInvQty: 'Kuantiti',
+    thInvCond: 'Keadaan Semasa Penyerahan',
+    invVerifiedNote: 'Semua inventori dan perkakas di atas telah disemak, disahkan lengkap dan berfungsi dengan baik oleh kedua-dua pihak pada tarikh penyerahan kunci premis.',
+
+    // Execution & Signatures
+    executionTitle: 'METERAI & TANDATANGAN PIHAK-PIHAK',
+    executionSub: 'DITANDATANGANI OLEH PIHAK-PIHAK PADA HARI DAN TAHUN SEPERTI YANG DINYATAKAN DI ATAS',
+    signedByLandlord: 'Ditandatangani oleh TUAN RUMAH:',
+    signedByTenant: 'Ditandatangani oleh PENYEWA:',
+    witnessedBy: 'Disaksikan oleh SAKSI:',
+    nameLabel: 'Nama:',
+    icLabel: 'No. K/P:',
+    dateLabel: 'Tarikh:',
+    stampDutyNote: 'PENGESAHAN DUTI SETEM (STAMP DUTY LHDN)',
+    stampDutyDesc: 'Dokumen ini boleh dimatikan setem hasil secara dalam talian melalui Portal STAMPS Lembaga Hasil Dalam Negeri Malaysia (LHDN) untuk tujuan perundangan rasmi.'
+  },
+
+  en: {
+    docHeaderTitle: 'RESIDENTIAL TENANCY AGREEMENT',
+    docHeaderSub: 'SURAT PERJANJIAN PENYEWAAN KEDIAMAN',
+    preambleP1: (date, landlordName, landlordIc, tenantName, tenantIc) =>
+      `THIS AGREEMENT is made on <strong>${date}</strong> BETWEEN <strong>${landlordName}</strong> (NRIC / Reg No: <strong>${landlordIc || '-'}</strong>) having its address as stated in Section 2 of the First Schedule (hereinafter referred to as the <strong>"Landlord"</strong>) of the one part; AND <strong>${tenantName}</strong> (NRIC / Passport: <strong>${tenantIc || '-'}</strong>) residing at the permanent address stated in Section 3 of the First Schedule (hereinafter referred to as the <strong>"Tenant"</strong>) of the other part.`,
+    preambleP2: (propName, propAddress) =>
+      `WHEREAS the Landlord is the registered owner of the residential property known as <strong>"${propName}"</strong> situated at <strong>${propAddress}</strong> (hereinafter referred to as the <strong>"Demised Premises"</strong>) together with all fixtures, furniture, and fittings specified in the Second Schedule hereto. The Landlord agrees to let and the Tenant agrees to take the Demised Premises on the terms and covenants contained herein.`,
+
+    // First Schedule
+    firstScheduleTitle: 'FIRST SCHEDULE',
+    firstScheduleSub: 'SCHEDULE OF TENANCY PARTICULAR DETAILS',
+    thItemNo: 'Item',
+    thSubject: 'Subject Matter',
+    thParticulars: 'Particulars & Descriptions',
+
+    schDate: 'Agreement Execution Date',
+    schLandlord: 'Landlord (Lessor)',
+    schTenant: 'Tenant (Lessee)',
+    schProperty: 'Demised Premises Address',
+    schTerm: 'Tenancy Term / Duration',
+    schDates: 'Commencement & Expiry Dates',
+    schRent: 'Monthly Rental Amount',
+    schDue: 'Monthly Rent Due Date',
+    schRentalDep: 'Rental Security Deposit (1 Month)',
+    schUtilDep: 'Utilities Deposit (Water & Electric)',
+    schAdvance: 'Advance Rental (First Month)',
+    schFee: 'Agreement Preparation & Stamping Fee',
+    schUse: 'Permitted Use of Premises',
+    schUseVal: 'Private Residential Dwelling Only (Commercial use strictly prohibited)',
+    schRenew: 'Option to Renew Notice',
+
+    // Covenants
+    sec1Title: "SECTION 1: TENANT'S COVENANTS & OBLIGATIONS",
+    sec1Clauses: [
+      'To pay the reserved monthly rent promptly on the stipulated due date without any deduction into the designated bank account of the Landlord.',
+      'To pay all charges for water, electricity, sewerage services (Indah Water), and other utilities consumed on the premises directly or upon presentation of monthly billing statements.',
+      'To maintain the interior and fixtures of the Demised Premises, including furniture and electrical appliances listed in the Second Schedule, in a clean, tenantable, and working condition.',
+      'Not to make any structural alterations, renovations, wall hacking, or paint work without first obtaining the prior written consent of the Landlord.',
+      'Strictly not to assign, sublet, or share possession of the Demised Premises or any part thereof with any third party without prior written permission from the Landlord.',
+      'To permit the Landlord or authorized representatives to enter upon the Demised Premises at all reasonable times for inspection or maintenance purposes upon giving at least 24 hours prior notice.',
+      'Not to bring, store, or permit to be stored on the premises any combustible, hazardous, explosive, or illicit goods in contravention of the laws of Malaysia.'
+    ],
+
+    // Special Muslim-Friendly Condition Clause (CRITICAL REQUIREMENT)
+    secMuslimTitle: 'SECTION 2: SPECIAL MUSLIM-FRIENDLY HOUSE COVENANTS',
+    secMuslimSub: 'Covenants for maintaining Muslim living conditions and community sanctity',
+    secMuslimClauses: [
+      '<strong>Halal Food & Drink Requirement:</strong> The Tenant and any occupants or guests are strictly prohibited from bringing, cooking, storing, or consuming any non-halal food, including pork and any pork-derived products or ingredients, inside the Demised Premises.',
+      '<strong>Absolute Prohibition of Liquor & Alcohol:</strong> Strictly no intoxicating alcoholic beverages, beer, wine, or spirits shall be brought into, stored, consumed, served, or sold on the Demised Premises.',
+      '<strong>Prohibition of Syarak-Restricted Pets:</strong> The Tenant shall not bring or keep dogs or any animals prohibited by Islamic principles (syarak) inside or around the compound of the Demised Premises.',
+      '<strong>Islamic Decorum, Neighborhood Harmony & Prohibition of Vice:</strong> The Tenant undertakes to maintain standard moral and neighborhood decorum. Strictly no immoral acts, illicit cohabitation (khalwat), gambling, drug abuse, or unlawful conduct contrary to Islamic norms and Malaysian law shall occur on the premises.',
+      '<strong>Landlord Right of Immediate Termination & Cleansing (Sertu) Costs:</strong> Any breach of this Special Covenant shall entitle the Landlord to immediately terminate this Tenancy Agreement without compensation, demand vacant possession within 48 hours, and forfeit/apply deposits towards professional deep-cleansing and Islamic ritual purification (sertu/samak) expenses where required.'
+    ],
+
+    sec3Title: "SECTION 3: LANDLORD'S COVENANTS & OBLIGATIONS",
+    sec3Clauses: [
+      'To deliver vacant possession of the Demised Premises together with keys and inventoried fixtures in clean and habitable condition on the commencement date.',
+      'To pay all quit rent, property assessment taxes, and building management service maintenance charges (if applicable).',
+      'To ensure that the Tenant paying the rent and observing the covenants shall peaceably hold and enjoy the Demised Premises during the term without any interruption by the Landlord (Quiet Enjoyment).',
+      'To maintain and repair main structural components (e.g., roof leaks, structural walls, main external pipes) not caused by the negligence or misuse of the Tenant.'
+    ],
+
+    sec4Title: 'SECTION 4: SECURITY & UTILITY DEPOSITS REFUND POLICY',
+    sec4Clauses: [
+      'The Rental Deposit and Utilities Deposit paid upon execution shall be retained by the Landlord as security against default or physical damage.',
+      'Under no circumstances shall the Tenant treat the deposits as payment for monthly rent.',
+      'The Landlord shall refund the balance of the deposits without interest to the Tenant within fourteen (14) days after the expiration of the tenancy, subject to deduction for outstanding utility bills and repair of damaged inventory.'
+    ],
+
+    sec5Title: 'SECTION 5: TERMINATION, DEFAULT & RE-ENTRY',
+    sec5Clauses: [
+      'If the monthly rent remains unpaid for fourteen (14) days after becoming due, the Landlord shall be entitled to terminate this agreement and re-enter upon the Demised Premises.',
+      'Either party may terminate the tenancy prior to expiration by serving at least two (2) months prior written notice or paying two (2) months rent in lieu of notice.',
+      'Upon determination of the tenancy, the Tenant shall peacefully yield up the Demised Premises and inventoried items in good, clean condition (reasonable wear and tear excepted) together with all original keys.'
+    ],
+
+    // Second Schedule: Inventory
+    secondScheduleTitle: 'SECOND SCHEDULE',
+    secondScheduleSub: 'SCHEDULE OF FIXTURES, FITTINGS & INVENTORY',
+    thInvNo: 'No.',
+    thInvItem: 'Item / Fixture Description',
+    thInvQty: 'Qty',
+    thInvCond: 'Condition at Handover',
+    invVerifiedNote: 'All fixtures and appliances listed above have been inspected, tested, and verified to be complete and in good working order by both parties upon key handover.',
+
+    // Execution & Signatures
+    executionTitle: 'EXECUTION & SIGNATURES',
+    executionSub: 'IN WITNESS WHEREOF the parties have hereunto executed this Agreement on the day and year first above written',
+    signedByLandlord: 'Signed by the LANDLORD:',
+    signedByTenant: 'Signed by the TENANT:',
+    witnessedBy: 'Witnessed by WITNESS:',
+    nameLabel: 'Name:',
+    icLabel: 'NRIC / Passport:',
+    dateLabel: 'Date:',
+    stampDutyNote: 'STAMP DUTY ATTESTATION (INLAND REVENUE BOARD / LHDN)',
+    stampDutyDesc: 'This agreement may be digitally stamped via the Inland Revenue Board of Malaysia (LHDN) STAMPS portal for official legal and evidentiary enforcement.'
+  }
+};
+
+/**
+ * Initialize agreement generator module event listeners
+ */
+function initAgreementGenerator() {
+  appState.activeAgreementBooking = null;
+  appState.activeAgreementLang = 'bm';
+
+  // Modal navigation tabs
+  const tabForm = document.getElementById('btnAgrTabForm');
+  const tabPreview = document.getElementById('btnAgrTabPreview');
+  const formWrap = document.getElementById('agrTabFormContainer');
+  const previewWrap = document.getElementById('agrTabPreviewContainer');
+
+  if (tabForm && tabPreview) {
+    tabForm.addEventListener('click', () => {
+      tabForm.classList.add('active');
+      tabPreview.classList.remove('active');
+      if (formWrap) formWrap.style.display = 'block';
+      if (previewWrap) previewWrap.style.display = 'none';
+    });
+
+    tabPreview.addEventListener('click', () => {
+      tabPreview.classList.add('active');
+      tabForm.classList.remove('active');
+      if (formWrap) formWrap.style.display = 'none';
+      if (previewWrap) previewWrap.style.display = 'block';
+      renderAgreementPreview();
+    });
+  }
+
+  const btnGoPreview = document.getElementById('btnAgrGoToPreview');
+  if (btnGoPreview && tabPreview) {
+    btnGoPreview.addEventListener('click', () => {
+      tabPreview.click();
+    });
+  }
+
+  const btnBackForm = document.getElementById('btnAgrBackToForm');
+  if (btnBackForm && tabForm) {
+    btnBackForm.addEventListener('click', () => {
+      tabForm.click();
+    });
+  }
+
+  // Modal close buttons
+  const btnClose = document.getElementById('btnCloseAgreementModal');
+  const btnCloseBtn = document.getElementById('btnCloseAgreementModalBtn');
+  if (btnClose) btnClose.addEventListener('click', closeAllModals);
+  if (btnCloseBtn) btnCloseBtn.addEventListener('click', closeAllModals);
+
+  // Language buttons
+  const btnBM = document.getElementById('btnAgrLangBM');
+  const btnEN = document.getElementById('btnAgrLangEN');
+  if (btnBM && btnEN) {
+    btnBM.addEventListener('click', () => {
+      btnBM.classList.add('active');
+      btnEN.classList.remove('active');
+      appState.activeAgreementLang = 'bm';
+      renderAgreementPreview();
+    });
+    btnEN.addEventListener('click', () => {
+      btnEN.classList.add('active');
+      btnBM.classList.remove('active');
+      appState.activeAgreementLang = 'en';
+      renderAgreementPreview();
+    });
+  }
+
+  // Booking selection & Auto-fill
+  const bSelect = document.getElementById('agrBookingSelect');
+  if (bSelect) {
+    bSelect.addEventListener('change', () => {
+      const bid = bSelect.value;
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) {
+        populateAgreementForm(b);
+      }
+    });
+  }
+
+  const btnAuto = document.getElementById('btnAgrAutoFill');
+  if (btnAuto) {
+    btnAuto.addEventListener('click', () => {
+      const bid = document.getElementById('agrBookingSelect')?.value;
+      const b = appState.bookings.find(x => x.id === bid);
+      if (b) {
+        populateAgreementForm(b, true);
+        showToast(appState.settings.language === 'bm' ? 'Maklumat tempahan berjaya dimuatkan semula!' : 'Booking particulars re-populated successfully!');
+      } else {
+        showToast(appState.settings.language === 'bm' ? 'Sila pilih rekod tempahan di atas.' : 'Please select a booking record above.');
+      }
+    });
+  }
+
+  // Add Inventory Item
+  const btnAddInv = document.getElementById('btnAgrAddInventoryItem');
+  if (btnAddInv) {
+    btnAddInv.addEventListener('click', () => {
+      addCustomInventoryRow('', 1, 'Baik & Berfungsi / Good', true);
+    });
+  }
+
+  // Actions: Save Draft, Print, WhatsApp, Download PDF
+  const btnSave = document.getElementById('btnSaveAgreementDraft');
+  if (btnSave) btnSave.addEventListener('click', saveAgreementDraft);
+
+  const btnPrint = document.getElementById('btnPrintAgreementDoc');
+  if (btnPrint) btnPrint.addEventListener('click', printAgreementDocument);
+
+  const btnWa = document.getElementById('btnShareAgreementWa');
+  if (btnWa) btnWa.addEventListener('click', shareAgreementWhatsApp);
+
+  const btnPdf = document.getElementById('btnDownloadAgreementPdf');
+  if (btnPdf) btnPdf.addEventListener('click', downloadAgreementPdf);
+
+  // Recalculate duration when dates change
+  const startInput = document.getElementById('agrStartDate');
+  const endInput = document.getElementById('agrEndDate');
+  if (startInput && endInput) {
+    const handleDatesChange = () => {
+      if (startInput.value && endInput.value) {
+        const d1 = new Date(startInput.value);
+        const d2 = new Date(endInput.value);
+        if (d2 > d1) {
+          const diffMonths = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24 * 30.4375)));
+          const durEl = document.getElementById('agrDurationMonths');
+          if (durEl) durEl.value = diffMonths;
+        }
+      }
+    };
+    startInput.addEventListener('change', handleDatesChange);
+    endInput.addEventListener('change', handleDatesChange);
+  }
+}
+
+/**
+ * Open agreement modal, auto-populating from booking
+ */
+function openAgreementModal(booking = null) {
+  appState.activeAgreementBooking = booking;
+  appState.activeAgreementLang = (appState.settings && appState.settings.language === 'en') ? 'en' : 'bm';
+
+  // 1. Populate bookings dropdown
+  populateAgreementBookingSelect(booking ? booking.id : null);
+
+  // 2. Populate form
+  const activeBooking = booking || (() => {
+    const bid = document.getElementById('agrBookingSelect')?.value;
+    return appState.bookings.find(b => b.id === bid) || null;
+  })();
+
+  populateAgreementForm(activeBooking);
+
+  // 3. Reset tabs to Form Tab
+  const tabForm = document.getElementById('btnAgrTabForm');
+  if (tabForm) tabForm.click();
+
+  // 4. Update language toggle active pill
+  const btnBM = document.getElementById('btnAgrLangBM');
+  const btnEN = document.getElementById('btnAgrLangEN');
+  if (appState.activeAgreementLang === 'en') {
+    if (btnEN) btnEN.classList.add('active');
+    if (btnBM) btnBM.classList.remove('active');
+  } else {
+    if (btnBM) btnBM.classList.add('active');
+    if (btnEN) btnEN.classList.remove('active');
+  }
+
+  // 5. Open modal
+  const modal = document.getElementById('agreementGeneratorModal');
+  if (modal) modal.classList.add('active');
+}
+
+/**
+ * Populate bookings select element
+ */
+function populateAgreementBookingSelect(selectedBookingId = null) {
+  const select = document.getElementById('agrBookingSelect');
+  if (!select) return;
+  select.innerHTML = '';
+
+  const monthlyBookings = appState.bookings.filter(b => b.rentalType === 'monthly');
+  const otherBookings = appState.bookings.filter(b => b.rentalType !== 'monthly');
+
+  if (monthlyBookings.length > 0) {
+    const grpMonthly = document.createElement('optgroup');
+    grpMonthly.label = '── Sewaan Bulanan / Monthly Rentals ──';
+    monthlyBookings.forEach(b => {
+      const prop = getPropertyById(b.propertyId);
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = `${b.guestName} • ${prop.name} (${b.checkIn} → ${b.checkOut} • RM${b.monthlyRate || b.totalAmount}/bln)`;
+      grpMonthly.appendChild(opt);
+    });
+    select.appendChild(grpMonthly);
+  }
+
+  if (otherBookings.length > 0) {
+    const grpOther = document.createElement('optgroup');
+    grpOther.label = '── Rekod Tempahan Harian Lain ──';
+    otherBookings.forEach(b => {
+      const prop = getPropertyById(b.propertyId);
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = `${b.guestName} • ${prop.name} (${b.checkIn} → ${b.checkOut})`;
+      grpOther.appendChild(opt);
+    });
+    select.appendChild(grpOther);
+  }
+
+  if (select.options.length === 0) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = 'Tiada rekod tempahan (Borang Manual)';
+    select.appendChild(opt);
+  }
+
+  if (selectedBookingId) {
+    select.value = selectedBookingId;
+  } else if (monthlyBookings.length > 0) {
+    select.value = monthlyBookings[0].id;
+  }
+}
+
+/**
+ * Populate form inputs from booking or defaults
+ */
+function populateAgreementForm(booking = null, forceReset = false) {
+  const settings = appState.settings || {};
+  const isBM = appState.settings.language === 'bm';
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  // Check if booking has saved agreement draft
+  if (booking && booking.tenancyAgreement && !forceReset) {
+    const draft = booking.tenancyAgreement;
+    document.getElementById('agrLandlordName').value = draft.landlordName || settings.businessName || '';
+    document.getElementById('agrLandlordIc').value = draft.landlordIc || settings.ownerIc || '';
+    document.getElementById('agrLandlordPhone').value = draft.landlordPhone || settings.businessPhone || '';
+    document.getElementById('agrLandlordAddress').value = draft.landlordAddress || settings.businessAddress || '';
+
+    document.getElementById('agrTenantName').value = draft.tenantName || booking.guestName || '';
+    document.getElementById('agrTenantIc').value = draft.tenantIc || booking.guestIc || '';
+    document.getElementById('agrTenantPhone').value = draft.tenantPhone || booking.guestPhone || '';
+    document.getElementById('agrTenantEmail').value = draft.tenantEmail || booking.guestEmail || '';
+    document.getElementById('agrTenantAddress').value = draft.tenantAddress || booking.guestAddress || '';
+
+    document.getElementById('agrPropertyName').value = draft.propertyName || '';
+    document.getElementById('agrPropertyType').value = draft.propertyType || '';
+    document.getElementById('agrPropertyAddress').value = draft.propertyAddress || '';
+
+    document.getElementById('agrAgreementDate').value = draft.agreementDate || todayStr;
+    document.getElementById('agrStartDate').value = draft.startDate || booking.checkIn || '';
+    document.getElementById('agrEndDate').value = draft.endDate || booking.checkOut || '';
+    document.getElementById('agrDurationMonths').value = draft.durationMonths || booking.monthlyDuration || 6;
+
+    document.getElementById('agrMonthlyRent').value = draft.monthlyRent || booking.monthlyRate || '';
+    document.getElementById('agrRentalDueDay').value = draft.rentalDueDay || (isBM ? '7hb setiap bulan' : '7th of every month');
+    document.getElementById('agrRentalDeposit').value = draft.rentalDeposit !== undefined ? draft.rentalDeposit : '';
+    document.getElementById('agrUtilitiesDeposit').value = draft.utilitiesDeposit !== undefined ? draft.utilitiesDeposit : 300;
+    document.getElementById('agrAdvanceRent').value = draft.advanceRent !== undefined ? draft.advanceRent : '';
+    document.getElementById('agrAgreementFee').value = draft.agreementFee !== undefined ? draft.agreementFee : 150;
+    document.getElementById('agrRenewalNotice').value = draft.renewalNotice || (isBM ? '2 Bulan bertulis sebelum tamat sewaan' : '2 Months prior written notice');
+    document.getElementById('agrPaymentAccount').value = draft.paymentAccount || '';
+
+    const chkMuslim = document.getElementById('agrMuslimFriendlyEnabled');
+    if (chkMuslim) chkMuslim.checked = draft.muslimFriendlyEnabled !== false;
+    document.getElementById('agrCustomClauses').value = draft.customClauses || '';
+
+    document.getElementById('agrLandlordWitnessName').value = draft.landlordWitnessName || '';
+    document.getElementById('agrLandlordWitnessIc').value = draft.landlordWitnessIc || '';
+    document.getElementById('agrTenantWitnessName').value = draft.tenantWitnessName || '';
+    document.getElementById('agrTenantWitnessIc').value = draft.tenantWitnessIc || '';
+
+    renderDefaultInventoryRows(draft.inventory);
+    return;
+  }
+
+  // Auto-populate from fresh booking & settings
+  const prop = booking ? getPropertyById(booking.propertyId) : (appState.properties[0] || {});
+  const mRate = booking ? (Number(booking.monthlyRate || booking.baseRate || 1200)) : 1200;
+  const mDeposit = (booking && booking.rentalDeposit !== undefined && booking.rentalDeposit !== null && booking.rentalDeposit !== '')
+    ? Number(booking.rentalDeposit)
+    : mRate;
+  const uDeposit = (booking && booking.utilitiesDeposit !== undefined && booking.utilitiesDeposit !== null && booking.utilitiesDeposit !== '')
+    ? Number(booking.utilitiesDeposit)
+    : 300;
+  const aFee = (booking && booking.agreementFee !== undefined && booking.agreementFee !== null && booking.agreementFee !== '')
+    ? Number(booking.agreementFee)
+    : 150;
+
+  // Landlord
+  document.getElementById('agrLandlordName').value = settings.businessName || 'Pengurusan Homestay & Kediaman';
+  document.getElementById('agrLandlordIc').value = settings.ownerIc || '';
+  document.getElementById('agrLandlordPhone').value = settings.businessPhone || settings.phone || '+60123456789';
+  document.getElementById('agrLandlordAddress').value = settings.businessAddress || 'Malaysia';
+
+  // Tenant
+  document.getElementById('agrTenantName').value = booking ? booking.guestName : '';
+  document.getElementById('agrTenantIc').value = booking ? (booking.guestIc || '') : '';
+  document.getElementById('agrTenantPhone').value = booking ? (booking.guestPhone || '') : '';
+  document.getElementById('agrTenantEmail').value = booking ? (booking.guestEmail || '') : '';
+  document.getElementById('agrTenantAddress').value = booking ? (booking.guestAddress || '') : '';
+
+  // Property
+  document.getElementById('agrPropertyName').value = prop ? prop.name : '';
+  document.getElementById('agrPropertyType').value = prop.propType === 'entire'
+    ? (isBM ? 'Rumah Kediaman (Whole House)' : 'Residential House (Whole Unit)')
+    : (prop.roomNo ? `Bilik Kediaman (${prop.roomNo})` : 'Rumah Kediaman');
+  document.getElementById('agrPropertyAddress').value = prop.address || '';
+
+  // Dates & Terms
+  document.getElementById('agrAgreementDate').value = todayStr;
+  document.getElementById('agrStartDate').value = booking ? booking.checkIn : todayStr;
+  document.getElementById('agrEndDate').value = booking ? booking.checkOut : '';
+  document.getElementById('agrDurationMonths').value = booking ? (booking.monthlyDuration || 6) : 6;
+
+  document.getElementById('agrMonthlyRent').value = mRate;
+  document.getElementById('agrRentalDueDay').value = isBM ? '7hb setiap bulan' : '7th of every month';
+  document.getElementById('agrRentalDeposit').value = mDeposit;
+  document.getElementById('agrUtilitiesDeposit').value = uDeposit;
+  document.getElementById('agrAdvanceRent').value = mRate;
+  document.getElementById('agrAgreementFee').value = aFee;
+  document.getElementById('agrRenewalNotice').value = isBM ? '2 Bulan bertulis sebelum tamat sewaan' : '2 Months prior written notice';
+
+  // Bank Account
+  const bankStr = `${settings.bankName || 'Maybank'} - ${settings.bankAccount || '5140-xxxx-xxxx'} (${settings.bankHolder || settings.businessName || 'Tuan Rumah'})`;
+  document.getElementById('agrPaymentAccount').value = bankStr;
+
+  // Muslim Condition (Enabled by default as per user request)
+  const chkMuslim = document.getElementById('agrMuslimFriendlyEnabled');
+  if (chkMuslim) chkMuslim.checked = true;
+  document.getElementById('agrCustomClauses').value = '';
+
+  // Witnesses
+  document.getElementById('agrLandlordWitnessName').value = '';
+  document.getElementById('agrLandlordWitnessIc').value = '';
+  document.getElementById('agrTenantWitnessName').value = '';
+  document.getElementById('agrTenantWitnessIc').value = '';
+
+  // Inventory Checklist
+  renderDefaultInventoryRows();
+
+  // Status badge update
+  const statusBadge = document.getElementById('agrBookingStatusBadge');
+  if (statusBadge && booking) {
+    statusBadge.innerHTML = `<span style="color:var(--success); font-weight:700;"><i class="fa-solid fa-check-circle"></i> Maklumat tempahan "${booking.guestName}" (${prop.name}) dimuatkan.</span>`;
+  }
+}
+
+/**
+ * Render inventory table rows
+ */
+function renderDefaultInventoryRows(savedInventory = null) {
+  const tbody = document.getElementById('agrInventoryTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const list = savedInventory || DEFAULT_AGREEMENT_INVENTORY;
+  list.forEach(item => {
+    addCustomInventoryRow(item.item, item.qty, item.condition, item.checked !== false);
+  });
+}
+
+/**
+ * Add an inventory item row into the table
+ */
+function addCustomInventoryRow(item = '', qty = 1, condition = 'Baik & Berfungsi / Good', checked = true) {
+  const tbody = document.getElementById('agrInventoryTableBody');
+  if (!tbody) return;
+
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="padding:6px; text-align:center;">
+      <input type="checkbox" class="agr-inv-check" ${checked ? 'checked' : ''} style="accent-color:var(--primary); transform:scale(1.1);">
+    </td>
+    <td style="padding:6px;">
+      <input type="text" class="agr-inv-item" value="${escapeHtml(item)}" placeholder="Nama perkakas / perabot">
+    </td>
+    <td style="padding:6px; text-align:center;">
+      <input type="number" class="agr-inv-qty" value="${qty || 1}" min="1" max="99" style="text-align:center;">
+    </td>
+    <td style="padding:6px;">
+      <input type="text" class="agr-inv-condition" value="${escapeHtml(condition)}" placeholder="Keadaan (Baik & Berfungsi)">
+    </td>
+    <td style="padding:6px; text-align:center;">
+      <button type="button" class="btn btn-outline btn-xs btn-del-inv-row" style="padding:2px 6px; color:var(--danger); border-color:var(--danger);">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+    </td>
+  `;
+
+  tr.querySelector('.btn-del-inv-row').addEventListener('click', () => {
+    tr.remove();
+  });
+
+  tbody.appendChild(tr);
+}
+
+/**
+ * Gather all agreement form inputs into an object
+ */
+function getAgreementFormData() {
+  const getVal = id => (document.getElementById(id)?.value || '').trim();
+
+  // Inventory
+  const inventory = [];
+  document.querySelectorAll('#agrInventoryTableBody tr').forEach(tr => {
+    const isChecked = tr.querySelector('.agr-inv-check')?.checked;
+    const item = tr.querySelector('.agr-inv-item')?.value.trim();
+    const qty = parseInt(tr.querySelector('.agr-inv-qty')?.value) || 1;
+    const condition = tr.querySelector('.agr-inv-condition')?.value.trim();
+    if (item) {
+      inventory.push({
+        item,
+        qty,
+        condition: condition || 'Baik & Berfungsi / Good',
+        checked: !!isChecked
+      });
+    }
+  });
+
+  return {
+    landlordName: getVal('agrLandlordName'),
+    landlordIc: getVal('agrLandlordIc'),
+    landlordPhone: getVal('agrLandlordPhone'),
+    landlordAddress: getVal('agrLandlordAddress'),
+
+    tenantName: getVal('agrTenantName'),
+    tenantIc: getVal('agrTenantIc'),
+    tenantPhone: getVal('agrTenantPhone'),
+    tenantEmail: getVal('agrTenantEmail'),
+    tenantAddress: getVal('agrTenantAddress'),
+
+    propertyName: getVal('agrPropertyName'),
+    propertyType: getVal('agrPropertyType'),
+    propertyAddress: getVal('agrPropertyAddress'),
+
+    agreementDate: getVal('agrAgreementDate'),
+    startDate: getVal('agrStartDate'),
+    endDate: getVal('agrEndDate'),
+    durationMonths: parseInt(getVal('agrDurationMonths')) || 6,
+
+    monthlyRent: parseFloat(getVal('agrMonthlyRent')) || 0,
+    rentalDueDay: getVal('agrRentalDueDay') || '7hb setiap bulan',
+    rentalDeposit: parseFloat(getVal('agrRentalDeposit')) || 0,
+    utilitiesDeposit: parseFloat(getVal('agrUtilitiesDeposit')) || 0,
+    advanceRent: parseFloat(getVal('agrAdvanceRent')) || 0,
+    agreementFee: parseFloat(getVal('agrAgreementFee')) || 0,
+    renewalNotice: getVal('agrRenewalNotice'),
+    paymentAccount: getVal('agrPaymentAccount'),
+
+    muslimFriendlyEnabled: document.getElementById('agrMuslimFriendlyEnabled')?.checked ?? true,
+    customClauses: getVal('agrCustomClauses'),
+
+    inventory,
+
+    landlordWitnessName: getVal('agrLandlordWitnessName'),
+    landlordWitnessIc: getVal('agrLandlordWitnessIc'),
+    tenantWitnessName: getVal('agrTenantWitnessName'),
+    tenantWitnessIc: getVal('agrTenantWitnessIc')
+  };
+}
+
+/**
+ * Format date for official Malaysian legal document
+ */
+function formatLegalDate(isoDateStr, lang = 'bm') {
+  if (!isoDateStr) return '-';
+  const parts = isoDateStr.split('-');
+  if (parts.length !== 3) return isoDateStr;
+  const day = parseInt(parts[2], 10);
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const year = parts[0];
+
+  const monthsBM = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
+  const monthsEN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  const monthName = lang === 'en' ? (monthsEN[monthIdx] || parts[1]) : (monthsBM[monthIdx] || parts[1]);
+  return `${day} ${monthName} ${year}`;
+}
+
+/**
+ * Render the live A4 agreement document preview
+ */
+function renderAgreementPreview() {
+  const sheet = document.getElementById('printableAgreementSheet');
+  if (!sheet) return;
+
+  const data = getAgreementFormData();
+  const lang = appState.activeAgreementLang || 'bm';
+  const i18n = AGREEMENT_DOC_I18N[lang] || AGREEMENT_DOC_I18N.bm;
+
+  const formattedDate = formatLegalDate(data.agreementDate, lang);
+  const formattedStart = formatLegalDate(data.startDate, lang);
+  const formattedEnd = formatLegalDate(data.endDate, lang);
+
+  const formatRM = val => `RM ${Number(val || 0).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  // Checked inventory items only
+  const activeInventory = (data.inventory || []).filter(x => x.checked);
+
+  // Generate Document HTML
+  sheet.innerHTML = `
+    <!-- DOCUMENT HEADER -->
+    <div style="text-align:center; margin-bottom:20px; border-bottom:2px solid #0f172a; padding-bottom:12px;">
+      <h1 class="agr-doc-title">${i18n.docHeaderTitle}</h1>
+      <div class="agr-doc-subtitle">${i18n.docHeaderSub}</div>
+      <div style="font-size:10.5pt; font-weight:bold; letter-spacing:0.5px;">
+        ${lang === 'en' ? 'BETWEEN' : 'DI ANTARA'}<br>
+        <span style="font-size:12pt; text-transform:uppercase;">${escapeHtml(data.landlordName || 'TUAN RUMAH')}</span><br>
+        ${lang === 'en' ? 'AND' : 'DAN'}<br>
+        <span style="font-size:12pt; text-transform:uppercase;">${escapeHtml(data.tenantName || 'PENYEWA')}</span>
+      </div>
+    </div>
+
+    <!-- PREAMBLE -->
+    <div class="agr-preamble">
+      <p style="margin-bottom:10px;">
+        ${i18n.preambleP1(
+          formattedDate,
+          escapeHtml(data.landlordName || 'TUAN RUMAH'),
+          escapeHtml(data.landlordIc || '-'),
+          escapeHtml(data.tenantName || 'PENYEWA'),
+          escapeHtml(data.tenantIc || '-')
+        )}
+      </p>
+      <p style="margin-bottom:0;">
+        ${i18n.preambleP2(
+          escapeHtml(data.propertyName || 'PREMIS KEDIAMAN'),
+          escapeHtml(data.propertyAddress || '-')
+        )}
+      </p>
+    </div>
+
+    <!-- FIRST SCHEDULE -->
+    <div class="agr-clause-block">
+      <div class="agr-clause-title" style="text-align:center;">${i18n.firstScheduleTitle}</div>
+      <div style="text-align:center; font-size:10pt; font-style:italic; margin-bottom:8px;">${i18n.firstScheduleSub}</div>
+
+      <table class="agr-schedule-table">
+        <thead>
+          <tr>
+            <th class="agr-schedule-item-num">${i18n.thItemNo}</th>
+            <th class="agr-schedule-item-title">${i18n.thSubject}</th>
+            <th>${i18n.thParticulars}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="agr-schedule-item-num">1.</td>
+            <td class="agr-schedule-item-title">${i18n.schDate}</td>
+            <td><strong>${formattedDate}</strong></td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">2.</td>
+            <td class="agr-schedule-item-title">${i18n.schLandlord}</td>
+            <td>
+              <strong>${escapeHtml(data.landlordName || '-')}</strong><br>
+              ${lang === 'en' ? 'NRIC / Reg No:' : 'No. K/P / SSM:'} ${escapeHtml(data.landlordIc || '-')}<br>
+              ${lang === 'en' ? 'Phone:' : 'No. Tel:'} ${escapeHtml(data.landlordPhone || '-')}<br>
+              ${lang === 'en' ? 'Address:' : 'Alamat:'} ${escapeHtml(data.landlordAddress || '-')}
+            </td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">3.</td>
+            <td class="agr-schedule-item-title">${i18n.schTenant}</td>
+            <td>
+              <strong>${escapeHtml(data.tenantName || '-')}</strong><br>
+              ${lang === 'en' ? 'NRIC / Passport:' : 'No. K/P / Pasport:'} ${escapeHtml(data.tenantIc || '-')}<br>
+              ${lang === 'en' ? 'Phone:' : 'No. Tel:'} ${escapeHtml(data.tenantPhone || '-')}<br>
+              ${data.tenantEmail ? `${lang === 'en' ? 'Email:' : 'Emel:'} ${escapeHtml(data.tenantEmail)}<br>` : ''}
+              ${lang === 'en' ? 'Permanent Address:' : 'Alamat Tetap:'} ${escapeHtml(data.tenantAddress || '-')}
+            </td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">4.</td>
+            <td class="agr-schedule-item-title">${i18n.schProperty}</td>
+            <td>
+              <strong>${escapeHtml(data.propertyName || '-')}</strong> (${escapeHtml(data.propertyType || '-')})<br>
+              ${escapeHtml(data.propertyAddress || '-')}
+            </td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">5.</td>
+            <td class="agr-schedule-item-title">${i18n.schTerm}</td>
+            <td><strong>${data.durationMonths} ${lang === 'en' ? 'Months' : 'Bulan'}</strong></td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">6.</td>
+            <td class="agr-schedule-item-title">${i18n.schDates}</td>
+            <td>
+              ${lang === 'en' ? 'From' : 'Mulai'}: <strong>${formattedStart}</strong><br>
+              ${lang === 'en' ? 'To' : 'Hingga'}: <strong>${formattedEnd}</strong>
+            </td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">7.</td>
+            <td class="agr-schedule-item-title">${i18n.schRent}</td>
+            <td>
+              <strong style="font-size:11.5pt;">${formatRM(data.monthlyRent)}</strong> ${lang === 'en' ? 'per month' : 'sebulan'}<br>
+              <span style="font-size:9.5pt; color:#475569;">(${lang === 'en' ? 'Bank Account' : 'Akaun Bayaran'}: ${escapeHtml(data.paymentAccount || '-')})</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">8.</td>
+            <td class="agr-schedule-item-title">${i18n.schDue}</td>
+            <td><strong>${escapeHtml(data.rentalDueDay || '7hb setiap bulan')}</strong></td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">9.</td>
+            <td class="agr-schedule-item-title">${i18n.schRentalDep}</td>
+            <td><strong>${formatRM(data.rentalDeposit)}</strong> (${lang === 'en' ? 'Security Deposit' : 'Cagaran Keselamatan'})</td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">10.</td>
+            <td class="agr-schedule-item-title">${i18n.schUtilDep}</td>
+            <td><strong>${formatRM(data.utilitiesDeposit)}</strong> (${lang === 'en' ? 'Electricity & Water' : 'Elektrik & Air'})</td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">11.</td>
+            <td class="agr-schedule-item-title">${i18n.schAdvance}</td>
+            <td><strong>${formatRM(data.advanceRent)}</strong> (${lang === 'en' ? 'First month rental payment' : 'Sewa bulan pertama semasa kemasukan'})</td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">12.</td>
+            <td class="agr-schedule-item-title">${i18n.schFee}</td>
+            <td><strong>${formatRM(data.agreementFee)}</strong></td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">13.</td>
+            <td class="agr-schedule-item-title">${i18n.schUse}</td>
+            <td>${i18n.schUseVal}</td>
+          </tr>
+          <tr>
+            <td class="agr-schedule-item-num">14.</td>
+            <td class="agr-schedule-item-title">${i18n.schRenew}</td>
+            <td>${escapeHtml(data.renewalNotice || (lang === 'en' ? '2 Months written notice prior to expiration' : '2 Bulan notis bertulis sebelum tamat sewaan'))}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- COVENANTS -->
+    <div style="margin-top:20px;">
+      
+      <!-- FASAL 1: TENANT COVENANTS -->
+      <div class="agr-clause-block">
+        <div class="agr-clause-title">${i18n.sec1Title}</div>
+        <ol class="agr-clause-list">
+          ${i18n.sec1Clauses.map(clause => `<li>${clause}</li>`).join('')}
+        </ol>
+      </div>
+
+      <!-- FASAL 2: SPECIAL MUSLIM-FRIENDLY HOUSE COVENANTS (HIGHLIGHTED PER USER SPECIFICATION) -->
+      ${data.muslimFriendlyEnabled ? `
+        <div class="agr-clause-block">
+          <div class="agr-clause-title" style="color:#065f46; border-bottom:2px solid #059669;">
+            ${i18n.secMuslimTitle}
+          </div>
+          <div style="font-size:10pt; font-style:italic; color:#065f46; margin-bottom:8px;">
+            ${i18n.secMuslimSub}
+          </div>
+          <div class="agr-muslim-highlight-box">
+            <ol class="agr-clause-list" style="margin:0; padding-left:18px;">
+              ${i18n.secMuslimClauses.map(clause => `<li style="margin-bottom:6px;">${clause}</li>`).join('')}
+            </ol>
+            ${data.customClauses ? `
+              <div style="margin-top:10px; padding-top:8px; border-top:1px dashed #86efac; font-size:10.5pt;">
+                <strong>${lang === 'en' ? 'Additional Landlord Special Rules:' : 'Syarat Khas Tambahan Tuan Rumah:'}</strong><br>
+                ${escapeHtml(data.customClauses).replace(/\n/g, '<br>')}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- FASAL 3: LANDLORD COVENANTS -->
+      <div class="agr-clause-block">
+        <div class="agr-clause-title">${i18n.sec3Title}</div>
+        <ol class="agr-clause-list">
+          ${i18n.sec3Clauses.map(clause => `<li>${clause}</li>`).join('')}
+        </ol>
+      </div>
+
+      <!-- FASAL 4: DEPOSITS & REFUND -->
+      <div class="agr-clause-block">
+        <div class="agr-clause-title">${i18n.sec4Title}</div>
+        <ol class="agr-clause-list">
+          ${i18n.sec4Clauses.map(clause => `<li>${clause}</li>`).join('')}
+        </ol>
+      </div>
+
+      <!-- FASAL 5: TERMINATION & DEFAULT -->
+      <div class="agr-clause-block">
+        <div class="agr-clause-title">${i18n.sec5Title}</div>
+        <ol class="agr-clause-list">
+          ${i18n.sec5Clauses.map(clause => `<li>${clause}</li>`).join('')}
+        </ol>
+      </div>
+
+    </div>
+
+    <!-- SECOND SCHEDULE: INVENTORY -->
+    <div class="agr-clause-block" style="margin-top:24px;">
+      <div class="agr-clause-title" style="text-align:center;">${i18n.secondScheduleTitle}</div>
+      <div style="text-align:center; font-size:10pt; font-style:italic; margin-bottom:8px;">${i18n.secondScheduleSub}</div>
+
+      <table class="agr-inventory-schedule-table">
+        <thead>
+          <tr>
+            <th style="width:36px; text-align:center;">${i18n.thInvNo}</th>
+            <th>${i18n.thInvItem}</th>
+            <th style="width:60px; text-align:center;">${i18n.thInvQty}</th>
+            <th style="width:180px;">${i18n.thInvCond}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${activeInventory.length > 0 ? activeInventory.map((inv, idx) => `
+            <tr>
+              <td style="text-align:center;">${idx + 1}.</td>
+              <td><strong>${escapeHtml(inv.item)}</strong></td>
+              <td style="text-align:center;">${inv.qty}</td>
+              <td>${escapeHtml(inv.condition)}</td>
+            </tr>
+          `).join('') : `
+            <tr>
+              <td colspan="4" style="text-align:center; font-style:italic; padding:10px;">
+                ${lang === 'en' ? 'Demised Premises leased unfurnished or inventory verified separately.' : 'Premis disewakan tanpa perabot tambahan atau inventori disahkan berasingan.'}
+              </td>
+            </tr>
+          `}
+        </tbody>
+      </table>
+      <div style="font-size:9.5pt; font-style:italic; color:#475569; margin-top:4px;">
+        ${i18n.invVerifiedNote}
+      </div>
+    </div>
+
+    <!-- EXECUTION & SIGNATURES -->
+    <div class="agr-signatures">
+      <div class="agr-clause-title" style="text-align:center; border:none; margin-bottom:4px;">${i18n.executionTitle}</div>
+      <div style="text-align:center; font-size:9.5pt; font-style:italic; margin-bottom:18px;">${i18n.executionSub}</div>
+
+      <div class="agr-sig-grid">
+        <!-- Landlord Column -->
+        <div class="agr-sig-card">
+          <div>
+            <strong>${i18n.signedByLandlord}</strong>
+            <div style="height:60px; border-bottom:1px solid #0f172a; margin-top:20px;"></div>
+          </div>
+          <div style="font-size:10pt; line-height:1.4; margin-top:8px;">
+            ${i18n.nameLabel} <strong>${escapeHtml(data.landlordName || '')}</strong><br>
+            ${i18n.icLabel} ${escapeHtml(data.landlordIc || '-')}<br>
+            ${i18n.dateLabel} ${formattedDate}
+          </div>
+        </div>
+
+        <!-- Tenant Column -->
+        <div class="agr-sig-card">
+          <div>
+            <strong>${i18n.signedByTenant}</strong>
+            <div style="height:60px; border-bottom:1px solid #0f172a; margin-top:20px;"></div>
+          </div>
+          <div style="font-size:10pt; line-height:1.4; margin-top:8px;">
+            ${i18n.nameLabel} <strong>${escapeHtml(data.tenantName || '')}</strong><br>
+            ${i18n.icLabel} ${escapeHtml(data.tenantIc || '-')}<br>
+            ${i18n.dateLabel} ${formattedDate}
+          </div>
+        </div>
+      </div>
+
+      <!-- Witnesses Grid -->
+      <div class="agr-sig-grid" style="margin-top:12px;">
+        <!-- Landlord Witness -->
+        <div class="agr-sig-card">
+          <div>
+            <strong>${i18n.witnessedBy} (${lang === 'en' ? 'For Landlord' : 'Bagi Tuan Rumah'})</strong>
+            <div style="height:50px; border-bottom:1px solid #0f172a; margin-top:16px;"></div>
+          </div>
+          <div style="font-size:10pt; line-height:1.4; margin-top:8px;">
+            ${i18n.nameLabel} ${escapeHtml(data.landlordWitnessName || '________________________')}<br>
+            ${i18n.icLabel} ${escapeHtml(data.landlordWitnessIc || '________________________')}<br>
+            ${i18n.dateLabel} ${formattedDate}
+          </div>
+        </div>
+
+        <!-- Tenant Witness -->
+        <div class="agr-sig-card">
+          <div>
+            <strong>${i18n.witnessedBy} (${lang === 'en' ? 'For Tenant' : 'Bagi Penyewa'})</strong>
+            <div style="height:50px; border-bottom:1px solid #0f172a; margin-top:16px;"></div>
+          </div>
+          <div style="font-size:10pt; line-height:1.4; margin-top:8px;">
+            ${i18n.nameLabel} ${escapeHtml(data.tenantWitnessName || '________________________')}<br>
+            ${i18n.icLabel} ${escapeHtml(data.tenantWitnessIc || '________________________')}<br>
+            ${i18n.dateLabel} ${formattedDate}
+          </div>
+        </div>
+      </div>
+
+      <!-- Stamp Duty Box -->
+      <div class="agr-stamp-panel">
+        <strong>${i18n.stampDutyNote}</strong><br>
+        <span style="font-size:9pt; color:#334155;">${i18n.stampDutyDesc}</span>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Generate agreement PDF blob using html2pdf.js with multi-page handling
+ */
+function generateAgreementPdfBlob(onSuccess, onError) {
+  const element = document.getElementById('printableAgreementSheet');
+  if (!element) {
+    if (onError) onError(new Error('element_not_found'));
+    return;
+  }
+
+  // Ensure document preview is fully rendered
+  renderAgreementPreview();
+
+  const formData = getAgreementFormData();
+  const tenantClean = (formData.tenantName || 'Penyewa').replace(/[^a-zA-Z0-9]/g, '_');
+  const fileName = `Surat_Perjanjian_Sewaan_${tenantClean}.pdf`;
+
+  if (typeof window.html2pdf === 'function') {
+    const modalBody = document.querySelector('#agreementGeneratorModal .modal-body') || document.querySelector('.modal-body');
+    const savedModalScroll = modalBody ? modalBody.scrollTop : 0;
+    const savedWinScrollY = window.scrollY || window.pageYOffset || 0;
+    const savedWinScrollX = window.scrollX || window.pageXOffset || 0;
+
+    if (modalBody) modalBody.scrollTop = 0;
+    window.scrollTo(0, 0);
+
+    element.classList.add('agr-rendering-mode');
+
+    const opt = {
+      margin: [10, 10, 10, 10], // top, left, bottom, right margins in mm
+      filename: fileName,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        scrollY: 0,
+        scrollX: 0,
+        backgroundColor: '#ffffff'
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    let resolved = false;
+    const restore = () => {
+      element.classList.remove('agr-rendering-mode');
+      if (modalBody) modalBody.scrollTop = savedModalScroll;
+      window.scrollTo(savedWinScrollX, savedWinScrollY);
+    };
+
+    const timer = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        restore();
+        console.warn('html2pdf agreement generation timeout (10s fallback)');
+        if (onError) onError(new Error('timeout'));
+      }
+    }, 10000);
+
+    window.html2pdf().set(opt).from(element).output('blob').then(blob => {
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        restore();
+        if (onSuccess) onSuccess(blob, fileName);
+      }
+    }).catch(err => {
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        restore();
+        console.warn('html2pdf agreement error:', err);
+        if (onError) onError(err);
+      }
+    });
+  } else {
+    if (onError) onError(new Error('html2pdf_not_loaded'));
+  }
+}
+
+/**
+ * Direct file download as standard multi-page A4 PDF
+ */
+function downloadAgreementPdf() {
+  const isBM = appState.activeAgreementLang === 'bm';
+  const statusCard = document.getElementById('agrActionStatusCard');
+
+  if (statusCard) {
+    statusCard.style.display = 'block';
+    statusCard.innerHTML = `
+      <div style="background:#eff6ff; border:1.5px solid #0284c7; border-radius:10px; padding:14px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 12px rgba(2,132,199,0.12);">
+        <div class="loading-spinner" style="width:24px; height:24px; border-width:3px; border-color:#0284c7; border-top-color:transparent; flex-shrink:0;"></div>
+        <div>
+          <strong style="color:#0369a1; font-size:13px; display:block;">${isBM ? 'Sedang Menjana Dokumen Perjanjian A4 Berbilang Muka Surat...' : 'Generating Official Multi-Page A4 Tenancy Agreement...'}</strong>
+          <span style="font-size:11px; color:#0284c7;">${isBM ? 'Format surat perjanjian, klausa mesra Muslim & inventori sedang diproses.' : 'Compiling formal covenants, Muslim-friendly conditions & inventory schedule.'}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  generateAgreementPdfBlob((blob, fileName) => {
+    try {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 2000);
+
+      if (statusCard) {
+        statusCard.innerHTML = `
+          <div style="background:#ecfdf5; border:1.5px solid #10b981; border-radius:10px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <i class="fa-solid fa-circle-check" style="color:#059669; font-size:18px;"></i>
+              <div>
+                <strong style="color:#065f46; font-size:12.5px; display:block;">${isBM ? 'Fail PDF Berjaya Dimuat Turun!' : 'PDF Downloaded Successfully!'}</strong>
+                <span style="font-size:11px; color:#047857;">${fileName}</span>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline btn-xs" onclick="document.getElementById('agrActionStatusCard').style.display='none';" style="font-size:10px; padding:2px 8px;">Tutup</button>
+          </div>
+        `;
+      }
+      showToast(isBM ? 'Fail PDF Perjanjian Sewa berjaya dimuat turun!' : 'Tenancy Agreement PDF downloaded successfully!');
+    } catch (e) {
+      console.error('Download error:', e);
+      window.print();
+    }
+  }, err => {
+    console.warn('PDF generation fallback to window.print:', err);
+    if (statusCard) {
+      statusCard.innerHTML = `
+        <div style="background:#fffbeb; border:1.5px solid #f59e0b; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-triangle-exclamation" style="color:#d97706; font-size:16px;"></i>
+            <span style="font-size:11.5px; color:#92400e;">${isBM ? 'Membuka dialog cetakan pelayar...' : 'Opening browser print dialog...'}</span>
+          </div>
+        </div>
+      `;
+    }
+    setTimeout(() => {
+      window.print();
+    }, 400);
+  });
+}
+
+/**
+ * Print agreement document directly using browser native print
+ */
+function printAgreementDocument() {
+  renderAgreementPreview();
+  setTimeout(() => {
+    window.print();
+  }, 100);
+}
+
+/**
+ * Share agreement summary & confirmation via WhatsApp
+ */
+function shareAgreementWhatsApp() {
+  const formData = getAgreementFormData();
+  const phone = (formData.tenantPhone || '').replace(/[^0-9+]/g, '');
+  const isBM = appState.activeAgreementLang === 'bm';
+
+  let msg = '';
+  if (isBM) {
+    msg = `Salam sejahtera ${formData.tenantName},\n\n` +
+      `Berikut adalah makluman draf *Surat Perjanjian Penyewaan Kediaman* bagi premis *${formData.propertyName}*:\n\n` +
+      `📅 *Tempoh Sewaan:* ${formData.startDate} hingga ${formData.endDate} (${formData.durationMonths} Bulan)\n` +
+      `💰 *Kadar Sewa:* RM ${Number(formData.monthlyRent || 0).toFixed(2)} / bulan (Genap masa: ${formData.rentalDueDay})\n` +
+      `🛡️ *Cagaran Sewa:* RM ${Number(formData.rentalDeposit || 0).toFixed(2)}\n` +
+      `💡 *Cagaran Utiliti:* RM ${Number(formData.utilitiesDeposit || 0).toFixed(2)}\n` +
+      `🕌 *Syarat Khas Kediaman:* Mematuhi syarat rumah mesra Muslim (Makanan halal, larangan mutlak arak/alkohol, larangan haiwan terlarang & pemeliharaan syarak).\n\n` +
+      `Salinan dokumen rasmi PDF penuh berserta jadual inventori premis telah dijana untuk semakan dan pemeteraian tandatangan anda.\n\n` +
+      `Terima kasih!\n_${formData.landlordName}_`;
+  } else {
+    msg = `Greetings ${formData.tenantName},\n\n` +
+      `Here is the summary of your *Residential Tenancy Agreement* for *${formData.propertyName}*:\n\n` +
+      `📅 *Tenancy Term:* ${formData.startDate} to ${formData.endDate} (${formData.durationMonths} Months)\n` +
+      `💰 *Monthly Rent:* RM ${Number(formData.monthlyRent || 0).toFixed(2)} / month (Due: ${formData.rentalDueDay})\n` +
+      `🛡️ *Rental Deposit:* RM ${Number(formData.rentalDeposit || 0).toFixed(2)}\n` +
+      `💡 *Utilities Deposit:* RM ${Number(formData.utilitiesDeposit || 0).toFixed(2)}\n` +
+      `🕌 *Special Covenants:* Compliance with Muslim-friendly house requirements (Halal food only, strictly no alcohol, no dogs & Islamic decorum).\n\n` +
+      `The official multi-page A4 agreement PDF and inventory schedule is ready for your review and execution.\n\n` +
+      `Thank you!\n_${formData.landlordName}_`;
+  }
+
+  const encodedMsg = encodeURIComponent(msg);
+  const waUrl = phone ? `https://wa.me/${phone}?text=${encodedMsg}` : `https://wa.me/?text=${encodedMsg}`;
+  window.open(waUrl, '_blank');
+}
+
+/**
+ * Save agreement draft into the booking record
+ */
+function saveAgreementDraft() {
+  const formData = getAgreementFormData();
+  const bookingId = document.getElementById('agrBookingSelect')?.value;
+  const booking = appState.bookings.find(b => b.id === bookingId);
+  const isBM = appState.settings.language === 'bm';
+
+  if (booking) {
+    booking.tenancyAgreement = {
+      ...formData,
+      savedAt: new Date().toISOString()
+    };
+    saveToStorage();
+    showToast(isBM ? 'Deraf Perjanjian Sewaan berjaya disimpan ke rekod penyewa!' : 'Tenancy Agreement draft saved successfully to tenant booking record!');
+  } else {
+    showToast(isBM ? 'Borang perjanjian dikemas kini.' : 'Agreement form updated.');
+  }
+}
+
 // Start application
 window.addEventListener('DOMContentLoaded', initApp);
+
