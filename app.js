@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.7.4';
+const APP_VERSION = '2.7.5';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -1963,6 +1963,19 @@ function setupEventListeners() {
 
   // 0. Global Delegated Click Listeners (Must register first so they are never blocked by any missing DOM elements)
   document.addEventListener('click', (e) => {
+    const quickDownloadAgrBtn = e.target.closest('.btn-quick-download-agreement');
+    if (quickDownloadAgrBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const bid = quickDownloadAgrBtn.getAttribute('data-bid');
+      const b = (bid ? appState.bookings.find(x => String(x.id) === String(bid)) : null) || appState.activeWaBooking || appState.bookings.find(x => x.rentalType === 'monthly') || null;
+      openAgreementModal(b, 'preview');
+      setTimeout(() => {
+        downloadAgreementPdf();
+      }, 400);
+      return;
+    }
+
     const agrBtn = e.target.closest('.btn-open-agreement');
     if (agrBtn) {
       e.preventDefault();
@@ -2114,6 +2127,18 @@ function setupEventListeners() {
       e.stopPropagation();
       const b = appState.activeWaBooking || appState.activePdfBooking || appState.bookings.find(x => x.rentalType === 'monthly') || null;
       openAgreementModal(b, 'preview');
+    });
+  }
+
+  const btnQuickAgrHub = document.getElementById('btnQuickDownloadAgreementFromHub');
+  if (btnQuickAgrHub) {
+    btnQuickAgrHub.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const b = appState.activeWaBooking || appState.activePdfBooking || appState.bookings.find(x => x.rentalType === 'monthly') || null;
+      openAgreementModal(b, 'preview');
+      setTimeout(() => {
+        downloadAgreementPdf();
+      }, 400);
     });
   }
 
@@ -4554,6 +4579,9 @@ function renderBookingsTab() {
           </button>
           <button class="btn btn-outline btn-xs btn-open-agreement" data-bid="${b.id}" style="color:#0284c7; font-weight:700; border-color:#0284c7; background:rgba(2,132,199,0.08);" title="${isBM ? 'Penjana Surat Perjanjian Sewa (Tenancy Agreement)' : 'Residential Tenancy Agreement Generator'}">
             <i class="fa-solid fa-file-contract"></i> ${isBM ? 'Perjanjian Sewa' : 'Tenancy Agreement'}
+          </button>
+          <button class="btn btn-primary btn-xs btn-quick-download-agreement" data-bid="${b.id}" style="font-weight:700; background:linear-gradient(135deg, #0284c7, #0369a1); border-color:#0284c7;" title="${isBM ? 'Muat Turun Terus PDF Perjanjian ke Folder Downloads' : 'Download Agreement PDF directly to Downloads folder'}">
+            <i class="fa-solid fa-file-arrow-down"></i> ${isBM ? 'PDF Perjanjian' : 'Agreement PDF'}
           </button>
         ` : ''}
 
@@ -12213,21 +12241,30 @@ function initAgreementGenerator() {
     });
   }
 
-  // Actions: Save Draft, Print, WhatsApp, Download PDF
+  // Actions: Save Draft, Print, WhatsApp, Download PDF (Top Toolbar & Bottom Action Bar)
   const btnSave = document.getElementById('btnSaveAgreementDraft');
-  if (btnSave) btnSave.addEventListener('click', saveAgreementDraft);
+  if (btnSave) btnSave.addEventListener('click', (e) => { e?.preventDefault(); saveAgreementDraft(); });
 
   const btnPrint = document.getElementById('btnPrintAgreementDoc');
-  if (btnPrint) btnPrint.addEventListener('click', printAgreementDocument);
+  if (btnPrint) btnPrint.addEventListener('click', (e) => { e?.preventDefault(); printAgreementDocument(); });
 
   const btnEmail = document.getElementById('btnEmailAgreement');
-  if (btnEmail) btnEmail.addEventListener('click', () => sendAgreementEmail());
+  if (btnEmail) btnEmail.addEventListener('click', (e) => { e?.preventDefault(); sendAgreementEmail(); });
+
+  const btnEmailBottom = document.getElementById('btnEmailAgreementBottom');
+  if (btnEmailBottom) btnEmailBottom.addEventListener('click', (e) => { e?.preventDefault(); sendAgreementEmail(); });
 
   const btnWa = document.getElementById('btnShareAgreementWa');
-  if (btnWa) btnWa.addEventListener('click', shareAgreementWhatsApp);
+  if (btnWa) btnWa.addEventListener('click', (e) => { e?.preventDefault(); shareAgreementWhatsApp(); });
+
+  const btnWaBottom = document.getElementById('btnShareAgreementWaBottom');
+  if (btnWaBottom) btnWaBottom.addEventListener('click', (e) => { e?.preventDefault(); shareAgreementWhatsApp(); });
 
   const btnPdf = document.getElementById('btnDownloadAgreementPdf');
-  if (btnPdf) btnPdf.addEventListener('click', downloadAgreementPdf);
+  if (btnPdf) btnPdf.addEventListener('click', (e) => { e?.preventDefault(); downloadAgreementPdf(); });
+
+  const btnPdfBottom = document.getElementById('btnDownloadAgreementPdfBottom');
+  if (btnPdfBottom) btnPdfBottom.addEventListener('click', (e) => { e?.preventDefault(); downloadAgreementPdf(); });
 
   // Recalculate duration when dates change
   const startInput = document.getElementById('agrStartDate');
@@ -12984,7 +13021,8 @@ function generateAgreementPdfBlob(onSuccess, onError) {
 
   const formData = getAgreementFormData();
   const tenantClean = (formData.tenantName || 'Penyewa').replace(/[^a-zA-Z0-9]/g, '_');
-  const fileName = `Surat_Perjanjian_Sewaan_${tenantClean}.pdf`;
+  const isBM = appState.activeAgreementLang === 'bm';
+  const fileName = isBM ? `Surat_Perjanjian_Sewaan_${tenantClean}.pdf` : `Tenancy_Agreement_${tenantClean}.pdf`;
 
   if (typeof window.html2pdf === 'function') {
     const modalBody = document.querySelector('#agreementGeneratorModal .modal-body') || document.querySelector('.modal-body');
@@ -13010,7 +13048,7 @@ function generateAgreementPdfBlob(onSuccess, onError) {
         backgroundColor: '#ffffff'
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      pagebreak: { mode: 'css' }
     };
 
     let resolved = false;
@@ -13024,17 +13062,27 @@ function generateAgreementPdfBlob(onSuccess, onError) {
       if (!resolved) {
         resolved = true;
         restore();
-        console.warn('html2pdf agreement generation timeout (10s fallback)');
+        console.warn('html2pdf agreement generation timeout (15s fallback)');
         if (onError) onError(new Error('timeout'));
       }
-    }, 10000);
+    }, 15000);
 
-    window.html2pdf().set(opt).from(element).output('blob').then(blob => {
+    window.html2pdf().set(opt).from(element).toPdf().get('pdf').then(pdf => {
       if (!resolved) {
         resolved = true;
         clearTimeout(timer);
         restore();
-        if (onSuccess) onSuccess(blob, fileName);
+        try {
+          const blob = pdf.output('blob');
+          if (onSuccess) onSuccess(blob, fileName);
+        } catch (blobErr) {
+          console.warn('pdf.output blob error, falling back to output blob promise:', blobErr);
+          window.html2pdf().set(opt).from(element).output('blob').then(altBlob => {
+            if (onSuccess) onSuccess(altBlob, fileName);
+          }).catch(altErr => {
+            if (onError) onError(altErr);
+          });
+        }
       }
     }).catch(err => {
       if (!resolved) {
@@ -13084,7 +13132,7 @@ function downloadAgreementPdf(callback) {
       activeAgreementBlobUrl = URL.createObjectURL(blob);
       const blobUrl = activeAgreementBlobUrl;
 
-      // Guaranteed direct download to system / browser Downloads folder
+      // 1. Direct Anchor Download (Guaranteed download to user's Downloads folder)
       const a = document.createElement('a');
       a.href = blobUrl;
       a.download = fileName;
@@ -13094,7 +13142,7 @@ function downloadAgreementPdf(callback) {
         document.body.removeChild(a);
       }, 1500);
 
-      // Render the rich, clear status card just like quotation, receipt and invoice
+      // 2. Render the rich, clear status card just like quotation, receipt and invoice
       if (statusCard) {
         statusCard.style.display = 'block';
         statusCard.innerHTML = `
@@ -13153,10 +13201,9 @@ function downloadAgreementPdf(callback) {
       }
 
       showToast(isBM ? `Fail PDF (${fileName}) berjaya dimuat turun ke folder Downloads!` : `Tenancy Agreement PDF (${fileName}) downloaded!`);
-      if (callback) callback(blob, fileName);
+      if (typeof callback === 'function') callback(blob, fileName);
     } catch (e) {
-      console.error('Download error:', e);
-      window.print();
+      console.error('Download error in callback:', e);
     }
   }, err => {
     console.warn('PDF generation fallback to window.print:', err);
