@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.7.0';
+const APP_VERSION = '2.7.3';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -595,7 +595,8 @@ const TRANSLATIONS = {
     agr_modal_subtitle: 'Generate official A4 tenancy agreements with Muslim-friendly covenants, schedule of terms, fixtures inventory & signatures.',
     tenancy_agreement_banner_title: 'Residential Tenancy Agreement',
     tenancy_agreement_banner_sub: 'Generate official A4 tenancy agreement with Muslim-friendly covenants, inventory & signatures.',
-    btn_generate_agreement: 'Generate Agreement',
+    btn_generate_agreement: 'Generate Tenancy Agreement',
+    pdf_tab_agreement: '5. Tenancy Agreement',
     agr_tab_form: '1. Setup & Particulars',
     agr_tab_preview: '2. Live Preview & Export',
     agr_lbl_select_booking: 'Select Tenant / Monthly Booking Record:',
@@ -1115,7 +1116,8 @@ const TRANSLATIONS = {
     agr_modal_subtitle: 'Jana surat perjanjian rasmi A4 lengkap dengan syarat rumah mesra Muslim, jadual terma, inventori & tandatangan.',
     tenancy_agreement_banner_title: 'Perjanjian Sewaan Kediaman (Tenancy Agreement)',
     tenancy_agreement_banner_sub: 'Auto-jana perjanjian rasmi A4, klausa mesra Muslim, inventori & tandatangan.',
-    btn_generate_agreement: 'Jana Perjanjian',
+    btn_generate_agreement: 'Jana Perjanjian Sewa',
+    pdf_tab_agreement: '5. Perjanjian Sewaan',
     agr_tab_form: '1. Butiran & Syarat Perjanjian',
     agr_tab_preview: '2. Pratonton & Jana Dokumen A4',
     agr_lbl_select_booking: 'Pilih Rekod Penyewa / Tempahan Bulanan:',
@@ -1319,8 +1321,11 @@ function initApp() {
 
   try {
     setupEventListeners();
-    initAgreementGenerator();
   } catch (e) { console.error('Listeners init error:', e); }
+
+  try {
+    initAgreementGenerator();
+  } catch (e) { console.error('Agreement generator init error:', e); }
 
   try {
     closeAllModals();
@@ -1956,10 +1961,22 @@ function setupEventListeners() {
     });
   });
 
+  // 0. Global Delegated Click Listeners (Must register first so they are never blocked by any missing DOM elements)
+  document.addEventListener('click', (e) => {
+    const agrBtn = e.target.closest('.btn-open-agreement');
+    if (agrBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const bid = agrBtn.getAttribute('data-bid');
+      const b = (bid ? appState.bookings.find(x => String(x.id) === String(bid)) : null) || appState.activeWaBooking || appState.bookings.find(x => x.rentalType === 'monthly') || null;
+      openAgreementModal(b, 'preview');
+    }
+  });
+
   // Header quick buttons
-  document.getElementById('btnLangToggle').addEventListener('click', toggleLanguage);
-  document.getElementById('btnThemeToggle').addEventListener('click', toggleTheme);
-  document.getElementById('btnDemoToggle').addEventListener('click', () => {
+  document.getElementById('btnLangToggle')?.addEventListener('click', toggleLanguage);
+  document.getElementById('btnThemeToggle')?.addEventListener('click', toggleTheme);
+  document.getElementById('btnDemoToggle')?.addEventListener('click', () => {
     if (appState.isLicensed) {
       openProSystemModal();
     } else {
@@ -1975,7 +1992,7 @@ function setupEventListeners() {
   const btnOpenAgrGen = document.getElementById('btnOpenAgreementGen');
   if (btnOpenAgrGen) {
     btnOpenAgrGen.addEventListener('click', () => {
-      openAgreementModal();
+      openAgreementModal(null, 'preview');
     });
   }
 
@@ -2022,19 +2039,19 @@ function setupEventListeners() {
   }
 
   // Property Switcher '+ Add' button
-  document.getElementById('btnAddPropertyPill').addEventListener('click', () => openPropertyModal());
+  document.getElementById('btnAddPropertyPill')?.addEventListener('click', () => openPropertyModal());
 
   // Dashboard quick triggers
-  document.getElementById('btnSeeAllBookings').addEventListener('click', () => switchTab('bookings'));
-  document.getElementById('btnManageProperties').addEventListener('click', () => switchTab('settings'));
+  document.getElementById('btnSeeAllBookings')?.addEventListener('click', () => switchTab('bookings'));
+  document.getElementById('btnManageProperties')?.addEventListener('click', () => switchTab('settings'));
 
   // Floating Action Button
-  document.getElementById('fabAddBooking').addEventListener('click', () => openBookingModal());
+  document.getElementById('fabAddBooking')?.addEventListener('click', () => openBookingModal());
 
   // Calendar Controls
-  document.getElementById('calPrevMonth').addEventListener('click', () => changeCalMonth(-1));
-  document.getElementById('calNextMonth').addEventListener('click', () => changeCalMonth(1));
-  document.getElementById('btnQuickBookForDate').addEventListener('click', () => {
+  document.getElementById('calPrevMonth')?.addEventListener('click', () => changeCalMonth(-1));
+  document.getElementById('calNextMonth')?.addEventListener('click', () => changeCalMonth(1));
+  document.getElementById('btnQuickBookForDate')?.addEventListener('click', () => {
     openBookingModal(null, appState.selectedCalDate);
   });
 
@@ -2060,7 +2077,7 @@ function setupEventListeners() {
   });
 
   // Bookings Search & Filter
-  document.getElementById('bookingSearchInput').addEventListener('input', renderBookingsTab);
+  document.getElementById('bookingSearchInput')?.addEventListener('input', renderBookingsTab);
   document.querySelectorAll('#bookingStatusFilters .filter-pill').forEach(pill => {
     pill.addEventListener('click', () => {
       document.querySelectorAll('#bookingStatusFilters .filter-pill').forEach(p => p.classList.remove('active'));
@@ -2070,15 +2087,15 @@ function setupEventListeners() {
   });
 
   // Modals close buttons
-  document.getElementById('btnCloseBookingModal').addEventListener('click', closeAllModals);
-  document.getElementById('btnCancelBookingModal').addEventListener('click', closeAllModals);
-  document.getElementById('btnClosePropertyModal').addEventListener('click', closeAllModals);
-  document.getElementById('btnCancelPropertyModal').addEventListener('click', closeAllModals);
-  document.getElementById('btnCloseWaModal').addEventListener('click', closeAllModals);
-  document.getElementById('btnCloseExpenseModal').addEventListener('click', closeAllModals);
-  document.getElementById('btnCancelExpenseModal').addEventListener('click', closeAllModals);
-  document.getElementById('btnCloseGuestGuideModal').addEventListener('click', closeAllModals);
-  document.getElementById('btnCloseLicenseModal').addEventListener('click', closeAllModals);
+  document.getElementById('btnCloseBookingModal')?.addEventListener('click', closeAllModals);
+  document.getElementById('btnCancelBookingModal')?.addEventListener('click', closeAllModals);
+  document.getElementById('btnClosePropertyModal')?.addEventListener('click', closeAllModals);
+  document.getElementById('btnCancelPropertyModal')?.addEventListener('click', closeAllModals);
+  document.getElementById('btnCloseWaModal')?.addEventListener('click', closeAllModals);
+  document.getElementById('btnCloseExpenseModal')?.addEventListener('click', closeAllModals);
+  document.getElementById('btnCancelExpenseModal')?.addEventListener('click', closeAllModals);
+  document.getElementById('btnCloseGuestGuideModal')?.addEventListener('click', closeAllModals);
+  document.getElementById('btnCloseLicenseModal')?.addEventListener('click', closeAllModals);
   
   // Refund Modal Close
   const closeRefund = document.getElementById('btnCloseRefundModal');
@@ -2089,6 +2106,33 @@ function setupEventListeners() {
   // Monthly Invoices Modal Close
   const closeMInv = document.getElementById('btnCloseMonthlyInvoicesModal');
   if (closeMInv) closeMInv.addEventListener('click', closeAllModals);
+
+  // Tenancy Agreement Global Triggers (ensures clicking works regardless of caller)
+  const btnAgrHub = document.getElementById('btnOpenTenancyAgreementFromHub');
+  if (btnAgrHub) {
+    btnAgrHub.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const b = appState.activeWaBooking || appState.activePdfBooking || appState.bookings.find(x => x.rentalType === 'monthly') || null;
+      openAgreementModal(b, 'preview');
+    });
+  }
+
+  const bannerAgrHub = document.getElementById('agrHubCalloutBanner');
+  if (bannerAgrHub) {
+    bannerAgrHub.addEventListener('click', () => {
+      const b = appState.activeWaBooking || appState.activePdfBooking || appState.bookings.find(x => x.rentalType === 'monthly') || null;
+      openAgreementModal(b, 'preview');
+    });
+  }
+
+  const btnPdfAgrTab = document.getElementById('btnPdfTabAgreement');
+  if (btnPdfAgrTab) {
+    btnPdfAgrTab.addEventListener('click', () => {
+      const b = appState.activePdfBooking || appState.activeWaBooking || appState.bookings.find(x => x.rentalType === 'monthly') || null;
+      closePdfDocModal();
+      openAgreementModal(b, 'preview');
+    });
+  }
 
   // Overlap Warning & Change Homestay Modals Close Handlers
   const closeOverlap = document.getElementById('btnCloseOverlapModal');
@@ -2139,10 +2183,10 @@ function setupEventListeners() {
   }
 
   // License & Sales Event Handlers
-  document.getElementById('btnOpenActivateModal').addEventListener('click', openLicenseModal);
-  document.getElementById('btnBuyLicense').addEventListener('click', handleBuyLicenseRedirect);
-  document.getElementById('btnBuyLicenseViaWa').addEventListener('click', handleBuyLicenseRedirect);
-  document.getElementById('licenseForm').addEventListener('submit', handleActivateLicenseSubmit);
+  document.getElementById('btnOpenActivateModal')?.addEventListener('click', openLicenseModal);
+  document.getElementById('btnBuyLicense')?.addEventListener('click', handleBuyLicenseRedirect);
+  document.getElementById('btnBuyLicenseViaWa')?.addEventListener('click', handleBuyLicenseRedirect);
+  document.getElementById('licenseForm')?.addEventListener('submit', handleActivateLicenseSubmit);
 
   // Admin License Generator Handlers
   const adminGenForm = document.getElementById('adminGenForm');
@@ -2170,7 +2214,7 @@ function setupEventListeners() {
   });
 
   // Booking Form Submission & Dynamic Pricing Calc
-  document.getElementById('bookingForm').addEventListener('submit', handleSaveBooking);
+  document.getElementById('bookingForm')?.addEventListener('submit', handleSaveBooking);
   [
     'bookingCheckIn', 'bookingCheckOut', 'bookingNightlyRate', 'bookingCleaningFee', 'bookingSecurityDeposit',
     'bookingMonthlyStart', 'bookingMonthlyDuration', 'bookingMonthlyRate', 'bookingRentalDeposit',
@@ -2215,14 +2259,14 @@ function setupEventListeners() {
   });
 
   // Property Form Submission & Modals
-  document.getElementById('propertyForm').addEventListener('submit', handleSaveProperty);
-  document.getElementById('btnAddNewPropertyModal').addEventListener('click', () => openPropertyModal());
+  document.getElementById('propertyForm')?.addEventListener('submit', handleSaveProperty);
+  document.getElementById('btnAddNewPropertyModal')?.addEventListener('click', () => openPropertyModal());
 
   // Expense Buttons & Form
   const openExpModal = () => openExpenseModal();
-  document.getElementById('btnAddExpenseBtn').addEventListener('click', openExpModal);
-  document.getElementById('btnAddExpenseBtn2').addEventListener('click', openExpModal);
-  document.getElementById('expenseForm').addEventListener('submit', handleSaveExpense);
+  document.getElementById('btnAddExpenseBtn')?.addEventListener('click', openExpModal);
+  document.getElementById('btnAddExpenseBtn2')?.addEventListener('click', openExpModal);
+  document.getElementById('expenseForm')?.addEventListener('submit', handleSaveExpense);
 
   // WhatsApp Modal Buttons & Template Switcher
   document.querySelectorAll('.wa-tab-btn').forEach(btn => {
@@ -2441,24 +2485,24 @@ function setupEventListeners() {
     });
   }
 
-  document.getElementById('btnCopyWaText').addEventListener('click', handleCopyWaText);
-  document.getElementById('btnSendWaDirect').addEventListener('click', handleSendWaDirect);
+  document.getElementById('btnCopyWaText')?.addEventListener('click', handleCopyWaText);
+  document.getElementById('btnSendWaDirect')?.addEventListener('click', handleSendWaDirect);
 
   // Deposit Presets in Booking Form
-  document.getElementById('btnPresetDep30').addEventListener('click', () => applyDepositPreset(0.30, 'booked'));
-  document.getElementById('btnPresetDep50').addEventListener('click', () => applyDepositPreset(0.50, 'booked'));
-  document.getElementById('btnPresetDepFull').addEventListener('click', () => applyDepositPreset(1.0, 'confirmed'));
-  document.getElementById('btnPresetDepZero').addEventListener('click', () => applyDepositPreset(0, 'quotation'));
+  document.getElementById('btnPresetDep30')?.addEventListener('click', () => applyDepositPreset(0.30, 'booked'));
+  document.getElementById('btnPresetDep50')?.addEventListener('click', () => applyDepositPreset(0.50, 'booked'));
+  document.getElementById('btnPresetDepFull')?.addEventListener('click', () => applyDepositPreset(1.0, 'confirmed'));
+  document.getElementById('btnPresetDepZero')?.addEventListener('click', () => applyDepositPreset(0, 'quotation'));
 
   // Settings & Preferences
-  document.getElementById('btnSavePreferences').addEventListener('click', handleSavePreferences);
-  document.getElementById('btnSaveBankDetails').addEventListener('click', handleSaveBankDetails);
-  document.getElementById('btnExportData').addEventListener('click', exportDataBackup);
-  document.getElementById('btnImportDataInput').addEventListener('change', importDataBackup);
+  document.getElementById('btnSavePreferences')?.addEventListener('click', handleSavePreferences);
+  document.getElementById('btnSaveBankDetails')?.addEventListener('click', handleSaveBankDetails);
+  document.getElementById('btnExportData')?.addEventListener('click', exportDataBackup);
+  document.getElementById('btnImportDataInput')?.addEventListener('change', importDataBackup);
   const btnRestoreSnap = document.getElementById('btnRestoreAutoBackup');
   if (btnRestoreSnap) btnRestoreSnap.addEventListener('click', restoreAutoBackup);
-  document.getElementById('btnLoadDemoData').addEventListener('click', seedDemoData);
-  document.getElementById('btnResetAllData').addEventListener('click', resetAllData);
+  document.getElementById('btnLoadDemoData')?.addEventListener('click', seedDemoData);
+  document.getElementById('btnResetAllData')?.addEventListener('click', resetAllData);
 
   // App Update System Event Listeners
   const btnApplyUpdate = document.getElementById('btnApplyAppUpdate');
@@ -2527,9 +2571,9 @@ function setupEventListeners() {
   if (btnSendDispatch) btnSendDispatch.addEventListener('click', handleSendServiceDispatchWa);
 
   // Finance Selectors
-  document.getElementById('financeMonthSelect').addEventListener('change', renderFinancesTab);
-  document.getElementById('financeYearSelect').addEventListener('change', renderFinancesTab);
-  populateFinanceDateSelectors();
+  document.getElementById('financeMonthSelect')?.addEventListener('change', renderFinancesTab);
+  document.getElementById('financeYearSelect')?.addEventListener('change', renderFinancesTab);
+  if (typeof populateFinanceDateSelectors === 'function') populateFinanceDateSelectors();
 
   // Payment Proof & Receipt Modals Event Handlers
   const closePayProof = document.getElementById('btnClosePaymentProofModal');
@@ -4508,8 +4552,8 @@ function renderBookingsTab() {
           <button class="btn btn-outline btn-xs btn-open-monthly-invoices" data-bid="${b.id}" style="color:var(--primary); font-weight:700; border-color:var(--primary);">
             <i class="fa-solid fa-file-invoice-dollar"></i> ${t('btn_view_invoices')}
           </button>
-          <button class="btn btn-outline btn-xs btn-open-agreement" data-bid="${b.id}" style="color:#0284c7; font-weight:700; border-color:#0284c7;" title="${isBM ? 'Penjana Surat Perjanjian Sewa (Tenancy Agreement)' : 'Residential Tenancy Agreement Generator'}">
-            <i class="fa-solid fa-file-signature"></i> ${isBM ? 'Perjanjian' : 'Agreement'}
+          <button class="btn btn-outline btn-xs btn-open-agreement" data-bid="${b.id}" style="color:#0284c7; font-weight:700; border-color:#0284c7; background:rgba(2,132,199,0.08);" title="${isBM ? 'Penjana Surat Perjanjian Sewa (Tenancy Agreement)' : 'Residential Tenancy Agreement Generator'}">
+            <i class="fa-solid fa-file-contract"></i> ${isBM ? 'Perjanjian Sewa' : 'Tenancy Agreement'}
           </button>
         ` : ''}
 
@@ -4629,8 +4673,8 @@ function renderBookingsTab() {
   container.querySelectorAll('.btn-open-agreement').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const bid = e.currentTarget.getAttribute('data-bid');
-      const b = appState.bookings.find(x => x.id === bid);
-      if (b) openAgreementModal(b);
+      const b = appState.bookings.find(x => String(x.id) === String(bid));
+      if (b) openAgreementModal(b, 'preview');
     });
   });
 
@@ -6482,8 +6526,16 @@ function openMonthlyInvoicesModal(booking) {
 
   const btnAgr = document.getElementById('btnOpenTenancyAgreementFromHub');
   if (btnAgr) {
-    btnAgr.onclick = () => {
-      openAgreementModal(booking);
+    btnAgr.onclick = (e) => {
+      e.stopPropagation();
+      openAgreementModal(booking, 'preview');
+    };
+  }
+
+  const bannerAgr = document.getElementById('agrHubCalloutBanner');
+  if (bannerAgr) {
+    bannerAgr.onclick = () => {
+      openAgreementModal(booking, 'preview');
     };
   }
 
@@ -9182,6 +9234,11 @@ function openPdfDocModal(booking, defaultDocType = 'quotation', monthIndex = nul
   const utilityWrap = document.getElementById('pdfMonthlyUtilityExtraWrap');
   const utilityInput = document.getElementById('pdfMonthlyUtilityExtraInput');
 
+  const btnPdfAgrTab = document.getElementById('btnPdfTabAgreement');
+  if (btnPdfAgrTab) {
+    btnPdfAgrTab.style.display = isMonthly ? 'inline-flex' : 'none';
+  }
+
   if (monthlyGroup && scopeSelect) {
     if (isMonthly) {
       monthlyGroup.style.display = 'block';
@@ -9205,6 +9262,13 @@ function openPdfDocModal(booking, defaultDocType = 'quotation', monthIndex = nul
         scopeSelect.appendChild(opt);
       });
 
+      const optAgr = document.createElement('option');
+      optAgr.value = 'tenancy_agreement';
+      optAgr.textContent = appState.activePdfLang === 'bm'
+        ? '📜 Surat Perjanjian Sewaan (Buka Penjana Tenancy Agreement)'
+        : '📜 Residential Tenancy Agreement (Open Agreement Generator)';
+      scopeSelect.appendChild(optAgr);
+
       if (monthIndex) {
         scopeSelect.value = String(monthIndex);
         if (utilityWrap) utilityWrap.style.display = 'block';
@@ -9216,6 +9280,11 @@ function openPdfDocModal(booking, defaultDocType = 'quotation', monthIndex = nul
       }
 
       scopeSelect.onchange = () => {
+        if (scopeSelect.value === 'tenancy_agreement') {
+          closePdfDocModal();
+          openAgreementModal(booking, 'preview');
+          return;
+        }
         if (scopeSelect.value === 'move_in') {
           appState.activePdfMonthIndex = null;
           if (utilityWrap) utilityWrap.style.display = 'none';
@@ -11187,7 +11256,10 @@ function applyTheme(theme) {
 }
 
 function closeAllModals() {
-  document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.modal-backdrop').forEach(m => {
+    m.classList.remove('active');
+    m.style.display = '';
+  });
 }
 
 function showToast(message) {
@@ -11833,7 +11905,6 @@ const DEFAULT_AGREEMENT_INVENTORY = [
   { item: 'Dining Table & 4 Chairs / Set Meja Makan', qty: 1, condition: 'Good & Sturdy / Baik' },
   { item: 'Living Room Sofa & Coffee Table / Set Sofa', qty: 1, condition: 'Good & Clean / Baik' },
   { item: 'Kitchen Gas Stove & Cylinder / Dapur Gas & Tong', qty: 1, condition: 'Clean & Functional / Baik' },
-  { item: 'Bathroom Water Heater / Pemanas Air Mandi', qty: 2, condition: 'Good & Functional / Baik' },
   { item: 'Ceiling / Wall Fans / Kipas Siling & Dinding', qty: 4, condition: 'Good & Working / Baik' },
   { item: 'House Keys & Gate Access / Kunci Rumah & Akses', qty: 2, condition: 'Complete Sets / Lengkap' }
 ];
@@ -12070,6 +12141,8 @@ function initAgreementGenerator() {
   if (btnGoPreview && tabPreview) {
     btnGoPreview.addEventListener('click', () => {
       tabPreview.click();
+      const modalBody = document.querySelector('#agreementGeneratorModal .modal-body');
+      if (modalBody) modalBody.scrollTop = 0;
     });
   }
 
@@ -12077,6 +12150,8 @@ function initAgreementGenerator() {
   if (btnBackForm && tabForm) {
     btnBackForm.addEventListener('click', () => {
       tabForm.click();
+      const modalBody = document.querySelector('#agreementGeneratorModal .modal-body');
+      if (modalBody) modalBody.scrollTop = 0;
     });
   }
 
@@ -12174,9 +12249,27 @@ function initAgreementGenerator() {
 /**
  * Open agreement modal, auto-populating from booking
  */
-function openAgreementModal(booking = null) {
+function openAgreementModal(booking = null, defaultTab = 'preview') {
+  // If booking not provided, resolve fallback
+  if (!booking) {
+    if (appState.activeWaBooking && appState.activeWaBooking.rentalType === 'monthly') {
+      booking = appState.activeWaBooking;
+    } else if (appState.activePdfBooking && appState.activePdfBooking.rentalType === 'monthly') {
+      booking = appState.activePdfBooking;
+    } else {
+      booking = appState.bookings.find(b => b.rentalType === 'monthly') || appState.bookings[0] || null;
+    }
+  }
+
+  // CRITICAL: Close all existing active modals (e.g. monthlyInvoicesModal, pdfDocModal)
+  // to prevent modal backdrop collisions, pointer blockages, and viewport stacking bugs.
+  closeAllModals();
+
   appState.activeAgreementBooking = booking;
   appState.activeAgreementLang = (appState.settings && appState.settings.language === 'en') ? 'en' : 'bm';
+
+  const isBM = appState.activeAgreementLang === 'bm';
+  showToast(isBM ? 'Membuka Penjana Perjanjian Sewaan...' : 'Opening Tenancy Agreement Generator...');
 
   // 1. Populate bookings dropdown
   populateAgreementBookingSelect(booking ? booking.id : null);
@@ -12189,9 +12282,24 @@ function openAgreementModal(booking = null) {
 
   populateAgreementForm(activeBooking);
 
-  // 3. Reset tabs to Form Tab
+  // 3. Switch tab and render preview if defaultTab === 'preview'
   const tabForm = document.getElementById('btnAgrTabForm');
-  if (tabForm) tabForm.click();
+  const tabPreview = document.getElementById('btnAgrTabPreview');
+  const formWrap = document.getElementById('agrTabFormContainer');
+  const previewWrap = document.getElementById('agrTabPreviewContainer');
+
+  if (defaultTab === 'preview' && tabPreview) {
+    tabPreview.classList.add('active');
+    if (tabForm) tabForm.classList.remove('active');
+    if (formWrap) formWrap.style.display = 'none';
+    if (previewWrap) previewWrap.style.display = 'block';
+    renderAgreementPreview();
+  } else if (tabForm) {
+    tabForm.classList.add('active');
+    if (tabPreview) tabPreview.classList.remove('active');
+    if (formWrap) formWrap.style.display = 'block';
+    if (previewWrap) previewWrap.style.display = 'none';
+  }
 
   // 4. Update language toggle active pill
   const btnBM = document.getElementById('btnAgrLangBM');
@@ -12204,10 +12312,16 @@ function openAgreementModal(booking = null) {
     if (btnEN) btnEN.classList.remove('active');
   }
 
-  // 5. Open modal
+  // 5. Open modal with explicit flex display & top scroll
   const modal = document.getElementById('agreementGeneratorModal');
-  if (modal) modal.classList.add('active');
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+    const modalBody = modal.querySelector('.modal-body');
+    if (modalBody) modalBody.scrollTop = 0;
+  }
 }
+window.openAgreementModal = openAgreementModal;
 
 /**
  * Populate bookings select element
@@ -12393,7 +12507,10 @@ function renderDefaultInventoryRows(savedInventory = null) {
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  const list = savedInventory || DEFAULT_AGREEMENT_INVENTORY;
+  const list = (savedInventory || DEFAULT_AGREEMENT_INVENTORY).filter(item => {
+    const name = (item.item || '').toLowerCase();
+    return !name.includes('water heater') && !name.includes('pemanas air');
+  });
   list.forEach(item => {
     addCustomInventoryRow(item.item, item.qty, item.condition, item.checked !== false);
   });
@@ -12534,8 +12651,12 @@ function renderAgreementPreview() {
 
   const formatRM = val => `RM ${Number(val || 0).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  // Checked inventory items only
-  const activeInventory = (data.inventory || []).filter(x => x.checked);
+  // Checked inventory items only (safeguard against water heater)
+  const activeInventory = (data.inventory || []).filter(x => {
+    if (!x.checked) return false;
+    const name = (x.item || '').toLowerCase();
+    return !name.includes('water heater') && !name.includes('pemanas air');
+  });
 
   // Generate Document HTML
   sheet.innerHTML = `
@@ -13064,5 +13185,9 @@ function saveAgreementDraft() {
 }
 
 // Start application
-window.addEventListener('DOMContentLoaded', initApp);
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 

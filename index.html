@@ -14,7 +14,7 @@
   <meta http-equiv="Expires" content="0">
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=2.6.6">
+  <link rel="stylesheet" href="styles.css?v=2.7.3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1189,7 +1189,7 @@
           </div>
 
           <!-- Tenancy Agreement Generator Action Banner -->
-          <div class="agr-hub-callout mb-2">
+          <div class="agr-hub-callout mb-2" id="agrHubCalloutBanner" title="Klik untuk Buka Penjana Perjanjian Sewaan (Tenancy Agreement Generator)">
             <div style="display:flex; align-items:center; gap:10px;">
               <div class="agr-hub-callout-icon">
                 <i class="fa-solid fa-file-signature"></i>
@@ -1200,7 +1200,7 @@
               </div>
             </div>
             <button type="button" class="btn btn-primary btn-xs" id="btnOpenTenancyAgreementFromHub" style="font-weight:700; white-space:nowrap; gap:6px; background:#0284c7; border-color:#0284c7;">
-              <i class="fa-solid fa-file-contract"></i> <span data-i18n="btn_generate_agreement">Jana Perjanjian</span>
+              <i class="fa-solid fa-file-contract"></i> <span data-i18n="btn_generate_agreement">Jana Perjanjian Sewa</span>
             </button>
           </div>
 
@@ -2191,6 +2191,9 @@
               <button type="button" class="pdf-type-btn" data-doc="receipt" id="btnPdfTabReceipt">
                 <i class="fa-solid fa-receipt"></i> <span data-i18n="pdf_tab_receipt">4. Resit Bayaran Penuh</span>
               </button>
+              <button type="button" class="pdf-type-btn" data-doc="agreement" id="btnPdfTabAgreement" style="display:none; color:#0284c7; font-weight:700; border-color:#0284c7;">
+                <i class="fa-solid fa-file-contract"></i> <span data-i18n="pdf_tab_agreement">5. Perjanjian Sewa</span>
+              </button>
             </div>
 
             <!-- Customization Form Grid -->
@@ -2952,6 +2955,6 @@
       document.head.appendChild(s);
     }
   </script>
-  <script src="app.js?v=2.7.0"></script>
+  <script src="app.js?v=2.7.3"></script>
 </body>
 </html>
