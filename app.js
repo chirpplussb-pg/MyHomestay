@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.7.3';
+const APP_VERSION = '2.7.4';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -12220,6 +12220,9 @@ function initAgreementGenerator() {
   const btnPrint = document.getElementById('btnPrintAgreementDoc');
   if (btnPrint) btnPrint.addEventListener('click', printAgreementDocument);
 
+  const btnEmail = document.getElementById('btnEmailAgreement');
+  if (btnEmail) btnEmail.addEventListener('click', () => sendAgreementEmail());
+
   const btnWa = document.getElementById('btnShareAgreementWa');
   if (btnWa) btnWa.addEventListener('click', shareAgreementWhatsApp);
 
@@ -13048,53 +13051,109 @@ function generateAgreementPdfBlob(onSuccess, onError) {
 }
 
 /**
- * Direct file download as standard multi-page A4 PDF
+ * Direct file download as standard multi-page A4 PDF to Downloads folder
  */
-function downloadAgreementPdf() {
+let activeAgreementBlobUrl = null;
+
+function downloadAgreementPdf(callback) {
   const isBM = appState.activeAgreementLang === 'bm';
   const statusCard = document.getElementById('agrActionStatusCard');
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   if (statusCard) {
     statusCard.style.display = 'block';
     statusCard.innerHTML = `
-      <div style="background:#eff6ff; border:1.5px solid #0284c7; border-radius:10px; padding:14px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 12px rgba(2,132,199,0.12);">
-        <div class="loading-spinner" style="width:24px; height:24px; border-width:3px; border-color:#0284c7; border-top-color:transparent; flex-shrink:0;"></div>
+      <div style="background:#eff6ff; border:1.5px solid #0284c7; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 12px rgba(2,132,199,0.12);">
+        <div class="loading-spinner" style="width:26px; height:26px; border-width:3px; border-color:#0284c7; border-top-color:transparent; flex-shrink:0;"></div>
         <div>
-          <strong style="color:#0369a1; font-size:13px; display:block;">${isBM ? 'Sedang Menjana Dokumen Perjanjian A4 Berbilang Muka Surat...' : 'Generating Official Multi-Page A4 Tenancy Agreement...'}</strong>
-          <span style="font-size:11px; color:#0284c7;">${isBM ? 'Format surat perjanjian, klausa mesra Muslim & inventori sedang diproses.' : 'Compiling formal covenants, Muslim-friendly conditions & inventory schedule.'}</span>
+          <strong style="color:#0369a1; font-size:13.5px; display:block;">${isBM ? 'Sedang Menjana Fail PDF Surat Perjanjian A4...' : 'Generating Official A4 Tenancy Agreement PDF...'}</strong>
+          <span style="font-size:11.5px; color:#0284c7;">${isBM ? 'Format surat perjanjian, klausa mesra Muslim & jadual inventori sedang diproses untuk muat turun terus ke folder Downloads.' : 'Processing formal covenants, Muslim-friendly conditions & inventory schedule for direct download.'}</span>
         </div>
       </div>
     `;
+    statusCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
+
+  showToast(isBM ? 'Menjana fail PDF Perjanjian Sewa...' : 'Generating Tenancy Agreement PDF...');
 
   generateAgreementPdfBlob((blob, fileName) => {
     try {
-      const url = URL.createObjectURL(blob);
+      if (activeAgreementBlobUrl) {
+        try { URL.revokeObjectURL(activeAgreementBlobUrl); } catch (e) {}
+      }
+      activeAgreementBlobUrl = URL.createObjectURL(blob);
+      const blobUrl = activeAgreementBlobUrl;
+
+      // Guaranteed direct download to system / browser Downloads folder
       const a = document.createElement('a');
-      a.href = url;
+      a.href = blobUrl;
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
       setTimeout(() => {
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 2000);
+      }, 1500);
 
+      // Render the rich, clear status card just like quotation, receipt and invoice
       if (statusCard) {
+        statusCard.style.display = 'block';
         statusCard.innerHTML = `
-          <div style="background:#ecfdf5; border:1.5px solid #10b981; border-radius:10px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <i class="fa-solid fa-circle-check" style="color:#059669; font-size:18px;"></i>
-              <div>
-                <strong style="color:#065f46; font-size:12.5px; display:block;">${isBM ? 'Fail PDF Berjaya Dimuat Turun!' : 'PDF Downloaded Successfully!'}</strong>
-                <span style="font-size:11px; color:#047857;">${fileName}</span>
+          <div style="background:#ecfdf5; border:2px solid #10b981; border-radius:12px; padding:18px; box-shadow:0 6px 16px rgba(16,185,129,0.12);">
+            <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:14px;">
+              <div style="width:44px; height:44px; border-radius:50%; background:#10b981; color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:0 3px 8px rgba(16,185,129,0.35);">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+              <div style="flex:1;">
+                <h4 style="margin:0; color:#065f46; font-size:15px; font-weight:800;">
+                  ${isBM ? '✅ Surat Perjanjian Berjaya Dijana & Dimuat Turun!' : '✅ Tenancy Agreement Generated & Downloaded!'}
+                </h4>
+                <p style="margin:4px 0 0 0; font-size:12px; color:#047857; line-height:1.5;">
+                  ${isBM 
+                    ? `Fail telah disimpan terus ke folder <strong>Downloads</strong> komputer / telefon anda sebagai:<br><strong style="font-family:monospace; color:#0f172a; background:#e2e8f0; padding:2px 6px; border-radius:4px;">${fileName}</strong>`
+                    : `File saved directly into your <strong>Downloads</strong> folder as:<br><strong style="font-family:monospace; color:#0f172a; background:#e2e8f0; padding:2px 6px; border-radius:4px;">${fileName}</strong>`}
+                </p>
+                ${!isMobile ? `
+                  <div style="margin-top:6px; font-size:11px; color:#64748b;">
+                    ${isBM ? '💡 Tip: Tekan <kbd style="background:#f1f5f9; border:1px solid #cbd5e1; padding:1px 5px; border-radius:3px;">Ctrl</kbd> + <kbd style="background:#f1f5f9; border:1px solid #cbd5e1; padding:1px 5px; border-radius:3px;">J</kbd> (Windows) atau semak ikon muat turun pelayar untuk membuka fail terus dari folder Downloads.' : '💡 Tip: Press Ctrl + J to see downloaded files in Downloads folder.'}
+                  </div>
+                ` : `
+                  <div style="margin-top:8px; font-size:11.5px; color:#14532d; background:#dcfce7; border:1px solid #86efac; border-radius:8px; padding:8px 12px; line-height:1.5;">
+                    📱 <strong>Pengguna Telefon:</strong> Fail PDF telah disimpan ke folder <strong>Downloads</strong> peranti anda. Anda kini boleh melampirkannya ke WhatsApp atau Emel dengan mudah.
+                  </div>
+                `}
               </div>
             </div>
-            <button type="button" class="btn btn-outline btn-xs" onclick="document.getElementById('agrActionStatusCard').style.display='none';" style="font-size:10px; padding:2px 8px;">Tutup</button>
+
+            <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+              <a href="${blobUrl}" target="_blank" class="btn btn-primary btn-sm" style="font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #0284c7, #0369a1);">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> ${isBM ? '👁️ Buka & Lihat PDF Sekarang' : '👁️ View PDF Now'}
+              </a>
+              <a href="${blobUrl}" download="${fileName}" class="btn btn-outline btn-sm" style="font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px; color:#065f46; border-color:#059669; background:#fff;">
+                <i class="fa-solid fa-download"></i> ${isBM ? 'Muat Turun Semula' : 'Download Again'}
+              </a>
+              <button type="button" class="btn btn-whatsapp btn-sm" id="btnStatusCardAgrWa" style="font-weight:800; display:inline-flex; align-items:center; gap:6px;">
+                <i class="fa-brands fa-whatsapp"></i> ${isBM ? '📲 Hantar ke WhatsApp Tetamu' : 'Send via WhatsApp'}
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" id="btnStatusCardAgrEmail" style="font-weight:700; display:inline-flex; align-items:center; gap:6px; color:#1e293b; background:#fff;">
+                <i class="fa-solid fa-envelope"></i> ${isBM ? '✉️ Emel Penyewa' : 'Email Tenant'}
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" id="btnDismissAgrStatus" style="font-size:11px; background:#fff; color:#64748b; margin-left:auto;">
+                ${isBM ? 'Tutup' : 'Dismiss'}
+              </button>
+            </div>
           </div>
         `;
+
+        document.getElementById('btnStatusCardAgrWa')?.addEventListener('click', () => shareAgreementWhatsApp(blob, fileName));
+        document.getElementById('btnStatusCardAgrEmail')?.addEventListener('click', () => sendAgreementEmail(fileName));
+        document.getElementById('btnDismissAgrStatus')?.addEventListener('click', () => {
+          statusCard.style.display = 'none';
+        });
+        statusCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
-      showToast(isBM ? 'Fail PDF Perjanjian Sewa berjaya dimuat turun!' : 'Tenancy Agreement PDF downloaded successfully!');
+
+      showToast(isBM ? `Fail PDF (${fileName}) berjaya dimuat turun ke folder Downloads!` : `Tenancy Agreement PDF (${fileName}) downloaded!`);
+      if (callback) callback(blob, fileName);
     } catch (e) {
       console.error('Download error:', e);
       window.print();
@@ -13128,40 +13187,235 @@ function printAgreementDocument() {
 }
 
 /**
- * Share agreement summary & confirmation via WhatsApp
+ * Share agreement summary & confirmation via WhatsApp with PDF Download to Downloads folder
  */
-function shareAgreementWhatsApp() {
+function shareAgreementWhatsApp(existingBlob = null, existingFileName = null) {
   const formData = getAgreementFormData();
   const phone = (formData.tenantPhone || '').replace(/[^0-9+]/g, '');
   const isBM = appState.activeAgreementLang === 'bm';
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const statusCard = document.getElementById('agrActionStatusCard');
 
   let msg = '';
   if (isBM) {
     msg = `Salam sejahtera ${formData.tenantName},\n\n` +
-      `Berikut adalah makluman draf *Surat Perjanjian Penyewaan Kediaman* bagi premis *${formData.propertyName}*:\n\n` +
+      `Dilampirkan dokumen rasmi *Surat Perjanjian Penyewaan Kediaman* bagi premis *${formData.propertyName}*:\n\n` +
       `📅 *Tempoh Sewaan:* ${formData.startDate} hingga ${formData.endDate} (${formData.durationMonths} Bulan)\n` +
       `💰 *Kadar Sewa:* RM ${Number(formData.monthlyRent || 0).toFixed(2)} / bulan (Genap masa: ${formData.rentalDueDay})\n` +
       `🛡️ *Cagaran Sewa:* RM ${Number(formData.rentalDeposit || 0).toFixed(2)}\n` +
       `💡 *Cagaran Utiliti:* RM ${Number(formData.utilitiesDeposit || 0).toFixed(2)}\n` +
       `🕌 *Syarat Khas Kediaman:* Mematuhi syarat rumah mesra Muslim (Makanan halal, larangan mutlak arak/alkohol, larangan haiwan terlarang & pemeliharaan syarak).\n\n` +
-      `Salinan dokumen rasmi PDF penuh berserta jadual inventori premis telah dijana untuk semakan dan pemeteraian tandatangan anda.\n\n` +
-      `Terima kasih!\n_${formData.landlordName}_`;
+      `📄 *Sila rujuk fail PDF rasmi yang dilampirkan bersama ini.* Terima kasih!\n_${formData.landlordName}_`;
   } else {
     msg = `Greetings ${formData.tenantName},\n\n` +
-      `Here is the summary of your *Residential Tenancy Agreement* for *${formData.propertyName}*:\n\n` +
+      `Attached is the official *Residential Tenancy Agreement* for *${formData.propertyName}*:\n\n` +
       `📅 *Tenancy Term:* ${formData.startDate} to ${formData.endDate} (${formData.durationMonths} Months)\n` +
       `💰 *Monthly Rent:* RM ${Number(formData.monthlyRent || 0).toFixed(2)} / month (Due: ${formData.rentalDueDay})\n` +
       `🛡️ *Rental Deposit:* RM ${Number(formData.rentalDeposit || 0).toFixed(2)}\n` +
       `💡 *Utilities Deposit:* RM ${Number(formData.utilitiesDeposit || 0).toFixed(2)}\n` +
       `🕌 *Special Covenants:* Compliance with Muslim-friendly house requirements (Halal food only, strictly no alcohol, no dogs & Islamic decorum).\n\n` +
-      `The official multi-page A4 agreement PDF and inventory schedule is ready for your review and execution.\n\n` +
-      `Thank you!\n_${formData.landlordName}_`;
+      `📄 *Please refer to the attached official PDF document.* Thank you!\n_${formData.landlordName}_`;
   }
 
-  const encodedMsg = encodeURIComponent(msg);
-  const waUrl = phone ? `https://wa.me/${phone}?text=${encodedMsg}` : `https://wa.me/?text=${encodedMsg}`;
-  window.open(waUrl, '_blank');
+  // Copy text to clipboard
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(msg);
+  }
+
+  const cleanPhone = normalizePhoneNumber(phone);
+  const waUrl = cleanPhone 
+    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`
+    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+  let waWindow = null;
+  if (!isMobile) {
+    try {
+      waWindow = window.open('about:blank', '_blank');
+      if (waWindow) {
+        waWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head><title>Menghubungkan ke WhatsApp...</title></head>
+          <body style="font-family:system-ui,sans-serif; text-align:center; padding:50px; background:#f8fafc; color:#0f172a;">
+            <div style="max-width:480px; margin:0 auto; background:#fff; padding:30px; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1px solid #e2e8f0;">
+              <div style="font-size:36px; margin-bottom:12px;">📲</div>
+              <h2 style="color:#15803d; margin:0 0 8px 0; font-size:20px;">Menghubungkan ke WhatsApp Penyewa...</h2>
+              <p style="color:#64748b; font-size:13px; line-height:1.5; margin:0 0 16px 0;">Fail PDF Surat Perjanjian sedang dimuat turun ke folder Downloads anda.</p>
+              <div style="display:inline-block; border:3px solid #e2e8f0; border-top-color:#15803d; border-radius:50%; width:24px; height:24px; animation:spin 0.8s linear infinite;"></div>
+              <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+            </div>
+          </body>
+          </html>
+        `);
+      }
+    } catch(e) {
+      console.warn('Could not pre-open window:', e);
+    }
+  }
+
+  const handlePdfReady = async (pdfBlob, fName) => {
+    const pdfFile = new File([pdfBlob], fName, { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(pdfBlob);
+
+    // 1. Mobile Web Share Level 2 (Direct WhatsApp file attachment)
+    if (isMobile && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+      try {
+        if (waWindow) waWindow.close();
+        await navigator.share({
+          title: `Surat Perjanjian Sewaan (${formData.tenantName})`,
+          text: msg,
+          files: [pdfFile]
+        });
+        showToast(isBM ? '✅ Berjaya dikongsi ke WhatsApp!' : '✅ Shared to WhatsApp successfully!');
+        if (statusCard) statusCard.style.display = 'none';
+        return;
+      } catch (shareErr) {
+        if (shareErr.name === 'AbortError') return;
+        console.warn('navigator.share failed, fallback to download + open WhatsApp:', shareErr);
+      }
+    }
+
+    // 2. Download directly to Downloads folder
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = fName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); }, 1500);
+
+    if (waWindow && !waWindow.closed) {
+      waWindow.location.href = waUrl;
+    }
+
+    // Step-by-Step Card
+    if (statusCard) {
+      statusCard.style.display = 'block';
+      statusCard.innerHTML = `
+        <div style="background:#f0fdf4; border:2px solid #22c55e; border-radius:12px; padding:18px; box-shadow:0 6px 18px rgba(34,197,94,0.15);">
+          <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:14px;">
+            <div style="width:46px; height:46px; border-radius:50%; background:#22c55e; color:#fff; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; box-shadow:0 3px 10px rgba(34,197,94,0.4);">
+              <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <div style="flex:1;">
+              <h4 style="margin:0; color:#14532d; font-size:15px; font-weight:800;">
+                ${isBM ? '✅ Fail PDF Dimuat Turun & WhatsApp Sedia Dihantar!' : '✅ PDF Downloaded & WhatsApp Ready!'}
+              </h4>
+              <p style="margin:4px 0 8px 0; font-size:12px; color:#166534; line-height:1.5;">
+                ${isBM 
+                  ? `Fail rasmi <strong>${fName}</strong> telah dimuat turun terus ke folder <strong>Downloads</strong> anda.` 
+                  : `Official file <strong>${fName}</strong> has been saved directly into your <strong>Downloads</strong> folder.`}
+              </p>
+              <div style="background:#dcfce7; border:1px solid #86efac; border-radius:8px; padding:10px 12px; font-size:12px; color:#14532d; line-height:1.6;">
+                <strong>${isBM ? '👉 2 Langkah Mudah Untuk Menghantar di WhatsApp:' : '👉 2 Easy Steps to Send on WhatsApp:'}</strong><br>
+                1. ${isBM ? 'Tetingkap WhatsApp telah dibuka (atau klik butang hijau di bawah).' : 'WhatsApp window is opened (or click green button below).'}<br>
+                2. ${isBM ? `Di WhatsApp penyewa, klik ikon <strong>Lampiran (📎 atau +) > Dokumen</strong> dan pilih fail <strong style="font-family:monospace;">${fName}</strong> dari folder Downloads.` : `In WhatsApp chat, click <strong>Attachment (📎 or +) > Document</strong> and select the downloaded PDF.`}
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+            <a href="${waUrl}" target="_blank" class="btn btn-whatsapp btn-sm" style="font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:8px; padding:8px 16px; font-size:13px;">
+              <i class="fa-brands fa-whatsapp"></i> ${isBM ? '📲 Buka WhatsApp Sekarang (Pautan Langsung)' : '📲 Open WhatsApp Now'}
+            </a>
+            <a href="${blobUrl}" target="_blank" class="btn btn-primary btn-sm" style="font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> ${isBM ? '👁️ Lihat Fail PDF' : '👁️ View PDF'}
+            </a>
+            <a href="${blobUrl}" download="${fName}" class="btn btn-outline btn-sm" style="font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:#fff; color:#065f46; border-color:#059669;">
+              <i class="fa-solid fa-download"></i> ${isBM ? 'Muat Turun Semula' : 'Download Again'}
+            </a>
+            <button type="button" class="btn btn-outline btn-sm" id="btnDismissAgrWaStatus" style="font-size:11px; background:#fff; color:#64748b; margin-left:auto;">
+              ${isBM ? 'Tutup' : 'Dismiss'}
+            </button>
+          </div>
+        </div>
+      `;
+      document.getElementById('btnDismissAgrWaStatus')?.addEventListener('click', () => {
+        statusCard.style.display = 'none';
+      });
+      statusCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    showToast(isBM ? `Fail PDF (${fName}) dimuat turun ke Downloads!` : `PDF (${fName}) downloaded!`);
+  };
+
+  if (existingBlob && existingFileName) {
+    handlePdfReady(existingBlob, existingFileName);
+  } else {
+    if (statusCard) {
+      statusCard.style.display = 'block';
+      statusCard.innerHTML = `
+        <div style="background:#eff6ff; border:1.5px solid #0284c7; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 12px rgba(2,132,199,0.12);">
+          <div class="loading-spinner" style="width:26px; height:26px; border-width:3px; border-color:#0284c7; border-top-color:transparent; flex-shrink:0;"></div>
+          <div>
+            <strong style="color:#0369a1; font-size:13.5px; display:block;">${isBM ? 'Menjana Fail PDF Perjanjian & Menghubungkan ke WhatsApp...' : 'Generating Agreement PDF & Connecting to WhatsApp...'}</strong>
+            <span style="font-size:11.5px; color:#0284c7;">${isBM ? 'Sila tunggu sebentar, fail sedang dimuat turun ke folder Downloads...' : 'Please wait a moment...'}</span>
+          </div>
+        </div>
+      `;
+      statusCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    showToast(isBM ? 'Menjana fail PDF dan menghubungkan ke WhatsApp...' : 'Generating PDF & connecting to WhatsApp...');
+    generateAgreementPdfBlob(handlePdfReady, (err) => {
+      console.error('Error generating PDF for WhatsApp:', err);
+      if (waWindow && !waWindow.closed) {
+        waWindow.location.href = waUrl;
+      } else {
+        window.open(waUrl, '_blank');
+      }
+    });
+  }
 }
+
+/**
+ * Send agreement document via Email client with attachment guidance
+ */
+function sendAgreementEmail(fileName = null) {
+  const formData = getAgreementFormData();
+  const email = (formData.tenantEmail || '').trim();
+  const isBM = appState.activeAgreementLang === 'bm';
+  const tenantClean = (formData.tenantName || 'Penyewa').replace(/[^a-zA-Z0-9]/g, '_');
+  const actualFileName = fileName || (isBM ? `Surat_Perjanjian_Sewaan_${tenantClean}.pdf` : `Tenancy_Agreement_${tenantClean}.pdf`);
+
+  const subject = isBM 
+    ? `Surat Perjanjian Sewaan Kediaman - ${formData.propertyName} (${formData.tenantName})`
+    : `Residential Tenancy Agreement - ${formData.propertyName} (${formData.tenantName})`;
+
+  let body = '';
+  if (isBM) {
+    body = `Salam sejahtera ${formData.tenantName},\n\n` +
+      `Bersama-sama ini dilampirkan dokumen rasmi Surat Perjanjian Penyewaan Kediaman bagi premis ${formData.propertyName} untuk semakan, pengesahan dan simpanan anda.\n\n` +
+      `Butiran Utama Sewaan:\n` +
+      `• Premis: ${formData.propertyName}\n` +
+      `• Tempoh: ${formData.startDate} hingga ${formData.endDate} (${formData.durationMonths} Bulan)\n` +
+      `• Sewa Bulanan: RM ${Number(formData.monthlyRent || 0).toFixed(2)} (Genap masa: ${formData.rentalDueDay})\n` +
+      `• Cagaran Sewa: RM ${Number(formData.rentalDeposit || 0).toFixed(2)}\n` +
+      `• Cagaran Utiliti: RM ${Number(formData.utilitiesDeposit || 0).toFixed(2)}\n` +
+      `• Syarat Kediaman: Mematuhi syarat rumah mesra Muslim (makanan halal, larangan mutlak arak/alkohol, larangan haiwan terlarang & adab ketenteraman).\n\n` +
+      `Sila rujuk fail PDF yang dilampirkan ("${actualFileName}"). Sila cetak atau turun tandatangan dan kembalikan salinan bertandatangan kepada pihak kami.\n\n` +
+      `Sekian, terima kasih.\n${formData.landlordName}\n${formData.landlordPhone}`;
+  } else {
+    body = `Dear ${formData.tenantName},\n\n` +
+      `Attached is the official Residential Tenancy Agreement for ${formData.propertyName} for your review, execution, and records.\n\n` +
+      `Tenancy Particulars:\n` +
+      `• Demised Premises: ${formData.propertyName}\n` +
+      `• Term: ${formData.startDate} to ${formData.endDate} (${formData.durationMonths} Months)\n` +
+      `• Monthly Rent: RM ${Number(formData.monthlyRent || 0).toFixed(2)} (Due Date: ${formData.rentalDueDay})\n` +
+      `• Security Deposit: RM ${Number(formData.rentalDeposit || 0).toFixed(2)}\n` +
+      `• Utilities Deposit: RM ${Number(formData.utilitiesDeposit || 0).toFixed(2)}\n` +
+      `• House Condition: Compliance with Muslim-friendly covenants.\n\n` +
+      `Please find attached the official PDF agreement file ("${actualFileName}"). Kindly review, sign and return a copy to us.\n\n` +
+      `Kind regards,\n${formData.landlordName}\n${formData.landlordPhone}`;
+  }
+
+  const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.open(mailtoUrl, '_blank');
+
+  showToast(isBM ? 'Membuka aplikasi emel... Sila lampirkan fail PDF dari folder Downloads anda.' : 'Opening email client... Please attach the PDF file from your Downloads folder.', 6000);
+}
+
+window.downloadAgreementPdf = downloadAgreementPdf;
+window.shareAgreementWhatsApp = shareAgreementWhatsApp;
+window.sendAgreementEmail = sendAgreementEmail;
 
 /**
  * Save agreement draft into the booking record
