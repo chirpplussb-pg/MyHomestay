@@ -14,7 +14,7 @@
   <meta http-equiv="Expires" content="0">
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=2.7.5">
+  <link rel="stylesheet" href="styles.css?v=2.7.6">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -2640,56 +2640,97 @@
               <div class="agr-two-col-grid">
                 <!-- Landlord Particulars -->
                 <div class="agr-subcard">
-                  <div class="agr-subcard-title">
-                    <i class="fa-solid fa-house-user"></i> <span data-i18n="agr_title_landlord">Tuan Rumah (Landlord / Lessor)</span>
+                  <div class="agr-subcard-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                    <div><i class="fa-solid fa-house-user"></i> <span data-i18n="agr_title_landlord">Tuan Rumah / Pemilik Sah (Landlord / Owner)</span></div>
+                    <div class="agr-type-toggle" style="display:flex; gap:4px;">
+                      <button type="button" class="btn btn-outline btn-xs active" id="btnAgrLandlordTypeIndiv" style="font-size:10px; padding:2px 8px; font-weight:700;">Individu / Pemilik</button>
+                      <button type="button" class="btn btn-outline btn-xs" id="btnAgrLandlordTypeComp" style="font-size:10px; padding:2px 8px; font-weight:700;">Syarikat / SSM</button>
+                    </div>
                   </div>
+                  <input type="hidden" id="agrLandlordType" value="individual">
+                  
                   <div class="form-group mb-2">
-                    <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_landlord_name">Nama Penuh Tuan Rumah / Syarikat:</label>
-                    <input type="text" id="agrLandlordName" class="form-control form-control-sm" placeholder="Nama Pemilik / Syarikat">
+                    <label class="form-label" style="font-size:11px;" id="lblAgrLandlordName" data-i18n="agr_lbl_landlord_name">Nama Pemilik / Pemilik-Pemilik Sah:</label>
+                    <input type="text" id="agrLandlordName" class="form-control form-control-sm" placeholder="Nama Pemilik Sah (cth: Ali bin Abu / Pemilik Bersama)">
+                    <span style="font-size:9.5px; color:var(--text-muted); display:block; margin-top:2px;">*Nama pemilik sah hartanah (Bukan nama branding homestay). Boleh senaraikan pemilik bersama jika ada.</span>
                   </div>
                   <div class="form-row mb-2">
                     <div class="form-group">
-                      <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_landlord_ic">No. K/P / No. Syarikat (SSM):</label>
-                      <input type="text" id="agrLandlordIc" class="form-control form-control-sm" placeholder="e.g. 850101-14-5555">
+                      <label class="form-label" style="font-size:11px;" id="lblAgrLandlordIc" data-i18n="agr_lbl_landlord_ic">No. Kad Pengenalan Pemilik (NRIC):</label>
+                      <input type="text" id="agrLandlordIc" class="form-control form-control-sm" placeholder="cth: 850101-02-1234">
                     </div>
                     <div class="form-group">
                       <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_landlord_phone">No. Telefon / WhatsApp:</label>
-                      <input type="text" id="agrLandlordPhone" class="form-control form-control-sm" placeholder="e.g. +60123456789">
+                      <input type="text" id="agrLandlordPhone" class="form-control form-control-sm" placeholder="cth: +60123456789">
                     </div>
                   </div>
                   <div class="form-group mb-0">
                     <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_landlord_addr">Alamat Surat-Menyurat Tuan Rumah:</label>
-                    <textarea id="agrLandlordAddress" class="form-control form-control-sm" rows="2" placeholder="Alamat penuh kediaman atau pejabat Tuan Rumah"></textarea>
+                    <textarea id="agrLandlordAddress" class="form-control form-control-sm" rows="2" placeholder="Alamat penuh surat-menyurat kediaman atau pejabat Tuan Rumah"></textarea>
                   </div>
                 </div>
 
                 <!-- Tenant Particulars -->
                 <div class="agr-subcard">
-                  <div class="agr-subcard-title">
-                    <i class="fa-solid fa-user-tag"></i> <span data-i18n="agr_title_tenant">Penyewa (Tenant / Lessee)</span>
+                  <div class="agr-subcard-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                    <div><i class="fa-solid fa-user-tag"></i> <span data-i18n="agr_title_tenant">Penyewa (Tenant / Lessee)</span></div>
+                    <div class="agr-type-toggle" style="display:flex; gap:4px;">
+                      <button type="button" class="btn btn-outline btn-xs active" id="btnAgrTenantTypeIndiv" style="font-size:10px; padding:2px 8px; font-weight:700;">Individu</button>
+                      <button type="button" class="btn btn-outline btn-xs" id="btnAgrTenantTypeComp" style="font-size:10px; padding:2px 8px; font-weight:700;">Syarikat / SSM</button>
+                    </div>
                   </div>
+                  <input type="hidden" id="agrTenantType" value="individual">
+
                   <div class="form-group mb-2">
-                    <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_tenant_name">Nama Penuh Penyewa:</label>
-                    <input type="text" id="agrTenantName" class="form-control form-control-sm" placeholder="Nama Penyewa">
+                    <label class="form-label" style="font-size:11px;" id="lblAgrTenantName" data-i18n="agr_lbl_tenant_name">Nama Penuh Penyewa:</label>
+                    <input type="text" id="agrTenantName" class="form-control form-control-sm" placeholder="Nama Penuh Penyewa">
                   </div>
                   <div class="form-row mb-2">
                     <div class="form-group">
-                      <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_tenant_ic">No. K/P / Pasport:</label>
-                      <input type="text" id="agrTenantIc" class="form-control form-control-sm" placeholder="e.g. 920512-10-6677">
+                      <label class="form-label" style="font-size:11px;" id="lblAgrTenantIc" data-i18n="agr_lbl_tenant_ic">No. K/P / Pasport:</label>
+                      <input type="text" id="agrTenantIc" class="form-control form-control-sm" placeholder="cth: 920512-10-6677">
                     </div>
                     <div class="form-group">
-                      <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_tenant_phone">No. Telefon:</label>
-                      <input type="text" id="agrTenantPhone" class="form-control form-control-sm" placeholder="e.g. +60198765432">
+                      <label class="form-label" style="font-size:11px;" id="lblAgrTenantPhone" data-i18n="agr_lbl_tenant_phone">No. Telefon:</label>
+                      <input type="text" id="agrTenantPhone" class="form-control form-control-sm" placeholder="cth: +60198765432">
                     </div>
                   </div>
                   <div class="form-group mb-2">
-                    <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_tenant_email">Alamat Emel (Jika Ada):</label>
+                    <label class="form-label" style="font-size:11px;" id="lblAgrTenantEmail" data-i18n="agr_lbl_tenant_email">Alamat Emel (Jika Ada):</label>
                     <input type="email" id="agrTenantEmail" class="form-control form-control-sm" placeholder="penyewa@email.com">
                   </div>
                   <div class="form-group mb-0">
-                    <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_tenant_addr">Alamat Tetap Penyewa (K/P / Asal):</label>
-                    <textarea id="agrTenantAddress" class="form-control form-control-sm" rows="2" placeholder="Alamat mengikut kad pengenalan penyewa"></textarea>
+                    <label class="form-label" style="font-size:11px;" id="lblAgrTenantAddress" data-i18n="agr_lbl_tenant_addr">Alamat Tetap Penyewa:</label>
+                    <textarea id="agrTenantAddress" class="form-control form-control-sm" rows="2" placeholder="Alamat mengikut kad pengenalan penyewa / alamat berdaftar"></textarea>
                   </div>
+
+                  <!-- Authorized Representative / Contact Person (For Corporate / Company Tenant) -->
+                  <div id="agrTenantCompanyContactGroup" style="display:none; margin-top:10px; padding:10px 12px; background:var(--bg-surface-subtle); border:1.5px dashed var(--border-color); border-radius:8px;">
+                    <div style="font-size:11.5px; font-weight:800; color:var(--primary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                      <i class="fa-solid fa-id-badge"></i> <span>Wakil / Pegawai Dihubungi Syarikat (Authorized Contact Person):</span>
+                    </div>
+                    <div class="form-row mb-2">
+                      <div class="form-group" style="flex:1;">
+                        <label class="form-label" style="font-size:10.5px;">Nama Pegawai Dihubungi:</label>
+                        <input type="text" id="agrTenantContactName" class="form-control form-control-sm" placeholder="cth: Ahmad Farhan bin Ismail">
+                      </div>
+                      <div class="form-group" style="flex:1;">
+                        <label class="form-label" style="font-size:10.5px;">Jawatan / Capacity:</label>
+                        <input type="text" id="agrTenantContactDesignation" class="form-control form-control-sm" placeholder="cth: Pengurus HR / Pengarah">
+                      </div>
+                    </div>
+                    <div class="form-row mb-0">
+                      <div class="form-group" style="flex:1;">
+                        <label class="form-label" style="font-size:10.5px;">No. K/P Wakil (NRIC):</label>
+                        <input type="text" id="agrTenantContactIc" class="form-control form-control-sm" placeholder="cth: 880315-08-5432">
+                      </div>
+                      <div class="form-group" style="flex:1;">
+                        <label class="form-label" style="font-size:10.5px;">No. Tel Bimbit Wakil:</label>
+                        <input type="text" id="agrTenantContactPhone" class="form-control form-control-sm" placeholder="cth: +6019-8765432">
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -2704,8 +2745,9 @@
               <div class="agr-subcard mb-2">
                 <div class="form-row mb-2">
                   <div class="form-group" style="flex:2;">
-                    <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_prop_name">Nama Unit / Homestay:</label>
-                    <input type="text" id="agrPropertyName" class="form-control form-control-sm" placeholder="e.g. Homestay Lavender Indah">
+                    <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_prop_name">Nama Jenama / Komersil Homestay:</label>
+                    <input type="text" id="agrPropertyName" class="form-control form-control-sm" placeholder="cth: Homestay Semarak Api">
+                    <span style="font-size:9.5px; color:var(--text-muted); display:block; margin-top:2px;">(Nama komersil / branding homestay yang disewakan)</span>
                   </div>
                   <div class="form-group" style="flex:1;">
                     <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_prop_type">Jenis Hartanah:</label>
@@ -2976,6 +3018,6 @@
       document.head.appendChild(s);
     }
   </script>
-  <script src="app.js?v=2.7.5"></script>
+  <script src="app.js?v=2.7.6"></script>
 </body>
 </html>

@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.7.5';
+const APP_VERSION = '2.7.6';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -11941,10 +11941,28 @@ const AGREEMENT_DOC_I18N = {
   bm: {
     docHeaderTitle: 'SURAT PERJANJIAN PENYEWAAN KEDIAMAN',
     docHeaderSub: 'RESIDENTIAL TENANCY AGREEMENT',
-    preambleP1: (date, landlordName, landlordIc, tenantName, tenantIc) =>
-      `PERJANJIAN INI diperbuat pada tarikh <strong>${date}</strong> DI ANTARA <strong>${landlordName}</strong> (No. K/P / SSM: <strong>${landlordIc || '-'}</strong>) yang beralamat di tempat yang dinyatakan dalam Seksyen 2 Jadual Pertama (selepas ini dirujuk sebagai <strong>"Tuan Rumah"</strong>) di satu pihak; DAN <strong>${tenantName}</strong> (No. K/P / Pasport: <strong>${tenantIc || '-'}</strong>) yang beralamat tetap seperti dalam Seksyen 3 Jadual Pertama (selepas ini dirujuk sebagai <strong>"Penyewa"</strong>) di pihak yang satu lagi.`,
+    preambleP1: (date, data) => {
+      const isLandlordComp = data.landlordType === 'company';
+      const isTenantComp = data.tenantType === 'company';
+
+      const landlordStr = isLandlordComp
+        ? `<strong>${escapeHtml(data.landlordName || 'TUAN RUMAH')}</strong> (No. Pendaftaran Syarikat / SSM: <strong>${escapeHtml(data.landlordIc || '-')}</strong>)`
+        : `<strong>${escapeHtml(data.landlordName || 'TUAN RUMAH')}</strong> (No. Kad Pengenalan / NRIC: <strong>${escapeHtml(data.landlordIc || '-')}</strong>)`;
+
+      let tenantStr = '';
+      if (isTenantComp) {
+        tenantStr = `<strong>${escapeHtml(data.tenantName || 'PENYEWA')}</strong> (No. Pendaftaran Syarikat / SSM: <strong>${escapeHtml(data.tenantIc || '-')}</strong>)`;
+        if (data.tenantContactName) {
+          tenantStr += ` yang diwakili secara sah oleh <strong>${escapeHtml(data.tenantContactName)}</strong> (No. K/P: <strong>${escapeHtml(data.tenantContactIc || '-')}</strong>${data.tenantContactDesignation ? `, Jawatan: <strong>${escapeHtml(data.tenantContactDesignation)}</strong>` : ''})`;
+        }
+      } else {
+        tenantStr = `<strong>${escapeHtml(data.tenantName || 'PENYEWA')}</strong> (No. K/P / Pasport: <strong>${escapeHtml(data.tenantIc || '-')}</strong>)`;
+      }
+
+      return `PERJANJIAN INI diperbuat pada tarikh <strong>${date}</strong> DI ANTARA ${landlordStr} yang beralamat di tempat yang dinyatakan dalam Seksyen 2 Jadual Pertama (selepas ini dirujuk sebagai <strong>"Tuan Rumah"</strong>) di satu pihak; DAN ${tenantStr} yang beralamat ${isTenantComp ? 'pejabat berdaftar' : 'tetap'} seperti dalam Seksyen 3 Jadual Pertama (selepas ini dirujuk sebagai <strong>"Penyewa"</strong>) di pihak yang satu lagi.`;
+    },
     preambleP2: (propName, propAddress) =>
-      `BAHAWASANYA Tuan Rumah adalah pemilik berdaftar bagi premis kediaman yang dikenali sebagai <strong>"${propName}"</strong> yang beralamat di <strong>${propAddress}</strong> (selepas ini dirujuk sebagai <strong>"Premis Demis"</strong>) bersama segala lekapan, perabot dan inventori yang disenaraikan dalam Jadual Kedua. Tuan Rumah dengan ini bersetuju memberi sewaan dan Penyewa bersetuju menerima sewaan Premis Demis tersebut tertakluk kepada syarat-syarat dan fasal-fasal yang ditetapkan di bawah.`,
+      `BAHAWASANYA Tuan Rumah adalah pemilik sah berdaftar / pengendali sah yang diberi kuasa bagi premis kediaman yang dikenali secara komersil sebagai <strong>"${propName}"</strong> yang beralamat di <strong>${propAddress}</strong> (selepas ini dirujuk sebagai <strong>"Premis Demis"</strong>) bersama segala lekapan, perabot dan inventori yang disenaraikan dalam Jadual Kedua. Tuan Rumah dengan ini bersetuju memberi sewaan dan Penyewa bersetuju menerima sewaan Premis Demis tersebut tertakluk kepada syarat-syarat dan fasal-fasal yang ditetapkan di bawah.`,
     
     // First Schedule
     firstScheduleTitle: 'JADUAL PERTAMA (FIRST SCHEDULE)',
@@ -12039,10 +12057,28 @@ const AGREEMENT_DOC_I18N = {
   en: {
     docHeaderTitle: 'RESIDENTIAL TENANCY AGREEMENT',
     docHeaderSub: 'SURAT PERJANJIAN PENYEWAAN KEDIAMAN',
-    preambleP1: (date, landlordName, landlordIc, tenantName, tenantIc) =>
-      `THIS AGREEMENT is made on <strong>${date}</strong> BETWEEN <strong>${landlordName}</strong> (NRIC / Reg No: <strong>${landlordIc || '-'}</strong>) having its address as stated in Section 2 of the First Schedule (hereinafter referred to as the <strong>"Landlord"</strong>) of the one part; AND <strong>${tenantName}</strong> (NRIC / Passport: <strong>${tenantIc || '-'}</strong>) residing at the permanent address stated in Section 3 of the First Schedule (hereinafter referred to as the <strong>"Tenant"</strong>) of the other part.`,
+    preambleP1: (date, data) => {
+      const isLandlordComp = data.landlordType === 'company';
+      const isTenantComp = data.tenantType === 'company';
+
+      const landlordStr = isLandlordComp
+        ? `<strong>${escapeHtml(data.landlordName || 'LANDLORD')}</strong> (Company Reg No / SSM: <strong>${escapeHtml(data.landlordIc || '-')}</strong>)`
+        : `<strong>${escapeHtml(data.landlordName || 'LANDLORD')}</strong> (NRIC No: <strong>${escapeHtml(data.landlordIc || '-')}</strong>)`;
+
+      let tenantStr = '';
+      if (isTenantComp) {
+        tenantStr = `<strong>${escapeHtml(data.tenantName || 'TENANT')}</strong> (Company Registration No: <strong>${escapeHtml(data.tenantIc || '-')}</strong>)`;
+        if (data.tenantContactName) {
+          tenantStr += ` legally represented herein by <strong>${escapeHtml(data.tenantContactName)}</strong> (NRIC: <strong>${escapeHtml(data.tenantContactIc || '-')}</strong>${data.tenantContactDesignation ? `, Designation: <strong>${escapeHtml(data.tenantContactDesignation)}</strong>` : ''})`;
+        }
+      } else {
+        tenantStr = `<strong>${escapeHtml(data.tenantName || 'TENANT')}</strong> (NRIC / Passport No: <strong>${escapeHtml(data.tenantIc || '-')}</strong>)`;
+      }
+
+      return `THIS AGREEMENT is made on <strong>${date}</strong> BETWEEN ${landlordStr} having its address as stated in Section 2 of the First Schedule (hereinafter referred to as the <strong>"Landlord"</strong>) of the one part; AND ${tenantStr} having its ${isTenantComp ? 'registered office address' : 'permanent address'} as stated in Section 3 of the First Schedule (hereinafter referred to as the <strong>"Tenant"</strong>) of the other part.`;
+    },
     preambleP2: (propName, propAddress) =>
-      `WHEREAS the Landlord is the registered owner of the residential property known as <strong>"${propName}"</strong> situated at <strong>${propAddress}</strong> (hereinafter referred to as the <strong>"Demised Premises"</strong>) together with all fixtures, furniture, and fittings specified in the Second Schedule hereto. The Landlord agrees to let and the Tenant agrees to take the Demised Premises on the terms and covenants contained herein.`,
+      `WHEREAS the Landlord is the lawful registered owner / authorized operator of the residential property commercially known as <strong>"${propName}"</strong> situated at <strong>${propAddress}</strong> (hereinafter referred to as the <strong>"Demised Premises"</strong>) together with all fixtures, furniture, and fittings specified in the Second Schedule hereto. The Landlord agrees to let and the Tenant agrees to take the Demised Premises on the terms and covenants contained herein.`,
 
     // First Schedule
     firstScheduleTitle: 'FIRST SCHEDULE',
@@ -12136,11 +12172,149 @@ const AGREEMENT_DOC_I18N = {
 };
 
 /**
+ * Detect if tenant/party name or notes indicate a registered company/enterprise
+ */
+function detectIsCompany(name = '', notes = '') {
+  const text = `${name || ''} ${notes || ''}`.toLowerCase();
+  const companyKeywords = [
+    'sdn bhd', 'sdn. bhd.', 'bhd', 'bhd.', 'enterprise', 'trading', 'plt', 'llp',
+    'holding', 'holdings', 'services', 'solutions', 'contractor', 'construction',
+    'engineering', 'ventures', 'corporation', 'corp', 'agency', 'koperasi',
+    'resources', 'associates', 'syarikat', 'co.', '& co', 'consultancy', 'logistics'
+  ];
+  return companyKeywords.some(kw => text.includes(kw));
+}
+
+/**
+ * Set active entity type for Landlord (Individu vs Syarikat/SSM)
+ */
+function setAgreementLandlordType(type = 'individual') {
+  const isComp = type === 'company';
+  const hiddenInput = document.getElementById('agrLandlordType');
+  if (hiddenInput) hiddenInput.value = isComp ? 'company' : 'individual';
+
+  const btnIndiv = document.getElementById('btnAgrLandlordTypeIndiv');
+  const btnComp = document.getElementById('btnAgrLandlordTypeComp');
+  if (btnIndiv && btnComp) {
+    if (isComp) {
+      btnComp.classList.add('active');
+      btnIndiv.classList.remove('active');
+    } else {
+      btnIndiv.classList.add('active');
+      btnComp.classList.remove('active');
+    }
+  }
+
+  const lblName = document.getElementById('lblAgrLandlordName');
+  const inputName = document.getElementById('agrLandlordName');
+  const lblIc = document.getElementById('lblAgrLandlordIc');
+  const inputIc = document.getElementById('agrLandlordIc');
+
+  if (isComp) {
+    if (lblName) lblName.textContent = 'Nama Syarikat Pemilik / Pengurusan (Company Name):';
+    if (inputName) inputName.placeholder = 'cth: Semarak Hospitality Sdn. Bhd. / Homestay Services';
+    if (lblIc) lblIc.textContent = 'No. Pendaftaran Syarikat (SSM):';
+    if (inputIc) inputIc.placeholder = 'cth: 202301012345 (1234567-X)';
+  } else {
+    if (lblName) lblName.textContent = 'Nama Pemilik / Pemilik-Pemilik Sah:';
+    if (inputName) inputName.placeholder = 'Nama Pemilik Sah (cth: Ali bin Abu / Pemilik Bersama)';
+    if (lblIc) lblIc.textContent = 'No. Kad Pengenalan Pemilik (NRIC):';
+    if (inputIc) inputIc.placeholder = 'cth: 850101-02-1234';
+  }
+}
+
+/**
+ * Set active entity type for Tenant (Individu vs Syarikat/SSM)
+ */
+function setAgreementTenantType(type = 'individual') {
+  const isComp = type === 'company';
+  const hiddenInput = document.getElementById('agrTenantType');
+  if (hiddenInput) hiddenInput.value = isComp ? 'company' : 'individual';
+
+  const btnIndiv = document.getElementById('btnAgrTenantTypeIndiv');
+  const btnComp = document.getElementById('btnAgrTenantTypeComp');
+  if (btnIndiv && btnComp) {
+    if (isComp) {
+      btnComp.classList.add('active');
+      btnIndiv.classList.remove('active');
+    } else {
+      btnIndiv.classList.add('active');
+      btnComp.classList.remove('active');
+    }
+  }
+
+  const contactGroup = document.getElementById('agrTenantCompanyContactGroup');
+  if (contactGroup) {
+    contactGroup.style.display = isComp ? 'block' : 'none';
+  }
+
+  const lblName = document.getElementById('lblAgrTenantName');
+  const inputName = document.getElementById('agrTenantName');
+  const lblIc = document.getElementById('lblAgrTenantIc');
+  const inputIc = document.getElementById('agrTenantIc');
+  const lblPhone = document.getElementById('lblAgrTenantPhone');
+  const inputPhone = document.getElementById('agrTenantPhone');
+  const lblAddress = document.getElementById('lblAgrTenantAddress');
+  const inputAddress = document.getElementById('agrTenantAddress');
+
+  if (isComp) {
+    if (lblName) lblName.textContent = 'Nama Syarikat Penyewa (Company Name):';
+    if (inputName) inputName.placeholder = 'cth: Bina Jaya Construction Sdn Bhd / Maju Enterprise';
+    if (lblIc) lblIc.textContent = 'No. Pendaftaran Syarikat (SSM):';
+    if (inputIc) inputIc.placeholder = 'cth: 201901034567 (1345678-W)';
+    if (lblPhone) lblPhone.textContent = 'No. Tel Pejabat / Syarikat:';
+    if (inputPhone) inputPhone.placeholder = 'cth: +603-79881122';
+    if (lblAddress) lblAddress.textContent = 'Alamat Pejabat Berdaftar Syarikat:';
+    if (inputAddress) inputAddress.placeholder = 'Alamat pejabat berdaftar / operasi syarikat penyewa';
+  } else {
+    if (lblName) lblName.textContent = 'Nama Penuh Penyewa:';
+    if (inputName) inputName.placeholder = 'Nama Penuh Penyewa';
+    if (lblIc) lblIc.textContent = 'No. K/P / Pasport:';
+    if (inputIc) inputIc.placeholder = 'cth: 920512-10-6677';
+    if (lblPhone) lblPhone.textContent = 'No. Telefon / WhatsApp:';
+    if (inputPhone) inputPhone.placeholder = 'cth: +60198765432';
+    if (lblAddress) lblAddress.textContent = 'Alamat Tetap Penyewa:';
+    if (inputAddress) inputAddress.placeholder = 'Alamat mengikut kad pengenalan penyewa';
+  }
+}
+
+/**
  * Initialize agreement generator module event listeners
  */
 function initAgreementGenerator() {
   appState.activeAgreementBooking = null;
   appState.activeAgreementLang = 'bm';
+
+  // Party entity type toggle buttons (Landlord & Tenant: Individual vs Company)
+  const btnLandlordIndiv = document.getElementById('btnAgrLandlordTypeIndiv');
+  const btnLandlordComp = document.getElementById('btnAgrLandlordTypeComp');
+  if (btnLandlordIndiv) {
+    btnLandlordIndiv.addEventListener('click', () => {
+      setAgreementLandlordType('individual');
+      renderAgreementPreview();
+    });
+  }
+  if (btnLandlordComp) {
+    btnLandlordComp.addEventListener('click', () => {
+      setAgreementLandlordType('company');
+      renderAgreementPreview();
+    });
+  }
+
+  const btnTenantIndiv = document.getElementById('btnAgrTenantTypeIndiv');
+  const btnTenantComp = document.getElementById('btnAgrTenantTypeComp');
+  if (btnTenantIndiv) {
+    btnTenantIndiv.addEventListener('click', () => {
+      setAgreementTenantType('individual');
+      renderAgreementPreview();
+    });
+  }
+  if (btnTenantComp) {
+    btnTenantComp.addEventListener('click', () => {
+      setAgreementTenantType('company');
+      renderAgreementPreview();
+    });
+  }
 
   // Modal navigation tabs
   const tabForm = document.getElementById('btnAgrTabForm');
@@ -12425,6 +12599,9 @@ function populateAgreementForm(booking = null, forceReset = false) {
   // Check if booking has saved agreement draft
   if (booking && booking.tenancyAgreement && !forceReset) {
     const draft = booking.tenancyAgreement;
+    setAgreementLandlordType(draft.landlordType || 'individual');
+    setAgreementTenantType(draft.tenantType || 'individual');
+
     document.getElementById('agrLandlordName').value = draft.landlordName || settings.businessName || '';
     document.getElementById('agrLandlordIc').value = draft.landlordIc || settings.ownerIc || '';
     document.getElementById('agrLandlordPhone').value = draft.landlordPhone || settings.businessPhone || '';
@@ -12435,6 +12612,15 @@ function populateAgreementForm(booking = null, forceReset = false) {
     document.getElementById('agrTenantPhone').value = draft.tenantPhone || booking.guestPhone || '';
     document.getElementById('agrTenantEmail').value = draft.tenantEmail || booking.guestEmail || '';
     document.getElementById('agrTenantAddress').value = draft.tenantAddress || booking.guestAddress || '';
+
+    const elCName = document.getElementById('agrTenantContactName');
+    const elCDesig = document.getElementById('agrTenantContactDesignation');
+    const elCIc = document.getElementById('agrTenantContactIc');
+    const elCPhone = document.getElementById('agrTenantContactPhone');
+    if (elCName) elCName.value = draft.tenantContactName || '';
+    if (elCDesig) elCDesig.value = draft.tenantContactDesignation || '';
+    if (elCIc) elCIc.value = draft.tenantContactIc || '';
+    if (elCPhone) elCPhone.value = draft.tenantContactPhone || '';
 
     document.getElementById('agrPropertyName').value = draft.propertyName || '';
     document.getElementById('agrPropertyType').value = draft.propertyType || '';
@@ -12468,6 +12654,12 @@ function populateAgreementForm(booking = null, forceReset = false) {
   }
 
   // Auto-populate from fresh booking & settings
+  const isCorporateTenant = booking ? detectIsCompany(booking.guestName, booking.notes) : false;
+  const isCorporateLandlord = !!(settings.businessRegNo);
+
+  setAgreementLandlordType(isCorporateLandlord ? 'company' : 'individual');
+  setAgreementTenantType(isCorporateTenant ? 'company' : 'individual');
+
   const prop = booking ? getPropertyById(booking.propertyId) : (appState.properties[0] || {});
   const mRate = booking ? (Number(booking.monthlyRate || booking.baseRate || 1200)) : 1200;
   const mDeposit = (booking && booking.rentalDeposit !== undefined && booking.rentalDeposit !== null && booking.rentalDeposit !== '')
@@ -12482,7 +12674,7 @@ function populateAgreementForm(booking = null, forceReset = false) {
 
   // Landlord
   document.getElementById('agrLandlordName').value = settings.businessName || 'Pengurusan Homestay & Kediaman';
-  document.getElementById('agrLandlordIc').value = settings.ownerIc || '';
+  document.getElementById('agrLandlordIc').value = isCorporateLandlord ? (settings.businessRegNo || '') : (settings.ownerIc || '');
   document.getElementById('agrLandlordPhone').value = settings.businessPhone || settings.phone || '+60123456789';
   document.getElementById('agrLandlordAddress').value = settings.businessAddress || 'Malaysia';
 
@@ -12492,6 +12684,16 @@ function populateAgreementForm(booking = null, forceReset = false) {
   document.getElementById('agrTenantPhone').value = booking ? (booking.guestPhone || '') : '';
   document.getElementById('agrTenantEmail').value = booking ? (booking.guestEmail || '') : '';
   document.getElementById('agrTenantAddress').value = booking ? (booking.guestAddress || '') : '';
+
+  // Corporate tenant contact person
+  const elCName = document.getElementById('agrTenantContactName');
+  const elCDesig = document.getElementById('agrTenantContactDesignation');
+  const elCIc = document.getElementById('agrTenantContactIc');
+  const elCPhone = document.getElementById('agrTenantContactPhone');
+  if (elCName) elCName.value = booking?.contactPerson || '';
+  if (elCDesig) elCDesig.value = booking?.contactDesignation || (isCorporateTenant ? (isBM ? 'Pengurus / Wakil Syarikat' : 'Company Representative / Manager') : '');
+  if (elCIc) elCIc.value = booking?.contactIc || '';
+  if (elCPhone) elCPhone.value = booking?.contactPhone || (isCorporateTenant ? (booking?.guestPhone || '') : '');
 
   // Property
   document.getElementById('agrPropertyName').value = prop ? prop.name : '';
@@ -12615,16 +12817,23 @@ function getAgreementFormData() {
   });
 
   return {
+    landlordType: document.getElementById('agrLandlordType')?.value || 'individual',
     landlordName: getVal('agrLandlordName'),
     landlordIc: getVal('agrLandlordIc'),
     landlordPhone: getVal('agrLandlordPhone'),
     landlordAddress: getVal('agrLandlordAddress'),
 
+    tenantType: document.getElementById('agrTenantType')?.value || 'individual',
     tenantName: getVal('agrTenantName'),
     tenantIc: getVal('agrTenantIc'),
     tenantPhone: getVal('agrTenantPhone'),
     tenantEmail: getVal('agrTenantEmail'),
     tenantAddress: getVal('agrTenantAddress'),
+
+    tenantContactName: getVal('agrTenantContactName'),
+    tenantContactDesignation: getVal('agrTenantContactDesignation'),
+    tenantContactIc: getVal('agrTenantContactIc'),
+    tenantContactPhone: getVal('agrTenantContactPhone'),
 
     propertyName: getVal('agrPropertyName'),
     propertyType: getVal('agrPropertyType'),
@@ -12706,22 +12915,18 @@ function renderAgreementPreview() {
       <div class="agr-doc-subtitle">${i18n.docHeaderSub}</div>
       <div style="font-size:10.5pt; font-weight:bold; letter-spacing:0.5px;">
         ${lang === 'en' ? 'BETWEEN' : 'DI ANTARA'}<br>
-        <span style="font-size:12pt; text-transform:uppercase;">${escapeHtml(data.landlordName || 'TUAN RUMAH')}</span><br>
-        ${lang === 'en' ? 'AND' : 'DAN'}<br>
+        <span style="font-size:12pt; text-transform:uppercase;">${escapeHtml(data.landlordName || 'TUAN RUMAH')}</span>
+        ${data.landlordType === 'company' && data.landlordIc ? `<span style="font-size:9.5pt; font-weight:normal; display:block;">(${lang === 'en' ? 'Company Reg No / SSM' : 'No. Pendaftaran Syarikat / SSM'}: ${escapeHtml(data.landlordIc)})</span>` : ''}
+        <br>${lang === 'en' ? 'AND' : 'DAN'}<br>
         <span style="font-size:12pt; text-transform:uppercase;">${escapeHtml(data.tenantName || 'PENYEWA')}</span>
+        ${data.tenantType === 'company' && data.tenantIc ? `<span style="font-size:9.5pt; font-weight:normal; display:block;">(${lang === 'en' ? 'Company Reg No / SSM' : 'No. Pendaftaran Syarikat / SSM'}: ${escapeHtml(data.tenantIc)})</span>` : ''}
       </div>
     </div>
 
     <!-- PREAMBLE -->
     <div class="agr-preamble">
       <p style="margin-bottom:10px;">
-        ${i18n.preambleP1(
-          formattedDate,
-          escapeHtml(data.landlordName || 'TUAN RUMAH'),
-          escapeHtml(data.landlordIc || '-'),
-          escapeHtml(data.tenantName || 'PENYEWA'),
-          escapeHtml(data.tenantIc || '-')
-        )}
+        ${i18n.preambleP1(formattedDate, data)}
       </p>
       <p style="margin-bottom:0;">
         ${i18n.preambleP2(
@@ -12755,20 +12960,35 @@ function renderAgreementPreview() {
             <td class="agr-schedule-item-title">${i18n.schLandlord}</td>
             <td>
               <strong>${escapeHtml(data.landlordName || '-')}</strong><br>
-              ${lang === 'en' ? 'NRIC / Reg No:' : 'No. K/P / SSM:'} ${escapeHtml(data.landlordIc || '-')}<br>
-              ${lang === 'en' ? 'Phone:' : 'No. Tel:'} ${escapeHtml(data.landlordPhone || '-')}<br>
-              ${lang === 'en' ? 'Address:' : 'Alamat:'} ${escapeHtml(data.landlordAddress || '-')}
+              ${data.landlordType === 'company' 
+                ? `${lang === 'en' ? 'Company Reg No (SSM):' : 'No. Pendaftaran Syarikat (SSM):'} <strong>${escapeHtml(data.landlordIc || '-')}</strong><br>${lang === 'en' ? 'Business / Office Tel:' : 'No. Tel Pejabat / WhatsApp:'} ${escapeHtml(data.landlordPhone || '-')}<br>${lang === 'en' ? 'Registered Office Address:' : 'Alamat Pejabat / Surat-Menyurat:'} ${escapeHtml(data.landlordAddress || '-')}`
+                : `${lang === 'en' ? 'NRIC No:' : 'No. Kad Pengenalan (NRIC):'} <strong>${escapeHtml(data.landlordIc || '-')}</strong><br>${lang === 'en' ? 'Phone / WhatsApp:' : 'No. Tel / WhatsApp:'} ${escapeHtml(data.landlordPhone || '-')}<br>${lang === 'en' ? 'Correspondence Address:' : 'Alamat Surat-Menyurat:'} ${escapeHtml(data.landlordAddress || '-')}`
+              }
             </td>
           </tr>
           <tr>
             <td class="agr-schedule-item-num">3.</td>
             <td class="agr-schedule-item-title">${i18n.schTenant}</td>
             <td>
-              <strong>${escapeHtml(data.tenantName || '-')}</strong><br>
-              ${lang === 'en' ? 'NRIC / Passport:' : 'No. K/P / Pasport:'} ${escapeHtml(data.tenantIc || '-')}<br>
-              ${lang === 'en' ? 'Phone:' : 'No. Tel:'} ${escapeHtml(data.tenantPhone || '-')}<br>
-              ${data.tenantEmail ? `${lang === 'en' ? 'Email:' : 'Emel:'} ${escapeHtml(data.tenantEmail)}<br>` : ''}
-              ${lang === 'en' ? 'Permanent Address:' : 'Alamat Tetap:'} ${escapeHtml(data.tenantAddress || '-')}
+              ${data.tenantType === 'company' ? `
+                <strong>${escapeHtml(data.tenantName || '-')}</strong><br>
+                ${lang === 'en' ? 'Company Reg No (SSM):' : 'No. Pendaftaran Syarikat (SSM):'} <strong>${escapeHtml(data.tenantIc || '-')}</strong><br>
+                ${lang === 'en' ? 'Registered Office Address:' : 'Alamat Pejabat Berdaftar:'} ${escapeHtml(data.tenantAddress || '-')}<br>
+                ${lang === 'en' ? 'Office Phone:' : 'No. Tel Pejabat:'} ${escapeHtml(data.tenantPhone || '-')}<br>
+                ${data.tenantEmail ? `${lang === 'en' ? 'Official Email:' : 'Emel Rasmi:'} ${escapeHtml(data.tenantEmail)}<br>` : ''}
+                <div style="margin-top:6px; padding:6px 10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; font-size:9.5pt; line-height:1.45;">
+                  <strong style="color:#0f172a;"><i class="fa-solid fa-id-badge"></i> ${lang === 'en' ? 'Authorized Contact Person / Representative:' : 'Pegawai Dihubungi / Wakil Syarikat Diberi Kuasa:'}</strong><br>
+                  • ${lang === 'en' ? 'Full Name:' : 'Nama Penuh:'} <strong>${escapeHtml(data.tenantContactName || '-')}</strong> ${data.tenantContactDesignation ? `(${escapeHtml(data.tenantContactDesignation)})` : ''}<br>
+                  • ${lang === 'en' ? 'NRIC No:' : 'No. K/P (NRIC):'} <strong>${escapeHtml(data.tenantContactIc || '-')}</strong><br>
+                  • ${lang === 'en' ? 'Mobile / WhatsApp:' : 'No. Tel Bimbit:'} <strong>${escapeHtml(data.tenantContactPhone || '-')}</strong>
+                </div>
+              ` : `
+                <strong>${escapeHtml(data.tenantName || '-')}</strong><br>
+                ${lang === 'en' ? 'NRIC / Passport:' : 'No. K/P / Pasport:'} <strong>${escapeHtml(data.tenantIc || '-')}</strong><br>
+                ${lang === 'en' ? 'Phone:' : 'No. Tel:'} ${escapeHtml(data.tenantPhone || '-')}<br>
+                ${data.tenantEmail ? `${lang === 'en' ? 'Email:' : 'Emel:'} ${escapeHtml(data.tenantEmail)}<br>` : ''}
+                ${lang === 'en' ? 'Permanent Address:' : 'Alamat Tetap:'} ${escapeHtml(data.tenantAddress || '-')}
+              `}
             </td>
           </tr>
           <tr>
@@ -12944,26 +13164,44 @@ function renderAgreementPreview() {
         <!-- Landlord Column -->
         <div class="agr-sig-card">
           <div>
-            <strong>${i18n.signedByLandlord}</strong>
-            <div style="height:60px; border-bottom:1px solid #0f172a; margin-top:20px;"></div>
+            <strong>${data.landlordType === 'company' 
+              ? (lang === 'en' ? `Signed for and on behalf of LANDLORD:<br><span style="text-transform:uppercase;">${escapeHtml(data.landlordName || '')}</span>` : `Ditandatangani bagi pihak TUAN RUMAH:<br><span style="text-transform:uppercase;">${escapeHtml(data.landlordName || '')}</span>`) 
+              : i18n.signedByLandlord}</strong>
+            <div style="height:60px; border-bottom:1px solid #0f172a; margin-top:16px;"></div>
           </div>
-          <div style="font-size:10pt; line-height:1.4; margin-top:8px;">
-            ${i18n.nameLabel} <strong>${escapeHtml(data.landlordName || '')}</strong><br>
-            ${i18n.icLabel} ${escapeHtml(data.landlordIc || '-')}<br>
-            ${i18n.dateLabel} ${formattedDate}
+          <div style="font-size:9.5pt; line-height:1.4; margin-top:8px;">
+            ${data.landlordType === 'company' ? `
+              ${lang === 'en' ? 'Authorized Signatory:' : 'Nama Wakil / Pengarah:'} _______________________<br>
+              ${i18n.icLabel} _______________________<br>
+              ${lang === 'en' ? 'Designation:' : 'Jawatan:'} _______________________<br>
+              ${i18n.dateLabel} ${formattedDate}
+            ` : `
+              ${i18n.nameLabel} <strong>${escapeHtml(data.landlordName || '')}</strong><br>
+              ${i18n.icLabel} ${escapeHtml(data.landlordIc || '-')}<br>
+              ${i18n.dateLabel} ${formattedDate}
+            `}
           </div>
         </div>
 
         <!-- Tenant Column -->
         <div class="agr-sig-card">
           <div>
-            <strong>${i18n.signedByTenant}</strong>
-            <div style="height:60px; border-bottom:1px solid #0f172a; margin-top:20px;"></div>
+            <strong>${data.tenantType === 'company' 
+              ? (lang === 'en' ? `Signed for and on behalf of TENANT:<br><span style="text-transform:uppercase;">${escapeHtml(data.tenantName || '')}</span>` : `Ditandatangani bagi & bagi pihak PENYEWA:<br><span style="text-transform:uppercase;">${escapeHtml(data.tenantName || '')}</span>`) 
+              : i18n.signedByTenant}</strong>
+            <div style="height:60px; border-bottom:1px solid #0f172a; margin-top:16px;"></div>
           </div>
-          <div style="font-size:10pt; line-height:1.4; margin-top:8px;">
-            ${i18n.nameLabel} <strong>${escapeHtml(data.tenantName || '')}</strong><br>
-            ${i18n.icLabel} ${escapeHtml(data.tenantIc || '-')}<br>
-            ${i18n.dateLabel} ${formattedDate}
+          <div style="font-size:9.5pt; line-height:1.4; margin-top:8px;">
+            ${data.tenantType === 'company' ? `
+              ${lang === 'en' ? 'Authorized Representative:' : 'Nama Wakil Diberikuasa:'} <strong>${escapeHtml(data.tenantContactName || '_______________________')}</strong><br>
+              ${i18n.icLabel} <strong>${escapeHtml(data.tenantContactIc || '_______________________')}</strong><br>
+              ${lang === 'en' ? 'Designation:' : 'Jawatan:'} <strong>${escapeHtml(data.tenantContactDesignation || '_______________________')}</strong><br>
+              ${i18n.dateLabel} ${formattedDate}
+            ` : `
+              ${i18n.nameLabel} <strong>${escapeHtml(data.tenantName || '')}</strong><br>
+              ${i18n.icLabel} ${escapeHtml(data.tenantIc || '-')}<br>
+              ${i18n.dateLabel} ${formattedDate}
+            `}
           </div>
         </div>
       </div>
@@ -13238,15 +13476,24 @@ function printAgreementDocument() {
  */
 function shareAgreementWhatsApp(existingBlob = null, existingFileName = null) {
   const formData = getAgreementFormData();
-  const phone = (formData.tenantPhone || '').replace(/[^0-9+]/g, '');
+  const isTenantComp = formData.tenantType === 'company';
+  const targetPhone = (isTenantComp && formData.tenantContactPhone) 
+    ? formData.tenantContactPhone 
+    : (formData.tenantPhone || '');
+  const phone = targetPhone.replace(/[^0-9+]/g, '');
   const isBM = appState.activeAgreementLang === 'bm';
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   const statusCard = document.getElementById('agrActionStatusCard');
 
+  const tenantGreeting = isTenantComp && formData.tenantContactName
+    ? `${formData.tenantContactName} (${formData.tenantName})`
+    : (formData.tenantName || 'Penyewa');
+
   let msg = '';
   if (isBM) {
-    msg = `Salam sejahtera ${formData.tenantName},\n\n` +
+    msg = `Salam sejahtera ${tenantGreeting},\n\n` +
       `Dilampirkan dokumen rasmi *Surat Perjanjian Penyewaan Kediaman* bagi premis *${formData.propertyName}*:\n\n` +
+      (isTenantComp ? `🏢 *Penyewa (Syarikat):* ${formData.tenantName} (SSM: ${formData.tenantIc || '-'})\n👤 *Pegawai Dihubungi:* ${formData.tenantContactName || '-'} (${formData.tenantContactDesignation || 'Wakil Syarikat'})\n` : '') +
       `📅 *Tempoh Sewaan:* ${formData.startDate} hingga ${formData.endDate} (${formData.durationMonths} Bulan)\n` +
       `💰 *Kadar Sewa:* RM ${Number(formData.monthlyRent || 0).toFixed(2)} / bulan (Genap masa: ${formData.rentalDueDay})\n` +
       `🛡️ *Cagaran Sewa:* RM ${Number(formData.rentalDeposit || 0).toFixed(2)}\n` +
@@ -13254,8 +13501,9 @@ function shareAgreementWhatsApp(existingBlob = null, existingFileName = null) {
       `🕌 *Syarat Khas Kediaman:* Mematuhi syarat rumah mesra Muslim (Makanan halal, larangan mutlak arak/alkohol, larangan haiwan terlarang & pemeliharaan syarak).\n\n` +
       `📄 *Sila rujuk fail PDF rasmi yang dilampirkan bersama ini.* Terima kasih!\n_${formData.landlordName}_`;
   } else {
-    msg = `Greetings ${formData.tenantName},\n\n` +
+    msg = `Greetings ${tenantGreeting},\n\n` +
       `Attached is the official *Residential Tenancy Agreement* for *${formData.propertyName}*:\n\n` +
+      (isTenantComp ? `🏢 *Tenant (Company):* ${formData.tenantName} (Reg No: ${formData.tenantIc || '-'})\n👤 *Contact Person:* ${formData.tenantContactName || '-'} (${formData.tenantContactDesignation || 'Representative'})\n` : '') +
       `📅 *Tenancy Term:* ${formData.startDate} to ${formData.endDate} (${formData.durationMonths} Months)\n` +
       `💰 *Monthly Rent:* RM ${Number(formData.monthlyRent || 0).toFixed(2)} / month (Due: ${formData.rentalDueDay})\n` +
       `🛡️ *Rental Deposit:* RM ${Number(formData.rentalDeposit || 0).toFixed(2)}\n` +
@@ -13420,8 +13668,13 @@ function sendAgreementEmail(fileName = null) {
   const formData = getAgreementFormData();
   const email = (formData.tenantEmail || '').trim();
   const isBM = appState.activeAgreementLang === 'bm';
+  const isTenantComp = formData.tenantType === 'company';
   const tenantClean = (formData.tenantName || 'Penyewa').replace(/[^a-zA-Z0-9]/g, '_');
   const actualFileName = fileName || (isBM ? `Surat_Perjanjian_Sewaan_${tenantClean}.pdf` : `Tenancy_Agreement_${tenantClean}.pdf`);
+
+  const tenantGreeting = isTenantComp && formData.tenantContactName
+    ? `${formData.tenantContactName} (${formData.tenantName})`
+    : (formData.tenantName || 'Penyewa');
 
   const subject = isBM 
     ? `Surat Perjanjian Sewaan Kediaman - ${formData.propertyName} (${formData.tenantName})`
@@ -13429,11 +13682,11 @@ function sendAgreementEmail(fileName = null) {
 
   let body = '';
   if (isBM) {
-    body = `Salam sejahtera ${formData.tenantName},\n\n` +
-      `Bersama-sama ini dilampirkan dokumen rasmi Surat Perjanjian Penyewaan Kediaman bagi premis ${formData.propertyName} untuk semakan, pengesahan dan simpanan anda.\n\n` +
-      `Butiran Utama Sewaan:\n` +
-      `• Premis: ${formData.propertyName}\n` +
-      `• Tempoh: ${formData.startDate} hingga ${formData.endDate} (${formData.durationMonths} Bulan)\n` +
+    body = `Salam sejahtera ${tenantGreeting},\n\n` +
+      `Bersama-sama ini dilampirkan dokumen rasmi Surat Perjanjian Penyewaan Kediaman bagi premis ${formData.propertyName} untuk semakan, pengesahan dan simpanan pihak anda.\n\n` +
+      (isTenantComp ? `• Nama Syarikat Penyewa: ${formData.tenantName} (No. SSM: ${formData.tenantIc || '-'})\n• Pegawai Dihubungi: ${formData.tenantContactName || '-'} (${formData.tenantContactDesignation || 'Wakil Syarikat'})\n` : '') +
+      `• Butiran Premis: ${formData.propertyName}\n` +
+      `• Tempoh Sewaan: ${formData.startDate} hingga ${formData.endDate} (${formData.durationMonths} Bulan)\n` +
       `• Sewa Bulanan: RM ${Number(formData.monthlyRent || 0).toFixed(2)} (Genap masa: ${formData.rentalDueDay})\n` +
       `• Cagaran Sewa: RM ${Number(formData.rentalDeposit || 0).toFixed(2)}\n` +
       `• Cagaran Utiliti: RM ${Number(formData.utilitiesDeposit || 0).toFixed(2)}\n` +
@@ -13441,9 +13694,9 @@ function sendAgreementEmail(fileName = null) {
       `Sila rujuk fail PDF yang dilampirkan ("${actualFileName}"). Sila cetak atau turun tandatangan dan kembalikan salinan bertandatangan kepada pihak kami.\n\n` +
       `Sekian, terima kasih.\n${formData.landlordName}\n${formData.landlordPhone}`;
   } else {
-    body = `Dear ${formData.tenantName},\n\n` +
+    body = `Dear ${tenantGreeting},\n\n` +
       `Attached is the official Residential Tenancy Agreement for ${formData.propertyName} for your review, execution, and records.\n\n` +
-      `Tenancy Particulars:\n` +
+      (isTenantComp ? `• Tenant (Company): ${formData.tenantName} (Company Reg No: ${formData.tenantIc || '-'})\n• Contact Person: ${formData.tenantContactName || '-'} (${formData.tenantContactDesignation || 'Representative'})\n` : '') +
       `• Demised Premises: ${formData.propertyName}\n` +
       `• Term: ${formData.startDate} to ${formData.endDate} (${formData.durationMonths} Months)\n` +
       `• Monthly Rent: RM ${Number(formData.monthlyRent || 0).toFixed(2)} (Due Date: ${formData.rentalDueDay})\n` +
