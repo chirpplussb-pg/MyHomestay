@@ -15,6 +15,7 @@
 4. [Adding Homestays & Room Rentals / Tambah Unit & Bilik Sewa](#4-adding-homestays--room-rentals--tambah-unit--bilik-sewa)
 5. [Recording Bookings (Daily vs. Monthly) / Merekod Tempahan (Harian & Bulanan)](#5-recording-bookings-daily-vs-monthly--merekod-tempahan-harian--bulanan)
 6. [Monthly Rental Invoices & Payment Receipts / Invois & Resit Sewa Bulanan](#6-monthly-rental-invoices--payment-receipts--invois--resit-sewa-bulanan)
+6B. [Tenancy Agreement Generator (Corporate & Individual) / Penjana Surat Perjanjian Sewaan](#6b-tenancy-agreement-generator-corporate--individual--penjana-surat-perjanjian-sewaan)
 7. [Digital Payment Receipts & Bank Reference Capture / Rekod Resit Digital & No. Rujukan Bank](#7-digital-payment-receipts--bank-reference-capture--rekod-resit-digital--no-rujukan-bank)
 8. [1-Tap WhatsApp Automation / Automasi Mesej WhatsApp](#8-1-tap-whatsapp-automation--automasi-mesej-whatsapp)
 9. [Deposit Refunds & Move-Out / Pemulangan Deposit & Tamat Sewaan](#9-deposit-refunds--move-out--pemulangan-deposit--tamat-sewaan)
@@ -113,18 +114,25 @@ Tap the floating **`+` (Add)** button on the bottom-right of your screen to open
 
 ---
 
-### 📅 B. Monthly Tenancy (Students, Working Adults, Long Stays)
+### 📅 B. Monthly Tenancy (Students, Working Adults, Corporate Leases / Sewaan Syarikat)
 1. Select **"Monthly Tenancy"** at the top. *(Daily stay fields are automatically blocked).*
 2. Select your **Homestay / Room Unit**.
 3. Fill in tenant particulars: **Full Name**, **WhatsApp Phone**, **NRIC / Passport**, **Email**, and **Residential Address**.
-4. Choose **Tenancy Start Date** and **Duration (e.g. 6 Months)**.
-5. Enter:
+4. **Corporate Tenant Details (Optional / Pilihan Sewaan Syarikat)**:
+   * When renting to a corporate entity, fill in:
+     * **Company Registration No (SSM)**: e.g. `202301048892 (1542806-X)`
+     * **Authorized Contact Person (Pegawai Dihubungi)**: e.g. `Mohd Taufik bin Ramli`
+     * **Designation / Capacity (Jawatan)**: e.g. `Managing Director / HR Manager`
+     * **Contact Person NRIC (No. KP)**: e.g. `850315-10-5421`
+     * **Contact Person Phone (No. Tel)**: e.g. `+60198765432` *(enables 1-tap direct messaging)*
+5. Choose **Tenancy Start Date** and **Duration (e.g. 6 Months)**.
+6. Enter:
    * **Monthly Rent** (e.g. RM 1,200)
    * **Rental Deposit** (e.g. RM 1,200)
    * **Utilities Deposit** (e.g. RM 300)
    * **Tenancy Agreement & Stamping Fee** (e.g. RM 150)
-6. The app automatically calculates the **Initial Move-In Settlement Package**.
-7. Tap **"Save Booking"**.
+7. The app automatically calculates the **Initial Move-In Settlement Package**.
+8. Tap **"Save Booking"**.
 
 > 💡 **Calendar View & Smart Check-In / Check-Out Modes / Paparan Kalendar Pintar**:
 > * **📥 Check-In Mode**: Highlights arrival dates with total check-in count badges (e.g. `📥 1`). Days without arrivals remain clean. Allows hosts to immediately see daily arrivals.
@@ -148,10 +156,62 @@ For monthly tenancies, the app provides a **Sequential Monthly Invoicing System*
 
 1. Go to the **Bookings** tab.
 2. On any monthly tenancy card, tap the **`📑 Monthly Invoices (X/Y)`** button.
-3. You will see a complete list of every billing month:
+3. At the top of the modal, a dedicated **Tenancy Agreement Quick Banner** provides 2 direct buttons:
+   * **`📝 Borang Butiran / Edit Agreement Details`**: Opens the agreement input form to review or edit landlord/tenant SSM, contact person, or terms.
+   * **`👁️ Pra Tonton & PDF / Preview & Download`**: Opens the agreement preview tab ready to download the legal A4 PDF.
+4. You will see a complete list of every billing month:
    * **To Send an Invoice**: Tap **`Invoice`** next to that month. The WhatsApp window opens with the billing period, due date, rent breakdown, and bank info. You can also type any **Utility / Extra Surcharges** (e.g. TNB electricity arrears) before sending!
    * **To Mark as Paid**: When the tenant transfers the rent, tap **`Mark Paid`** (records exact date & timestamp).
    * **To Send a Payment Receipt**: Tap **`Receipt`** to generate an official WhatsApp payment receipt (`REC-RENT-M2-XXXX`).
+
+---
+
+## 6B. Tenancy Agreement Generator (Corporate & Individual) / Penjana Surat Perjanjian Sewaan
+
+Generate legal **Residential Tenancy Agreements (Surat Perjanjian Sewaan Kediaman)** adhering to standard Malaysian tenancy practice in both Bahasa Melayu and English.
+
+### 🚀 Direct Action Buttons (No Guesswork, Instant 1-Click Access)
+On every monthly tenancy booking card in the **Bookings** tab, you have 3 distinct, dedicated buttons:
+* **`📝 Borang Perjanjian`**: Opens **Tab 1 (Agreement Details & Terms Form)**. Use this whenever you want to view, input, or modify Landlord NRIC/SSM, Tenant SSM, Contact Person particulars, rental amounts, or covenants.
+* **`👁️ Pra Tonton`**: Opens **Tab 2 (Live A4 Preview)**. Use this to inspect the exact legal formatting, schedules, signatures, and inventory layout.
+* **`📥 PDF`**: Instantly generates and downloads the multi-page A4 PDF directly into your device's **Downloads** folder.
+
+### 🏢 1. Guaranteed Particulars Printed Inside the Tenancy Agreement
+All key particulars are printed directly and prominently **INSIDE the Tenancy Agreement document itself** (in both live preview and exported A4 PDF):
+* **Tuan Rumah (Landlord)**:
+  * Official Legal Owner Name(s) and NRIC No (or Company Legal Name & SSM Registration No).
+  * Landlord Official Tel / WhatsApp & Correspondence Address.
+  * Landlord Company Signatory (Director / Authorized Signatory) if leasing through a company.
+  * *Note: You can set your default **Nama Pemilik Sah** and **No. KP Pemilik** in **Settings > App Preferences** so they are pre-filled automatically!*
+* **Homestay Commercial Identity**:
+  * Separated from legal ownership and stated clearly in the Preamble & Jadual Pertama (*Commercially known as "Homestay Semarak Api"*).
+* **Penyewa (Tenant)**:
+  * Individual: Full Tenant Name, NRIC/Passport, Permanent Address, Phone & Email.
+  * Company: Corporate Legal Name, SSM Registration No, Registered Office Address, Office Phone & Email.
+* **Authorized Contact Person (Pegawai Dihubungi / Wakil Diberi Kuasa)**:
+  * Full Name (e.g. *Mohd Taufik bin Ramli*)
+  * Designation / Capacity (e.g. *Managing Director / HR Project Manager*)
+  * Representative NRIC No.
+  * Mobile / WhatsApp Number (enables 1-tap direct messaging to the person in charge).
+  * **Printed in 3 Critical Locations Inside the Agreement**:
+    1. **Mukadimah (Preamble)**: States that the tenant is legally represented by the named Contact Person.
+    2. **Jadual Pertama (First Schedule) Item 3**: A dedicated highlighted box displaying the Contact Person's name, designation, NRIC, and mobile number.
+    3. **Meterai & Tandatangan (Signatures)**: Dedicated signature block for the Authorized Representative to execute the agreement on behalf of the Tenant.
+
+### 👤 2. Prominent Contact Person Section in Form Modal
+Inside the **`📝 Borang Perjanjian`** modal, the **Pegawai Dihubungi / Wakil Penyewa (Contact Person & Authorized Representative)** card is permanently visible and accessible. Whether you rent to a company or individual, you can easily view, enter, and edit these contact particulars with zero hassle!
+
+### 🕌 3. Special Muslim-Friendly House Covenants (Fasal 2)
+Includes enforceable covenants for 100% Halal food, strict prohibition of alcohol, no unauthorized pets, and community moral decorum, complete with landlord rights to vacant possession within 48 hours and professional cleansing/sertu cost recovery upon default.
+
+### 📋 4. Inventory Checklist (Jadual Kedua)
+Auto-populates all unit furnishings, appliances, and fixtures along with quantities and handover conditions (water heater excluded by default).
+
+### 📥 5. Direct PDF Download to Downloads Folder
+Tap **`Muat Turun PDF / Download PDF`**. The multi-page A4 document is generated and saved **directly into your device's Downloads folder** (`Surat_Perjanjian_Sewaan_[Name].pdf`).
+
+### 📲 6. 1-Tap WhatsApp & Email Sharing
+Tap **`Hantar ke WhatsApp Tetamu`** to send a formal agreement handover message routed directly to the tenant's or corporate representative's mobile WhatsApp.
 
 ---
 
@@ -342,6 +402,10 @@ Although updates are completely non-destructive, taking regular backups is good 
 | Action / Tindakan | Where to Tap / Di Mana Hendak Tekan |
 |---|---|
 | ➕ **New Booking / Quotation** | Floating `+` button at bottom right |
+| 📝 **Borang Perjanjian (Input Form)** | `Borang Perjanjian` on booking card or `Borang Butiran` in Hab Sewaan |
+| 👁️ **Pra Tonton Perjanjian (Preview)** | `Pra Tonton` on booking card or in Hab Sewaan |
+| 📥 **Muat Turun PDF Perjanjian** | `PDF` button on booking card or in Preview modal toolbar |
+| 🔄 **Kemas Kini & Bersihkan Cache** | Red refresh icon `🔄` at top header bar *(clears stale cache, keeps data safe)* |
 | 📢 **Promotional Media Hub** | Top header Bullhorn Icon `📢` or Settings tab |
 | 🌐 **Switch Language (EN / BM)** | `EN / BM` button at the top header |
 | 📑 **Monthly Tenancy Invoices** | `Monthly Invoices` button on tenancy card |
@@ -375,4 +439,33 @@ Although updates are completely non-destructive, taking regular backups is good 
   3. **Pautan Video Sifar Memori**: Simpan pautan YouTube, TikTok atau Google Drive tanpa menggunakan ruang storan telefon.
   4. **1-Klik Hantar ke WhatsApp**: Menghasilkan teks iklan WhatsApp kemas bersama emoji, harga, kemudahan dan pautan tempahan.
   5. **Kongsi ke Mana-mana Aplikasi**: Tekan butang kongsi telefon untuk hantar ke WhatsApp, Telegram, Facebook, Instagram atau mesej.
+
+---
+
+## 11. 1-Click Cache Purge & Force Reload (v2.7.7) / Butang 1-Sentuhan Bersihkan Cache Sistem
+
+### 🇬🇧 English: Instant Cache Refresh
+Modern Progressive Web Apps (PWA) cache files on your phone or laptop for ultra-fast offline access. Occasionally, after an update, a browser may continue loading an older cached version of JavaScript scripts or stylesheets.
+
+* **How to fix in 1 tap**:
+  * Tap the red **`🔄` (Refresh)** icon in the top header bar next to the Dark/Light theme toggle.
+  * The app automatically:
+    1. Unregisters any outdated Service Workers.
+    2. Deletes all obsolete caches.
+    3. Re-downloads the latest scripts (`v2.7.7`).
+    4. Reloads the window fresh.
+  * **Zero Data Loss Guarantee**: All your homestay properties, bookings, receipts, and settings in `localStorage` remain **100% intact and untouched**.
+
+### 🇲🇾 Bahasa Melayu: Butang 1-Sentuhan Bersihkan Cache
+Aplikasi PWA moden menyimpan fail dalam memori pelayar untuk membolehkan penggunaan pantas tanpa internet (offline). Kadangkala, pelayar masih memegang fail kod lama walaupun sistem telah dinaik taraf.
+
+* **Cara selesaikan dalam 1 sentuhan**:
+  * Tekan butang ikon merah **`🔄`** di bahagian atas skrin (header) bersebelahan togol Tema Gelap/Cerah.
+  * Sistem akan secara automatik:
+    1. Membatalkan pendaftaran Service Worker lama.
+    2. Mengosongkan cache fail aplikasi yang lapuk.
+    3. Memuat turun kod versi terkini (`v2.7.7`).
+    4. Memuat semula skrin secara serta-merta.
+  * **Jaminan Sifar Kehilangan Data**: Semua rekod homestay, tempahan, resit bayaran, dan tetapan bank dalam `localStorage` anda adalah **100% selamat dan tidak akan dipadamkan**.
+
 

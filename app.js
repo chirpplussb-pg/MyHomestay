@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.7.6';
+const APP_VERSION = '2.7.8';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -1272,6 +1272,15 @@ window.appState = appState;
 function initApp() {
   loadFromStorage();
 
+  // Auto-purge stale cache if app upgraded to new version
+  const lastKnownVer = localStorage.getItem(STORAGE_KEYS.VERSION);
+  if (lastKnownVer && lastKnownVer !== APP_VERSION) {
+    console.log(`[Auto-Update] Detected version change from ${lastKnownVer} to ${APP_VERSION}. Purging old caches...`);
+    if ('caches' in window) {
+      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).catch(() => {});
+    }
+  }
+
   // Check URL params for Demo or 1-Click Auto-Activation (?phone=...&key=...)
   const urlParams = new URLSearchParams(window.location.search);
   const isDemoParam = urlParams.get('demo') === '1';
@@ -1976,13 +1985,24 @@ function setupEventListeners() {
       return;
     }
 
-    const agrBtn = e.target.closest('.btn-open-agreement');
-    if (agrBtn) {
+    const agrFormBtn = e.target.closest('.btn-open-agreement-form');
+    if (agrFormBtn) {
       e.preventDefault();
       e.stopPropagation();
-      const bid = agrBtn.getAttribute('data-bid');
+      const bid = agrFormBtn.getAttribute('data-bid');
+      const b = (bid ? appState.bookings.find(x => String(x.id) === String(bid)) : null) || appState.activeWaBooking || appState.bookings.find(x => x.rentalType === 'monthly') || null;
+      openAgreementModal(b, 'form');
+      return;
+    }
+
+    const agrPreviewBtn = e.target.closest('.btn-open-agreement-preview, .btn-open-agreement');
+    if (agrPreviewBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const bid = agrPreviewBtn.getAttribute('data-bid');
       const b = (bid ? appState.bookings.find(x => String(x.id) === String(bid)) : null) || appState.activeWaBooking || appState.bookings.find(x => x.rentalType === 'monthly') || null;
       openAgreementModal(b, 'preview');
+      return;
     }
   });
 
@@ -2002,10 +2022,17 @@ function setupEventListeners() {
     btnHeaderCheckUp.addEventListener('click', () => checkForAppUpdates(true));
   }
 
+  const btnHeaderRefresh = document.getElementById('btnHeaderForceRefresh');
+  if (btnHeaderRefresh) {
+    btnHeaderRefresh.addEventListener('click', () => {
+      if (typeof forcePurgeCacheAndReload === 'function') forcePurgeCacheAndReload();
+    });
+  }
+
   const btnOpenAgrGen = document.getElementById('btnOpenAgreementGen');
   if (btnOpenAgrGen) {
     btnOpenAgrGen.addEventListener('click', () => {
-      openAgreementModal(null, 'preview');
+      openAgreementModal(null, 'form');
     });
   }
 
@@ -2121,6 +2148,15 @@ function setupEventListeners() {
   if (closeMInv) closeMInv.addEventListener('click', closeAllModals);
 
   // Tenancy Agreement Global Triggers (ensures clicking works regardless of caller)
+  const btnEditAgrHub = document.getElementById('btnEditTenancyAgreementFromHub');
+  if (btnEditAgrHub) {
+    btnEditAgrHub.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const b = appState.activeWaBooking || appState.activePdfBooking || appState.bookings.find(x => x.rentalType === 'monthly') || null;
+      openAgreementModal(b, 'form');
+    });
+  }
+
   const btnAgrHub = document.getElementById('btnOpenTenancyAgreementFromHub');
   if (btnAgrHub) {
     btnAgrHub.addEventListener('click', (e) => {
@@ -2139,14 +2175,6 @@ function setupEventListeners() {
       setTimeout(() => {
         downloadAgreementPdf();
       }, 400);
-    });
-  }
-
-  const bannerAgrHub = document.getElementById('agrHubCalloutBanner');
-  if (bannerAgrHub) {
-    bannerAgrHub.addEventListener('click', () => {
-      const b = appState.activeWaBooking || appState.activePdfBooking || appState.bookings.find(x => x.rentalType === 'monthly') || null;
-      openAgreementModal(b, 'preview');
     });
   }
 
@@ -4574,14 +4602,17 @@ function renderBookingsTab() {
           <i class="fa-solid fa-receipt"></i> ${(b.payments && b.payments.length > 0) ? `${b.payments.length} ${isBM ? 'Resit' : 'Receipts'}` : (isBM ? '+ Resit' : '+ Receipt')}
         </button>
         ${b.rentalType === 'monthly' ? `
-          <button class="btn btn-outline btn-xs btn-open-monthly-invoices" data-bid="${b.id}" style="color:var(--primary); font-weight:700; border-color:var(--primary);">
+          <button class="btn btn-outline btn-xs btn-open-monthly-invoices" data-bid="${b.id}" style="color:var(--primary); font-weight:700; border-color:var(--primary);" title="${t('btn_view_invoices')}">
             <i class="fa-solid fa-file-invoice-dollar"></i> ${t('btn_view_invoices')}
           </button>
-          <button class="btn btn-outline btn-xs btn-open-agreement" data-bid="${b.id}" style="color:#0284c7; font-weight:700; border-color:#0284c7; background:rgba(2,132,199,0.08);" title="${isBM ? 'Penjana Surat Perjanjian Sewa (Tenancy Agreement)' : 'Residential Tenancy Agreement Generator'}">
-            <i class="fa-solid fa-file-contract"></i> ${isBM ? 'Perjanjian Sewa' : 'Tenancy Agreement'}
+          <button class="btn btn-outline btn-xs btn-open-agreement-form" data-bid="${b.id}" style="color:#0284c7; font-weight:700; border-color:#0284c7; background:rgba(2,132,199,0.08);" title="${isBM ? 'Buka Borang & Isi Butiran Perjanjian (Contact Person, SSM, NRIC)' : 'Open Agreement Details Form (Contact Person, SSM, NRIC)'}">
+            <i class="fa-solid fa-pen-to-square"></i> ${isBM ? 'Borang Perjanjian' : 'Agreement Form'}
+          </button>
+          <button class="btn btn-outline btn-xs btn-open-agreement-preview" data-bid="${b.id}" style="color:#0369a1; font-weight:700; border-color:#0369a1; background:rgba(3,105,161,0.06);" title="${isBM ? 'Lihat Pra Tonton Dokumen A4 Rasmi' : 'Preview Official A4 Agreement'}">
+            <i class="fa-solid fa-file-lines"></i> ${isBM ? 'Pra Tonton' : 'Preview'}
           </button>
           <button class="btn btn-primary btn-xs btn-quick-download-agreement" data-bid="${b.id}" style="font-weight:700; background:linear-gradient(135deg, #0284c7, #0369a1); border-color:#0284c7;" title="${isBM ? 'Muat Turun Terus PDF Perjanjian ke Folder Downloads' : 'Download Agreement PDF directly to Downloads folder'}">
-            <i class="fa-solid fa-file-arrow-down"></i> ${isBM ? 'PDF Perjanjian' : 'Agreement PDF'}
+            <i class="fa-solid fa-file-arrow-down"></i> ${isBM ? 'PDF' : 'PDF'}
           </button>
         ` : ''}
 
@@ -4698,11 +4729,36 @@ function renderBookingsTab() {
     });
   });
 
-  container.querySelectorAll('.btn-open-agreement').forEach(btn => {
+  container.querySelectorAll('.btn-open-agreement-form').forEach(btn => {
     btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => String(x.id) === String(bid));
+      if (b) openAgreementModal(b, 'form');
+    });
+  });
+
+  container.querySelectorAll('.btn-open-agreement-preview, .btn-open-agreement').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const bid = e.currentTarget.getAttribute('data-bid');
       const b = appState.bookings.find(x => String(x.id) === String(bid));
       if (b) openAgreementModal(b, 'preview');
+    });
+  });
+
+  container.querySelectorAll('.btn-quick-download-agreement').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const bid = e.currentTarget.getAttribute('data-bid');
+      const b = appState.bookings.find(x => String(x.id) === String(bid));
+      if (b) {
+        openAgreementModal(b, 'preview');
+        setTimeout(() => { downloadAgreementPdf(); }, 400);
+      }
     });
   });
 
@@ -5111,6 +5167,10 @@ function renderSettingsTab() {
   document.getElementById('settingBusinessNameInput').value = appState.settings.businessName || 'My Homestay';
   const ssmInput = document.getElementById('settingBusinessSsmInput');
   if (ssmInput) ssmInput.value = appState.settings.businessSsm || '';
+  const ownerLegalNameInput = document.getElementById('settingOwnerLegalNameInput');
+  if (ownerLegalNameInput) ownerLegalNameInput.value = appState.settings.ownerLegalName || '';
+  const ownerIcInput = document.getElementById('settingOwnerIcInput');
+  if (ownerIcInput) ownerIcInput.value = appState.settings.ownerIc || '';
   const addrInput = document.getElementById('settingBusinessAddressInput');
   if (addrInput) addrInput.value = appState.settings.businessAddress || '';
   const emailInput = document.getElementById('settingBusinessEmailInput');
@@ -5519,6 +5579,8 @@ function handleSavePreferences() {
 
   appState.settings.businessName = document.getElementById('settingBusinessNameInput').value || 'My Homestay';
   appState.settings.businessSsm = document.getElementById('settingBusinessSsmInput') ? document.getElementById('settingBusinessSsmInput').value.trim() : (appState.settings.businessSsm || '');
+  appState.settings.ownerLegalName = document.getElementById('settingOwnerLegalNameInput') ? document.getElementById('settingOwnerLegalNameInput').value.trim() : (appState.settings.ownerLegalName || '');
+  appState.settings.ownerIc = document.getElementById('settingOwnerIcInput') ? document.getElementById('settingOwnerIcInput').value.trim() : (appState.settings.ownerIc || '');
   appState.settings.businessAddress = document.getElementById('settingBusinessAddressInput') ? document.getElementById('settingBusinessAddressInput').value.trim() : (appState.settings.businessAddress || '');
   appState.settings.businessEmail = document.getElementById('settingBusinessEmailInput') ? document.getElementById('settingBusinessEmailInput').value.trim() : (appState.settings.businessEmail || '');
   appState.settings.currency = document.getElementById('settingCurrencySelect').value || 'RM';
@@ -5954,9 +6016,11 @@ function setBookingFormRentalType(type) {
   // Toggle Section Visibility
   const dailySection = document.getElementById('sectionDailyPricing');
   const monthlySection = document.getElementById('sectionMonthlyPricing');
+  const corpSection = document.getElementById('bookingCorporateFields');
   
   if (dailySection) dailySection.classList.toggle('hidden', isMonthly);
   if (monthlySection) monthlySection.classList.toggle('hidden', !isMonthly);
+  if (corpSection) corpSection.style.display = isMonthly ? 'block' : 'none';
 
   // Daily input elements to enable/disable
   const dailyInputs = [
@@ -6108,6 +6172,13 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
       document.getElementById('bookingRentalDeposit').value = existingBooking.rentalDeposit || 1200;
       document.getElementById('bookingUtilitiesDeposit').value = existingBooking.utilitiesDeposit || 300;
       document.getElementById('bookingAgreementFee').value = existingBooking.agreementFee || 150;
+
+      // Populate Corporate Tenant fields
+      const elReg = document.getElementById('bookingCompanyRegNo'); if (elReg) elReg.value = existingBooking.companyRegNo || '';
+      const elCP = document.getElementById('bookingContactPerson'); if (elCP) elCP.value = existingBooking.contactPerson || '';
+      const elCD = document.getElementById('bookingContactDesignation'); if (elCD) elCD.value = existingBooking.contactDesignation || '';
+      const elCI = document.getElementById('bookingContactIc'); if (elCI) elCI.value = existingBooking.contactIc || '';
+      const elCPH = document.getElementById('bookingContactPhone'); if (elCPH) elCPH.value = existingBooking.contactPhone || '';
     } else {
       document.getElementById('bookingCheckIn').value = existingBooking.checkIn;
       document.getElementById('bookingCheckOut').value = existingBooking.checkOut;
@@ -6158,6 +6229,12 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
     document.getElementById('bookingGuestNric').value = '';
     document.getElementById('bookingGuestEmail').value = '';
     document.getElementById('bookingGuestAddress').value = '';
+
+    const elReg = document.getElementById('bookingCompanyRegNo'); if (elReg) elReg.value = '';
+    const elCP = document.getElementById('bookingContactPerson'); if (elCP) elCP.value = '';
+    const elCD = document.getElementById('bookingContactDesignation'); if (elCD) elCD.value = '';
+    const elCI = document.getElementById('bookingContactIc'); if (elCI) elCI.value = '';
+    const elCPH = document.getElementById('bookingContactPhone'); if (elCPH) elCPH.value = '';
 
     const receiptsSec = document.getElementById('bookingReceiptsSection');
     if (receiptsSec) receiptsSec.style.display = 'none';
@@ -6261,6 +6338,12 @@ function handleSaveBooking(e) {
   let status = document.getElementById('bookingStatusSelect').value;
   const notes = document.getElementById('bookingNotes').value.trim();
   const quotationValidityDays = parseInt(document.getElementById('bookingQuotationValidity')?.value) || appState.settings.quotationValidityDays || 3;
+
+  const companyRegNo = document.getElementById('bookingCompanyRegNo') ? document.getElementById('bookingCompanyRegNo').value.trim() : '';
+  const contactPerson = document.getElementById('bookingContactPerson') ? document.getElementById('bookingContactPerson').value.trim() : '';
+  const contactDesignation = document.getElementById('bookingContactDesignation') ? document.getElementById('bookingContactDesignation').value.trim() : '';
+  const contactIc = document.getElementById('bookingContactIc') ? document.getElementById('bookingContactIc').value.trim() : '';
+  const contactPhone = document.getElementById('bookingContactPhone') ? document.getElementById('bookingContactPhone').value.trim() : '';
 
   let checkIn = '';
   let checkOut = '';
@@ -6378,6 +6461,11 @@ function handleSaveBooking(e) {
     guestNric,
     guestEmail,
     guestAddress,
+    companyRegNo: companyRegNo || (rentalType === 'monthly' ? guestNric : ''),
+    contactPerson,
+    contactDesignation,
+    contactIc,
+    contactPhone,
     checkIn,
     checkOut,
     nights,
@@ -6552,6 +6640,14 @@ function openMonthlyInvoicesModal(booking) {
   document.getElementById('mInvRateDisplay').textContent = `${formatCurrency(booking.monthlyRate || 0)} / ${isBM ? 'bulan' : 'month'}`;
   document.getElementById('mInvPeriodDisplay').textContent = `${booking.checkIn} → ${booking.checkOut} (${booking.monthlyDuration || 6} ${t('months')})`;
 
+  const btnEditAgr = document.getElementById('btnEditTenancyAgreementFromHub');
+  if (btnEditAgr) {
+    btnEditAgr.onclick = (e) => {
+      e.stopPropagation();
+      openAgreementModal(booking, 'form');
+    };
+  }
+
   const btnAgr = document.getElementById('btnOpenTenancyAgreementFromHub');
   if (btnAgr) {
     btnAgr.onclick = (e) => {
@@ -6560,10 +6656,12 @@ function openMonthlyInvoicesModal(booking) {
     };
   }
 
-  const bannerAgr = document.getElementById('agrHubCalloutBanner');
-  if (bannerAgr) {
-    bannerAgr.onclick = () => {
+  const btnQuickAgr = document.getElementById('btnQuickDownloadAgreementFromHub');
+  if (btnQuickAgr) {
+    btnQuickAgr.onclick = (e) => {
+      e.stopPropagation();
       openAgreementModal(booking, 'preview');
+      setTimeout(() => { downloadAgreementPdf(); }, 400);
     };
   }
 
@@ -11465,6 +11563,39 @@ const USER_GUIDE_DATA = {
       `
     },
     {
+      id: 'guide-agreement',
+      icon: 'fa-file-signature',
+      title: '5C. Tenancy Agreement Generator (Individual & Corporate Tenants)',
+      content: `
+        <p>Generate formal Malaysian Residential Tenancy Agreements (in Bahasa Melayu or English) with full support for both individual owners and corporate management, as well as personal or company tenants:</p>
+        <div class="guide-callout success">
+          <strong>🏢 Corporate & Individual Entities:</strong><br>
+          • <strong>Landlord:</strong> Select <code>Individual / Owner</code> (NRIC) or <code>Company / SSM</code> (Registration No). Commercial homestay branding is separated from legal ownership.<br>
+          • <strong>Tenant:</strong> Select <code>Individual</code> or <code>Company / SSM</code>. For corporate tenants, input company details plus an <strong>Authorized Contact Person</strong> (Full Name, Designation, NRIC & Mobile Phone).
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text"><strong>Open Generator:</strong> Tap <code>📄 Perjanjian / Agreement</code> on any monthly booking card, or open the <strong>Monthly Tenancy Hub</strong> and tap <code>Pratonton</code>.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text"><strong>Review Particulars:</strong> All dates, rental rates, deposits, property addresses, and inventory are auto-filled from your booking and settings.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text"><strong>Muslim-Friendly Covenants:</strong> Fasal 2 / Section 2 highlights strict covenants for halal food, absolute prohibition of alcohol, no unauthorized pets, and Islamic living decorum.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text"><strong>Direct Download to Downloads Folder:</strong> Tap <code>Muat Turun PDF / Download PDF</code>. The official multi-page A4 document is generated and saved directly to your device's <strong>Downloads</strong> folder.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">5</div>
+          <div class="guide-step-text"><strong>1-Tap WhatsApp & Email:</strong> Tap <code>Hantar WhatsApp</code> to send a pre-formatted agreement cover message routed directly to the tenant or corporate representative's mobile WhatsApp!</div>
+        </div>
+      `
+    },
+    {
       id: 'guide-wa',
       icon: 'fa-brands fa-whatsapp',
       title: '6. 1-Tap WhatsApp Automation (9 Templates)',
@@ -11724,6 +11855,39 @@ const USER_GUIDE_DATA = {
       `
     },
     {
+      id: 'guide-agreement',
+      icon: 'fa-file-signature',
+      title: '5C. Penjana Surat Perjanjian Sewaan (Penyewa Individu & Syarikat)',
+      content: `
+        <p>Jana Surat Perjanjian Penyewaan Kediaman rasmi Malaysia (dwibahasa: Bahasa Melayu & English) dengan pemisahan sah antara nama penjenamaan homestay, pemilik sah hartanah, serta penyewa individu mahupun syarikat:</p>
+        <div class="guide-callout success">
+          <strong>🏢 Sokongan Entiti Individu & Syarikat (SSM):</strong><br>
+          • <strong>Tuan Rumah:</strong> Pilih <code>Individu / Pemilik</code> (No. K/P) atau <code>Syarikat / SSM</code> (No. Pendaftaran Syarikat). Nama komersil homestay diasingkan daripada entiti pemilik.<br>
+          • <strong>Penyewa:</strong> Pilih <code>Individu</code> atau <code>Syarikat / SSM</code>. Jika syarikat, lengkapkan maklumat syarikat berserta <strong>Pegawai Dihubungi / Wakil Syarikat Diberi Kuasa</strong> (Nama, Jawatan, No. K/P & No. Tel Bimbit).
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text"><strong>Buka Penjana:</strong> Tekan butang <code>📄 Perjanjian</code> pada mana-mana kad tempahan bulanan, atau buka <strong>Hab Sewaan Bulanan</strong> dan tekan <code>Pratonton</code>.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text"><strong>Auto-Isi Butiran:</strong> Semua kadar sewa bulanan, wang cagaran (deposit sewa & utiliti), tarikh sewaan, alamat premis dan senarai inventori perabot diisi secara automatik.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text"><strong>Syarat Khas Rumah Mesra Muslim:</strong> Fasal 2 menetapkan pemeliharaan kesucian kediaman merangkumi makanan halal, larangan mutlak arak/alkohol, larangan haiwan terlarang, serta ketenteraman moral kejiranan.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text"><strong>Muat Turun Terus ke Folder Downloads:</strong> Tekan <code>Muat Turun PDF</code>. Fail rasmi A4 dijana dan disimpan terus ke folder <strong>Downloads</strong> komputer atau telefon anda.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">5</div>
+          <div class="guide-step-text"><strong>Hantar ke WhatsApp & Emel:</strong> Tekan <code>Hantar WhatsApp</code> untuk membuka mesej iringan rasmi yang dialamatkan terus kepada nombor telefon bimbit wakil syarikat atau penyewa!</div>
+        </div>
+      `
+    },
+    {
       id: 'guide-wa',
       icon: 'fa-brands fa-whatsapp',
       title: '6. Automasi WhatsApp 1-Sentuhan (9 Templat)',
@@ -11943,20 +12107,27 @@ const AGREEMENT_DOC_I18N = {
     docHeaderSub: 'RESIDENTIAL TENANCY AGREEMENT',
     preambleP1: (date, data) => {
       const isLandlordComp = data.landlordType === 'company';
-      const isTenantComp = data.tenantType === 'company';
+      const isTenantComp = data.tenantType === 'company' || !!data.tenantContactName || (data.tenantIc && data.tenantIc.includes('('));
 
-      const landlordStr = isLandlordComp
+      let landlordStr = isLandlordComp
         ? `<strong>${escapeHtml(data.landlordName || 'TUAN RUMAH')}</strong> (No. Pendaftaran Syarikat / SSM: <strong>${escapeHtml(data.landlordIc || '-')}</strong>)`
         : `<strong>${escapeHtml(data.landlordName || 'TUAN RUMAH')}</strong> (No. Kad Pengenalan / NRIC: <strong>${escapeHtml(data.landlordIc || '-')}</strong>)`;
+
+      if (isLandlordComp && data.landlordContactName) {
+        landlordStr += ` yang diwakili oleh <strong>${escapeHtml(data.landlordContactName)}</strong> (No. K/P: <strong>${escapeHtml(data.landlordContactIc || '-')}</strong>${data.landlordContactDesignation ? `, Jawatan: <strong>${escapeHtml(data.landlordContactDesignation)}</strong>` : ''})`;
+      }
 
       let tenantStr = '';
       if (isTenantComp) {
         tenantStr = `<strong>${escapeHtml(data.tenantName || 'PENYEWA')}</strong> (No. Pendaftaran Syarikat / SSM: <strong>${escapeHtml(data.tenantIc || '-')}</strong>)`;
         if (data.tenantContactName) {
-          tenantStr += ` yang diwakili secara sah oleh <strong>${escapeHtml(data.tenantContactName)}</strong> (No. K/P: <strong>${escapeHtml(data.tenantContactIc || '-')}</strong>${data.tenantContactDesignation ? `, Jawatan: <strong>${escapeHtml(data.tenantContactDesignation)}</strong>` : ''})`;
+          tenantStr += ` yang diwakili secara sah oleh Pegawai Dihubungi <strong>${escapeHtml(data.tenantContactName)}</strong> (No. K/P: <strong>${escapeHtml(data.tenantContactIc || '-')}</strong>${data.tenantContactDesignation ? `, Jawatan: <strong>${escapeHtml(data.tenantContactDesignation)}</strong>` : ''}${data.tenantContactPhone ? `, No. Tel: <strong>${escapeHtml(data.tenantContactPhone)}</strong>` : ''})`;
         }
       } else {
         tenantStr = `<strong>${escapeHtml(data.tenantName || 'PENYEWA')}</strong> (No. K/P / Pasport: <strong>${escapeHtml(data.tenantIc || '-')}</strong>)`;
+        if (data.tenantContactName) {
+          tenantStr += ` yang boleh dihubungi melalui / diwakili oleh <strong>${escapeHtml(data.tenantContactName)}</strong> (No. K/P: <strong>${escapeHtml(data.tenantContactIc || '-')}</strong>${data.tenantContactDesignation ? `, Hubungan/Jawatan: <strong>${escapeHtml(data.tenantContactDesignation)}</strong>` : ''}${data.tenantContactPhone ? `, No. Tel: <strong>${escapeHtml(data.tenantContactPhone)}</strong>` : ''})`;
+        }
       }
 
       return `PERJANJIAN INI diperbuat pada tarikh <strong>${date}</strong> DI ANTARA ${landlordStr} yang beralamat di tempat yang dinyatakan dalam Seksyen 2 Jadual Pertama (selepas ini dirujuk sebagai <strong>"Tuan Rumah"</strong>) di satu pihak; DAN ${tenantStr} yang beralamat ${isTenantComp ? 'pejabat berdaftar' : 'tetap'} seperti dalam Seksyen 3 Jadual Pertama (selepas ini dirujuk sebagai <strong>"Penyewa"</strong>) di pihak yang satu lagi.`;
@@ -12059,20 +12230,27 @@ const AGREEMENT_DOC_I18N = {
     docHeaderSub: 'SURAT PERJANJIAN PENYEWAAN KEDIAMAN',
     preambleP1: (date, data) => {
       const isLandlordComp = data.landlordType === 'company';
-      const isTenantComp = data.tenantType === 'company';
+      const isTenantComp = data.tenantType === 'company' || !!data.tenantContactName || (data.tenantIc && data.tenantIc.includes('('));
 
-      const landlordStr = isLandlordComp
+      let landlordStr = isLandlordComp
         ? `<strong>${escapeHtml(data.landlordName || 'LANDLORD')}</strong> (Company Reg No / SSM: <strong>${escapeHtml(data.landlordIc || '-')}</strong>)`
         : `<strong>${escapeHtml(data.landlordName || 'LANDLORD')}</strong> (NRIC No: <strong>${escapeHtml(data.landlordIc || '-')}</strong>)`;
+
+      if (isLandlordComp && data.landlordContactName) {
+        landlordStr += ` represented by <strong>${escapeHtml(data.landlordContactName)}</strong> (NRIC: <strong>${escapeHtml(data.landlordContactIc || '-')}</strong>${data.landlordContactDesignation ? `, Designation: <strong>${escapeHtml(data.landlordContactDesignation)}</strong>` : ''})`;
+      }
 
       let tenantStr = '';
       if (isTenantComp) {
         tenantStr = `<strong>${escapeHtml(data.tenantName || 'TENANT')}</strong> (Company Registration No: <strong>${escapeHtml(data.tenantIc || '-')}</strong>)`;
         if (data.tenantContactName) {
-          tenantStr += ` legally represented herein by <strong>${escapeHtml(data.tenantContactName)}</strong> (NRIC: <strong>${escapeHtml(data.tenantContactIc || '-')}</strong>${data.tenantContactDesignation ? `, Designation: <strong>${escapeHtml(data.tenantContactDesignation)}</strong>` : ''})`;
+          tenantStr += ` legally represented herein by Authorized Contact Person <strong>${escapeHtml(data.tenantContactName)}</strong> (NRIC: <strong>${escapeHtml(data.tenantContactIc || '-')}</strong>${data.tenantContactDesignation ? `, Designation: <strong>${escapeHtml(data.tenantContactDesignation)}</strong>` : ''}${data.tenantContactPhone ? `, Tel: <strong>${escapeHtml(data.tenantContactPhone)}</strong>` : ''})`;
         }
       } else {
         tenantStr = `<strong>${escapeHtml(data.tenantName || 'TENANT')}</strong> (NRIC / Passport No: <strong>${escapeHtml(data.tenantIc || '-')}</strong>)`;
+        if (data.tenantContactName) {
+          tenantStr += ` represented by / reachable via <strong>${escapeHtml(data.tenantContactName)}</strong> (NRIC: <strong>${escapeHtml(data.tenantContactIc || '-')}</strong>${data.tenantContactDesignation ? `, Capacity: <strong>${escapeHtml(data.tenantContactDesignation)}</strong>` : ''}${data.tenantContactPhone ? `, Tel: <strong>${escapeHtml(data.tenantContactPhone)}</strong>` : ''})`;
+        }
       }
 
       return `THIS AGREEMENT is made on <strong>${date}</strong> BETWEEN ${landlordStr} having its address as stated in Section 2 of the First Schedule (hereinafter referred to as the <strong>"Landlord"</strong>) of the one part; AND ${tenantStr} having its ${isTenantComp ? 'registered office address' : 'permanent address'} as stated in Section 3 of the First Schedule (hereinafter referred to as the <strong>"Tenant"</strong>) of the other part.`;
@@ -12205,6 +12383,11 @@ function setAgreementLandlordType(type = 'individual') {
     }
   }
 
+  const compContactGroup = document.getElementById('agrLandlordCompanyContactGroup');
+  if (compContactGroup) {
+    compContactGroup.style.display = isComp ? 'block' : 'none';
+  }
+
   const lblName = document.getElementById('lblAgrLandlordName');
   const inputName = document.getElementById('agrLandlordName');
   const lblIc = document.getElementById('lblAgrLandlordIc');
@@ -12245,7 +12428,13 @@ function setAgreementTenantType(type = 'individual') {
 
   const contactGroup = document.getElementById('agrTenantCompanyContactGroup');
   if (contactGroup) {
-    contactGroup.style.display = isComp ? 'block' : 'none';
+    contactGroup.style.display = 'block';
+  }
+  const lblContactHeader = document.getElementById('lblAgrTenantContactHeader');
+  if (lblContactHeader) {
+    lblContactHeader.textContent = isComp
+      ? 'Wakil / Pegawai Dihubungi Syarikat (Authorized Contact Person):'
+      : 'Pegawai Dihubungi / Wakil Penyewa (Contact Person & Authorized Representative):';
   }
 
   const lblName = document.getElementById('lblAgrTenantName');
@@ -12357,6 +12546,15 @@ function initAgreementGenerator() {
     });
   }
 
+  const btnQuickSwitch = document.getElementById('btnQuickSwitchToForm');
+  if (btnQuickSwitch && tabForm) {
+    btnQuickSwitch.addEventListener('click', () => {
+      tabForm.click();
+      const modalBody = document.querySelector('#agreementGeneratorModal .modal-body');
+      if (modalBody) modalBody.scrollTop = 0;
+    });
+  }
+
   // Modal close buttons
   const btnClose = document.getElementById('btnCloseAgreementModal');
   const btnCloseBtn = document.getElementById('btnCloseAgreementModalBtn');
@@ -12461,78 +12659,117 @@ function initAgreementGenerator() {
 }
 
 /**
- * Open agreement modal, auto-populating from booking
+ * Switch agreement modal tab cleanly ('form' vs 'preview')
  */
-function openAgreementModal(booking = null, defaultTab = 'preview') {
-  // If booking not provided, resolve fallback
-  if (!booking) {
-    if (appState.activeWaBooking && appState.activeWaBooking.rentalType === 'monthly') {
-      booking = appState.activeWaBooking;
-    } else if (appState.activePdfBooking && appState.activePdfBooking.rentalType === 'monthly') {
-      booking = appState.activePdfBooking;
-    } else {
-      booking = appState.bookings.find(b => b.rentalType === 'monthly') || appState.bookings[0] || null;
-    }
-  }
-
-  // CRITICAL: Close all existing active modals (e.g. monthlyInvoicesModal, pdfDocModal)
-  // to prevent modal backdrop collisions, pointer blockages, and viewport stacking bugs.
-  closeAllModals();
-
-  appState.activeAgreementBooking = booking;
-  appState.activeAgreementLang = (appState.settings && appState.settings.language === 'en') ? 'en' : 'bm';
-
-  const isBM = appState.activeAgreementLang === 'bm';
-  showToast(isBM ? 'Membuka Penjana Perjanjian Sewaan...' : 'Opening Tenancy Agreement Generator...');
-
-  // 1. Populate bookings dropdown
-  populateAgreementBookingSelect(booking ? booking.id : null);
-
-  // 2. Populate form
-  const activeBooking = booking || (() => {
-    const bid = document.getElementById('agrBookingSelect')?.value;
-    return appState.bookings.find(b => b.id === bid) || null;
-  })();
-
-  populateAgreementForm(activeBooking);
-
-  // 3. Switch tab and render preview if defaultTab === 'preview'
+function switchAgreementTab(tabName = 'form') {
   const tabForm = document.getElementById('btnAgrTabForm');
   const tabPreview = document.getElementById('btnAgrTabPreview');
   const formWrap = document.getElementById('agrTabFormContainer');
   const previewWrap = document.getElementById('agrTabPreviewContainer');
 
-  if (defaultTab === 'preview' && tabPreview) {
-    tabPreview.classList.add('active');
-    if (tabForm) tabForm.classList.remove('active');
+  if (tabName === 'preview') {
+    tabPreview?.classList.add('active');
+    tabForm?.classList.remove('active');
     if (formWrap) formWrap.style.display = 'none';
-    if (previewWrap) previewWrap.style.display = 'block';
-    renderAgreementPreview();
-  } else if (tabForm) {
-    tabForm.classList.add('active');
-    if (tabPreview) tabPreview.classList.remove('active');
+    if (previewWrap) {
+      previewWrap.style.display = 'block';
+      renderAgreementPreview();
+    }
+  } else {
+    tabForm?.classList.add('active');
+    tabPreview?.classList.remove('active');
     if (formWrap) formWrap.style.display = 'block';
     if (previewWrap) previewWrap.style.display = 'none';
   }
+}
+window.switchAgreementTab = switchAgreementTab;
 
-  // 4. Update language toggle active pill
-  const btnBM = document.getElementById('btnAgrLangBM');
-  const btnEN = document.getElementById('btnAgrLangEN');
-  if (appState.activeAgreementLang === 'en') {
-    if (btnEN) btnEN.classList.add('active');
-    if (btnBM) btnBM.classList.remove('active');
-  } else {
-    if (btnBM) btnBM.classList.add('active');
-    if (btnEN) btnEN.classList.remove('active');
-  }
+/**
+ * Open agreement modal, auto-populating from booking
+ */
+function openAgreementModal(booking = null, defaultTab = 'form') {
+  try {
+    // 0. Argument Sanitization: Protect against Event objects passed by listeners
+    if (booking && (booking instanceof Event || booking.target || booking.currentTarget)) {
+      booking = null;
+    }
+    if (typeof booking === 'string') {
+      const bid = booking;
+      booking = appState.bookings.find(b => String(b.id) === String(bid)) || null;
+    }
 
-  // 5. Open modal with explicit flex display & top scroll
-  const modal = document.getElementById('agreementGeneratorModal');
-  if (modal) {
-    modal.style.display = 'flex';
-    modal.classList.add('active');
-    const modalBody = modal.querySelector('.modal-body');
-    if (modalBody) modalBody.scrollTop = 0;
+    // Resolve fallback booking if none provided
+    if (!booking) {
+      if (appState.activeWaBooking && appState.activeWaBooking.rentalType === 'monthly') {
+        booking = appState.activeWaBooking;
+      } else if (appState.activePdfBooking && appState.activePdfBooking.rentalType === 'monthly') {
+        booking = appState.activePdfBooking;
+      } else {
+        booking = appState.bookings.find(b => b.rentalType === 'monthly') || appState.bookings[0] || null;
+      }
+    }
+
+    // CRITICAL: Close all existing active modals (e.g. monthlyInvoicesModal, pdfDocModal)
+    closeAllModals();
+
+    appState.activeAgreementBooking = booking;
+    appState.activeAgreementLang = (appState.settings && appState.settings.language === 'en') ? 'en' : 'bm';
+
+    const isBM = appState.activeAgreementLang === 'bm';
+
+    // 1. Populate bookings dropdown
+    try {
+      populateAgreementBookingSelect(booking ? booking.id : null);
+    } catch (e) {
+      console.warn('Agreement dropdown populate notice:', e);
+    }
+
+    // 2. Populate form
+    try {
+      const activeBooking = booking || (() => {
+        const bid = document.getElementById('agrBookingSelect')?.value;
+        return appState.bookings.find(b => b.id === bid) || null;
+      })();
+      populateAgreementForm(activeBooking);
+    } catch (e) {
+      console.warn('Agreement form populate notice:', e);
+    }
+
+    // 3. Switch tab according to parameter ('form' or 'preview')
+    switchAgreementTab(defaultTab || 'form');
+
+    // 4. Update language toggle active pill
+    const btnBM = document.getElementById('btnAgrLangBM');
+    const btnEN = document.getElementById('btnAgrLangEN');
+    if (appState.activeAgreementLang === 'en') {
+      if (btnEN) btnEN.classList.add('active');
+      if (btnBM) btnBM.classList.remove('active');
+    } else {
+      if (btnBM) btnBM.classList.add('active');
+      if (btnEN) btnEN.classList.remove('active');
+    }
+
+    // 5. Open modal with explicit flex display, top scroll & guaranteed highest z-index
+    const modal = document.getElementById('agreementGeneratorModal');
+    if (modal) {
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.classList.add('active');
+      modal.style.zIndex = '99999';
+      modal.style.opacity = '1';
+      modal.style.visibility = 'visible';
+      const modalBody = modal.querySelector('.modal-body');
+      if (modalBody) modalBody.scrollTop = 0;
+    }
+
+    showToast(isBM ? 'Membuka Penjana Perjanjian Sewaan...' : 'Opening Tenancy Agreement Generator...');
+  } catch (err) {
+    console.error('Fatal error in openAgreementModal:', err);
+    // Ultimate fallback: force modal visible
+    const modal = document.getElementById('agreementGeneratorModal');
+    if (modal) {
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.classList.add('active');
+    }
   }
 }
 window.openAgreementModal = openAgreementModal;
@@ -12602,13 +12839,20 @@ function populateAgreementForm(booking = null, forceReset = false) {
     setAgreementLandlordType(draft.landlordType || 'individual');
     setAgreementTenantType(draft.tenantType || 'individual');
 
-    document.getElementById('agrLandlordName').value = draft.landlordName || settings.businessName || '';
+    document.getElementById('agrLandlordName').value = draft.landlordName || settings.ownerLegalName || settings.businessName || '';
     document.getElementById('agrLandlordIc').value = draft.landlordIc || settings.ownerIc || '';
-    document.getElementById('agrLandlordPhone').value = draft.landlordPhone || settings.businessPhone || '';
+    document.getElementById('agrLandlordPhone').value = draft.landlordPhone || settings.businessPhone || settings.ownerPhone || '';
     document.getElementById('agrLandlordAddress').value = draft.landlordAddress || settings.businessAddress || '';
 
+    const elLCName = document.getElementById('agrLandlordContactName');
+    const elLCDesig = document.getElementById('agrLandlordContactDesignation');
+    const elLCIc = document.getElementById('agrLandlordContactIc');
+    if (elLCName) elLCName.value = draft.landlordContactName || '';
+    if (elLCDesig) elLCDesig.value = draft.landlordContactDesignation || '';
+    if (elLCIc) elLCIc.value = draft.landlordContactIc || '';
+
     document.getElementById('agrTenantName').value = draft.tenantName || booking.guestName || '';
-    document.getElementById('agrTenantIc').value = draft.tenantIc || booking.guestIc || '';
+    document.getElementById('agrTenantIc').value = draft.tenantIc || booking.companyRegNo || booking.guestIc || '';
     document.getElementById('agrTenantPhone').value = draft.tenantPhone || booking.guestPhone || '';
     document.getElementById('agrTenantEmail').value = draft.tenantEmail || booking.guestEmail || '';
     document.getElementById('agrTenantAddress').value = draft.tenantAddress || booking.guestAddress || '';
@@ -12617,10 +12861,10 @@ function populateAgreementForm(booking = null, forceReset = false) {
     const elCDesig = document.getElementById('agrTenantContactDesignation');
     const elCIc = document.getElementById('agrTenantContactIc');
     const elCPhone = document.getElementById('agrTenantContactPhone');
-    if (elCName) elCName.value = draft.tenantContactName || '';
-    if (elCDesig) elCDesig.value = draft.tenantContactDesignation || '';
-    if (elCIc) elCIc.value = draft.tenantContactIc || '';
-    if (elCPhone) elCPhone.value = draft.tenantContactPhone || '';
+    if (elCName) elCName.value = draft.tenantContactName || booking.contactPerson || '';
+    if (elCDesig) elCDesig.value = draft.tenantContactDesignation || booking.contactDesignation || '';
+    if (elCIc) elCIc.value = draft.tenantContactIc || booking.contactIc || '';
+    if (elCPhone) elCPhone.value = draft.tenantContactPhone || booking.contactPhone || '';
 
     document.getElementById('agrPropertyName').value = draft.propertyName || '';
     document.getElementById('agrPropertyType').value = draft.propertyType || '';
@@ -12654,8 +12898,10 @@ function populateAgreementForm(booking = null, forceReset = false) {
   }
 
   // Auto-populate from fresh booking & settings
-  const isCorporateTenant = booking ? detectIsCompany(booking.guestName, booking.notes) : false;
-  const isCorporateLandlord = !!(settings.businessRegNo);
+  const isCorporateTenant = booking 
+    ? (detectIsCompany(booking.guestName, booking.notes) || !!booking.companyRegNo || !!booking.contactPerson) 
+    : false;
+  const isCorporateLandlord = !!(settings.businessSsm || settings.businessRegNo);
 
   setAgreementLandlordType(isCorporateLandlord ? 'company' : 'individual');
   setAgreementTenantType(isCorporateTenant ? 'company' : 'individual');
@@ -12673,14 +12919,21 @@ function populateAgreementForm(booking = null, forceReset = false) {
     : 150;
 
   // Landlord
-  document.getElementById('agrLandlordName').value = settings.businessName || 'Pengurusan Homestay & Kediaman';
-  document.getElementById('agrLandlordIc').value = isCorporateLandlord ? (settings.businessRegNo || '') : (settings.ownerIc || '');
-  document.getElementById('agrLandlordPhone').value = settings.businessPhone || settings.phone || '+60123456789';
+  document.getElementById('agrLandlordName').value = settings.ownerLegalName || settings.businessName || 'Pengurusan Homestay & Kediaman';
+  document.getElementById('agrLandlordIc').value = isCorporateLandlord ? (settings.businessSsm || settings.businessRegNo || '') : (settings.ownerIc || '');
+  document.getElementById('agrLandlordPhone').value = settings.businessPhone || settings.phone || settings.ownerPhone || '+60123456789';
   document.getElementById('agrLandlordAddress').value = settings.businessAddress || 'Malaysia';
+
+  const elLCName = document.getElementById('agrLandlordContactName');
+  const elLCDesig = document.getElementById('agrLandlordContactDesignation');
+  const elLCIc = document.getElementById('agrLandlordContactIc');
+  if (elLCName) elLCName.value = '';
+  if (elLCDesig) elLCDesig.value = '';
+  if (elLCIc) elLCIc.value = '';
 
   // Tenant
   document.getElementById('agrTenantName').value = booking ? booking.guestName : '';
-  document.getElementById('agrTenantIc').value = booking ? (booking.guestIc || '') : '';
+  document.getElementById('agrTenantIc').value = booking ? (booking.companyRegNo || booking.guestIc || '') : '';
   document.getElementById('agrTenantPhone').value = booking ? (booking.guestPhone || '') : '';
   document.getElementById('agrTenantEmail').value = booking ? (booking.guestEmail || '') : '';
   document.getElementById('agrTenantAddress').value = booking ? (booking.guestAddress || '') : '';
@@ -12822,6 +13075,9 @@ function getAgreementFormData() {
     landlordIc: getVal('agrLandlordIc'),
     landlordPhone: getVal('agrLandlordPhone'),
     landlordAddress: getVal('agrLandlordAddress'),
+    landlordContactName: getVal('agrLandlordContactName'),
+    landlordContactDesignation: getVal('agrLandlordContactDesignation'),
+    landlordContactIc: getVal('agrLandlordContactIc'),
 
     tenantType: document.getElementById('agrTenantType')?.value || 'individual',
     tenantName: getVal('agrTenantName'),
@@ -12964,31 +13220,37 @@ function renderAgreementPreview() {
                 ? `${lang === 'en' ? 'Company Reg No (SSM):' : 'No. Pendaftaran Syarikat (SSM):'} <strong>${escapeHtml(data.landlordIc || '-')}</strong><br>${lang === 'en' ? 'Business / Office Tel:' : 'No. Tel Pejabat / WhatsApp:'} ${escapeHtml(data.landlordPhone || '-')}<br>${lang === 'en' ? 'Registered Office Address:' : 'Alamat Pejabat / Surat-Menyurat:'} ${escapeHtml(data.landlordAddress || '-')}`
                 : `${lang === 'en' ? 'NRIC No:' : 'No. Kad Pengenalan (NRIC):'} <strong>${escapeHtml(data.landlordIc || '-')}</strong><br>${lang === 'en' ? 'Phone / WhatsApp:' : 'No. Tel / WhatsApp:'} ${escapeHtml(data.landlordPhone || '-')}<br>${lang === 'en' ? 'Correspondence Address:' : 'Alamat Surat-Menyurat:'} ${escapeHtml(data.landlordAddress || '-')}`
               }
+              ${(data.landlordType === 'company' && data.landlordContactName) ? `
+                <div style="margin-top:6px; padding:6px 10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; font-size:9.5pt; line-height:1.45;">
+                  <strong style="color:#0f172a;"><i class="fa-solid fa-user-tie"></i> ${lang === 'en' ? 'Authorized Signatory / Representative:' : 'Wakil Sah / Penandatangan Tuan Rumah:'}</strong><br>
+                  • ${lang === 'en' ? 'Name:' : 'Nama:'} <strong>${escapeHtml(data.landlordContactName)}</strong> ${data.landlordContactDesignation ? `(${escapeHtml(data.landlordContactDesignation)})` : ''}<br>
+                  • ${lang === 'en' ? 'NRIC No:' : 'No. K/P:'} <strong>${escapeHtml(data.landlordContactIc || '-')}</strong>
+                </div>
+              ` : ''}
             </td>
           </tr>
           <tr>
             <td class="agr-schedule-item-num">3.</td>
             <td class="agr-schedule-item-title">${i18n.schTenant}</td>
             <td>
-              ${data.tenantType === 'company' ? `
-                <strong>${escapeHtml(data.tenantName || '-')}</strong><br>
-                ${lang === 'en' ? 'Company Reg No (SSM):' : 'No. Pendaftaran Syarikat (SSM):'} <strong>${escapeHtml(data.tenantIc || '-')}</strong><br>
-                ${lang === 'en' ? 'Registered Office Address:' : 'Alamat Pejabat Berdaftar:'} ${escapeHtml(data.tenantAddress || '-')}<br>
-                ${lang === 'en' ? 'Office Phone:' : 'No. Tel Pejabat:'} ${escapeHtml(data.tenantPhone || '-')}<br>
-                ${data.tenantEmail ? `${lang === 'en' ? 'Official Email:' : 'Emel Rasmi:'} ${escapeHtml(data.tenantEmail)}<br>` : ''}
-                <div style="margin-top:6px; padding:6px 10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; font-size:9.5pt; line-height:1.45;">
-                  <strong style="color:#0f172a;"><i class="fa-solid fa-id-badge"></i> ${lang === 'en' ? 'Authorized Contact Person / Representative:' : 'Pegawai Dihubungi / Wakil Syarikat Diberi Kuasa:'}</strong><br>
+              <strong>${escapeHtml(data.tenantName || '-')}</strong><br>
+              ${(data.tenantType === 'company' || (data.tenantIc && data.tenantIc.includes('(')))
+                ? `${lang === 'en' ? 'Company Reg No (SSM):' : 'No. Pendaftaran Syarikat (SSM):'} <strong>${escapeHtml(data.tenantIc || '-')}</strong><br>`
+                : `${lang === 'en' ? 'NRIC / Passport:' : 'No. K/P / Pasport:'} <strong>${escapeHtml(data.tenantIc || '-')}</strong><br>`
+              }
+              ${data.tenantType === 'company' 
+                ? `${lang === 'en' ? 'Registered Office Address:' : 'Alamat Pejabat Berdaftar:'} ${escapeHtml(data.tenantAddress || '-')}<br>${lang === 'en' ? 'Office Phone:' : 'No. Tel Pejabat:'} ${escapeHtml(data.tenantPhone || '-')}<br>`
+                : `${lang === 'en' ? 'Permanent Address:' : 'Alamat Tetap:'} ${escapeHtml(data.tenantAddress || '-')}<br>${lang === 'en' ? 'Phone:' : 'No. Tel:'} ${escapeHtml(data.tenantPhone || '-')}<br>`
+              }
+              ${data.tenantEmail ? `${lang === 'en' ? 'Email:' : 'Emel:'} ${escapeHtml(data.tenantEmail)}<br>` : ''}
+              ${(data.tenantContactName || data.tenantContactPhone || data.tenantType === 'company') ? `
+                <div style="margin-top:6px; padding:6px 10px; background:#f0fdf4; border:1px solid #86efac; border-radius:6px; font-size:9.5pt; line-height:1.45;">
+                  <strong style="color:#166534;"><i class="fa-solid fa-id-badge"></i> ${lang === 'en' ? 'Authorized Contact Person / Representative:' : 'Pegawai Dihubungi / Wakil Penyewa Diberi Kuasa:'}</strong><br>
                   • ${lang === 'en' ? 'Full Name:' : 'Nama Penuh:'} <strong>${escapeHtml(data.tenantContactName || '-')}</strong> ${data.tenantContactDesignation ? `(${escapeHtml(data.tenantContactDesignation)})` : ''}<br>
                   • ${lang === 'en' ? 'NRIC No:' : 'No. K/P (NRIC):'} <strong>${escapeHtml(data.tenantContactIc || '-')}</strong><br>
-                  • ${lang === 'en' ? 'Mobile / WhatsApp:' : 'No. Tel Bimbit:'} <strong>${escapeHtml(data.tenantContactPhone || '-')}</strong>
+                  • ${lang === 'en' ? 'Mobile / WhatsApp:' : 'No. Tel Bimbit / WhatsApp:'} <strong>${escapeHtml(data.tenantContactPhone || '-')}</strong>
                 </div>
-              ` : `
-                <strong>${escapeHtml(data.tenantName || '-')}</strong><br>
-                ${lang === 'en' ? 'NRIC / Passport:' : 'No. K/P / Pasport:'} <strong>${escapeHtml(data.tenantIc || '-')}</strong><br>
-                ${lang === 'en' ? 'Phone:' : 'No. Tel:'} ${escapeHtml(data.tenantPhone || '-')}<br>
-                ${data.tenantEmail ? `${lang === 'en' ? 'Email:' : 'Emel:'} ${escapeHtml(data.tenantEmail)}<br>` : ''}
-                ${lang === 'en' ? 'Permanent Address:' : 'Alamat Tetap:'} ${escapeHtml(data.tenantAddress || '-')}
-              `}
+              ` : ''}
             </td>
           </tr>
           <tr>
@@ -13170,7 +13432,12 @@ function renderAgreementPreview() {
             <div style="height:60px; border-bottom:1px solid #0f172a; margin-top:16px;"></div>
           </div>
           <div style="font-size:9.5pt; line-height:1.4; margin-top:8px;">
-            ${data.landlordType === 'company' ? `
+            ${(data.landlordType === 'company' && data.landlordContactName) ? `
+              ${lang === 'en' ? 'Authorized Signatory:' : 'Nama Wakil / Pengarah:'} <strong>${escapeHtml(data.landlordContactName)}</strong><br>
+              ${i18n.icLabel} <strong>${escapeHtml(data.landlordContactIc || '_______________________')}</strong><br>
+              ${lang === 'en' ? 'Designation:' : 'Jawatan:'} <strong>${escapeHtml(data.landlordContactDesignation || 'Pengarah / Wakil')}</strong><br>
+              ${i18n.dateLabel} ${formattedDate}
+            ` : data.landlordType === 'company' ? `
               ${lang === 'en' ? 'Authorized Signatory:' : 'Nama Wakil / Pengarah:'} _______________________<br>
               ${i18n.icLabel} _______________________<br>
               ${lang === 'en' ? 'Designation:' : 'Jawatan:'} _______________________<br>
@@ -13186,16 +13453,16 @@ function renderAgreementPreview() {
         <!-- Tenant Column -->
         <div class="agr-sig-card">
           <div>
-            <strong>${data.tenantType === 'company' 
+            <strong>${(data.tenantType === 'company' || data.tenantContactName)
               ? (lang === 'en' ? `Signed for and on behalf of TENANT:<br><span style="text-transform:uppercase;">${escapeHtml(data.tenantName || '')}</span>` : `Ditandatangani bagi & bagi pihak PENYEWA:<br><span style="text-transform:uppercase;">${escapeHtml(data.tenantName || '')}</span>`) 
               : i18n.signedByTenant}</strong>
             <div style="height:60px; border-bottom:1px solid #0f172a; margin-top:16px;"></div>
           </div>
           <div style="font-size:9.5pt; line-height:1.4; margin-top:8px;">
-            ${data.tenantType === 'company' ? `
-              ${lang === 'en' ? 'Authorized Representative:' : 'Nama Wakil Diberikuasa:'} <strong>${escapeHtml(data.tenantContactName || '_______________________')}</strong><br>
+            ${(data.tenantType === 'company' || data.tenantContactName) ? `
+              ${lang === 'en' ? 'Authorized Representative / Signatory:' : 'Nama Wakil Diberikuasa / Penandatangan:'} <strong>${escapeHtml(data.tenantContactName || '_______________________')}</strong><br>
               ${i18n.icLabel} <strong>${escapeHtml(data.tenantContactIc || '_______________________')}</strong><br>
-              ${lang === 'en' ? 'Designation:' : 'Jawatan:'} <strong>${escapeHtml(data.tenantContactDesignation || '_______________________')}</strong><br>
+              ${lang === 'en' ? 'Designation / Capacity:' : 'Jawatan / Kapasiti:'} <strong>${escapeHtml(data.tenantContactDesignation || (data.tenantType === 'company' ? 'Wakil Diberikuasa' : 'Penyewa / Wakil'))}</strong><br>
               ${i18n.dateLabel} ${formattedDate}
             ` : `
               ${i18n.nameLabel} <strong>${escapeHtml(data.tenantName || '')}</strong><br>
@@ -13731,6 +13998,12 @@ function saveAgreementDraft() {
       ...formData,
       savedAt: new Date().toISOString()
     };
+    if (formData.tenantContactName) booking.contactPerson = formData.tenantContactName;
+    if (formData.tenantContactDesignation) booking.contactDesignation = formData.tenantContactDesignation;
+    if (formData.tenantContactIc) booking.contactIc = formData.tenantContactIc;
+    if (formData.tenantContactPhone) booking.contactPhone = formData.tenantContactPhone;
+    if (formData.tenantType === 'company' && formData.tenantIc) booking.companyRegNo = formData.tenantIc;
+
     saveToStorage();
     showToast(isBM ? 'Deraf Perjanjian Sewaan berjaya disimpan ke rekod penyewa!' : 'Tenancy Agreement draft saved successfully to tenant booking record!');
   } else {

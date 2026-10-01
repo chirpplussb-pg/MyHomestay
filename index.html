@@ -14,7 +14,7 @@
   <meta http-equiv="Expires" content="0">
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=2.7.6">
+  <link rel="stylesheet" href="styles.css?v=2.7.8">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -73,6 +73,9 @@
           </button>
           <button class="icon-btn" id="btnHeaderCheckUpdates" title="Check for Updates / Semak Kemas Kini" aria-label="Check for Updates">
             <i class="fa-solid fa-rotate" style="color:var(--primary);"></i>
+          </button>
+          <button class="icon-btn" id="btnHeaderForceRefresh" title="Bersihkan Cache & Muat Semula (Clear Cache & Fresh Reload)" aria-label="Clear Cache & Reload" style="color:var(--danger);">
+            <i class="fa-solid fa-arrows-rotate"></i>
           </button>
           <button class="icon-btn" id="btnThemeToggle" title="Toggle Theme" aria-label="Toggle Theme">
             <i class="fa-solid fa-moon"></i>
@@ -421,6 +424,16 @@
             <input type="text" id="settingBusinessSsmInput" class="form-control" placeholder="e.g. 202601018899 (SA0543210-X)">
           </div>
           <div class="form-group">
+            <label class="form-label">Nama Pemilik Sah Hartanah (Landlord Legal Owner Name for Agreements)</label>
+            <input type="text" id="settingOwnerLegalNameInput" class="form-control" placeholder="e.g. Mohd Taufik bin Ramli (atau senarai pemilik bersama)">
+            <span class="card-subtitle" style="font-size: 11px;">Nama rasmi pemilik hartanah mengikut geran (diasingkan dari nama komersil homestay).</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">No. Kad Pengenalan Pemilik (Landlord Owner NRIC for Agreements)</label>
+            <input type="text" id="settingOwnerIcInput" class="form-control" placeholder="e.g. 850101-02-1234">
+            <span class="card-subtitle" style="font-size: 11px;">Dimasukkan secara automatik ke Surat Perjanjian Sewaan bagi pihak Tuan Rumah.</span>
+          </div>
+          <div class="form-group">
             <label class="form-label" data-i18n="business_address_label">Office / Business Address (For Quotations & Invoices)</label>
             <input type="text" id="settingBusinessAddressInput" class="form-control" placeholder="e.g. No 12, Jalan Pantai, 11200 Tanjung Bungah, Penang">
           </div>
@@ -595,7 +608,7 @@
               <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
               <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
             </div>
-            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.6.6</span>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.7.8</span>
           </div>
 
           <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
@@ -769,6 +782,37 @@
             <div class="form-group" style="margin-bottom:0;">
               <label class="form-label" data-i18n="address">Residential / Home Address / Alamat Surat Menyurat</label>
               <input type="text" id="bookingGuestAddress" class="form-control" placeholder="e.g. No. 12, Jalan Kemboja, Taman Melati, 53100 KL">
+            </div>
+
+            <!-- Optional Corporate / Company Tenant Details (for Monthly Rentals) -->
+            <div id="bookingCorporateFields" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-color);">
+              <div style="font-size:11px; font-weight:800; color:#0284c7; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-building"></i> <span>Butiran Syarikat & Wakil (Corporate Tenant & Contact Person):</span>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" style="font-size:10.5px;">No. Pendaftaran Syarikat (SSM)</label>
+                  <input type="text" id="bookingCompanyRegNo" class="form-control form-control-sm" placeholder="cth: 202301012345 (1234567-X)">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-size:10.5px;">Nama Pegawai Dihubungi (Contact Person)</label>
+                  <input type="text" id="bookingContactPerson" class="form-control form-control-sm" placeholder="Nama Penuh Wakil Syarikat">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" style="font-size:10.5px;">Jawatan Pegawai (Designation)</label>
+                  <input type="text" id="bookingContactDesignation" class="form-control form-control-sm" placeholder="cth: Pengurus HR / Wakil Diberi Kuasa">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-size:10.5px;">No. K/P Pegawai (NRIC)</label>
+                  <input type="text" id="bookingContactIc" class="form-control form-control-sm" placeholder="cth: 880315-08-5432">
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="font-size:10.5px;">No. Tel / WhatsApp Pegawai (Contact Person Phone)</label>
+                <input type="tel" id="bookingContactPhone" class="form-control form-control-sm" placeholder="+60123456789">
+              </div>
             </div>
           </div>
 
@@ -1199,11 +1243,14 @@
                 <p style="font-size:11px; color:var(--text-muted); margin:0;" data-i18n="tenancy_agreement_banner_sub">Auto-jana perjanjian rasmi A4, klausa mesra Muslim, inventori & tandatangan.</p>
               </div>
             </div>
-            <div style="display:flex; gap:6px; flex-shrink:0;">
-              <button type="button" class="btn btn-outline btn-xs" id="btnOpenTenancyAgreementFromHub" style="font-weight:700; white-space:nowrap; gap:6px; color:#0284c7; border-color:#0284c7; background:rgba(2,132,199,0.06);">
-                <i class="fa-solid fa-file-lines"></i> <span data-i18n="btn_preview_agreement">Pratonton</span>
+            <div style="display:flex; gap:6px; flex-shrink:0; flex-wrap:wrap; margin-top:4px;">
+              <button type="button" class="btn btn-outline btn-xs" id="btnEditTenancyAgreementFromHub" style="font-weight:700; white-space:nowrap; gap:6px; color:#0284c7; border-color:#0284c7; background:rgba(2,132,199,0.06);" title="Buka Borang Butiran Perjanjian (Contact Person, SSM, NRIC)">
+                <i class="fa-solid fa-pen-to-square"></i> <span data-i18n="btn_edit_agreement">Borang Butiran</span>
               </button>
-              <button type="button" class="btn btn-primary btn-xs" id="btnQuickDownloadAgreementFromHub" style="font-weight:700; white-space:nowrap; gap:6px; background:#0284c7; border-color:#0284c7;">
+              <button type="button" class="btn btn-outline btn-xs" id="btnOpenTenancyAgreementFromHub" style="font-weight:700; white-space:nowrap; gap:6px; color:#0369a1; border-color:#0369a1; background:rgba(3,105,161,0.06);" title="Lihat Pra Tonton Surat Perjanjian A4">
+                <i class="fa-solid fa-file-lines"></i> <span data-i18n="btn_preview_agreement">Pra Tonton</span>
+              </button>
+              <button type="button" class="btn btn-primary btn-xs" id="btnQuickDownloadAgreementFromHub" style="font-weight:700; white-space:nowrap; gap:6px; background:#0284c7; border-color:#0284c7;" title="Muat Turun Terus PDF ke Folder Downloads">
                 <i class="fa-solid fa-file-arrow-down"></i> <span data-i18n="btn_download_pdf">Muat Turun PDF</span>
               </button>
             </div>
@@ -2668,6 +2715,27 @@
                     <label class="form-label" style="font-size:11px;" data-i18n="agr_lbl_landlord_addr">Alamat Surat-Menyurat Tuan Rumah:</label>
                     <textarea id="agrLandlordAddress" class="form-control form-control-sm" rows="2" placeholder="Alamat penuh surat-menyurat kediaman atau pejabat Tuan Rumah"></textarea>
                   </div>
+
+                  <!-- Authorized Signatory / Representative (For Landlord Company) -->
+                  <div id="agrLandlordCompanyContactGroup" style="display:none; margin-top:10px; padding:10px 12px; background:var(--bg-surface-subtle); border:1.5px dashed var(--border-color); border-radius:8px;">
+                    <div style="font-size:11.5px; font-weight:800; color:var(--primary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                      <i class="fa-solid fa-user-tie"></i> <span>Wakil / Penandatangan Tuan Rumah (Authorized Signatory):</span>
+                    </div>
+                    <div class="form-row mb-2">
+                      <div class="form-group" style="flex:1;">
+                        <label class="form-label" style="font-size:10.5px;">Nama Wakil / Pengarah:</label>
+                        <input type="text" id="agrLandlordContactName" class="form-control form-control-sm" placeholder="Nama Penandatangan Tuan Rumah">
+                      </div>
+                      <div class="form-group" style="flex:1;">
+                        <label class="form-label" style="font-size:10.5px;">Jawatan / Capacity:</label>
+                        <input type="text" id="agrLandlordContactDesignation" class="form-control form-control-sm" placeholder="cth: Pengarah / Pengurus">
+                      </div>
+                    </div>
+                    <div class="form-group mb-0">
+                      <label class="form-label" style="font-size:10.5px;">No. K/P Wakil (NRIC):</label>
+                      <input type="text" id="agrLandlordContactIc" class="form-control form-control-sm" placeholder="cth: 750214-02-5567">
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Tenant Particulars -->
@@ -2704,28 +2772,29 @@
                     <textarea id="agrTenantAddress" class="form-control form-control-sm" rows="2" placeholder="Alamat mengikut kad pengenalan penyewa / alamat berdaftar"></textarea>
                   </div>
 
-                  <!-- Authorized Representative / Contact Person (For Corporate / Company Tenant) -->
-                  <div id="agrTenantCompanyContactGroup" style="display:none; margin-top:10px; padding:10px 12px; background:var(--bg-surface-subtle); border:1.5px dashed var(--border-color); border-radius:8px;">
-                    <div style="font-size:11.5px; font-weight:800; color:var(--primary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                      <i class="fa-solid fa-id-badge"></i> <span>Wakil / Pegawai Dihubungi Syarikat (Authorized Contact Person):</span>
+                  <!-- Authorized Representative / Contact Person (Contact Person for Corporate / Individual) -->
+                  <div id="agrTenantCompanyContactGroup" style="margin-top:12px; padding:10px 12px; background:var(--bg-surface-subtle); border:1.5px solid #bae6fd; border-radius:8px;">
+                    <div style="font-size:11.5px; font-weight:800; color:#0369a1; margin-bottom:2px; display:flex; align-items:center; gap:6px;">
+                      <i class="fa-solid fa-id-badge"></i> <span id="lblAgrTenantContactHeader">Pegawai Dihubungi / Wakil Penyewa (Contact Person & Authorized Representative):</span>
                     </div>
+                    <span style="font-size:9.5px; color:var(--text-muted); display:block; margin-bottom:8px;">*Wajib diisi untuk sewaan syarikat (SSM), atau pilihan sebagai rujukan/wakil penyewa individu. Butiran ini dipaparkan di dalam Surat Perjanjian.</span>
                     <div class="form-row mb-2">
                       <div class="form-group" style="flex:1;">
-                        <label class="form-label" style="font-size:10.5px;">Nama Pegawai Dihubungi:</label>
+                        <label class="form-label" style="font-size:10.5px;">Nama Pegawai Dihubungi (Contact Person):</label>
                         <input type="text" id="agrTenantContactName" class="form-control form-control-sm" placeholder="cth: Ahmad Farhan bin Ismail">
                       </div>
                       <div class="form-group" style="flex:1;">
-                        <label class="form-label" style="font-size:10.5px;">Jawatan / Capacity:</label>
-                        <input type="text" id="agrTenantContactDesignation" class="form-control form-control-sm" placeholder="cth: Pengurus HR / Pengarah">
+                        <label class="form-label" style="font-size:10.5px;">Jawatan / Capacity (Designation):</label>
+                        <input type="text" id="agrTenantContactDesignation" class="form-control form-control-sm" placeholder="cth: Pengurus HR / Pengarah / Wakil">
                       </div>
                     </div>
                     <div class="form-row mb-0">
                       <div class="form-group" style="flex:1;">
-                        <label class="form-label" style="font-size:10.5px;">No. K/P Wakil (NRIC):</label>
+                        <label class="form-label" style="font-size:10.5px;">No. K/P Pegawai (NRIC):</label>
                         <input type="text" id="agrTenantContactIc" class="form-control form-control-sm" placeholder="cth: 880315-08-5432">
                       </div>
                       <div class="form-group" style="flex:1;">
-                        <label class="form-label" style="font-size:10.5px;">No. Tel Bimbit Wakil:</label>
+                        <label class="form-label" style="font-size:10.5px;">No. Tel Bimbit / WhatsApp Pegawai:</label>
                         <input type="text" id="agrTenantContactPhone" class="form-control form-control-sm" placeholder="cth: +6019-8765432">
                       </div>
                     </div>
@@ -2967,6 +3036,16 @@
 
               <!-- Download Status Card -->
               <div id="agrActionStatusCard" style="display:none; margin-top:10px;"></div>
+
+              <!-- Quick Edit Hint Banner -->
+              <div style="background:rgba(2,132,199,0.06); border:1px solid #bae6fd; border-radius:8px; padding:8px 12px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <span style="font-size:11.5px; color:#0369a1;">
+                  <i class="fa-solid fa-circle-info"></i> <strong>Ingin sunting maklumat?</strong> Masukkan pemilik sah hartanah (NRIC/SSM) atau wakil syarikat (Contact Person) di Tab 1.
+                </span>
+                <button type="button" class="btn btn-outline btn-xs" id="btnQuickSwitchToForm" style="font-weight:700; font-size:11px; color:#0284c7; border-color:#0284c7; background:#fff;">
+                  <i class="fa-solid fa-pen-to-square"></i> Buka Borang Butiran
+                </button>
+              </div>
             </div>
 
             <!-- Printable Document Sheet Preview Area -->
@@ -3018,6 +3097,6 @@
       document.head.appendChild(s);
     }
   </script>
-  <script src="app.js?v=2.7.6"></script>
+  <script src="app.js?v=2.7.8"></script>
 </body>
 </html>

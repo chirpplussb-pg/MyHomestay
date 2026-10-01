@@ -11,6 +11,7 @@
 4. [Creating Bookings & Tenancies / Merekod Tempahan & Sewaan](#4-creating-bookings--tenancies--merekod-tempahan--sewaan)
 5. [Calendar View: Check-In vs. Check-Out Modes / Paparan Kalendar Pintar](#5-calendar-view-check-in-vs-check-out-modes--paparan-kalendar-pintar)
 6. [Multi-Month Invoicing & Receipts / Invois & Resit Bulanan](#6-multi-month-invoicing--receipts--invois--resit-bulanan)
+6B. [Tenancy Agreement Generator (Corporate & Individual) / Penjana Surat Perjanjian Sewaan](#6b-tenancy-agreement-generator-corporate--individual--penjana-surat-perjanjian-sewaan)
 7. [Digital Payment Receipts & Bank Reference Capture / Rekod Resit Digital & Rujukan Bank](#7-digital-payment-receipts--bank-reference-capture--rekod-resit-digital--rujukan-bank)
 8. [1-Tap WhatsApp Automation / Automasi Mesej WhatsApp 1-Sentuhan](#8-1-tap-whatsapp-automation--automasi-mesej-whatsapp-1-sentuhan)
 9. [Deposit Refunds & Move-Out / Pemulangan Deposit & Tamat Sewaan](#9-deposit-refunds--move-out--pemulangan-deposit--tamat-sewaan)
@@ -259,6 +260,76 @@ For monthly tenancies, the app provides a **Sequential Monthly Billing Engine**.
 5. **Menanda Bayaran & Menghantar Resit**:
    * Tekan **`Tanda Bayar`** apabila penyewa telah membuat bayaran.
    * Tekan **`Resit`** untuk menghantar **Resit Rasmi Bayaran Sewa Bulanan** (`REC-RENT-M2-XXXX`).
+
+---
+
+## 6B. Tenancy Agreement Generator (Corporate & Individual) / Penjana Surat Perjanjian Sewaan
+
+The app includes a full **Residential Tenancy Agreement Generator (Surat Perjanjian Sewaan Kediaman)** adhering to standard Malaysian tenancy practice, supporting both personal tenancies and corporate company leases.
+
+#### 🇬🇧 English: Tenancy Agreement Generator Features (v2.7.8)
+1. **Guaranteed Particulars Printed Directly Inside the Tenancy Agreement Document**:
+   * **Landlord (Tuan Rumah)**: Full Legal Owner Name(s) and NRIC No (or Company Legal Name & SSM Registration No), Official Tel / WhatsApp, and Correspondence Address. For company landlords, the Authorized Director / Signatory is printed in the execution block.
+   * **Homestay Commercial Identity**: Separated from legal ownership and stated clearly in the Preamble & Jadual Pertama (e.g. *Commercially known as "Homestay Semarak Api"*).
+   * **Tenant (Penyewa)**: Full Tenant Name & NRIC/Passport (or Corporate Tenant Name, SSM Registration No, Registered Office Address, Office Phone, and Email).
+   * **Authorized Contact Person (Pegawai Dihubungi / Wakil Diberi Kuasa)**:
+     * Full Name (e.g. *Mohd Taufik bin Ramli*)
+     * Designation / Capacity (e.g. *Managing Director / HR Project Manager*)
+     * Representative NRIC No.
+     * Mobile / WhatsApp Phone Number
+     * **Printed in 3 Critical Locations Inside the Agreement**:
+       1. **Preamble (Mukadimah)**: Declares that the Tenant entity is legally represented herein by the named Contact Person.
+       2. **First Schedule (Jadual Pertama) Item 3**: Dedicated highlighted box displaying the Contact Person's name, designation, NRIC, and mobile number.
+       3. **Execution & Signatures (Meterai & Tandatangan)**: Dedicated signature block for the Authorized Representative to execute on behalf of the Tenant.
+2. **Default Landlord Owner Settings**:
+   * Set your **Default Landlord Legal Owner Name** (`Nama Pemilik Sah Hartanah`) and **Owner NRIC** (`No. Kad Pengenalan Pemilik`) in **Settings > App Preferences**. The app will automatically populate these into every Tenancy Agreement!
+3. **Dedicated Navigation Buttons on Booking Cards & Tenancy Hub**:
+   * **`Agreement Form / Borang Perjanjian`**: Directly opens **Tab 1 (Agreement Details & Terms Form)** with all party and contact person fields prominently visible.
+   * **`Preview / Pra Tonton`**: Directly opens **Tab 2 (Live A4 Document Preview)**.
+   * **`PDF`**: 1-click immediate export of the signed agreement straight to your **Downloads** folder.
+4. **Special Muslim-Friendly House Covenants (Section 2)**:
+   * Explicit legal covenants covering 100% Halal food, zero alcohol tolerance, prohibition of non-syarak pets, and community moral decorum, including landlord rights to vacant possession within 48 hours and professional cleansing/sertu cost recovery upon default.
+5. **Second Schedule: Inventory Checklist**:
+   * Auto-populates all furnishings and electrical appliances with quantities and handover conditions (water heaters excluded by default).
+6. **Multi-Page A4 PDF Generation & Direct Downloads**:
+   * Tap **`Download PDF`** or **`Muat Turun PDF`** to export directly to your device's Downloads folder (`Surat_Perjanjian_Sewaan_[Name].pdf`).
+7. **1-Tap WhatsApp & Email Dispatch**:
+   * Routes the agreement message directly to the tenant's or corporate representative's mobile WhatsApp number.
+8. **1-Click Cache Purge & Force Reload (`🔄`)**:
+   * Red refresh button in the top header instantly clears stale browser cache and loads the latest v2.7.8 code without losing any booking data.
+
+---
+
+### 🇲🇾 Bahasa Melayu: Ciri Penjana Surat Perjanjian Sewaan (v2.7.8)
+1. **Butiran Lengkap Dijamin Terpapar di Dalam Dokumen Perjanjian (Inside the Agreement)**:
+   * **Tuan Rumah**: Nama Pemilik Sah Hartanah & No. Kad Pengenalan (NRIC) mengikut geran (atau Nama Syarikat Pemilik & No. SSM), No. Telefon dan Alamat Surat-Menyurat.
+   * **Jenama Komersil Homestay**: Diasingkan daripada entiti pemilikan sah dan dinyatakan dengan jelas dalam Mukadimah & Jadual Pertama (cth: *hartanah yang dikenali secara komersil sebagai "Homestay Semarak Api"*).
+   * **Penyewa**: Nama Penuh Penyewa & No. K/P / Pasport (atau Nama Syarikat Penyewa, No. Pendaftaran SSM, Alamat Pejabat Berdaftar, No. Tel Pejabat, dan Emel).
+   * **Pegawai Dihubungi / Wakil Syarikat Diberi Kuasa (Authorized Contact Person)**:
+     * Nama Penuh Pegawai Dihubungi (cth: *Mohd Taufik bin Ramli*)
+     * Jawatan / Kapasiti (cth: *Pengarah Urusan / Pengurus HR*)
+     * No. Kad Pengenalan Pegawai (NRIC)
+     * No. Telefon Bimbit / WhatsApp Pegawai
+     * **Terpapar Secara Jelas di 3 Bahagian Dokumen Perjanjian**:
+       1. **Mukadimah**: Menyatakan penyewa diwakili secara sah oleh Pegawai Dihubungi tersebut.
+       2. **Jadual Pertama (Item 3)**: Kotak khas berwarna hijau memaparkan nama penuh pegawai, jawatan, no. kad pengenalan, dan no. telefon bimbit.
+       3. **Meterai & Tandatangan**: Ruangan tandatangan khas wakil syarikat lengkap bersama nama, no. K/P, dan jawatan.
+2. **Tetapan Lalai Pemilik Hartanah (Settings Tab)**:
+   * Anda boleh menetapkan **Nama Pemilik Sah Hartanah** dan **No. Kad Pengenalan Pemilik (NRIC)** di **Tab Tetapan (Settings) > Keutamaan Aplikasi**. Sistem akan memasukkannya secara automatik ke dalam setiap perjanjian sewaan baharu.
+3. **Butang Akses Terus pada Kad Tempahan & Hab Sewaan**:
+   * **`Borang Perjanjian`**: Membuka **Tab 1 (Borang Butiran & Syarat)** dengan bahagian Pegawai Dihubungi sentiasa terpapar dan sedia diisi.
+   * **`Pra Tonton`**: Membuka **Tab 2 (Pra Tonton Dokumen A4)** secara terus untuk menyemak draf perjanjian sebelum mencetak.
+   * **`PDF`**: Memuat turun fail PDF A4 terus ke folder Downloads komputer/telefon pintar anda.
+4. **Fasal 2: Klausa Khas Pemeliharaan Keadaan Rumah Mesra Muslim**:
+   * Fasal terperinci merangkumi syarat makanan halal sahaja, larangan mutlak arak/alkohol, larangan haiwan peliharaan terlarang syarak, serta ketenteraman adab kejiranan berserta hak penamatan serta-merta 48 jam dan kos pensucian (sertu/samak).
+5. **Jadual Kedua: Senarai Inventori Premis**:
+   * Memaparkan senarai perkakas rumah, perabot dan peralatan elektrik bersama kuantiti dan keadaan semasa penyerahan kunci (pemanas air dikecualikan secara lalai).
+6. **Muat Turun Terus PDF A4 ke Folder Downloads**:
+   * Fail PDF A4 rasmi dijana dan dimuat turun **terus ke folder Downloads** komputer atau telefon anda (`Surat_Perjanjian_Sewaan_[Name].pdf`).
+7. **Penghantaran Pantas WhatsApp & Emel**:
+   * Mesej iringan rasmi dialamatkan terus kepada nombor telefon bimbit wakil syarikat atau penyewa.
+8. **Butang 1-Sentuhan Bersihkan Cache & Muat Semula (`🔄`)**:
+   * Ikon merah di bar atas header memadamkan cache lapuk dan memuat semula aplikasi terkini **v2.7.8** tanpa memadam sebarang rekod homestay atau tempahan.
 
 ---
 
