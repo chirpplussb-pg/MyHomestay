@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0284c7">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,7 +14,7 @@
   <meta http-equiv="Expires" content="0">
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=2.7.8">
+  <link rel="stylesheet" href="styles.css?v=2.7.11">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -62,7 +62,7 @@
           <button class="icon-btn" id="btnOpenPromoMedia" title="Promotional Media Hub / Media Promosi" aria-label="Promotional Media Hub">
             <i class="fa-solid fa-bullhorn" style="color:var(--primary);"></i>
           </button>
-          <button class="icon-btn" id="btnOpenAgreementGen" title="Penjana Perjanjian Sewa / Tenancy Agreement Generator" aria-label="Tenancy Agreement Generator">
+          <button class="icon-btn" id="btnOpenAgreementGen" onclick="openAgreementModal(null, 'form')" title="Penjana Perjanjian Sewa / Tenancy Agreement Generator" aria-label="Tenancy Agreement Generator">
             <i class="fa-solid fa-file-signature" style="color:var(--primary);"></i>
           </button>
           <button class="icon-btn lang-toggle-btn" id="btnLangToggle" title="Tukar Bahasa / Switch Language">
@@ -119,6 +119,22 @@
       
       <!-- ================= TAB 1: DASHBOARD ================= -->
       <section class="tab-view active" id="view-dashboard">
+        <!-- 14-Day Backup Reminder Banner -->
+        <div id="backupReminderBanner" style="display:none; background:linear-gradient(135deg, #fffbeb, #fef3c7); border:1.5px solid #f59e0b; border-radius:var(--radius-md); padding:10px 14px; margin-bottom:14px; align-items:center; justify-content:space-between; gap:10px; font-size:12px; color:#92400e; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.12);">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-clock-rotate-left" style="color:#d97706; font-size:16px; flex-shrink:0;"></i>
+            <span id="backupReminderText" data-i18n="backup_reminder_msg">Peringatan: Anda mempunyai rekod tempahan tetapi belum mengeksport fail sandaran (backup) dalam tempoh 14 hari yang lalu.</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+            <button type="button" class="btn btn-outline btn-xs" id="btnBackupReminderExport" style="background:#fff; border-color:#d97706; color:#92400e; font-weight:700;">
+              <i class="fa-solid fa-download"></i> <span data-i18n="btn_backup_now">Eksport Sekarang</span>
+            </button>
+            <button type="button" class="btn btn-link btn-xs" id="btnDismissBackupReminder" style="color:#92400e; padding:2px 6px;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
         <!-- Quick Action Summary Cards -->
         <div class="dashboard-kpis">
           <div class="kpi-card highlight-blue" id="kpiCheckInsCard">
@@ -201,7 +217,7 @@
         <div class="calendar-card card">
           <div class="calendar-nav">
             <button class="cal-nav-btn" id="calPrevMonth"><i class="fa-solid fa-chevron-left"></i></button>
-            <h2 class="cal-month-title" id="calMonthTitle">August 2026</h2>
+            <h2 class="cal-month-title" id="calMonthTitle"></h2>
             <button class="cal-nav-btn" id="calNextMonth"><i class="fa-solid fa-chevron-right"></i></button>
           </div>
 
@@ -442,11 +458,6 @@
             <input type="email" id="settingBusinessEmailInput" class="form-control" placeholder="e.g. host@myhomestay.com">
           </div>
           <div class="form-group">
-            <label class="form-label" data-i18n="seller_phone_label">Seller Support / Order WhatsApp Number</label>
-            <input type="tel" id="settingSellerPhoneInput" class="form-control" placeholder="e.g. +60123456789">
-            <span class="card-subtitle" style="font-size: 11px;" data-i18n="seller_phone_hint">Buyers will contact this WhatsApp number when clicking "Buy License".</span>
-          </div>
-          <div class="form-group">
             <label class="form-label" data-i18n="currency_label">Currency Symbol</label>
             <select id="settingCurrencySelect" class="form-select">
               <option value="RM">RM (Malaysian Ringgit)</option>
@@ -481,6 +492,11 @@
             <label class="form-label" data-i18n="quotation_validity_label">Default Quotation Validity (Days)</label>
             <input type="number" id="settingQuotationValidityInput" class="form-control" placeholder="3" min="1" max="90" value="3">
             <span class="card-subtitle" style="font-size: 11px;" data-i18n="quotation_validity_hint">Default number of days a quotation remains valid before expiry.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="sst_rate_label">Sales & Service Tax (SST) Rate (%)</label>
+            <input type="number" id="settingSstRateInput" class="form-control" placeholder="0" min="0" max="25" step="0.5" value="0">
+            <span class="card-subtitle" style="font-size: 11px;" data-i18n="sst_rate_hint">Optional SST rate for official invoices/receipts (e.g. 6% or 8%). Set to 0 to disable tax line.</span>
           </div>
           <div class="form-group">
             <label class="form-label" data-i18n="standard_notes_label">Standard WhatsApp Notes / Footer</label>
@@ -529,64 +545,7 @@
           </div>
         </div>
 
-        <!-- ADMIN LICENSE GENERATOR (Visible for Master Admin) -->
-        <div class="card hidden" id="adminLicenseGenCard" style="border: 2px solid var(--primary); background: rgba(59, 130, 246, 0.04);">
-          <div class="card-header-flex mb-2">
-            <div>
-              <h3 class="card-title" style="color:var(--primary);"><i class="fa-solid fa-key"></i> <span data-i18n="admin_gen_title">Admin License Generator</span></h3>
-              <p class="card-subtitle" data-i18n="admin_gen_sub">Generate phone-bound licenses and 1-click WhatsApp onboarding links for buyers.</p>
-            </div>
-            <span style="background:var(--primary); color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:999px;">SELLER TOOL</span>
-          </div>
 
-          <!-- Master Admin Quick Tools Bar -->
-          <div style="display:flex; gap:8px; margin-bottom:12px; padding-bottom:10px; border-bottom:1px dashed var(--border-color); flex-wrap:wrap;">
-            <button type="button" class="btn btn-outline btn-xs" id="btnAdminCheckUpdates" style="color:var(--primary); font-weight:700; border-color:var(--primary);">
-              <i class="fa-solid fa-rotate"></i> <span data-i18n="btn_check_updates">Check for App Updates</span> (v2.6.6)
-            </button>
-            <button type="button" class="btn btn-outline btn-xs" id="btnAdminOpenGuide" style="color:var(--text-main); font-weight:700;">
-              <i class="fa-solid fa-book-open"></i> <span data-i18n="btn_open_guide">User Manual & Operational Guide</span>
-            </button>
-          </div>
-
-          <form id="adminGenForm">
-            <div class="form-group">
-              <label class="form-label required" data-i18n="buyer_phone_label">Buyer's WhatsApp Phone Number</label>
-              <input type="tel" id="adminBuyerPhoneInput" class="form-control" placeholder="e.g. +60123456789 or 0123456789" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" data-i18n="buyer_name_label">Buyer Name / Homestay Name (Optional)</label>
-              <input type="text" id="adminBuyerNameInput" class="form-control" placeholder="e.g. Puan Rosnah / D'Impian Homestay">
-            </div>
-            <button type="submit" class="btn btn-primary btn-block" id="btnGenerateLicense" data-i18n="btn_gen_license">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> Generate License & Magic Link
-            </button>
-          </form>
-
-          <div id="adminGenResultBox" class="pricing-calc-box mt-3 hidden" style="background:var(--bg-surface);">
-            <div class="calc-row">
-              <span>Buyer Phone:</span>
-              <strong id="resBuyerPhone">-</strong>
-            </div>
-            <div class="calc-row">
-              <span>License Key:</span>
-              <code id="resLicenseKey" style="font-weight:800; color:var(--primary); font-size:13px;">-</code>
-            </div>
-            <div class="calc-row mt-1">
-              <span>1-Click Magic Activation URL:</span>
-            </div>
-            <input type="text" id="resMagicUrl" class="form-control form-control-sm mt-1" readonly style="font-size:11px; background:var(--bg-surface-subtle);">
-            
-            <div style="display:flex; gap:8px; margin-top:10px;">
-              <button type="button" class="btn btn-outline btn-sm" id="btnCopyMagicLink" style="flex:1;">
-                <i class="fa-solid fa-copy"></i> Copy Link
-              </button>
-              <button type="button" class="btn btn-whatsapp btn-sm" id="btnSendBuyerWa" style="flex:2;">
-                <i class="fa-brands fa-whatsapp"></i> Send Key to Buyer
-              </button>
-            </div>
-          </div>
-        </div>
 
         <!-- User Manual & In-App Guide Card -->
         <div class="card" style="background:linear-gradient(135deg, rgba(2,132,199,0.06), rgba(99,102,241,0.06)); border:1px solid rgba(2,132,199,0.25);">
@@ -608,7 +567,7 @@
               <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
               <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
             </div>
-            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.7.8</span>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.7.11</span>
           </div>
 
           <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
@@ -751,67 +710,156 @@
             <input type="hidden" id="bookingRentalType" value="daily">
           </div>
 
-          <!-- Tenant / Guest Particulars -->
-          <div style="background:var(--bg-surface-subtle); padding:10px; border-radius:var(--radius-md); border:1px solid var(--border-color); margin-bottom:12px;">
-            <div style="font-size:12px; font-weight:800; color:var(--text-main); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-              <i class="fa-solid fa-id-card" style="color:var(--primary);"></i> <span data-i18n="tenant_particulars_title">Tenant & Guest Particulars / Butiran Tetamu</span>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label required" data-i18n="full_name">Full Name / Nama Penuh</label>
-                <input type="text" id="bookingGuestName" class="form-control" placeholder="e.g. Sarah Tan / Ahmad bin Ali" required>
+          <!-- Tenant / Guest Particulars Card (A4: Three-Role Model) -->
+          <div style="background:var(--bg-surface-subtle); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-color); margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
+              <div style="font-size:12px; font-weight:800; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-id-card" style="color:var(--primary);"></i> <span data-i18n="tenant_particulars_title">Tenant & Guest Particulars / Butiran Tetamu</span>
               </div>
-              <div class="form-group">
-                <label class="form-label" data-i18n="phone_wa">Phone / WhatsApp</label>
-                <input type="tel" id="bookingGuestPhone" class="form-control" placeholder="+60 12-345 6789">
+              <!-- Tenant Category Switcher: Individual vs Company -->
+              <div class="segmented-control" id="tenantTypeSegmented" style="font-size:11px; max-width:210px; margin:0;">
+                <button type="button" class="segment-btn active" data-tenant-type="individual">
+                  <i class="fa-solid fa-user"></i> <span data-i18n="tenant_individual">Individual</span>
+                </button>
+                <button type="button" class="segment-btn" data-tenant-type="company">
+                  <i class="fa-solid fa-building"></i> <span data-i18n="tenant_company">Company</span>
+                </button>
+              </div>
+              <input type="hidden" id="bookingTenantType" value="individual">
+            </div>
+
+            <!-- Role (a): TENANT (Legal Party) - Individual View -->
+            <div id="sectionTenantIndividual">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label required" data-i18n="full_name">Full Name / Nama Penuh</label>
+                  <input type="text" id="bookingGuestName" class="form-control" placeholder="e.g. Sarah Tan / Ahmad bin Ali">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" data-i18n="nric_passport">NRIC / Passport No. / No. KP</label>
+                  <input type="text" id="bookingGuestNric" class="form-control" placeholder="e.g. 901020-01-5678 / A12345678">
+                </div>
+              </div>
+
+              <!-- Direct Contact for Individual in Daily mode -->
+              <div class="form-row" id="rowIndividualContact">
+                <div class="form-group">
+                  <label class="form-label required" data-i18n="phone_wa">Phone / WhatsApp</label>
+                  <input type="tel" id="bookingGuestPhone" class="form-control" placeholder="+60 12-345 6789">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" data-i18n="email">Email Address / Emel</label>
+                  <input type="email" id="bookingGuestEmail" class="form-control" placeholder="e.g. sarah@example.com">
+                </div>
+              </div>
+
+              <div class="form-group" id="groupIndividualAddress" style="margin-bottom:0;">
+                <label class="form-label" data-i18n="address">Residential / Home Address / Alamat Kediaman</label>
+                <input type="text" id="bookingGuestAddress" class="form-control" placeholder="e.g. No. 12, Jalan Kemboja, Taman Melati, 53100 KL">
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" data-i18n="nric_passport">NRIC / Passport No. / No. KP</label>
-                <input type="text" id="bookingGuestNric" class="form-control" placeholder="e.g. 901020-01-5678 / A12345678">
+            <!-- Role (a): TENANT (Legal Party) - Company View -->
+            <div id="sectionTenantCompany" style="display:none;">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label required" data-i18n="company_name">Company Legal Name / Nama Syarikat</label>
+                  <input type="text" id="bookingCompanyName" class="form-control" placeholder="e.g. Mega Maju Sdn Bhd">
+                </div>
+                <div class="form-group">
+                  <label class="form-label required" data-i18n="company_reg_no">SSM Registration No. / No. SSM</label>
+                  <input type="text" id="bookingCompanyRegNo" class="form-control" placeholder="e.g. 202301012345 (1234567-X)">
+                </div>
               </div>
-              <div class="form-group">
-                <label class="form-label" data-i18n="email">Email Address / Emel</label>
-                <input type="email" id="bookingGuestEmail" class="form-control" placeholder="e.g. sarah@example.com">
+
+              <div class="form-group" id="groupCompanyAddress" style="margin-bottom:8px;">
+                <label class="form-label" data-i18n="company_address">Registered Office Address / Alamat Berdaftar Syarikat</label>
+                <input type="text" id="bookingCompanyAddress" class="form-control" placeholder="e.g. Level 12, Menara Mega, Jalan Ampang, 50450 KL">
               </div>
             </div>
 
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" data-i18n="address">Residential / Home Address / Alamat Surat Menyurat</label>
-              <input type="text" id="bookingGuestAddress" class="form-control" placeholder="e.g. No. 12, Jalan Kemboja, Taman Melati, 53100 KL">
-            </div>
-
-            <!-- Optional Corporate / Company Tenant Details (for Monthly Rentals) -->
-            <div id="bookingCorporateFields" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-color);">
-              <div style="font-size:11px; font-weight:800; color:#0284c7; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-                <i class="fa-solid fa-building"></i> <span>Butiran Syarikat & Wakil (Corporate Tenant & Contact Person):</span>
+            <!-- Role (b): CONTACT PERSON (Communication Only) - Required for Company, Optional for Individual -->
+            <div id="sectionContactPerson" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-color);">
+              <div style="font-size:11.5px; font-weight:800; color:#0284c7; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-address-book"></i> <span data-i18n="contact_person_title">Contact Person (Communication) / Pegawai Dihubungi</span>
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label class="form-label" style="font-size:10.5px;">No. Pendaftaran Syarikat (SSM)</label>
-                  <input type="text" id="bookingCompanyRegNo" class="form-control form-control-sm" placeholder="cth: 202301012345 (1234567-X)">
+                  <label class="form-label required" data-i18n="contact_person_name">Contact Person Name / Nama Pegawai</label>
+                  <input type="text" id="bookingContactPerson" class="form-control" placeholder="e.g. En. Razak / Ms. Jessica">
                 </div>
                 <div class="form-group">
-                  <label class="form-label" style="font-size:10.5px;">Nama Pegawai Dihubungi (Contact Person)</label>
-                  <input type="text" id="bookingContactPerson" class="form-control form-control-sm" placeholder="Nama Penuh Wakil Syarikat">
+                  <label class="form-label" data-i18n="contact_person_designation">Designation / Jawatan</label>
+                  <input type="text" id="bookingContactDesignation" class="form-control" placeholder="e.g. HR Manager / Procurement">
                 </div>
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label class="form-label" style="font-size:10.5px;">Jawatan Pegawai (Designation)</label>
-                  <input type="text" id="bookingContactDesignation" class="form-control form-control-sm" placeholder="cth: Pengurus HR / Wakil Diberi Kuasa">
+                  <label class="form-label required" data-i18n="contact_person_phone">Phone / WhatsApp</label>
+                  <input type="tel" id="bookingContactPhone" class="form-control" placeholder="+60 12-345 6789">
                 </div>
                 <div class="form-group">
-                  <label class="form-label" style="font-size:10.5px;">No. K/P Pegawai (NRIC)</label>
-                  <input type="text" id="bookingContactIc" class="form-control form-control-sm" placeholder="cth: 880315-08-5432">
+                  <label class="form-label" data-i18n="contact_person_email">Email / Emel</label>
+                  <input type="email" id="bookingContactEmail" class="form-control" placeholder="e.g. contact@megamaju.com">
+                </div>
+              </div>
+            </div>
+
+            <!-- Role (c): AUTHORIZED SIGNATORY (Companies Only) -->
+            <div id="sectionAuthorizedSignatory" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-color);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                <div style="font-size:11.5px; font-weight:800; color:#059669; display:flex; align-items:center; gap:6px;">
+                  <i class="fa-solid fa-file-signature"></i> <span data-i18n="signatory_title">Authorized Signatory / Penandatangan Diberi Kuasa</span>
+                </div>
+                <label style="font-size:11px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:4px; cursor:pointer;">
+                  <input type="checkbox" id="bookingSignatorySameAsContact" style="cursor:pointer;">
+                  <span data-i18n="signatory_same_as_contact">Same as Contact Person / Sama seperti Pegawai Dihubungi</span>
+                </label>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" data-i18n="signatory_name">Signatory Name / Nama Penuh</label>
+                  <input type="text" id="bookingSignatoryName" class="form-control" placeholder="e.g. Dato' Kamaruddin">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" data-i18n="signatory_designation">Designation / Jawatan</label>
+                  <input type="text" id="bookingSignatoryDesignation" class="form-control" placeholder="e.g. Director / Managing Director">
                 </div>
               </div>
               <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label" style="font-size:10.5px;">No. Tel / WhatsApp Pegawai (Contact Person Phone)</label>
-                <input type="tel" id="bookingContactPhone" class="form-control form-control-sm" placeholder="+60123456789">
+                <label class="form-label" data-i18n="signatory_ic">Signatory NRIC / No. K/P Penandatangan</label>
+                <input type="text" id="bookingSignatoryIc" class="form-control" placeholder="e.g. 750101-10-5555">
+              </div>
+            </div>
+
+            <!-- Extra Monthly Tenancy Details: Emergency Contact & Occupants -->
+            <div id="sectionMonthlyExtras" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-color);">
+              <div style="font-size:11.5px; font-weight:800; color:#d97706; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-phone-volume"></i> <span data-i18n="emergency_contact_title">Emergency Contact & Occupants / Kontak Kecemasan & Penghuni</span>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" data-i18n="emergency_contact_name">Emergency Contact Name / Nama Waris</label>
+                  <input type="text" id="bookingEmergencyContactName" class="form-control" placeholder="e.g. Siti Aminah">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" data-i18n="emergency_contact_phone">Emergency Phone / No. Tel</label>
+                  <input type="tel" id="bookingEmergencyContactPhone" class="form-control" placeholder="+60 19-876 5432">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" data-i18n="emergency_contact_relation">Relationship / Hubungan</label>
+                  <input type="text" id="bookingEmergencyContactRelation" class="form-control" placeholder="e.g. Spouse / Sibling / Parent">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" data-i18n="occupants_count">Number of Occupants / Bilangan Penghuni</label>
+                  <input type="number" id="bookingOccupantsCount" class="form-control" min="1" max="50" value="2">
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" data-i18n="occupants_notes">Occupant Names / Details / Maklumat Penghuni (Optional)</label>
+                <input type="text" id="bookingOccupantsNotes" class="form-control" placeholder="e.g. 2 Adults, 1 Child (Ali & Siti)">
               </div>
             </div>
           </div>
@@ -1233,7 +1281,7 @@
           </div>
 
           <!-- Tenancy Agreement Generator Action Banner -->
-          <div class="agr-hub-callout mb-2" id="agrHubCalloutBanner" title="Klik untuk Buka Penjana Perjanjian Sewaan (Tenancy Agreement Generator)">
+          <div class="agr-hub-callout mb-2" id="agrHubCalloutBanner" onclick="openAgreementModal(appState.activeWaBooking || null, 'form')" title="Klik untuk Buka Penjana Perjanjian Sewaan (Tenancy Agreement Generator)" style="cursor:pointer;">
             <div style="display:flex; align-items:center; gap:10px;">
               <div class="agr-hub-callout-icon">
                 <i class="fa-solid fa-file-signature"></i>
@@ -1244,13 +1292,13 @@
               </div>
             </div>
             <div style="display:flex; gap:6px; flex-shrink:0; flex-wrap:wrap; margin-top:4px;">
-              <button type="button" class="btn btn-outline btn-xs" id="btnEditTenancyAgreementFromHub" style="font-weight:700; white-space:nowrap; gap:6px; color:#0284c7; border-color:#0284c7; background:rgba(2,132,199,0.06);" title="Buka Borang Butiran Perjanjian (Contact Person, SSM, NRIC)">
+              <button type="button" class="btn btn-outline btn-xs" id="btnEditTenancyAgreementFromHub" onclick="event.stopPropagation(); openAgreementModal(appState.activeWaBooking || null, 'form')" style="font-weight:700; white-space:nowrap; gap:6px; color:#0284c7; border-color:#0284c7; background:rgba(2,132,199,0.06);" title="Buka Borang Butiran Perjanjian (Contact Person, SSM, NRIC)">
                 <i class="fa-solid fa-pen-to-square"></i> <span data-i18n="btn_edit_agreement">Borang Butiran</span>
               </button>
-              <button type="button" class="btn btn-outline btn-xs" id="btnOpenTenancyAgreementFromHub" style="font-weight:700; white-space:nowrap; gap:6px; color:#0369a1; border-color:#0369a1; background:rgba(3,105,161,0.06);" title="Lihat Pra Tonton Surat Perjanjian A4">
+              <button type="button" class="btn btn-outline btn-xs" id="btnOpenTenancyAgreementFromHub" onclick="event.stopPropagation(); openAgreementModal(appState.activeWaBooking || null, 'preview')" style="font-weight:700; white-space:nowrap; gap:6px; color:#0369a1; border-color:#0369a1; background:rgba(3,105,161,0.06);" title="Lihat Pra Tonton Surat Perjanjian A4">
                 <i class="fa-solid fa-file-lines"></i> <span data-i18n="btn_preview_agreement">Pra Tonton</span>
               </button>
-              <button type="button" class="btn btn-primary btn-xs" id="btnQuickDownloadAgreementFromHub" style="font-weight:700; white-space:nowrap; gap:6px; background:#0284c7; border-color:#0284c7;" title="Muat Turun Terus PDF ke Folder Downloads">
+              <button type="button" class="btn btn-primary btn-xs" id="btnQuickDownloadAgreementFromHub" onclick="event.stopPropagation(); openAgreementModal(appState.activeWaBooking || null, 'preview'); setTimeout(downloadAgreementPdf, 400);" style="font-weight:700; white-space:nowrap; gap:6px; background:#0284c7; border-color:#0284c7;" title="Muat Turun Terus PDF ke Folder Downloads">
                 <i class="fa-solid fa-file-arrow-down"></i> <span data-i18n="btn_download_pdf">Muat Turun PDF</span>
               </button>
             </div>
@@ -1591,8 +1639,8 @@
               <label class="form-label required" data-i18n="payment_type">Payment Type / Purpose</label>
               <select id="paymentProofTypeSelect" class="form-select" required>
                 <option value="deposit">🟡 Booking Deposit / Deposit Tempahan</option>
-                <option value="balance">🟢 Remaining Balance / Baki Bayaran</option>
-                <option value="full">🟢 Full Payment / Bayaran Penuh (100%)</option>
+                <option value="balance">⚖️ Remaining Balance / Baki Bayaran</option>
+                <option value="full">💎 Full Payment / Bayaran Penuh (100%)</option>
                 <option value="monthly_rent">📑 Monthly Rental / Sewaan Bulanan</option>
                 <option value="security_deposit">🔒 Security Deposit / Deposit Keselamatan</option>
                 <option value="utilities">💡 Utility Arrears / Bil TNB & Air</option>
@@ -1992,11 +2040,11 @@
           <div style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
             <div>
               <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Account Status</div>
-              <div style="font-size:14px; font-weight:800; color:var(--success);" id="proModalStatusText">✨ Lifetime Pro Active</div>
+              <div style="font-size:14px; font-weight:800; color:var(--text-muted);" id="proModalStatusText">⏳ Checking...</div>
             </div>
             <div style="text-align:right;">
               <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">App Version</div>
-              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.6.6</div>
+              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.7.11</div>
             </div>
           </div>
 
@@ -2077,9 +2125,9 @@
               <span id="overlapModalPropName">Homestay Unit</span>
             </div>
             <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:8px;" id="overlapModalDatesSummary">
-              Tarikh dipohon: <strong id="overlapModalDatesText">-</strong>
+              <span data-i18n="overlap_requested_dates">Tarikh dipohon:</span> <strong id="overlapModalDatesText">-</strong>
             </div>
-            <p style="font-size:12px; color:var(--text-muted); margin:0 0 10px 0;">
+            <p style="font-size:12px; color:var(--text-muted); margin:0 0 10px 0;" data-i18n="overlap_system_notice">
               Sistem menghalang tempahan bertindih (double-booking). Maklumat tempahan sedia ada yang bercanggah:
             </p>
 
@@ -2090,7 +2138,7 @@
           <!-- Available Alternative Units Suggestion -->
           <div id="overlapAlternativesContainer" style="margin-bottom:14px;">
             <label class="form-label" style="font-size:11.5px; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px;">
-              <i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Homestay Lain Yang Kosong Pada Tarikh Ini:
+              <i class="fa-solid fa-circle-check" style="color:var(--success);"></i> <span data-i18n="overlap_alt_available">Homestay Lain Yang Kosong Pada Tarikh Ini:</span>
             </label>
             <div id="overlapAvailablePropsList" style="display:flex; flex-direction:column; gap:6px;"></div>
           </div>
@@ -2149,8 +2197,8 @@
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-top:6px;">
-              <span style="color:var(--text-muted);">Unit Semasa: <strong id="changeHomestayCurrentPropName" style="color:var(--primary);">Villa 1</strong></span>
-              <span style="color:var(--text-muted);">Jumlah: <strong id="changeHomestayCurrentTotal" style="color:var(--text-main);">RM 500.00</strong></span>
+              <span style="color:var(--text-muted);"><span data-i18n="current_unit_label">Unit Semasa:</span> <strong id="changeHomestayCurrentPropName" style="color:var(--primary);">Villa 1</strong></span>
+              <span style="color:var(--text-muted);"><span data-i18n="total_amount_label">Jumlah:</span> <strong id="changeHomestayCurrentTotal" style="color:var(--text-main);">RM 500.00</strong></span>
             </div>
           </div>
 
@@ -2192,8 +2240,8 @@
           <div style="background:rgba(2,132,199,0.06); border:1px solid rgba(2,132,199,0.25); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:14px; font-size:11.5px; color:var(--text-main); display:flex; gap:8px; align-items:flex-start;">
             <i class="fa-solid fa-shield-check" style="color:var(--primary); font-size:15px; margin-top:2px;"></i>
             <div>
-              <strong>Jaminan Pemindahan Butiran Penuh:</strong>
-              <div style="color:var(--text-muted); margin-top:2px;">
+              <strong data-i18n="change_homestay_assurance_title">Jaminan Pemindahan Butiran Penuh:</strong>
+              <div style="color:var(--text-muted); margin-top:2px;" data-i18n="change_homestay_assurance_desc">
                 Nama tetamu, telefon WhatsApp, No. Kad Pengenalan/Pasport, emel, alamat surat-menyurat, bilangan tetamu, resit bayaran & nota tempahan akan dipindahkan secara automatik ke unit baru. Jadual pembersihan (turnover) juga akan dikemaskini.
               </div>
             </div>
@@ -2229,6 +2277,17 @@
         <div class="modal-body" style="padding:16px; overflow-y:auto; -webkit-overflow-scrolling:touch; max-height:calc(94vh - 140px);">
           <!-- Controls Panel -->
           <div class="pdf-toolbar-panel no-print">
+            <!-- Missing Bank Details Warning Banner (B1) -->
+            <div id="pdfBankWarningBanner" style="display:none; background:#fffbeb; border:1.5px solid #f59e0b; color:#92400e; padding:10px 14px; border-radius:8px; margin-bottom:12px; align-items:center; justify-content:space-between; gap:12px; font-size:12px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size:16px; color:#d97706; flex-shrink:0;"></i>
+                <span><strong>Perhatian:</strong> Butiran akaun bank atau DuitNow masih belum diisi dalam Tetapan. Sila lengkapkan agar penyewa dapat membuat pembayaran terus.</span>
+              </div>
+              <button type="button" class="btn btn-outline btn-xs" id="btnGoToSettingsFromPdfBankWarn" style="color:#b45309; border-color:#d97706; font-weight:700; white-space:nowrap; background:#ffffff;">
+                <i class="fa-solid fa-gear"></i> Buka Tetapan
+              </button>
+            </div>
+
             <!-- Document Selector Pills -->
             <div class="pdf-type-pills">
               <button type="button" class="pdf-type-btn active" data-doc="quotation" id="btnPdfTabQuotation">
@@ -2243,9 +2302,26 @@
               <button type="button" class="pdf-type-btn" data-doc="receipt" id="btnPdfTabReceipt">
                 <i class="fa-solid fa-receipt"></i> <span data-i18n="pdf_tab_receipt">4. Resit Bayaran Penuh</span>
               </button>
-              <button type="button" class="pdf-type-btn" data-doc="agreement" id="btnPdfTabAgreement" style="display:none; color:#0284c7; font-weight:700; border-color:#0284c7;">
+              <button type="button" class="pdf-type-btn" data-doc="agreement" id="btnPdfTabAgreement" onclick="closePdfDocModal(); openAgreementModal(appState.activePdfBooking || null, 'preview');" style="display:inline-flex; color:#0284c7; font-weight:700; border-color:#0284c7;">
                 <i class="fa-solid fa-file-contract"></i> <span data-i18n="pdf_tab_agreement">5. Perjanjian Sewa</span>
               </button>
+              <button type="button" class="pdf-type-btn" data-doc="history" id="btnPdfTabHistory" style="color:#0f172a; font-weight:700;">
+                <i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="pdf_tab_history">6. Sejarah Dokumen</span>
+              </button>
+            </div>
+
+            <!-- Payment Selector for Multi-Payment Bookings (Per-Payment Receipts) -->
+            <div id="pdfPaymentSelectGroup" style="display:none; background:var(--bg-surface); padding:10px 14px; border-radius:var(--radius-sm); border:1.5px solid #0284c7; margin-top:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <label class="form-label mb-0" style="font-size:12px; font-weight:700; color:var(--primary); display:flex; align-items:center; gap:6px;">
+                  <i class="fa-solid fa-receipt"></i> <span data-i18n="pdf_select_payment_label">Pilih Transaksi Bayaran (Select Payment)</span>
+                </label>
+                <span id="pdfPaymentCountBadge" style="font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:999px; background:#e0f2fe; color:#0369a1;">-</span>
+              </div>
+              <select id="pdfPaymentSelect" class="form-control" style="font-size:12px; font-weight:700; color:var(--text-main);">
+                <!-- Populated dynamically with each payment's date, amount, reference, and receipt number -->
+              </select>
+              <div id="pdfPaymentRunningSummaryHint" style="font-size:11px; color:var(--text-muted); margin-top:4px;"></div>
             </div>
 
             <!-- Customization Form Grid -->
@@ -2262,65 +2338,65 @@
                   <span style="font-size:11.5px; color:var(--text-muted);" data-i18n="days_label">hari dari tarikh dikeluarkan</span>
                 </div>
                 <div class="pdf-validity-pills">
-                  <span style="font-size:10px; color:var(--text-muted); align-self:center;">Pantas:</span>
-                  <button type="button" class="pdf-validity-preset" data-days="1">1 Hari</button>
-                  <button type="button" class="pdf-validity-preset active" data-days="3">3 Hari</button>
-                  <button type="button" class="pdf-validity-preset" data-days="7">7 Hari</button>
-                  <button type="button" class="pdf-validity-preset" data-days="14">14 Hari</button>
-                  <button type="button" class="pdf-validity-preset" data-days="30">30 Hari</button>
+                  <span style="font-size:10px; color:var(--text-muted); align-self:center;" data-i18n="quick_presets">Pantas:</span>
+                  <button type="button" class="pdf-validity-preset" data-days="1">1 <span data-i18n="days_short">Hari</span></button>
+                  <button type="button" class="pdf-validity-preset active" data-days="3">3 <span data-i18n="days_short">Hari</span></button>
+                  <button type="button" class="pdf-validity-preset" data-days="7">7 <span data-i18n="days_short">Hari</span></button>
+                  <button type="button" class="pdf-validity-preset" data-days="14">14 <span data-i18n="days_short">Hari</span></button>
+                  <button type="button" class="pdf-validity-preset" data-days="30">30 <span data-i18n="days_short">Hari</span></button>
                 </div>
               </div>
 
               <!-- Monthly Tenancy Scope Selector (Shown for Monthly Rentals) -->
               <div id="pdfMonthlyTenancyGroup" style="display:none; background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
                 <label class="form-label mb-1" style="font-size:11.5px; font-weight:700; color:var(--primary); display:flex; justify-content:space-between;">
-                  <span><i class="fa-solid fa-calendar-days"></i> <span id="lblPdfMonthlyScope">Pilihan Dokumen Sewaan Bulanan</span></span>
-                  <span id="pdfMonthlyBadge" style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#e0e7ff; color:#3730a3;">Sewaan Bulanan</span>
+                  <span><i class="fa-solid fa-calendar-days"></i> <span id="lblPdfMonthlyScope" data-i18n="pdf_monthly_scope_title">Pilihan Dokumen Sewaan Bulanan</span></span>
+                  <span id="pdfMonthlyBadge" style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; background:#e0e7ff; color:#3730a3;" data-i18n="badge_monthly_tenancy">Sewaan Bulanan</span>
                 </label>
                 <select id="pdfMonthlyDocScopeSelect" class="form-control form-control-sm" style="font-size:12px; font-weight:700; color:var(--text-main);">
                   <!-- Populated dynamically by JS -->
                 </select>
                 <div id="pdfMonthlyUtilityExtraWrap" style="display:none; margin-top:8px;">
                   <label class="form-label mb-1" style="font-size:11px; font-weight:700; color:#b45309;">
-                    <i class="fa-solid fa-bolt"></i> Caj Utiliti Bulan Ini (RM - Elektrik & Air)
+                    <i class="fa-solid fa-bolt"></i> <span data-i18n="pdf_monthly_utility_label">Caj Utiliti Bulan Ini (Elektrik & Air)</span>
                   </label>
                   <input type="number" id="pdfMonthlyUtilityExtraInput" class="form-control form-control-sm" placeholder="0.00" value="0" min="0" step="any" style="font-weight:800;">
                 </div>
-                <span style="font-size:10px; color:var(--text-muted); margin-top:3px; display:block;">Pilih Pakej Kemasukan (Sebut Harga) atau Invois Sewaan bagi bulan tertentu</span>
+                <span style="font-size:10px; color:var(--text-muted); margin-top:3px; display:block;" data-i18n="pdf_monthly_scope_hint">Pilih Pakej Kemasukan (Sebut Harga) atau Invois Sewaan bagi bulan tertentu</span>
               </div>
 
               <!-- Deposit Amount Paid Control (Shown for Deposit Receipt & Invoice) -->
               <div id="pdfDepositAmountGroup" style="display:none; background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
                 <label class="form-label mb-1" style="font-size:11.5px; font-weight:700; color:#059669; display:flex; justify-content:space-between;">
-                  <span><i class="fa-solid fa-hand-holding-dollar"></i> <span data-i18n="pdf_deposit_amount_label">Jumlah Bayaran Deposit Diterima (RM)</span></span>
+                  <span><i class="fa-solid fa-hand-holding-dollar"></i> <span data-i18n="pdf_deposit_amount_label">Jumlah Bayaran Deposit Diterima</span></span>
                   <span id="pdfDepositBalanceHint" style="font-weight:800; color:#b45309;">-</span>
                 </label>
                 <div style="display:flex; align-items:center; gap:8px;">
                   <input type="number" id="pdfDepositAmountInput" class="form-control form-control-sm" min="0" step="any" placeholder="0.00" style="font-weight:800; color:#059669; font-size:13.5px;">
-                  <button type="button" class="btn btn-outline btn-xs" id="btnPdfResetDeposit" style="white-space:nowrap; font-size:11px; padding:3px 8px;">Auto Deposit</button>
+                  <button type="button" class="btn btn-outline btn-xs" id="btnPdfResetDeposit" style="white-space:nowrap; font-size:11px; padding:3px 8px;" data-i18n="btn_auto_deposit">Auto Deposit</button>
                 </div>
-                <span style="font-size:10px; color:var(--text-muted); margin-top:3px; display:block;">Jumlah ini akan disahkan diterima dan dicetak di atas resit deposit</span>
+                <span style="font-size:10px; color:var(--text-muted); margin-top:3px; display:block;" data-i18n="pdf_deposit_hint">Jumlah ini akan disahkan diterima dan dicetak di atas resit deposit</span>
               </div>
 
               <!-- Payment Channel & Bank Ref Input -->
               <div id="pdfPaymentRefGroup" style="display:none; background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
                 <label class="form-label mb-1" style="font-size:11.5px; font-weight:700;" data-i18n="pdf_pay_ref_label">Kaedah & No. Rujukan Bank (Optional)</label>
-                <input type="text" id="pdfPaymentRefInput" class="form-control form-control-sm" placeholder="e.g. Maybank - M2U-99218291 atau DuitNow QR">
-                <span style="font-size:10.5px; color:var(--text-muted);">Akan tertera pada resit untuk rujukan audit perakaunan</span>
+                <input type="text" id="pdfPaymentRefInput" class="form-control form-control-sm" placeholder="e.g. Maybank - M2U-99218291 atau DuitNow QR" data-i18n-placeholder="pdf_pay_ref_placeholder">
+                <span style="font-size:10.5px; color:var(--text-muted);" data-i18n="pdf_pay_ref_hint">Akan tertera pada resit untuk rujukan audit perakaunan</span>
               </div>
 
               <!-- Recipient Organization / Department Name -->
               <div style="background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
                 <label class="form-label mb-1" style="font-size:11.5px; font-weight:700;" data-i18n="pdf_client_org_label">Nama Syarikat / Kementerian / Jabatan (Optional)</label>
-                <input type="text" id="pdfClientCompanyInput" class="form-control form-control-sm" placeholder="e.g. Kementerian Pendidikan / Petronas Chemicals">
-                <span style="font-size:10.5px; color:var(--text-muted);">Akan tertera di bawah 'Dikeluarkan Kepada / Billed To'</span>
+                <input type="text" id="pdfClientCompanyInput" class="form-control form-control-sm" placeholder="e.g. Kementerian Pendidikan / Petronas Chemicals" data-i18n-placeholder="pdf_client_org_placeholder">
+                <span style="font-size:10.5px; color:var(--text-muted);" data-i18n="pdf_client_org_hint">Akan tertera di bawah 'Dikeluarkan Kepada / Billed To'</span>
               </div>
 
               <!-- LPO / PO Reference Number -->
               <div style="background:var(--bg-surface); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
                 <label class="form-label mb-1" style="font-size:11.5px; font-weight:700;" data-i18n="pdf_lpo_ref_label">No. Pesanan Tempatan / LPO Ref (Optional)</label>
-                <input type="text" id="pdfLpoRefInput" class="form-control form-control-sm" placeholder="e.g. LPO/2026/089 atau Ruj. Pejabat">
-                <span style="font-size:10.5px; color:var(--text-muted);">Untuk rujukan audit & tuntutan kewangan</span>
+                <input type="text" id="pdfLpoRefInput" class="form-control form-control-sm" placeholder="e.g. LPO/2026/089 atau Ruj. Pejabat" data-i18n-placeholder="pdf_lpo_ref_placeholder">
+                <span style="font-size:10.5px; color:var(--text-muted);" data-i18n="pdf_lpo_ref_hint">Untuk rujukan audit & tuntutan kewangan</span>
               </div>
 
               <!-- Language & Currency Toggle -->
@@ -2330,9 +2406,29 @@
                   <button type="button" class="btn btn-outline btn-sm active" id="btnPdfLangBM" style="flex:1; font-size:11px; padding:4px 8px;">🇲🇾 Melayu</button>
                   <button type="button" class="btn btn-outline btn-sm" id="btnPdfLangEN" style="flex:1; font-size:11px; padding:4px 8px;">🇬🇧 English</button>
                 </div>
-                <span style="font-size:10.5px; color:var(--text-muted); margin-top:4px;">Tukar format teks dokumen secara serta-merta</span>
+                <span style="font-size:10.5px; color:var(--text-muted); margin-top:4px;" data-i18n="pdf_lang_hint">Tukar format teks dokumen secara serta-merta</span>
               </div>
 
+            </div>
+
+            <!-- Document Status & Lifecycle Actions Bar (B2) -->
+            <div id="pdfDocStatusBar" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-color);">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:11.5px; font-weight:700; color:var(--text-muted);">Status Dokumen:</span>
+                <span id="pdfToolbarStatusPill" style="font-size:11px; font-weight:800; padding:2px 10px; border-radius:999px; background:#e2e8f0; color:#475569;">DRAF</span>
+                <span id="pdfToolbarReplacedNotice" style="font-size:11px; color:#64748b; display:none;"></span>
+              </div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button type="button" class="btn btn-primary btn-xs" id="btnPdfMarkIssued" style="font-weight:700;">
+                  <i class="fa-solid fa-circle-check"></i> <span data-i18n="btn_mark_issued">Sahkan Terbit (Finalize)</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-xs" id="btnPdfCreateRevision" style="display:none; color:#d97706; border-color:#d97706; font-weight:700;">
+                  <i class="fa-solid fa-code-compare"></i> <span data-i18n="btn_create_revision">Jana Pindaan (Rev)</span>
+                </button>
+                <button type="button" class="btn btn-danger-outline btn-xs" id="btnPdfVoidReissue" style="display:none; font-weight:700;">
+                  <i class="fa-solid fa-ban"></i> <span data-i18n="btn_void_reissue">Batal & Keluarkan Semula (Void & Reissue)</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -2343,22 +2439,22 @@
                 <i class="fa-brands fa-whatsapp"></i>
               </div>
               <div>
-                <div style="font-size:14px; font-weight:800; color:#14532d;" id="txtWaPromptTitle">Hantar Dokumen ini ke WhatsApp Tetamu?</div>
-                <div style="font-size:11.5px; color:#166534;" id="txtWaPromptSub">Fail PDF rasmi ini sedia untuk dimuat turun dan dihantar terus kepada tetamu melalui WhatsApp.</div>
+                <div style="font-size:14px; font-weight:800; color:#14532d;" id="txtWaPromptTitle" data-i18n="wa_prompt_title">Hantar Dokumen ini ke WhatsApp Tetamu?</div>
+                <div style="font-size:11.5px; color:#166534;" id="txtWaPromptSub" data-i18n="wa_prompt_sub">Fail PDF rasmi ini sedia untuk dimuat turun dan dihantar terus kepada tetamu melalui WhatsApp.</div>
               </div>
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <button type="button" class="btn btn-whatsapp" id="btnPromptSendWa" style="font-weight:800; padding:8px 16px; box-shadow:0 3px 8px rgba(34,197,94,0.3); font-size:13px; display:flex; align-items:center; gap:8px;">
-                <i class="fa-brands fa-whatsapp"></i> <span id="txtBtnPromptYes">Ya, Hantar ke WhatsApp</span>
+                <i class="fa-brands fa-whatsapp"></i> <span id="txtBtnPromptYes" data-i18n="wa_prompt_yes">Ya, Hantar ke WhatsApp</span>
               </button>
               <button type="button" class="btn btn-primary" id="btnPromptDownload" style="font-weight:700; padding:8px 14px; font-size:12.5px; display:flex; align-items:center; gap:6px; background:linear-gradient(135deg, #ea580c, #c2410c);">
-                <i class="fa-solid fa-file-arrow-down"></i> <span>Muat Turun PDF</span>
+                <i class="fa-solid fa-file-arrow-down"></i> <span data-i18n="wa_prompt_dl">Muat Turun PDF</span>
               </button>
               <button type="button" class="btn btn-outline" id="btnPromptViewTab" style="font-size:12px; padding:8px 12px; background:#fff; color:var(--primary); border-color:var(--primary); font-weight:700;">
-                <i class="fa-solid fa-arrow-up-right-from-square"></i> <span>Buka di Tab Baru</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> <span data-i18n="wa_prompt_tab">Buka di Tab Baru</span>
               </button>
               <button type="button" class="btn btn-outline" id="btnPromptDismiss" style="font-size:11.5px; padding:8px 10px; background:#fff; color:#475569;">
-                <span id="txtBtnPromptNo">Tutup Notis</span>
+                <span id="txtBtnPromptNo" data-i18n="wa_prompt_dismiss">Tutup Notis</span>
               </button>
             </div>
           </div>
@@ -2368,8 +2464,18 @@
 
           <!-- PRINTABLE A4 SHEET (Formal Quotation/Invoice Style) -->
           <div id="printablePdfSheet" class="pdf-doc-sheet" style="background:#ffffff; color:#0f172a; padding:32px 36px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Plus Jakarta Sans', system-ui, sans-serif; position:relative; max-width:820px; margin:0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
-            <!-- Watermark for Paid Receipts -->
+            <!-- Watermark for Paid Receipts / Void Documents -->
             <div id="pdfPaidWatermark" class="pdf-watermark-paid hidden">PAID IN FULL</div>
+
+            <!-- VOID BANNER (B2) -->
+            <div id="pdfVoidBanner" style="display:none; background:#fee2e2; border:1.5px solid #ef4444; color:#991b1b; padding:10px 14px; border-radius:6px; font-size:12px; font-weight:800; margin-bottom:14px; text-align:center;">
+              ⚠️ DOKUMEN INI TELAH DIBATALKAN (VOID)
+            </div>
+
+            <!-- REPLACES VOIDED DOCUMENT BANNER (B2) -->
+            <div id="pdfReplacesBanner" style="display:none; background:#ecfdf5; border:1.5px solid #10b981; color:#065f46; padding:8px 14px; border-radius:6px; font-size:11.5px; font-weight:800; margin-bottom:12px;">
+              <i class="fa-solid fa-arrows-rotate"></i> <span id="pdfReplacesText">Menggantikan Dokumen Batal / Replaces: -</span>
+            </div>
 
             <!-- Top Header (Formal Matching Sample) -->
             <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:16px; border-bottom:2px solid #ea580c; gap:16px;">
@@ -2389,10 +2495,10 @@
                   <h2 id="pdfHostBizName" style="font-size:22px; font-weight:900; color:#ea580c; margin:0; line-height:1.2; letter-spacing:-0.3px;">MY HOMESTAY</h2>
                   <div id="pdfHostAddress" style="font-size:11px; color:#475569; margin:2px 0 4px 0; max-width:320px; line-height:1.4;">Premis Homestay & Perkhidmatan Penginapan</div>
                   <div style="font-size:11px; color:#334155; line-height:1.5;">
-                    <div><strong style="color:#0f172a;">Phone:</strong> <span id="pdfHostPhone">+60 12-345 6789</span></div>
-                    <div><strong style="color:#0f172a;">Email:</strong> <span id="pdfHostEmail">host@myhomestay.com</span></div>
-                    <div id="pdfHostSsmRow"><strong style="color:#0f172a;">Pan / SSM Reg:</strong> <span id="pdfHostSsm">20260100988-X</span></div>
-                    <div id="pdfHostIdRow"><strong style="color:#0f172a;">ID Premis:</strong> <span id="pdfHostPremisId">HM-1088</span></div>
+                    <div id="pdfHostPhoneRow" style="display:none;"><strong style="color:#0f172a;">Phone:</strong> <span id="pdfHostPhone">-</span></div>
+                    <div id="pdfHostEmailRow" style="display:none;"><strong style="color:#0f172a;">Email:</strong> <span id="pdfHostEmail">-</span></div>
+                    <div id="pdfHostSsmRow" style="display:none;"><strong style="color:#0f172a;" id="lblPdfHostSsmTitle">SSM Reg No:</strong> <span id="pdfHostSsm">-</span></div>
+                    <div id="pdfHostIdRow" style="display:none;"><strong style="color:#0f172a;">ID Premis:</strong> <span id="pdfHostPremisId">-</span></div>
                   </div>
                 </div>
               </div>
@@ -2401,9 +2507,13 @@
               <div style="text-align:right;">
                 <h1 id="pdfDocTitle" style="font-size:32px; font-weight:900; color:#ea580c; margin:0 0 6px 0; line-height:1; letter-spacing:-0.5px;">Quotation</h1>
                 <div style="font-size:11.5px; color:#334155; line-height:1.6;">
-                  <div><strong style="color:#0f172a;" id="lblPdfDocNoTitle">Quotation No:</strong> <span id="pdfDocNo" style="font-weight:800; font-family:monospace; color:#0f172a;">93</span></div>
-                  <div><strong style="color:#0f172a;" id="lblPdfDocDateTitle">Quotation Date:</strong> <span id="pdfDocDate">25 Sep, 2026 12:00 PM</span></div>
-                  <div id="pdfDocValidityRow"><strong style="color:#ea580c;" id="lblPdfValidityTitle">Validity Date:</strong> <span id="pdfDocValidity" style="color:#ea580c; font-weight:800;">02 Okt 2026 (7 Hari)</span></div>
+                  <div>
+                    <strong style="color:#0f172a;" id="lblPdfDocNoTitle">Quotation No:</strong>
+                    <span id="pdfDocNo" style="font-weight:800; font-family:monospace; color:#0f172a;">-</span>
+                    <span id="pdfDocStatusBadge" style="display:none; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; margin-left:6px; vertical-align:middle;"></span>
+                  </div>
+                  <div><strong style="color:#0f172a;" id="lblPdfDocDateTitle">Quotation Date:</strong> <span id="pdfDocDate">-</span></div>
+                  <div id="pdfDocValidityRow"><strong style="color:#ea580c;" id="lblPdfValidityTitle">Validity Date:</strong> <span id="pdfDocValidity" style="color:#ea580c; font-weight:800;">-</span></div>
                   <div id="pdfDocLpoRow" style="display:none;"><strong style="color:#0f172a;" id="lblPdfLpoTitle">LPO / Ref No:</strong> <span id="pdfDocLpo" style="font-weight:700;">-</span></div>
                   <div id="pdfDocPayMethodRow" style="display:none;"><strong style="color:#059669;" id="lblPdfPayMethodTitle">Kaedah Bayaran:</strong> <span id="pdfDocPayMethodText" style="font-weight:700; color:#059669;">-</span></div>
                 </div>
@@ -2415,13 +2525,13 @@
               <div style="display:inline-block; background:#ea580c; color:#ffffff; font-weight:900; font-size:12px; padding:4px 14px; border-radius:4px; letter-spacing:0.5px; text-transform:uppercase; margin-bottom:6px;" id="lblPdfBillTo">
                 Bill To
               </div>
-              <div style="font-size:14px; font-weight:800; color:#0f172a;" id="pdfClientNameText">Raju</div>
-              <div id="pdfClientCompanyText" style="font-size:12px; font-weight:700; color:#ea580c; display:none;">Kementerian Pendidikan Malaysia</div>
+              <div style="font-size:14px; font-weight:800; color:#0f172a; word-break:break-word; overflow-wrap:break-word;" id="pdfClientNameText">-</div>
+              <div id="pdfClientCompanyText" style="font-size:12px; font-weight:700; color:#ea580c; display:none; word-break:break-word; overflow-wrap:break-word;"></div>
               <div style="font-size:11px; color:#475569; margin-top:2px; line-height:1.5;">
                 <span id="pdfClientPhoneText">Tel: <strong id="pdfClientPhone" style="color:#0f172a;">-</strong></span>
                 <span id="pdfClientEmailSpan" style="margin-left:10px;">Email: <span id="pdfClientEmail">-</span></span>
                 <span id="pdfClientNricSpan" style="margin-left:10px;">ID/NRIC: <strong id="pdfClientNric" style="color:#0f172a;">-</strong></span>
-                <div id="pdfClientAddressDiv" style="display:none; color:#64748b;">Alamat: <span id="pdfClientAddress">-</span></div>
+                <div id="pdfClientAddressDiv" style="display:none; color:#64748b; word-break:break-word; overflow-wrap:break-word;">Alamat: <span id="pdfClientAddress">-</span></div>
               </div>
             </div>
 
@@ -2429,13 +2539,13 @@
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px 12px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:11px;">
               <div>
                 <span style="color:#64748b; font-weight:700; text-transform:uppercase; font-size:9.5px;">Unit Homestay:</span>
-                <strong id="pdfPropNameText" style="color:#0f172a; margin-left:4px;">Homestay Unit</strong>
-                <span id="pdfPropAddressText" style="color:#64748b; font-size:10.5px; margin-left:6px;">(Alamat Premis)</span>
+                <strong id="pdfPropNameText" style="color:#0f172a; margin-left:4px; word-break:break-word; overflow-wrap:break-word;">-</strong>
+                <span id="pdfPropAddressText" style="color:#64748b; font-size:10.5px; margin-left:6px; word-break:break-word; overflow-wrap:break-word;">-</span>
               </div>
               <div style="display:flex; gap:12px; align-items:center;">
                 <div><span style="color:#64748b;" id="lblPdfCheckInDate">Masuk:</span> <strong id="pdfCheckInDate" style="color:#0f172a;">-</strong> <span style="font-size:10px; color:#64748b;" id="pdfCheckInTime">3:00 PM</span></div>
                 <div><span style="color:#64748b;" id="lblPdfCheckOutDate">Keluar:</span> <strong id="pdfCheckOutDate" style="color:#0f172a;">-</strong> <span style="font-size:10px; color:#64748b;" id="pdfCheckOutTime">12:00 PM</span></div>
-                <div style="background:#ea580c15; color:#ea580c; font-weight:800; padding:2px 8px; border-radius:4px; font-size:10.5px;" id="pdfDurationGuestText">2 Malam • 4 Tetamu</div>
+                <div style="background:#ea580c15; color:#ea580c; font-weight:800; padding:2px 8px; border-radius:4px; font-size:10.5px;" id="pdfDurationGuestText">-</div>
               </div>
             </div>
 
@@ -2446,7 +2556,6 @@
                   <tr style="background:#ea580c; color:#ffffff;">
                     <th style="padding:9px 8px; width:35px; text-align:center; font-weight:900;">#</th>
                     <th style="padding:9px 8px; font-weight:900;" id="thPdfItem">Items</th>
-                    <th style="padding:9px 8px; text-align:center; width:85px; font-weight:900;" id="thPdfHsn">HSN/Code</th>
                     <th style="padding:9px 8px; text-align:center; width:90px; font-weight:900;" id="thPdfQty">Quantity</th>
                     <th style="padding:9px 8px; text-align:right; width:100px; font-weight:900;" id="thPdfRate">Rate Per Unit</th>
                     <th style="padding:9px 8px; text-align:center; width:95px; font-weight:900;" id="thPdfTax">Tax Per Unit</th>
@@ -2458,10 +2567,10 @@
                 </tbody>
                 <tfoot>
                   <tr style="border-top:1.5px solid #0f172a; border-bottom:2px solid #ea580c; font-weight:800; color:#0f172a; background:#f8fafc;">
-                    <td colspan="3" style="padding:8px; font-weight:900; font-size:12px;" id="lblPdfSubTotalTable">Sub Total</td>
-                    <td style="padding:8px; text-align:center; font-weight:800;" id="pdfSubtotalQty">2.00</td>
+                    <td colspan="2" style="padding:8px; font-weight:900; font-size:12px;" id="lblPdfSubTotalTable">Sub Total</td>
+                    <td style="padding:8px; text-align:center; font-weight:800;" id="pdfSubtotalQty">0.00</td>
                     <td colspan="2"></td>
-                    <td style="padding:8px; text-align:right; font-weight:900; font-size:12.5px;" id="pdfValSubtotal">RM 0.00</td>
+                    <td style="padding:8px; text-align:right; font-weight:900; font-size:12.5px;" id="pdfValSubtotal">0.00</td>
                   </tr>
                 </tfoot>
               </table>
@@ -2479,11 +2588,12 @@
                   </div>
                   <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
                     <div style="line-height:1.7; color:#334155; flex:1; font-size:11px;">
-                      <div style="display:flex; gap:6px;"><span style="color:#64748b; width:105px;" id="lblPdfAccHolder">Account holder:</span> <strong id="pdfBankAccHolder" style="color:#0f172a;">Homestay Host</strong></div>
-                      <div style="display:flex; gap:6px;"><span style="color:#64748b; width:105px;" id="lblPdfAccNum">Account number:</span> <strong id="pdfBankAccNum" style="font-family:monospace; color:#0f172a;">5123 4567 8901</strong></div>
-                      <div style="display:flex; gap:6px;"><span style="color:#64748b; width:105px;" id="lblPdfBankName">Bank:</span> <strong id="pdfBankName" style="color:#0f172a;">Maybank</strong></div>
-                      <div style="display:flex; gap:6px;"><span style="color:#64748b; width:105px;" id="lblPdfBranch">Branch:</span> <strong id="pdfBankBranch" style="color:#0f172a;">Changlun / Kedah</strong></div>
-                      <div id="pdfDuitNowRow" style="display:flex; gap:6px;"><span style="color:#64748b; width:105px;" id="lblPdfDuitNow">DuitNow ID:</span> <strong id="pdfDuitNow" style="color:#0f172a;">0123456789</strong></div>
+                      <div style="display:flex; gap:6px;"><span style="color:#64748b; width:105px;" id="lblPdfAccHolder">Account holder:</span> <strong id="pdfBankAccHolder" style="color:#0f172a;">-</strong></div>
+                      <div style="display:flex; gap:6px;"><span style="color:#64748b; width:105px;" id="lblPdfAccNum">Account number:</span> <strong id="pdfBankAccNum" style="font-family:monospace; color:#0f172a;">-</strong></div>
+                      <div style="display:flex; gap:6px;"><span style="color:#64748b; width:105px;" id="lblPdfBankName">Bank:</span> <strong id="pdfBankName" style="color:#0f172a;">-</strong></div>
+                      <div style="display:flex; gap:6px;"><span style="color:#64748b; width:105px;" id="lblPdfBranch">Branch:</span> <strong id="pdfBankBranch" style="color:#0f172a;">-</strong></div>
+                      <div id="pdfDuitNowRow" style="display:none; gap:6px;"><span style="color:#64748b; width:105px;" id="lblPdfDuitNow">DuitNow ID:</span> <strong id="pdfDuitNow" style="color:#0f172a;">-</strong></div>
+                      <div id="pdfTxRefRow" style="display:none; gap:6px; margin-top:4px; padding-top:4px; border-top:1px dashed #cbd5e1;"><span style="color:#64748b; width:105px;" id="lblPdfTxRef">No. Rujukan / Ref:</span> <strong id="pdfTxRefVal" style="font-family:monospace; color:#0f172a;">-</strong></div>
                     </div>
                     <!-- QR Code Box -->
                     <div style="width:74px; text-align:center; flex-shrink:0;">
@@ -2536,13 +2646,9 @@
                   <span id="lblPdfTaxableAmount">Taxable Amount</span>
                   <strong id="pdfValTaxableSubtotal" style="color:#0f172a;">RM 0.00</strong>
                 </div>
-                <div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #e2e8f0; color:#475569;">
-                  <span id="lblPdfCgst">CGST @ 0.00</span>
-                  <strong style="color:#0f172a;">RM 0.00</strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #e2e8f0; color:#475569;">
-                  <span id="lblPdfSgst">SGST @ 0.00</span>
-                  <strong style="color:#0f172a;">RM 0.00</strong>
+                <div id="pdfRowSst" style="display:none; justify-content:space-between; padding:3px 0; border-bottom:1px solid #e2e8f0; color:#475569;">
+                  <span id="lblPdfSst">SST (0%)</span>
+                  <strong id="pdfValSst" style="color:#0f172a;">0.00</strong>
                 </div>
                 <div id="pdfRowDeposit" style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #e2e8f0; color:#475569;">
                   <span id="lblPdfDepositReq">Deposit Required:</span>
@@ -2601,6 +2707,39 @@
             </div>
 
           </div>
+
+          <!-- DOCUMENT HISTORY CONTAINER (B2) -->
+          <div id="pdfHistoryContainer" class="no-print" style="display:none; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:20px; max-width:820px; margin:0 auto; box-shadow:0 4px 20px rgba(0,0,0,0.06);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #ea580c; padding-bottom:12px; margin-bottom:16px;">
+              <div>
+                <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                  <i class="fa-solid fa-clock-rotate-left" style="color:#ea580c;"></i>
+                  <span data-i18n="pdf_history_title">Sejarah Dokumen Tempahan</span>
+                </h3>
+                <span id="pdfHistoryBookingMeta" style="font-size:12px; color:#64748b; font-weight:600;">-</span>
+              </div>
+              <span id="pdfHistoryDocCountBadge" style="background:#f1f5f9; color:#334155; font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px;">0 Dokumen</span>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                <thead>
+                  <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; color:#475569; font-size:11px; text-transform:uppercase;">
+                    <th style="padding:10px 8px;">No. Dokumen</th>
+                    <th style="padding:10px 8px;">Jenis</th>
+                    <th style="padding:10px 8px;">Tarikh</th>
+                    <th style="padding:10px 8px; text-align:right;">Amaun</th>
+                    <th style="padding:10px 8px; text-align:center;">Status</th>
+                    <th style="padding:10px 8px;">Hubungan / Rujukan</th>
+                    <th style="padding:10px 8px; text-align:center;">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="pdfHistoryTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer no-print" style="display:flex; flex-wrap:wrap; gap:8px;">
@@ -2637,17 +2776,23 @@
               <span class="modal-subtitle" data-i18n="agr_modal_subtitle">Jana surat perjanjian rasmi A4 lengkap dengan syarat rumah mesra Muslim, jadual terma, inventori & tandatangan.</span>
             </div>
           </div>
-          <button class="modal-close" id="btnCloseAgreementModal">&times;</button>
+          <button class="modal-close" id="btnCloseAgreementModal" onclick="closeAllModals()">&times;</button>
         </div>
 
         <div class="modal-body" style="padding:16px; overflow-y:auto; -webkit-overflow-scrolling:touch; max-height:calc(94vh - 130px);">
+          <!-- Legal Disclaimer Banner -->
+          <div class="agr-legal-disclaimer no-print" style="background:#fffbeb; border:1px solid #fde68a; border-left:4px solid #f59e0b; padding:10px 14px; border-radius:6px; margin-bottom:14px; font-size:12px; color:#92400e; display:flex; align-items:center; gap:10px; box-shadow:0 1px 4px rgba(245,158,11,0.08);">
+            <i class="fa-solid fa-triangle-exclamation" style="color:#d97706; font-size:16px; flex-shrink:0;"></i>
+            <span data-i18n="agr_legal_disclaimer">This is a template and not legal advice. Please confirm stamp duty and legal requirements with a lawyer or LHDN.</span>
+          </div>
+
           <!-- Navigation Tabs -->
           <div class="agr-nav-tabs no-print">
-            <button type="button" class="agr-nav-tab active" id="btnAgrTabForm">
+            <button type="button" class="agr-nav-tab active" id="btnAgrTabForm" onclick="switchAgreementTab('form')">
               <i class="fa-solid fa-sliders"></i>
               <span data-i18n="agr_tab_form">1. Butiran & Syarat Perjanjian</span>
             </button>
-            <button type="button" class="agr-nav-tab" id="btnAgrTabPreview">
+            <button type="button" class="agr-nav-tab" id="btnAgrTabPreview" onclick="switchAgreementTab('preview')">
               <i class="fa-solid fa-file-contract"></i>
               <span data-i18n="agr_tab_preview">2. Pratonton & Jana Dokumen A4</span>
             </button>
@@ -2668,12 +2813,12 @@
                   </select>
                 </div>
                 <div style="display:flex; gap:6px; align-items:flex-end;">
-                  <button type="button" class="btn btn-outline btn-sm" id="btnAgrAutoFill" style="font-weight:700; font-size:11.5px;">
+                  <button type="button" class="btn btn-outline btn-sm" id="btnAgrAutoFill" onclick="repopulateAgreementForm()" style="font-weight:700; font-size:11.5px;">
                     <i class="fa-solid fa-rotate"></i> <span data-i18n="agr_btn_autofill">Isi Semula Auto</span>
                   </button>
                 </div>
               </div>
-              <div id="agrBookingStatusBadge" style="margin-top:6px; font-size:11px; color:var(--text-muted);">
+              <div id="agrBookingStatusBadge" style="margin-top:6px; font-size:11px; color:var(--text-muted);" data-i18n="agr_booking_hint">
                 Pilih tempahan di atas untuk auto-isi semua butiran penyewa, homestay, kadar sewa, dan deposit.
               </div>
             </div>
@@ -2690,8 +2835,8 @@
                   <div class="agr-subcard-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                     <div><i class="fa-solid fa-house-user"></i> <span data-i18n="agr_title_landlord">Tuan Rumah / Pemilik Sah (Landlord / Owner)</span></div>
                     <div class="agr-type-toggle" style="display:flex; gap:4px;">
-                      <button type="button" class="btn btn-outline btn-xs active" id="btnAgrLandlordTypeIndiv" style="font-size:10px; padding:2px 8px; font-weight:700;">Individu / Pemilik</button>
-                      <button type="button" class="btn btn-outline btn-xs" id="btnAgrLandlordTypeComp" style="font-size:10px; padding:2px 8px; font-weight:700;">Syarikat / SSM</button>
+                      <button type="button" class="btn btn-outline btn-xs active" id="btnAgrLandlordTypeIndiv" onclick="setAgreementLandlordType('individual'); renderAgreementPreview();" style="font-size:10px; padding:2px 8px; font-weight:700;">Individu / Pemilik</button>
+                      <button type="button" class="btn btn-outline btn-xs" id="btnAgrLandlordTypeComp" onclick="setAgreementLandlordType('company'); renderAgreementPreview();" style="font-size:10px; padding:2px 8px; font-weight:700;">Syarikat / SSM</button>
                     </div>
                   </div>
                   <input type="hidden" id="agrLandlordType" value="individual">
@@ -2743,8 +2888,8 @@
                   <div class="agr-subcard-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                     <div><i class="fa-solid fa-user-tag"></i> <span data-i18n="agr_title_tenant">Penyewa (Tenant / Lessee)</span></div>
                     <div class="agr-type-toggle" style="display:flex; gap:4px;">
-                      <button type="button" class="btn btn-outline btn-xs active" id="btnAgrTenantTypeIndiv" style="font-size:10px; padding:2px 8px; font-weight:700;">Individu</button>
-                      <button type="button" class="btn btn-outline btn-xs" id="btnAgrTenantTypeComp" style="font-size:10px; padding:2px 8px; font-weight:700;">Syarikat / SSM</button>
+                      <button type="button" class="btn btn-outline btn-xs active" id="btnAgrTenantTypeIndiv" onclick="setAgreementTenantType('individual'); renderAgreementPreview();" style="font-size:10px; padding:2px 8px; font-weight:700;">Individu</button>
+                      <button type="button" class="btn btn-outline btn-xs" id="btnAgrTenantTypeComp" onclick="setAgreementTenantType('company'); renderAgreementPreview();" style="font-size:10px; padding:2px 8px; font-weight:700;">Syarikat / SSM</button>
                     </div>
                   </div>
                   <input type="hidden" id="agrTenantType" value="individual">
@@ -2927,7 +3072,7 @@
                   <i class="fa-solid fa-couch"></i>
                   <span data-i18n="agr_sec_inventory">4. Senarai Perkakas, Perabot & Inventori Premis</span>
                 </div>
-                <button type="button" class="btn btn-outline btn-xs" id="btnAgrAddInventoryItem" style="font-size:11px; font-weight:700;">
+                <button type="button" class="btn btn-outline btn-xs" id="btnAgrAddInventoryItem" onclick="addCustomInventoryRow('', 1, 'Baik & Berfungsi / Good', true)" style="font-size:11px; font-weight:700;">
                   <i class="fa-solid fa-plus"></i> <span data-i18n="agr_btn_add_item">+ Tambah Item</span>
                 </button>
               </div>
@@ -2989,7 +3134,7 @@
 
             <!-- Bottom Button to Go To Preview -->
             <div class="no-print mt-3">
-              <button type="button" class="btn btn-primary" id="btnAgrGoToPreview" style="width:100%; justify-content:center; padding:12px; font-weight:800; font-size:13.5px; background:linear-gradient(135deg, #0284c7, #0369a1); box-shadow:0 4px 12px rgba(2,132,199,0.25);">
+              <button type="button" class="btn btn-primary" id="btnAgrGoToPreview" onclick="switchAgreementTab('preview')" style="width:100%; justify-content:center; padding:12px; font-weight:800; font-size:13.5px; background:linear-gradient(135deg, #0284c7, #0369a1); box-shadow:0 4px 12px rgba(2,132,199,0.25);">
                 <i class="fa-solid fa-file-contract"></i> <span data-i18n="agr_btn_go_preview">Jana & Lihat Pratonton Dokumen Perjanjian →</span>
               </button>
             </div>
@@ -3006,29 +3151,29 @@
                 <div style="display:flex; align-items:center; gap:6px;">
                   <span style="font-size:11.5px; font-weight:700; color:var(--text-muted);" data-i18n="agr_lbl_lang">Bahasa:</span>
                   <div style="display:flex; gap:4px;">
-                    <button type="button" class="btn btn-outline btn-xs active" id="btnAgrLangBM" style="font-weight:800; padding:4px 10px;">🇲🇾 Bahasa Melayu</button>
-                    <button type="button" class="btn btn-outline btn-xs" id="btnAgrLangEN" style="font-weight:800; padding:4px 10px;">🇬🇧 English</button>
+                    <button type="button" class="btn btn-outline btn-xs active" id="btnAgrLangBM" onclick="setAgreementLanguage('bm')" style="font-weight:800; padding:4px 10px;">🇲🇾 Bahasa Melayu</button>
+                    <button type="button" class="btn btn-outline btn-xs" id="btnAgrLangEN" onclick="setAgreementLanguage('en')" style="font-weight:800; padding:4px 10px;">🇬🇧 English</button>
                   </div>
                 </div>
 
                 <!-- Main Actions -->
                 <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                  <button type="button" class="btn btn-outline btn-xs" id="btnAgrBackToForm" style="font-weight:700;">
+                  <button type="button" class="btn btn-outline btn-xs" id="btnAgrBackToForm" onclick="switchAgreementTab('form')" style="font-weight:700;">
                     <i class="fa-solid fa-sliders"></i> <span data-i18n="agr_btn_edit_details">← Edit Butiran</span>
                   </button>
-                  <button type="button" class="btn btn-outline btn-xs" id="btnSaveAgreementDraft" style="font-weight:700; color:var(--primary); border-color:var(--primary);">
+                  <button type="button" class="btn btn-outline btn-xs" id="btnSaveAgreementDraft" onclick="saveAgreementDraft()" style="font-weight:700; color:var(--primary); border-color:var(--primary);">
                     <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="agr_btn_save_draft">Simpan Draf</span>
                   </button>
-                  <button type="button" class="btn btn-outline btn-xs" id="btnPrintAgreementDoc" style="font-weight:700;">
+                  <button type="button" class="btn btn-outline btn-xs" id="btnPrintAgreementDoc" onclick="printAgreementDocument()" style="font-weight:700;">
                     <i class="fa-solid fa-print"></i> <span data-i18n="agr_btn_print">Cetak</span>
                   </button>
-                  <button type="button" class="btn btn-outline btn-xs" id="btnEmailAgreement" style="font-weight:700; color:var(--text-main);">
+                  <button type="button" class="btn btn-outline btn-xs" id="btnEmailAgreement" onclick="sendAgreementEmail()" style="font-weight:700; color:var(--text-main);">
                     <i class="fa-solid fa-envelope"></i> <span data-i18n="agr_btn_email">Emel</span>
                   </button>
-                  <button type="button" class="btn btn-whatsapp btn-xs" id="btnShareAgreementWa" style="font-weight:700; background:#22c55e; color:#fff;">
+                  <button type="button" class="btn btn-whatsapp btn-xs" id="btnShareAgreementWa" onclick="shareAgreementWhatsApp()" style="font-weight:700; background:#22c55e; color:#fff;">
                     <i class="fa-brands fa-whatsapp"></i> <span data-i18n="agr_btn_share_wa">WhatsApp Penyewa</span>
                   </button>
-                  <button type="button" class="btn btn-primary btn-xs" id="btnDownloadAgreementPdf" style="font-weight:800; background:linear-gradient(135deg, #0284c7, #0369a1);">
+                  <button type="button" class="btn btn-primary btn-xs" id="btnDownloadAgreementPdf" onclick="downloadAgreementPdf()" style="font-weight:800; background:linear-gradient(135deg, #0284c7, #0369a1);">
                     <i class="fa-solid fa-file-arrow-down"></i> <span data-i18n="agr_btn_download_pdf">Muat Turun PDF A4</span>
                   </button>
                 </div>
@@ -3042,7 +3187,7 @@
                 <span style="font-size:11.5px; color:#0369a1;">
                   <i class="fa-solid fa-circle-info"></i> <strong>Ingin sunting maklumat?</strong> Masukkan pemilik sah hartanah (NRIC/SSM) atau wakil syarikat (Contact Person) di Tab 1.
                 </span>
-                <button type="button" class="btn btn-outline btn-xs" id="btnQuickSwitchToForm" style="font-weight:700; font-size:11px; color:#0284c7; border-color:#0284c7; background:#fff;">
+                <button type="button" class="btn btn-outline btn-xs" id="btnQuickSwitchToForm" onclick="switchAgreementTab('form')" style="font-weight:700; font-size:11px; color:#0284c7; border-color:#0284c7; background:#fff;">
                   <i class="fa-solid fa-pen-to-square"></i> Buka Borang Butiran
                 </button>
               </div>
@@ -3057,13 +3202,13 @@
 
             <!-- Bottom Document Action Bar -->
             <div class="agr-bottom-actions no-print" style="margin-top:16px; padding:14px; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:10px; display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-              <button type="button" class="btn btn-primary btn-sm" id="btnDownloadAgreementPdfBottom" style="font-weight:800; background:linear-gradient(135deg, #0284c7, #0369a1); padding:8px 22px; font-size:13px;">
+              <button type="button" class="btn btn-primary btn-sm" id="btnDownloadAgreementPdfBottom" onclick="downloadAgreementPdf()" style="font-weight:800; background:linear-gradient(135deg, #0284c7, #0369a1); padding:8px 22px; font-size:13px;">
                 <i class="fa-solid fa-file-arrow-down"></i> <span data-i18n="agr_btn_download_pdf">📥 Muat Turun PDF A4 (Folder Downloads)</span>
               </button>
-              <button type="button" class="btn btn-whatsapp btn-sm" id="btnShareAgreementWaBottom" style="font-weight:700; background:#22c55e; color:#fff; padding:8px 18px; font-size:13px;">
+              <button type="button" class="btn btn-whatsapp btn-sm" id="btnShareAgreementWaBottom" onclick="shareAgreementWhatsApp()" style="font-weight:700; background:#22c55e; color:#fff; padding:8px 18px; font-size:13px;">
                 <i class="fa-brands fa-whatsapp"></i> <span data-i18n="agr_btn_share_wa">WhatsApp Penyewa</span>
               </button>
-              <button type="button" class="btn btn-outline btn-sm" id="btnEmailAgreementBottom" style="font-weight:700; padding:8px 16px; font-size:13px;">
+              <button type="button" class="btn btn-outline btn-sm" id="btnEmailAgreementBottom" onclick="sendAgreementEmail()" style="font-weight:700; padding:8px 16px; font-size:13px;">
                 <i class="fa-solid fa-envelope"></i> <span data-i18n="agr_btn_email">Emel Penyewa</span>
               </button>
             </div>
@@ -3076,11 +3221,105 @@
           <span style="font-size:11px; color:var(--text-muted);" id="agrFooterStatusText">
             Surat Perjanjian Sewaan Kediaman Rasmi • Format Piawai Malaysia
           </span>
-          <button type="button" class="btn btn-outline btn-sm" id="btnCloseAgreementModalBtn" style="min-width:80px; justify-content:center;">
+          <button type="button" class="btn btn-outline btn-sm" id="btnCloseAgreementModalBtn" onclick="closeAllModals()" style="min-width:80px; justify-content:center;">
             <span data-i18n="close">Tutup</span>
           </button>
         </div>
 
+      </div>
+    </div>
+
+    <!-- 19. TWO-STEP CLEAR ALL DATA CONFIRMATION MODAL -->
+    <div class="modal-backdrop" id="clearDataConfirmModal" style="z-index: 99999;">
+      <div class="bottom-sheet" style="max-width: 460px;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:36px; height:36px; border-radius:50%; background:#fee2e2; color:#dc2626; display:flex; align-items:center; justify-content:center; font-size:17px;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <h2 class="modal-title" style="color:#b91c1c;" data-i18n="clear_data_modal_title">Padam Semua Data?</h2>
+              <span class="modal-subtitle" data-i18n="clear_data_modal_sub">Tindakan kekal: Semua rekod homestay, tempahan, perbelanjaan & resit akan dipadam.</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnCloseClearDataModal">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:16px;">
+          <!-- Backup First Recommendation Box -->
+          <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:var(--radius-md); padding:12px; margin-bottom:14px; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:flex-start; gap:8px;">
+              <i class="fa-solid fa-shield-halved" style="color:#2563eb; font-size:16px; margin-top:2px;"></i>
+              <div style="font-size:12px; color:#1e40af;">
+                <strong data-i18n="clear_data_backup_advice">Lindungi data anda dahulu!</strong>
+                <p style="margin:2px 0 0 0;" data-i18n="clear_data_backup_desc">Kami sangat menyarankan anda memuat turun fail sandaran (.json) sebelum memadam data peranti ini.</p>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" id="btnClearModalExportBackup" style="background:#fff; border-color:#2563eb; color:#2563eb; font-weight:700; align-self:flex-start;">
+              <i class="fa-solid fa-download"></i> <span data-i18n="btn_export">Eksport Sandaran (.json)</span>
+            </button>
+          </div>
+
+          <!-- Type DELETE Confirmation -->
+          <div class="form-group mb-3">
+            <label class="form-label" style="font-size:12px; font-weight:700;" data-i18n="clear_data_type_confirm_label">
+              Taip <strong style="color:#dc2626; letter-spacing:1px;">DELETE</strong> di bawah untuk sahkan:
+            </label>
+            <input type="text" id="clearDataConfirmInput" class="form-control" placeholder="DELETE" autocomplete="off" style="font-family:monospace; font-weight:800; text-align:center; font-size:15px; letter-spacing:2px; border-color:#fca5a5;">
+          </div>
+
+          <div class="modal-footer" style="padding:0; display:flex; gap:8px;">
+            <button type="button" class="btn btn-outline" id="btnCancelClearData" style="flex:1;" data-i18n="cancel">Batal</button>
+            <button type="button" class="btn btn-danger" id="btnConfirmClearDataFinal" style="flex:1;" disabled>
+              <i class="fa-solid fa-trash-can"></i> <span data-i18n="btn_confirm_delete">Sahkan Padam</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    <!-- 24. VOID & REISSUE CONFIRMATION MODAL (B2) -->
+    <div class="modal-backdrop" id="voidDocModal" style="z-index: 10005;">
+      <div class="bottom-sheet" style="max-width:480px; margin:auto;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; border-radius:8px; background:#fee2e2; color:#dc2626; display:flex; align-items:center; justify-content:center; font-size:18px;">
+              <i class="fa-solid fa-ban"></i>
+            </div>
+            <div>
+              <h2 class="modal-title" style="color:#b91c1c;" data-i18n="void_modal_title">Batal & Keluarkan Semula Dokumen</h2>
+              <span class="modal-subtitle" data-i18n="void_modal_sub">Dokumen asal akan ditanda VOID secara kekal dan nombor baharu akan diterbitkan.</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnCloseVoidDocModal">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:16px;">
+          <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px; margin-bottom:14px; font-size:12px; color:#991b1b;">
+            <div><strong>Dokumen Asal:</strong> <span id="voidDocTargetNo" style="font-family:monospace; font-weight:800;">-</span></div>
+            <div><strong>Amaun:</strong> <span id="voidDocTargetAmount" style="font-weight:700;">-</span></div>
+            <div style="margin-top:6px; font-size:11px; color:#7f1d1d;">
+              ⚠️ Mengikut piawaian audit, dokumen asal tidak akan dipadam tetapi dikekalkan dengan status VOID. Dokumen baharu akan mencatatkan nombor rujukan dokumen yang digantikannya.
+            </div>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label required" style="font-size:12px; font-weight:700;" data-i18n="void_reason_label">Sebab Pembatalan (Void Reason)</label>
+            <select id="voidDocReasonSelect" class="form-select form-select-sm mb-2">
+              <option value="Kesilapan Amaun / Amount Correction">Kesilapan Amaun / Amount Correction</option>
+              <option value="Pertukaran Tarikh Penginapan / Date Change">Pertukaran Tarikh Penginapan / Date Change</option>
+              <option value="Pertukaran Nama / Butiran Tetamu / Guest Details Correction">Pertukaran Nama / Butiran Tetamu / Guest Details Correction</option>
+              <option value="Penyewa Membatalkan Tempahan / Cancellation">Penyewa Membatalkan Tempahan / Cancellation</option>
+              <option value="Lain-lain / Other">Lain-lain / Other</option>
+            </select>
+            <input type="text" id="voidDocReasonInput" class="form-control form-control-sm" placeholder="Catatan tambahan sebab pembatalan..." maxlength="120">
+          </div>
+
+          <div class="modal-footer" style="padding:0; display:flex; gap:8px;">
+            <button type="button" class="btn btn-outline" id="btnCancelVoidDoc" style="flex:1;" data-i18n="cancel">Batal</button>
+            <button type="button" class="btn btn-danger" id="btnConfirmVoidReissue" style="flex:1.2; font-weight:700;">
+              <i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="btn_confirm_void_reissue">Sahkan & Terbitkan Baharu</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -3097,6 +3336,6 @@
       document.head.appendChild(s);
     }
   </script>
-  <script src="app.js?v=2.7.8"></script>
+  <script src="app.js?v=2.7.11"></script>
 </body>
 </html>

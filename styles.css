@@ -3307,9 +3307,14 @@ body.theme-dark .overlap-alert-content strong {
   #printablePdfSheet table,
   #printablePdfSheet tr,
   #printablePdfSheet td,
-  #printablePdfSheet th {
-    page-break-inside: avoid;
-    break-inside: avoid;
+  #printablePdfSheet th,
+  #printablePdfSheet .pdf-totals-section,
+  #printablePdfSheet .pdf-bank-section,
+  #printablePdfSheet .pdf-signature-section,
+  #printablePdfSheet .pdf-terms-section,
+  #printablePdfSheet .pdf-doc-sheet > div {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
   #printableAgreementSheet {
@@ -3726,3 +3731,31 @@ body.theme-dark .overlap-alert-content strong {
   box-sizing: border-box !important;
   background: #ffffff !important;
 }
+
+/* Accessibility & Layout Enhancements (v2.7.11) */
+.icon-btn, .lang-toggle-btn, .demo-pill-btn {
+  min-height: 44px;
+}
+.cal-nav-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+.btn {
+  min-height: 44px;
+}
+.btn-sm {
+  min-height: 38px;
+}
+.btn-xs {
+  min-height: 34px;
+}
+.nav-item {
+  min-height: 44px;
+}
+
+/* Document & Text Wrapping Safeguards */
+.pdf-doc-sheet, .agreement-doc-sheet, .pdf-modal-container, .agr-modal-container {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+

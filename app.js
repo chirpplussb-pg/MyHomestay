@@ -7,7 +7,10 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.7.8';
+const APP_VERSION = '2.7.11';
+
+// SELLER WHATSAPP NUMBER - For Buy License inquiries (Single Source of Truth)
+const SELLER_WHATSAPP = '+60124022462';
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -100,15 +103,7 @@ const DEFAULT_PROMO_MEDIA = [
 ];
 
 
-const LICENSE_SECRET_SALT = 'HOMESTAY_PRO_SALT_2026_SECURE_AUTH';
 
-// Secret Master Admin Keys (Master Admin / Unrestricted access)
-// Master key validation is performed via cryptographic signatures
-function isMasterAdminKey(rawKey) {
-  if (!rawKey) return false;
-  const k = rawKey.trim().toUpperCase();
-  return k === 'STAY-MASTER-ADMIN-2026' || k === 'STAY-VIP-2026-LIFETIME';
-}
 
 const DEFAULT_SETTINGS = {
   businessName: 'My Homestay',
@@ -118,13 +113,14 @@ const DEFAULT_SETTINGS = {
   currency: 'RM',
   theme: 'light',
   language: 'en',
-  ownerPhone: '+60123456789',
-  sellerPhone: '+60123456789',
+  ownerPhone: '',
   defaultDepositPct: 30,
-  bankName: 'Maybank',
-  bankAccNum: '5123 4567 8901',
-  bankAccHolder: 'Homestay Host',
-  duitNow: '0123456789',
+  bankName: '',
+  bankAccNum: '',
+  bankAccHolder: '',
+  duitNow: '',
+  bankBranch: '',
+  sstRate: 0,
   quotationValidityDays: 3,
   standardNotes: ''
 };
@@ -329,6 +325,27 @@ const TRANSLATIONS = {
     type_daily: 'Daily / Short-Term',
     type_monthly: 'Monthly Tenancy',
     tenant_particulars_title: 'Tenant & Guest Particulars / Butiran Tetamu',
+    tenant_individual: 'Individual',
+    tenant_company: 'Company',
+    company_name: 'Company Legal Name',
+    company_reg_no: 'SSM Registration No.',
+    company_address: 'Registered Office Address',
+    contact_person_title: 'Contact Person (Communication)',
+    contact_person_name: 'Contact Person Name',
+    contact_person_designation: 'Designation',
+    contact_person_phone: 'Contact Phone / WhatsApp',
+    contact_person_email: 'Contact Email Address',
+    signatory_title: 'Authorized Signatory',
+    signatory_same_as_contact: 'Same as Contact Person',
+    signatory_name: 'Signatory Full Name',
+    signatory_designation: 'Signatory Designation',
+    signatory_ic: 'Signatory NRIC / Passport',
+    emergency_contact_title: 'Emergency Contact & Occupants',
+    emergency_contact_name: 'Emergency Contact Name',
+    emergency_contact_phone: 'Emergency Phone',
+    emergency_contact_relation: 'Relationship',
+    occupants_count: 'Number of Occupants',
+    occupants_notes: 'Occupant Names / Details (Optional)',
     full_name: 'Full Name / Nama Penuh',
     phone_wa: 'Phone / WhatsApp',
     nric_passport: 'NRIC / Passport No. / No. KP',
@@ -649,7 +666,69 @@ const TRANSLATIONS = {
     agr_btn_save_draft: 'Save Draft',
     agr_btn_print: 'Print Document',
     agr_btn_share_wa: 'WhatsApp Tenant',
-    agr_btn_download_pdf: 'Download A4 PDF'
+    agr_btn_download_pdf: 'Download A4 PDF',
+
+    // Overlap Warning & Alternate Units
+    overlap_requested_dates: 'Requested Dates:',
+    overlap_system_notice: 'The system prevents double-booking. Existing conflicting reservation details:',
+    overlap_alt_available: 'Alternative Homestay Units Available on These Dates:',
+
+    // Change Unit Modal
+    current_unit_label: 'Current Unit:',
+    total_amount_label: 'Total:',
+    change_homestay_assurance_title: 'Full Tenant Particulars Transfer Guarantee:',
+    change_homestay_assurance_desc: 'Tenant name, WhatsApp phone, NRIC/Passport, email, correspondence address, guest count, receipts & booking notes will be seamlessly transferred to the new unit. Turnover cleaning schedules will also update automatically.',
+
+    // PDF Toolbar & Customization
+    quick_presets: 'Quick:',
+    days_short: 'Days',
+    pdf_monthly_scope_title: 'Monthly Tenancy Document Options',
+    badge_monthly_tenancy: 'Monthly Tenancy',
+    pdf_monthly_utility_label: 'Utilities for this Month (Electricity & Water)',
+    pdf_monthly_scope_hint: 'Select Move-in Package (Quotation) or Monthly Rent Invoice for a specific month',
+    btn_auto_deposit: 'Auto Deposit',
+    pdf_deposit_hint: 'This amount will be verified and printed on the official deposit receipt',
+    pdf_pay_ref_hint: 'Will appear on receipt for accounting & audit trail',
+    pdf_pay_ref_placeholder: 'e.g. Maybank - M2U-99218291 or DuitNow QR',
+    pdf_client_org_hint: "Will appear under 'Billed To / Attention'",
+    pdf_client_org_placeholder: 'e.g. Ministry of Education / Petronas Chemicals',
+    pdf_lpo_ref_hint: 'For financial audit and reimbursement claim',
+    pdf_lpo_ref_placeholder: 'e.g. LPO/2026/089 or Office Ref',
+    pdf_lang_hint: 'Switch document language instantly',
+
+    // PDF WhatsApp Prompt Banner
+    wa_prompt_title: 'Send this Document to Guest on WhatsApp?',
+    wa_prompt_sub: 'This official PDF document is ready to download and share directly with your guest via WhatsApp.',
+    wa_prompt_yes: 'Yes, Send to WhatsApp',
+    wa_prompt_dl: 'Download PDF',
+    wa_prompt_tab: 'Open in New Tab',
+    wa_prompt_dismiss: 'Dismiss',
+
+    // Tenancy Agreement Generator
+    agr_legal_disclaimer: 'This is a template and not legal advice. Please confirm stamp duty and legal requirements with a lawyer or LHDN.',
+    type_individual_owner: 'Individual / Owner',
+    type_individual: 'Individual',
+    type_company_ssm: 'Company / Business (SSM)',
+    agr_landlord_name_hint: '*Legal property owner name (not homestay brand name). You can list co-owners if applicable.',
+    agr_signatory_title: 'Landlord Authorized Representative / Signatory:',
+    agr_signatory_name: 'Representative Name / Director:',
+    agr_signatory_capacity: 'Designation / Capacity:',
+    agr_signatory_ic: 'Representative NRIC / Passport:',
+    agr_open_details_form: 'Open Particulars Form',
+    agr_booking_hint: 'Select a booking above to auto-fill tenant details, property, rates, and deposits.',
+
+    // Backup Reminder & Safety
+    backup_reminder_msg: 'Reminder: You have bookings and have not exported a backup in the last 14 days.',
+    btn_backup_now: 'Export Backup Now',
+    clear_data_modal_title: 'Clear All Data?',
+    clear_data_modal_sub: 'Permanent action: All homestays, bookings, expenses & receipts will be erased from this device.',
+    clear_data_backup_advice: 'Protect your data first!',
+    clear_data_backup_desc: 'We strongly recommend exporting a full backup file (.json) to your device before clearing data.',
+    clear_data_type_confirm_label: 'Type DELETE below to confirm:',
+    btn_confirm_delete: 'Delete Everything',
+    storage_quota_alert_title: 'Storage Quota Limit Reached',
+    storage_quota_alert_msg: 'Device storage is nearly full. Please export a backup from Settings and clean up older receipts to continue saving smoothly.',
+    storage_protected_msg: 'Persistent storage is active. Your data is protected from automatic browser cleanup.'
   },
   bm: {
     // Navigation
@@ -850,6 +929,27 @@ const TRANSLATIONS = {
     type_daily: 'Sewaan Harian / Jangka Pendek',
     type_monthly: 'Sewaan Bulanan / Tenancy',
     tenant_particulars_title: 'Butiran Tetamu & Penyewa',
+    tenant_individual: 'Individu',
+    tenant_company: 'Syarikat',
+    company_name: 'Nama Berdaftar Syarikat',
+    company_reg_no: 'No. Pendaftaran SSM',
+    company_address: 'Alamat Pejabat Berdaftar Syarikat',
+    contact_person_title: 'Pegawai Dihubungi (Komunikasi)',
+    contact_person_name: 'Nama Pegawai Dihubungi',
+    contact_person_designation: 'Jawatan Pegawai',
+    contact_person_phone: 'No. Tel / WhatsApp Pegawai',
+    contact_person_email: 'Alamat Emel Pegawai',
+    signatory_title: 'Penandatangan Diberi Kuasa',
+    signatory_same_as_contact: 'Sama seperti Pegawai Dihubungi',
+    signatory_name: 'Nama Penuh Penandatangan',
+    signatory_designation: 'Jawatan Penandatangan',
+    signatory_ic: 'No. K/P Penandatangan',
+    emergency_contact_title: 'Kontak Kecemasan & Penghuni',
+    emergency_contact_name: 'Nama Kontak Kecemasan / Waris',
+    emergency_contact_phone: 'No. Telefon Kecemasan',
+    emergency_contact_relation: 'Hubungan / Pertalian',
+    occupants_count: 'Bilangan Penghuni Premis',
+    occupants_notes: 'Maklumat / Senarai Nama Penghuni (Pilihan)',
     full_name: 'Nama Penuh',
     phone_wa: 'No. Telefon / WhatsApp',
     nric_passport: 'No. Kad Pengenalan / Pasport',
@@ -1170,13 +1270,427 @@ const TRANSLATIONS = {
     agr_btn_save_draft: 'Simpan Draf',
     agr_btn_print: 'Cetak Dokumen',
     agr_btn_share_wa: 'WhatsApp Penyewa',
-    agr_btn_download_pdf: 'Muat Turun PDF A4'
+    agr_btn_download_pdf: 'Muat Turun PDF A4',
+
+    // Overlap Warning & Alternate Units
+    overlap_requested_dates: 'Tarikh dipohon:',
+    overlap_system_notice: 'Sistem menghalang tempahan bertindih (double-booking). Maklumat tempahan sedia ada yang bercanggah:',
+    overlap_alt_available: 'Homestay Lain Yang Kosong Pada Tarikh Ini:',
+
+    // Change Unit Modal
+    current_unit_label: 'Unit Semasa:',
+    total_amount_label: 'Jumlah:',
+    change_homestay_assurance_title: 'Jaminan Pemindahan Butiran Penuh:',
+    change_homestay_assurance_desc: 'Nama tetamu, telefon WhatsApp, No. Kad Pengenalan/Pasport, emel, alamat surat-menyurat, bilangan tetamu, resit bayaran & nota tempahan akan dipindahkan secara automatik ke unit baru. Jadual pembersihan (turnover) juga akan dikemaskini.',
+
+    // PDF Toolbar & Customization
+    quick_presets: 'Pantas:',
+    days_short: 'Hari',
+    pdf_monthly_scope_title: 'Pilihan Dokumen Sewaan Bulanan',
+    badge_monthly_tenancy: 'Sewaan Bulanan',
+    pdf_monthly_utility_label: 'Caj Utiliti Bulan Ini (Elektrik & Air)',
+    pdf_monthly_scope_hint: 'Pilih Pakej Kemasukan (Sebut Harga) atau Invois Sewaan bagi bulan tertentu',
+    btn_auto_deposit: 'Auto Deposit',
+    pdf_deposit_hint: 'Jumlah ini akan disahkan diterima dan dicetak di atas resit deposit',
+    pdf_pay_ref_hint: 'Akan tertera pada resit untuk rujukan audit perakaunan',
+    pdf_pay_ref_placeholder: 'cth: Maybank - M2U-99218291 atau DuitNow QR',
+    pdf_client_org_hint: "Akan tertera di bawah 'Dikeluarkan Kepada / Billed To'",
+    pdf_client_org_placeholder: 'cth: Kementerian Pendidikan / Petronas Chemicals',
+    pdf_lpo_ref_hint: 'Untuk rujukan audit & tuntutan kewangan',
+    pdf_lpo_ref_placeholder: 'cth: LPO/2026/089 atau Ruj. Pejabat',
+    pdf_lang_hint: 'Tukar format teks dokumen secara serta-merta',
+
+    // PDF WhatsApp Prompt Banner
+    wa_prompt_title: 'Hantar Dokumen ini ke WhatsApp Tetamu?',
+    wa_prompt_sub: 'Fail PDF rasmi ini sedia untuk dimuat turun dan dihantar terus kepada tetamu melalui WhatsApp.',
+    wa_prompt_yes: 'Ya, Hantar ke WhatsApp',
+    wa_prompt_dl: 'Muat Turun PDF',
+    wa_prompt_tab: 'Buka di Tab Baru',
+    wa_prompt_dismiss: 'Tutup Notis',
+
+    // Tenancy Agreement Generator
+    agr_legal_disclaimer: 'Ini adalah templat dan bukan nasihat undang-undang. Sila sahkan duti setem dan keperluan undang-undang dengan peguam atau LHDN.',
+    type_individual_owner: 'Individu / Pemilik',
+    type_individual: 'Individu',
+    type_company_ssm: 'Syarikat / SSM',
+    agr_landlord_name_hint: '*Nama pemilik sah hartanah (Bukan nama branding homestay). Boleh senaraikan pemilik bersama jika ada.',
+    agr_signatory_title: 'Wakil / Penandatangan Tuan Rumah (Authorized Signatory):',
+    agr_signatory_name: 'Nama Wakil / Pengarah:',
+    agr_signatory_capacity: 'Jawatan / Kapasiti:',
+    agr_signatory_ic: 'No. K/P Wakil (NRIC):',
+    agr_open_details_form: 'Buka Borang Butiran',
+    agr_booking_hint: 'Pilih tempahan di atas untuk auto-isi semua butiran penyewa, homestay, kadar sewa, dan deposit.',
+
+    // Backup Reminder & Safety
+    backup_reminder_msg: 'Peringatan: Anda mempunyai rekod tempahan tetapi belum mengeksport fail sandaran dalam tempoh 14 hari yang lalu.',
+    btn_backup_now: 'Eksport Sandaran Sekarang',
+    clear_data_modal_title: 'Padam Semua Data?',
+    clear_data_modal_sub: 'Tindakan kekal: Semua rekod homestay, tempahan, perbelanjaan & resit akan dipadam dari peranti ini.',
+    clear_data_backup_advice: 'Lindungi data anda dahulu!',
+    clear_data_backup_desc: 'Kami sangat menyarankan anda memuat turun fail sandaran (.json) sebelum memadam data peranti ini.',
+    clear_data_type_confirm_label: 'Taip DELETE di bawah untuk sahkan:',
+    btn_confirm_delete: 'Sahkan Padam Semua',
+    storage_quota_alert_title: 'Had Kuota Storan Penuh',
+    storage_quota_alert_msg: 'Storan peranti hampir penuh. Sila eksport fail sandaran dari Tetapan dan padam resit lama untuk meneruskan penyimpanan.',
+    storage_protected_msg: 'Storan dilindungi daripada dipadam automatik oleh pelayar.'
   }
 };
 
 function t(key) {
   const lang = appState.settings.language || 'en';
   return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || (TRANSLATIONS['en'][key]) || key;
+}
+
+// ==========================================================================
+// LOCAL DATE & TIMEZONE UTILITIES (Asia/Kuala_Lumpur)
+// ==========================================================================
+
+function formatLocalDate(d = new Date()) {
+  if (!d) return '';
+  if (typeof d === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+    d = new Date(d);
+  }
+  if (isNaN(d.getTime())) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function calcNightsBetween(d1Str, d2Str) {
+  if (!d1Str || !d2Str) return 0;
+  const p1 = d1Str.split('-').map(Number);
+  const p2 = d2Str.split('-').map(Number);
+  if (p1.length < 3 || p2.length < 3) return 0;
+  const utc1 = Date.UTC(p1[0], p1[1] - 1, p1[2]);
+  const utc2 = Date.UTC(p2[0], p2[1] - 1, p2[2]);
+  const diff = Math.round((utc2 - utc1) / (1000 * 60 * 60 * 24));
+  return diff > 0 ? diff : 0;
+}
+
+// ==========================================================================
+// INDEXEDDB IMAGE STORAGE ENGINE & QUOTA SAFEGUARDS
+// ==========================================================================
+
+const IMAGE_DB_NAME = 'StayManagerImageDB';
+const IMAGE_DB_VERSION = 1;
+const IMAGE_STORE_NAME = 'images';
+let imageDBPromise = null;
+const IMAGE_CACHE = new Map();
+
+function openImageDB() {
+  if (imageDBPromise) return imageDBPromise;
+  imageDBPromise = new Promise((resolve) => {
+    if (!('indexedDB' in window)) {
+      console.warn('IndexedDB not supported on this browser.');
+      return resolve(null);
+    }
+    const req = indexedDB.open(IMAGE_DB_NAME, IMAGE_DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(IMAGE_STORE_NAME)) {
+        db.createObjectStore(IMAGE_STORE_NAME, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = (e) => {
+      console.error('Failed to open IndexedDB:', e);
+      resolve(null);
+    };
+  });
+  return imageDBPromise;
+}
+
+async function saveImageToDB(id, dataUrl) {
+  if (!id || !dataUrl) return false;
+  IMAGE_CACHE.set(id, dataUrl);
+  try {
+    const db = await openImageDB();
+    if (!db) return false;
+    return new Promise((resolve) => {
+      const tx = db.transaction([IMAGE_STORE_NAME], 'readwrite');
+      const store = tx.objectStore(IMAGE_STORE_NAME);
+      store.put({ id, dataUrl, createdAt: new Date().toISOString() });
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    });
+  } catch (e) {
+    console.error('Error saving image to IndexedDB:', e);
+    return false;
+  }
+}
+
+async function getImageFromDB(id, bypassCache = false) {
+  if (!id) return null;
+  if (!bypassCache && IMAGE_CACHE.has(id)) return IMAGE_CACHE.get(id);
+  try {
+    const db = await openImageDB();
+    if (!db) return null;
+    return new Promise((resolve) => {
+      const tx = db.transaction([IMAGE_STORE_NAME], 'readonly');
+      const store = tx.objectStore(IMAGE_STORE_NAME);
+      const req = store.get(id);
+      req.onsuccess = () => {
+        if (req.result && req.result.dataUrl) {
+          IMAGE_CACHE.set(id, req.result.dataUrl);
+          resolve(req.result.dataUrl);
+        } else {
+          resolve(null);
+        }
+      };
+      req.onerror = () => resolve(null);
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+async function getAllImagesFromDB() {
+  try {
+    const db = await openImageDB();
+    if (!db) return [];
+    return new Promise((resolve) => {
+      const tx = db.transaction([IMAGE_STORE_NAME], 'readonly');
+      const store = tx.objectStore(IMAGE_STORE_NAME);
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  } catch (e) {
+    return [];
+  }
+}
+
+async function deleteImageFromDB(id) {
+  if (!id) return false;
+  IMAGE_CACHE.delete(id);
+  try {
+    const db = await openImageDB();
+    if (!db) return false;
+    return new Promise((resolve) => {
+      const tx = db.transaction([IMAGE_STORE_NAME], 'readwrite');
+      const store = tx.objectStore(IMAGE_STORE_NAME);
+      store.delete(id);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    });
+  } catch (e) {
+    return false;
+  }
+}
+
+async function preloadAllImages() {
+  try {
+    const items = await getAllImagesFromDB();
+    items.forEach(it => {
+      if (it && it.id && it.dataUrl) {
+        IMAGE_CACHE.set(it.id, it.dataUrl);
+      }
+    });
+  } catch (e) {}
+}
+
+async function migrateImagesToIndexedDB() {
+  let modified = false;
+  let migrationFailed = false;
+
+  // 1. Migrate booking receipt images
+  if (Array.isArray(appState.bookings)) {
+    for (const b of appState.bookings) {
+      if (Array.isArray(b.payments)) {
+        for (const p of b.payments) {
+          if (p.receiptImage && p.receiptImage.startsWith('data:image')) {
+            const imgId = p.receiptImageId || `img-rcpt-${b.id}-${p.id || Math.random().toString(36).substr(2, 6)}`;
+            const saved = await saveImageToDB(imgId, p.receiptImage);
+            if (saved) {
+              const readBack = await getImageFromDB(imgId, true);
+              if (readBack && readBack.length > 50) {
+                p.receiptImageId = imgId;
+                p.receiptImage = null; // Only clear after verified write and read-back!
+                modified = true;
+              } else {
+                migrationFailed = true;
+                console.warn(`[Migration] Read-back verification failed for receipt ${imgId}. Original preserved.`);
+              }
+            } else {
+              migrationFailed = true;
+              console.warn(`[Migration] Failed to save receipt ${imgId} to IndexedDB. Original preserved.`);
+            }
+          } else if (p.receiptImageId && !p.receiptImage) {
+            const d = await getImageFromDB(p.receiptImageId);
+            if (d) IMAGE_CACHE.set(p.receiptImageId, d);
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Migrate promotional media images
+  if (Array.isArray(appState.promotionalMedia)) {
+    for (const m of appState.promotionalMedia) {
+      if (m.imageData && m.imageData.startsWith('data:image')) {
+        const imgId = m.imageId || `img-promo-${m.id}`;
+        const saved = await saveImageToDB(imgId, m.imageData);
+        if (saved) {
+          const readBack = await getImageFromDB(imgId, true);
+          if (readBack && readBack.length > 50) {
+            m.imageId = imgId;
+            m.imageData = null; // Only clear after verified write and read-back!
+            modified = true;
+          } else {
+            migrationFailed = true;
+            console.warn(`[Migration] Read-back verification failed for promo media ${imgId}. Original preserved.`);
+          }
+        } else {
+          migrationFailed = true;
+          console.warn(`[Migration] Failed to save promo media ${imgId} to IndexedDB. Original preserved.`);
+        }
+      } else if (m.imageId && !m.imageData) {
+        const d = await getImageFromDB(m.imageId);
+        if (d) IMAGE_CACHE.set(m.imageId, d);
+      }
+    }
+  }
+
+  if (modified) {
+    saveToStorage();
+    console.log('[Migration] Successfully moved verified base64 image slips into IndexedDB.');
+  }
+
+  if (migrationFailed) {
+    if (!window._migrationWarnedOnce) {
+      window._migrationWarnedOnce = true;
+      if (typeof showToast === 'function') {
+        showToast(
+          (appState.settings?.language === 'bm'
+            ? 'Amaran: Sebahagian imej gagal dipindahkan ke IndexedDB dan disimpan dalam storan selamat. Migrasi akan dicuba semula pada pelancaran seterusnya.'
+            : 'Warning: Some images could not be moved to IndexedDB and were preserved safely. Migration will retry on next launch.'),
+          'warning'
+        );
+      }
+    }
+  }
+}
+
+async function requestStoragePersistence(notifyUser = false) {
+  if (navigator.storage && navigator.storage.persist) {
+    try {
+      const isPersisted = await navigator.storage.persisted();
+      if (isPersisted) {
+        if (notifyUser) showToast(t('storage_protected_msg'));
+        return true;
+      }
+      const granted = await navigator.storage.persist();
+      if (notifyUser) {
+        if (granted) {
+          showToast(t('storage_protected_msg'));
+        } else {
+          showToast(appState.settings.language === 'bm' 
+            ? 'Pelayar tidak memberi kebenaran storan kekal (biasa dalam mod incognito).' 
+            : 'Persistent storage permission not granted by browser.');
+        }
+      }
+      return granted;
+    } catch (e) {
+      return false;
+    }
+  }
+  return false;
+}
+
+function showQuotaExceededAlert() {
+  const isBM = appState.settings.language === 'bm';
+  const title = isBM ? 'Had Storan Penuh!' : 'Storage Quota Limit Reached!';
+  const msg = isBM
+    ? 'Storan tempatan pelayar anda telah penuh. Sila eksport fail sandaran (Backup) dari Tetapan dan padamkan gambar/resit lama untuk mengosongkan ruang.'
+    : 'Your browser storage quota has been exceeded. Please export a backup from Settings and clean up older receipts to free up space.';
+  alert(`⚠️ ${title}\n\n${msg}`);
+}
+
+function checkAndPromptBackupReminder() {
+  const banner = document.getElementById('backupReminderBanner');
+  if (!banner) return;
+
+  if (!appState.bookings || appState.bookings.length === 0) {
+    banner.style.display = 'none';
+    return;
+  }
+
+  if (sessionStorage.getItem('staymanager_backup_reminder_dismissed') === 'true') {
+    banner.style.display = 'none';
+    return;
+  }
+
+  const lastBackupStr = localStorage.getItem('staymanager_last_backup_date');
+  if (!lastBackupStr) {
+    banner.style.display = 'flex';
+    return;
+  }
+
+  const lastDate = new Date(lastBackupStr);
+  const now = new Date();
+  const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+  if (diffDays >= 14) {
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function dismissBackupReminderBanner() {
+  const banner = document.getElementById('backupReminderBanner');
+  if (banner) banner.style.display = 'none';
+  sessionStorage.setItem('staymanager_backup_reminder_dismissed', 'true');
+}
+
+function openClearDataModal() {
+  const modal = document.getElementById('clearDataConfirmModal');
+  if (!modal) return;
+  const input = document.getElementById('clearDataConfirmInput');
+  const btnFinal = document.getElementById('btnConfirmClearDataFinal');
+  if (input) input.value = '';
+  if (btnFinal) btnFinal.disabled = true;
+  modal.classList.add('active');
+}
+
+function closeClearDataModal() {
+  const modal = document.getElementById('clearDataConfirmModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function handleConfirmClearData() {
+  const preservedLicense = appState.licenseKey;
+  const preservedIsLicensed = appState.isLicensed;
+  const preservedSettings = { ...appState.settings };
+
+  appState.properties = [];
+  appState.bookings = [];
+  appState.turnovers = [];
+  appState.expenses = [];
+  appState.contacts = [...DEFAULT_CONTACTS];
+  appState.promotionalMedia = [];
+  appState.selectedPropertyId = 'all';
+  appState.isLicensed = preservedIsLicensed;
+  appState.licenseKey = preservedLicense;
+  appState.isMasterAdmin = false;
+  appState.settings = preservedSettings;
+
+  openImageDB().then(db => {
+    if (db) {
+      const tx = db.transaction([IMAGE_STORE_NAME], 'readwrite');
+      tx.objectStore(IMAGE_STORE_NAME).clear();
+      IMAGE_CACHE.clear();
+    }
+  }).catch(() => {});
+
+  localStorage.setItem('staymanager_initialized', 'true');
+  saveToStorage();
+  closeClearDataModal();
+  renderApp();
+  showToast(appState.settings.language === 'bm' 
+    ? 'Semua data homestay & tempahan telah berjaya dipadam.' 
+    : 'All homestay & booking data cleared successfully!');
 }
 
 const INITIAL_PROPERTIES = [
@@ -1250,7 +1764,7 @@ let appState = {
   selectedPropertyId: 'all',
   activeTab: 'dashboard',
   currentCalDate: new Date(),
-  selectedCalDate: new Date().toISOString().split('T')[0],
+  selectedCalDate: formatLocalDate(new Date()),
   calListingMode: 'incoming',
   calFilterMode: 'checkin',
   activeWaBooking: null,
@@ -1258,6 +1772,11 @@ let appState = {
   activePdfBooking: null,
   activePdfDocType: 'quotation',
   activePdfLang: 'bm',
+  quotationCounter: 1001,
+  invoiceCounter: 1001,
+  depositReceiptCounter: 1001,
+  paymentReceiptCounter: 1001,
+  refundCounter: 1001,
   activeDispatchRecipientId: null,
   activeDispatchPropertyId: null,
   activeDispatchService: 'turnover_clean',
@@ -1294,11 +1813,10 @@ function initApp() {
     if (verification.valid) {
       appState.isLicensed = true;
       appState.licenseKey = keyParam.toUpperCase();
-      appState.isMasterAdmin = verification.isMaster;
+      appState.isMasterAdmin = false;
       
       if (verification.phone) {
         appState.settings.ownerPhone = '+' + verification.phone;
-        appState.settings.sellerPhone = '+' + verification.phone;
       }
       
       saveToStorage();
@@ -1340,6 +1858,22 @@ function initApp() {
     closeAllModals();
   } catch (e) {}
 
+  // Set Calendar initial title dynamically immediately
+  const calTitle = document.getElementById('calMonthTitle');
+  if (calTitle) {
+    const locale = (appState.settings && appState.settings.language === 'bm') ? 'ms-MY' : 'en-US';
+    calTitle.textContent = appState.currentCalDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+  }
+
+  // Preload and migrate images asynchronously to IndexedDB
+  preloadAllImages().then(() => migrateImagesToIndexedDB()).catch(console.error);
+
+  // Storage persistence protection
+  requestStoragePersistence(false);
+
+  // Check 14-day backup reminder
+  checkAndPromptBackupReminder();
+
   try {
     renderApp();
   } catch (e) { console.error('RenderApp error:', e); }
@@ -1360,7 +1894,10 @@ function loadFromStorage() {
     const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
 
     if (savedProps) appState.properties = JSON.parse(savedProps);
-    if (savedBookings) appState.bookings = JSON.parse(savedBookings);
+    if (savedBookings) {
+      appState.bookings = JSON.parse(savedBookings);
+      migrateBookingTenantModel();
+    }
     if (savedTurnovers) appState.turnovers = JSON.parse(savedTurnovers);
     if (savedExpenses) appState.expenses = JSON.parse(savedExpenses);
     
@@ -1384,17 +1921,52 @@ function loadFromStorage() {
       appState.promotionalMedia = [...DEFAULT_PROMO_MEDIA];
     }
 
-    if (savedSettings) appState.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
+    if (savedSettings) {
+      try {
+        appState.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
+      } catch (e) {
+        appState.settings = { ...DEFAULT_SETTINGS };
+      }
+    }
+    // Migration: Purge legacy fake sample data so it never leaks to live documents
+    if (appState.settings) {
+      if (appState.settings.bankAccNum === '5123 4567 8901') appState.settings.bankAccNum = '';
+      if (appState.settings.bankAccHolder === 'Homestay Host') appState.settings.bankAccHolder = '';
+      if (appState.settings.duitNow === '0123456789') appState.settings.duitNow = '';
+      if (appState.settings.bankBranch === 'Changlun / Kedah' || appState.settings.bankBranch === 'Changlun / Cawangan Utama') appState.settings.bankBranch = '';
+      if (appState.settings.businessSsm === '20260100988-X') appState.settings.businessSsm = '';
+      if (appState.settings.businessEmail === 'host@myhomestay.com') appState.settings.businessEmail = '';
+      if (appState.settings.ownerPhone === '+60123456789') appState.settings.ownerPhone = '';
+      if (appState.settings.sellerPhone) delete appState.settings.sellerPhone;
+      if (appState.settings.sstRate === undefined || appState.settings.sstRate === null) appState.settings.sstRate = 0;
+    }
+
+    const savedQuoCounter = localStorage.getItem('staymanager_quotation_counter');
+    appState.quotationCounter = savedQuoCounter ? parseInt(savedQuoCounter, 10) : 1001;
+    if (isNaN(appState.quotationCounter) || appState.quotationCounter < 1) appState.quotationCounter = 1001;
+
+    const savedInvCounter = localStorage.getItem('staymanager_invoice_counter');
+    appState.invoiceCounter = savedInvCounter ? parseInt(savedInvCounter, 10) : 1001;
+    if (isNaN(appState.invoiceCounter) || appState.invoiceCounter < 1) appState.invoiceCounter = 1001;
+
+    const savedDepCounter = localStorage.getItem('staymanager_deposit_receipt_counter');
+    appState.depositReceiptCounter = savedDepCounter ? parseInt(savedDepCounter, 10) : 1001;
+    if (isNaN(appState.depositReceiptCounter) || appState.depositReceiptCounter < 1) appState.depositReceiptCounter = 1001;
+
+    const savedRecCounter = localStorage.getItem('staymanager_payment_receipt_counter');
+    appState.paymentReceiptCounter = savedRecCounter ? parseInt(savedRecCounter, 10) : 1001;
+    if (isNaN(appState.paymentReceiptCounter) || appState.paymentReceiptCounter < 1) appState.paymentReceiptCounter = 1001;
+
+    const savedRefCounter = localStorage.getItem('staymanager_refund_counter');
+    appState.refundCounter = savedRefCounter ? parseInt(savedRefCounter, 10) : 1001;
+    if (isNaN(appState.refundCounter) || appState.refundCounter < 1) appState.refundCounter = 1001;
     
-    // Unbreakable License Recovery across all legacy & modern storage keys
+    // License Recovery across legacy & modern storage keys
     const savedLicense = localStorage.getItem(STORAGE_KEYS.LICENSE) 
       || localStorage.getItem('staymanager_license_v2')
       || localStorage.getItem('staymanager_license')
       || localStorage.getItem('staymanager_license_permanent')
       || localStorage.getItem('staymanager_license_key');
-
-    const permanentLicFlag = localStorage.getItem('staymanager_is_licensed_forever') === 'true'
-      || localStorage.getItem('staymanager_license_activated') === 'true';
 
     let foundKey = null;
 
@@ -1403,9 +1975,6 @@ function loadFromStorage() {
         try {
           const parsed = JSON.parse(savedLicense);
           foundKey = (parsed && parsed.key) ? parsed.key : (typeof parsed === 'string' ? parsed : null);
-          if (parsed && (parsed.isLicensed || parsed.valid)) {
-            appState.isLicensed = true;
-          }
         } catch (e) {
           foundKey = savedLicense.trim();
         }
@@ -1418,25 +1987,29 @@ function loadFromStorage() {
       foundKey = appState.settings.licenseKey;
     }
 
+    // A license MUST always come from a key that passes verifyLicenseKey()
     if (foundKey) {
       const check = verifyLicenseKey(foundKey, null);
       if (check.valid) {
         appState.isLicensed = true;
         appState.licenseKey = foundKey;
-        appState.isMasterAdmin = check.isMaster;
+        appState.isMasterAdmin = false;
         if (check.phone && (!appState.settings.ownerPhone || appState.settings.ownerPhone === DEFAULT_SETTINGS.ownerPhone)) {
           appState.settings.ownerPhone = '+' + check.phone;
         }
-      } else if (permanentLicFlag || isMasterAdminKey(foundKey)) {
-        appState.isLicensed = true;
-        appState.licenseKey = foundKey;
-        appState.isMasterAdmin = isMasterAdminKey(foundKey);
+      } else {
+        appState.isLicensed = false;
+        appState.licenseKey = null;
+        appState.isMasterAdmin = false;
       }
-    } else if (permanentLicFlag) {
-      appState.isLicensed = true;
-      appState.licenseKey = 'STAY-VIP-2026-LIFETIME';
-      appState.isMasterAdmin = true;
+    } else {
+      appState.isLicensed = false;
+      appState.licenseKey = null;
+      appState.isMasterAdmin = false;
     }
+
+    // Purge legacy bypass flag if present
+    localStorage.removeItem('staymanager_is_licensed_forever');
 
     // Safety fallback: Check pre-update auto-backup if license dropped or data is empty
     const autoBackupStr = localStorage.getItem('staymanager_auto_backup');
@@ -1444,18 +2017,15 @@ function loadFromStorage() {
       try {
         const autoBackup = JSON.parse(autoBackupStr);
         if (autoBackup) {
-          // Restore license if missing
+          // Restore license ONLY if the backup contains a valid key passing verifyLicenseKey
           if (!appState.isLicensed && autoBackup.licenseKey) {
-            const checkBackup = verifyLicenseKey(autoBackup.licenseKey, null);
-            appState.isLicensed = true;
-            appState.licenseKey = autoBackup.licenseKey;
-            appState.isMasterAdmin = checkBackup.valid ? checkBackup.isMaster : isMasterAdminKey(autoBackup.licenseKey);
-            localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: autoBackup.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
-          } else if (!appState.isLicensed && (autoBackup.isLicensed || autoBackup.isMasterAdmin)) {
-            appState.isLicensed = true;
-            appState.licenseKey = autoBackup.licenseKey || 'STAY-VIP-2026-LIFETIME';
-            if (autoBackup.isMasterAdmin) appState.isMasterAdmin = true;
-            localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: appState.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
+            const checkBackup = verifyLicenseKey(autoBackup.licenseKey, appState.settings?.ownerPhone);
+            if (checkBackup.valid) {
+              appState.isLicensed = true;
+              appState.licenseKey = autoBackup.licenseKey;
+              appState.isMasterAdmin = false;
+              localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: autoBackup.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
+            }
           }
 
           // Restore properties and records if empty
@@ -1474,18 +2044,837 @@ function loadFromStorage() {
       }
     }
 
-    // If activated, reinforce persistent keys so future updates never drop
+    // If verified active, save validated key
     if (appState.isLicensed && appState.licenseKey) {
       localStorage.setItem('staymanager_license_activated', 'true');
-      localStorage.setItem('staymanager_is_licensed_forever', 'true');
       localStorage.setItem('staymanager_license_permanent', appState.licenseKey);
     }
 
     // Run schema migrations and auto-safety snapshot
     runDataMigrations();
+    migrateExistingBookingDocuments();
+    syncDocumentCounters();
   } catch (e) {
     console.error('Error loading localStorage:', e);
   }
+}
+
+function migrateBookingTenantModel() {
+  if (!Array.isArray(appState.bookings)) return;
+  appState.bookings.forEach(b => {
+    if (!b.tenantType) {
+      b.tenantType = (b.companyRegNo || b.companyName) ? 'company' : 'individual';
+    }
+    if (b.tenantType === 'company') {
+      b.companyName = b.companyName || b.guestName || '';
+      b.companyRegNo = b.companyRegNo || b.guestNric || '';
+      b.companyAddress = b.companyAddress || b.guestAddress || '';
+      if (!b.guestName && b.companyName) b.guestName = b.companyName;
+      if (!b.contactPhone && b.guestPhone) b.contactPhone = b.guestPhone;
+      if (!b.contactEmail && b.guestEmail) b.contactEmail = b.guestEmail;
+    } else {
+      b.guestName = b.guestName || b.companyName || '';
+      b.guestNric = b.guestNric || b.companyRegNo || '';
+      b.guestAddress = b.guestAddress || b.companyAddress || '';
+    }
+    if (b.contactPerson === undefined) b.contactPerson = '';
+    if (b.contactDesignation === undefined) b.contactDesignation = '';
+    if (b.contactPhone === undefined) b.contactPhone = b.guestPhone || '';
+    if (b.contactEmail === undefined) b.contactEmail = b.guestEmail || '';
+    if (b.contactIc === undefined) b.contactIc = '';
+    if (b.signatoryName === undefined) b.signatoryName = (b.tenantType === 'company' ? (b.contactPerson || '') : '');
+    if (b.signatoryDesignation === undefined) b.signatoryDesignation = (b.tenantType === 'company' ? (b.contactDesignation || '') : '');
+    if (b.signatoryIc === undefined) b.signatoryIc = (b.tenantType === 'company' ? (b.contactIc || '') : '');
+    if (b.signatorySameAsContact === undefined) {
+      b.signatorySameAsContact = (b.tenantType === 'company' && !!b.signatoryName && b.signatoryName === b.contactPerson);
+    }
+    if (b.emergencyContactName === undefined) b.emergencyContactName = '';
+    if (b.emergencyContactPhone === undefined) b.emergencyContactPhone = '';
+    if (b.emergencyContactRelation === undefined) b.emergencyContactRelation = '';
+    if (b.occupantsCount === undefined || b.occupantsCount === null) {
+      b.occupantsCount = b.guestCount || 2;
+    }
+    if (b.occupantsNotes === undefined) b.occupantsNotes = '';
+  });
+}
+
+// ==========================================================================
+// 2B. DOCUMENT NUMBERING, MIGRATION & AUDIT LIFECYCLE (Phase B)
+// ==========================================================================
+
+function migrateExistingBookingDocuments() {
+  if (!Array.isArray(appState.bookings)) return;
+
+  appState.bookings.forEach(b => {
+    b.documents = Array.isArray(b.documents) ? b.documents : [];
+
+    const isMonthly = b.rentalType === 'monthly';
+    const dateStr = b.createdAt || b.checkIn || formatLocalDate(new Date());
+    const year = new Date(dateStr.includes('T') ? dateStr : dateStr + 'T00:00:00').getFullYear() || new Date().getFullYear();
+    const idShort = (b.id || '').replace(/\D/g, '').slice(-4) || '1088';
+
+    // 1. Quotation: freeze existing quotationNo or calculate what was shown
+    if (!b.quotationNo && b.status === 'quotation') {
+      b.quotationNo = `QT-${year}-${idShort}`;
+    }
+    if (b.quotationNo) {
+      const hasQuoDoc = b.documents.some(d => d.docType === 'quotation');
+      if (!hasQuoDoc) {
+        b.documents.push({
+          id: `doc-quo-${b.id}`,
+          docType: 'quotation',
+          docNo: b.quotationNo,
+          baseDocNo: b.quotationNo.replace(/\s+Rev\s+\d+$/i, ''),
+          revision: 0,
+          status: 'issued',
+          date: (b.createdAt || b.checkIn || formatLocalDate(new Date())).split('T')[0],
+          amount: Number(b.totalAmount || 0),
+          issuedAt: b.createdAt || new Date().toISOString(),
+          replacesDocNo: null,
+          replacedByDocNo: null,
+          hasBeenPrintedOrDownloaded: true
+        });
+      }
+    }
+
+    // 2. Invoice: freeze existing invoice number
+    if (!b.invoiceNo) {
+      b.invoiceNo = isMonthly ? `INV-M-${year}-${idShort}` : `INV-${year}-${idShort}`;
+    }
+    const hasInvDoc = b.documents.some(d => d.docType === 'invoice' && !d.monthIndex);
+    if (!hasInvDoc && b.status !== 'quotation') {
+      b.documents.push({
+        id: `doc-inv-${b.id}`,
+        docType: 'invoice',
+        docNo: b.invoiceNo,
+        baseDocNo: b.invoiceNo,
+        revision: 0,
+        status: 'issued',
+        date: (b.checkIn || b.createdAt || formatLocalDate(new Date())).split('T')[0],
+        amount: Number(b.totalAmount || 0),
+        issuedAt: b.createdAt || new Date().toISOString(),
+        replacesDocNo: null,
+        replacedByDocNo: null,
+        hasBeenPrintedOrDownloaded: true
+      });
+    }
+
+    // 3. Deposit Receipt: freeze existing deposit receipt number
+    if (b.depositPaid > 0 || (b.depositAmount && b.depositAmount > 0)) {
+      if (!b.depositReceiptNo) {
+        b.depositReceiptNo = isMonthly ? `REC-BOOK-M-${year}-${idShort}` : `REC-DEP-${year}-${idShort}`;
+      }
+      const hasDepDoc = b.documents.some(d => d.docType === 'deposit_receipt');
+      if (!hasDepDoc) {
+        b.documents.push({
+          id: `doc-dep-${b.id}`,
+          docType: 'deposit_receipt',
+          docNo: b.depositReceiptNo,
+          baseDocNo: b.depositReceiptNo,
+          revision: 0,
+          status: 'issued',
+          date: (b.createdAt || b.checkIn || formatLocalDate(new Date())).split('T')[0],
+          amount: Number(b.depositPaid || b.depositAmount || 0),
+          issuedAt: b.createdAt || new Date().toISOString(),
+          replacesDocNo: null,
+          replacedByDocNo: null,
+          hasBeenPrintedOrDownloaded: true
+        });
+      }
+    }
+
+    // 4. Payment Receipt (Full / Balance Settlement)
+    if (b.balance <= 0 && b.totalAmount > 0 && (b.status === 'confirmed' || b.status === 'checked-in' || b.status === 'checked-out')) {
+      if (!b.paymentReceiptNo) {
+        b.paymentReceiptNo = isMonthly ? `REC-M-${year}-${idShort}` : `REC-${year}-${idShort}`;
+      }
+      const hasRecDoc = b.documents.some(d => d.docType === 'receipt' && !d.monthIndex);
+      if (!hasRecDoc) {
+        b.documents.push({
+          id: `doc-rec-${b.id}`,
+          docType: 'receipt',
+          docNo: b.paymentReceiptNo,
+          baseDocNo: b.paymentReceiptNo,
+          revision: 0,
+          status: 'issued',
+          date: (b.checkIn || formatLocalDate(new Date())).split('T')[0],
+          amount: Number(b.totalAmount || 0),
+          issuedAt: b.createdAt || new Date().toISOString(),
+          replacesDocNo: null,
+          replacedByDocNo: null,
+          hasBeenPrintedOrDownloaded: true
+        });
+      }
+    }
+
+    // 5. Individual Payments in booking.payments (Guarantee uniqueness per payment)
+    if (Array.isArray(b.payments)) {
+      const usedReceiptNos = new Set();
+      b.payments.forEach((p, idx) => {
+        if (!p.receiptNo) {
+          if (p.type === 'deposit') {
+            p.receiptNo = b.depositReceiptNo || (isMonthly ? `REC-BOOK-M-${year}-${idShort}` : `REC-DEP-${year}-${idShort}`);
+          } else if (p.type === 'monthly_rent') {
+            p.receiptNo = `REC-M${p.monthIndex || 1}-${year}-${idShort}`;
+          } else {
+            p.receiptNo = b.paymentReceiptNo || (isMonthly ? `REC-M-${year}-${idShort}` : `REC-${year}-${idShort}`);
+          }
+        }
+        // Strict invariant: Two payments on the same booking must NEVER share a receipt number
+        if (usedReceiptNos.has(p.receiptNo)) {
+          p.receiptNo = `${p.receiptNo}-${idx + 1}`;
+        }
+        usedReceiptNos.add(p.receiptNo);
+      });
+    }
+
+    // 6. Monthly Invoices
+    if (isMonthly && Array.isArray(b.monthlyInvoices)) {
+      b.monthlyInvoices.forEach(inv => {
+        if (!inv.invoiceNo) {
+          inv.invoiceNo = `INV-M${inv.monthIndex}-${year}-${idShort}`;
+        }
+        if (inv.status === 'paid' && !inv.receiptNo) {
+          inv.receiptNo = `REC-M${inv.monthIndex}-${year}-${idShort}`;
+        }
+        const hasMInvDoc = b.documents.some(d => d.docType === 'invoice' && d.monthIndex === inv.monthIndex);
+        if (!hasMInvDoc) {
+          b.documents.push({
+            id: `doc-inv-m${inv.monthIndex}-${b.id}`,
+            docType: 'invoice',
+            monthIndex: inv.monthIndex,
+            docNo: inv.invoiceNo,
+            baseDocNo: inv.invoiceNo,
+            revision: 0,
+            status: 'issued',
+            date: inv.periodStart,
+            amount: Number(inv.totalAmount || inv.rentAmount || 0),
+            issuedAt: inv.periodStart,
+            replacesDocNo: null,
+            replacedByDocNo: null,
+            hasBeenPrintedOrDownloaded: true
+          });
+        }
+        if (inv.status === 'paid') {
+          const hasMRecDoc = b.documents.some(d => d.docType === 'receipt' && d.monthIndex === inv.monthIndex);
+          if (!hasMRecDoc) {
+            b.documents.push({
+              id: `doc-rec-m${inv.monthIndex}-${b.id}`,
+              docType: 'receipt',
+              monthIndex: inv.monthIndex,
+              docNo: inv.receiptNo,
+              baseDocNo: inv.receiptNo,
+              revision: 0,
+              status: 'issued',
+              date: inv.paidAt ? inv.paidAt.split('T')[0] : inv.periodStart,
+              amount: Number(inv.totalAmount || inv.rentAmount || 0),
+              issuedAt: inv.paidAt || inv.periodStart,
+              replacesDocNo: null,
+              replacedByDocNo: null,
+              hasBeenPrintedOrDownloaded: true
+            });
+          }
+        }
+      });
+    }
+
+    // 7. Refund record
+    const ref = b.refundDetails || b.depositRefund;
+    if (ref) {
+      if (!ref.refundNo) {
+        ref.refundNo = `REF-${year}-${idShort}`;
+      }
+      const hasRefDoc = b.documents.some(d => d.docType === 'refund');
+      if (!hasRefDoc) {
+        b.documents.push({
+          id: `doc-ref-${b.id}`,
+          docType: 'refund',
+          docNo: ref.refundNo,
+          baseDocNo: ref.refundNo,
+          revision: 0,
+          status: 'issued',
+          date: ref.refundedAt ? ref.refundedAt.split('T')[0] : formatLocalDate(new Date()),
+          amount: Number(ref.netRefund || 0),
+          issuedAt: ref.refundedAt || new Date().toISOString(),
+          replacesDocNo: null,
+          replacedByDocNo: null,
+          hasBeenPrintedOrDownloaded: true
+        });
+      }
+    }
+  });
+}
+
+function syncDocumentCounters() {
+  let maxQuo = appState.quotationCounter || 1000;
+  let maxInv = appState.invoiceCounter || 1000;
+  let maxDep = appState.depositReceiptCounter || 1000;
+  let maxRec = appState.paymentReceiptCounter || 1000;
+  let maxRef = appState.refundCounter || 1000;
+
+  function extractTrailingNumber(str) {
+    if (!str || typeof str !== 'string') return 0;
+    const clean = str.split(' ')[0]; // ignore Rev suffixes
+    const match = clean.match(/-(\d+)$/);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
+  if (Array.isArray(appState.bookings)) {
+    appState.bookings.forEach(b => {
+      if (b.quotationNo) {
+        const n = extractTrailingNumber(b.quotationNo);
+        if (n > maxQuo) maxQuo = n;
+      }
+      if (b.invoiceNo) {
+        const n = extractTrailingNumber(b.invoiceNo);
+        if (n > maxInv) maxInv = n;
+      }
+      if (b.depositReceiptNo) {
+        const n = extractTrailingNumber(b.depositReceiptNo);
+        if (n > maxDep) maxDep = n;
+      }
+      if (b.paymentReceiptNo) {
+        const n = extractTrailingNumber(b.paymentReceiptNo);
+        if (n > maxRec) maxRec = n;
+      }
+      if (b.refundDetails && b.refundDetails.refundNo) {
+        const n = extractTrailingNumber(b.refundDetails.refundNo);
+        if (n > maxRef) maxRef = n;
+      }
+
+      if (Array.isArray(b.payments)) {
+        b.payments.forEach(p => {
+          if (p.receiptNo) {
+            const n = extractTrailingNumber(p.receiptNo);
+            if (p.type === 'deposit') {
+              if (n > maxDep) maxDep = n;
+            } else {
+              if (n > maxRec) maxRec = n;
+            }
+          }
+        });
+      }
+
+      if (Array.isArray(b.monthlyInvoices)) {
+        b.monthlyInvoices.forEach(inv => {
+          if (inv.invoiceNo) {
+            const n = extractTrailingNumber(inv.invoiceNo);
+            if (n > maxInv) maxInv = n;
+          }
+          if (inv.receiptNo) {
+            const n = extractTrailingNumber(inv.receiptNo);
+            if (n > maxRec) maxRec = n;
+          }
+        });
+      }
+
+      if (Array.isArray(b.documents)) {
+        b.documents.forEach(d => {
+          const n = extractTrailingNumber(d.docNo || d.baseDocNo);
+          if (d.docType === 'quotation' && n > maxQuo) maxQuo = n;
+          if (d.docType === 'invoice' && n > maxInv) maxInv = n;
+          if (d.docType === 'deposit_receipt' && n > maxDep) maxDep = n;
+          if (d.docType === 'receipt' && n > maxRec) maxRec = n;
+          if (d.docType === 'refund' && n > maxRef) maxRef = n;
+        });
+      }
+    });
+  }
+
+  appState.quotationCounter = Math.max(1001, maxQuo);
+  appState.invoiceCounter = Math.max(1001, maxInv);
+  appState.depositReceiptCounter = Math.max(1001, maxDep);
+  appState.paymentReceiptCounter = Math.max(1001, maxRec);
+  appState.refundCounter = Math.max(1001, maxRef);
+}
+
+function getOrAllocateDocNo(booking, docType, monthIndex = null, isIssuing = false, paymentId = null) {
+  if (!booking) return { docNo: 'DRAFT', status: 'draft', isDraft: true, isReprint: false, docRecord: null };
+  booking.documents = Array.isArray(booking.documents) ? booking.documents : [];
+
+  const isMonthly = booking.rentalType === 'monthly';
+  const year = new Date().getFullYear();
+  const payments = Array.isArray(booking.payments) ? booking.payments : [];
+
+  // Identify target payment if this is a receipt or deposit receipt for non-monthly booking
+  let targetPayment = null;
+  if (!isMonthly && (docType === 'receipt' || docType === 'deposit_receipt')) {
+    if (paymentId) {
+      targetPayment = payments.find(p => p.id === paymentId) || null;
+    }
+    if (!targetPayment && payments.length > 0) {
+      if (docType === 'deposit_receipt') {
+        targetPayment = payments.find(p => p.type === 'deposit') || payments[0];
+      } else {
+        targetPayment = payments[payments.length - 1];
+      }
+    }
+  }
+
+  // Find existing document
+  let existingDoc = null;
+  if (docType === 'quotation') {
+    const quotations = booking.documents.filter(d => d.docType === 'quotation');
+    if (quotations.length > 0) {
+      existingDoc = quotations.find(d => d.status !== 'superseded') || quotations[quotations.length - 1];
+    } else if (booking.quotationNo) {
+      existingDoc = { docNo: booking.quotationNo, status: 'issued', baseDocNo: booking.quotationNo, revision: 0 };
+    }
+  } else if (docType === 'invoice') {
+    if (isMonthly && monthIndex) {
+      existingDoc = booking.documents.find(d => d.docType === 'invoice' && d.monthIndex === monthIndex && d.status !== 'void');
+    } else {
+      existingDoc = booking.documents.find(d => d.docType === 'invoice' && !d.monthIndex && d.status !== 'void');
+      if (!existingDoc && booking.invoiceNo) {
+        existingDoc = { docNo: booking.invoiceNo, status: 'issued', baseDocNo: booking.invoiceNo, revision: 0 };
+      }
+    }
+  } else if (targetPayment) {
+    // Look for document linked to this specific payment
+    existingDoc = booking.documents.find(d => 
+      ((d.paymentId && d.paymentId === targetPayment.id) || 
+       (targetPayment.receiptNo && d.docNo === targetPayment.receiptNo)) && 
+      d.status !== 'void'
+    );
+    if (!existingDoc) {
+      existingDoc = booking.documents.find(d => 
+        (d.paymentId && d.paymentId === targetPayment.id) || 
+        (targetPayment.receiptNo && d.docNo === targetPayment.receiptNo)
+      );
+    }
+    if (!existingDoc && targetPayment.receiptNo) {
+      existingDoc = { 
+        docNo: targetPayment.receiptNo, 
+        status: 'issued', 
+        baseDocNo: targetPayment.receiptNo, 
+        revision: 0, 
+        paymentId: targetPayment.id,
+        amount: targetPayment.amount,
+        date: targetPayment.date
+      };
+    }
+  } else if (docType === 'deposit_receipt') {
+    existingDoc = booking.documents.find(d => d.docType === 'deposit_receipt' && d.status !== 'void');
+    if (!existingDoc && booking.depositReceiptNo) {
+      existingDoc = { docNo: booking.depositReceiptNo, status: 'issued', baseDocNo: booking.depositReceiptNo, revision: 0 };
+    }
+  } else if (docType === 'receipt') {
+    if (isMonthly && monthIndex) {
+      existingDoc = booking.documents.find(d => d.docType === 'receipt' && d.monthIndex === monthIndex && d.status !== 'void');
+    } else {
+      existingDoc = booking.documents.find(d => d.docType === 'receipt' && !d.monthIndex && d.status !== 'void');
+      if (!existingDoc && booking.paymentReceiptNo) {
+        existingDoc = { docNo: booking.paymentReceiptNo, status: 'issued', baseDocNo: booking.paymentReceiptNo, revision: 0 };
+      }
+    }
+  } else if (docType === 'refund') {
+    existingDoc = booking.documents.find(d => d.docType === 'refund' && d.status !== 'void');
+  }
+
+  // If already exists and is issued or void or superseded
+  if (existingDoc && existingDoc.status !== 'draft') {
+    return {
+      docNo: existingDoc.docNo,
+      status: existingDoc.status,
+      isDraft: false,
+      isReprint: true,
+      docRecord: existingDoc
+    };
+  }
+
+  // If not issuing, show prospective draft number WITHOUT consuming counter
+  if (!isIssuing) {
+    let nextNum = 1001;
+    let prefix = 'DOC';
+    if (docType === 'quotation') {
+      nextNum = (appState.quotationCounter || 1000) + 1;
+      prefix = 'QT';
+    } else if (docType === 'invoice') {
+      nextNum = (appState.invoiceCounter || 1000) + 1;
+      prefix = isMonthly ? (monthIndex ? `INV-M${monthIndex}` : 'INV-M') : 'INV';
+    } else if (docType === 'deposit_receipt') {
+      nextNum = (appState.depositReceiptCounter || 1000) + 1;
+      prefix = isMonthly ? 'RCPT-BOOK-M' : 'RCPT-DEP';
+    } else if (docType === 'receipt') {
+      nextNum = (appState.paymentReceiptCounter || 1000) + 1;
+      prefix = isMonthly ? (monthIndex ? `RCPT-M${monthIndex}` : 'RCPT-M') : 'RCPT';
+    } else if (docType === 'refund') {
+      nextNum = (appState.refundCounter || 1000) + 1;
+      prefix = 'REF';
+    }
+    const prospective = `${prefix}-${year}-${String(nextNum).padStart(4, '0')} (Draf)`;
+    return {
+      docNo: prospective,
+      status: 'draft',
+      isDraft: true,
+      isReprint: false,
+      docRecord: null
+    };
+  }
+
+  // If isIssuing is TRUE: consume counter permanently!
+  let allocatedNo = '';
+  let counterVal = 1001;
+  if (docType === 'quotation') {
+    appState.quotationCounter = (appState.quotationCounter || 1000) + 1;
+    counterVal = appState.quotationCounter;
+    allocatedNo = `QT-${year}-${String(counterVal).padStart(4, '0')}`;
+    booking.quotationNo = allocatedNo;
+  } else if (docType === 'invoice') {
+    appState.invoiceCounter = (appState.invoiceCounter || 1000) + 1;
+    counterVal = appState.invoiceCounter;
+    const prefix = isMonthly ? (monthIndex ? `INV-M${monthIndex}` : 'INV-M') : 'INV';
+    allocatedNo = `${prefix}-${year}-${String(counterVal).padStart(4, '0')}`;
+    if (!monthIndex) booking.invoiceNo = allocatedNo;
+  } else if (docType === 'deposit_receipt') {
+    appState.depositReceiptCounter = (appState.depositReceiptCounter || 1000) + 1;
+    counterVal = appState.depositReceiptCounter;
+    const prefix = isMonthly ? 'RCPT-BOOK-M' : 'RCPT-DEP';
+    allocatedNo = `${prefix}-${year}-${String(counterVal).padStart(4, '0')}`;
+    if (targetPayment) {
+      targetPayment.receiptNo = allocatedNo;
+    }
+    booking.depositReceiptNo = allocatedNo;
+  } else if (docType === 'receipt') {
+    appState.paymentReceiptCounter = (appState.paymentReceiptCounter || 1000) + 1;
+    counterVal = appState.paymentReceiptCounter;
+    const prefix = isMonthly ? (monthIndex ? `RCPT-M${monthIndex}` : 'RCPT-M') : 'RCPT';
+    allocatedNo = `${prefix}-${year}-${String(counterVal).padStart(4, '0')}`;
+    if (targetPayment) {
+      targetPayment.receiptNo = allocatedNo;
+    }
+    if (!monthIndex && (!targetPayment || booking.balance <= targetPayment.amount)) {
+      booking.paymentReceiptNo = allocatedNo;
+    }
+  } else if (docType === 'refund') {
+    appState.refundCounter = (appState.refundCounter || 1000) + 1;
+    counterVal = appState.refundCounter;
+    allocatedNo = `REF-${year}-${String(counterVal).padStart(4, '0')}`;
+  }
+
+  const newDocRecord = {
+    id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+    paymentId: targetPayment ? targetPayment.id : null,
+    docType,
+    monthIndex,
+    docNo: allocatedNo,
+    baseDocNo: allocatedNo,
+    revision: 0,
+    status: 'issued',
+    date: targetPayment ? (targetPayment.date || formatLocalDate(new Date())) : formatLocalDate(new Date()),
+    amount: targetPayment ? Number(targetPayment.amount || 0) : Number(booking.totalAmount || 0),
+    issuedAt: targetPayment ? (targetPayment.dateTime || new Date().toISOString()) : new Date().toISOString(),
+    replacesDocNo: null,
+    replacedByDocNo: null,
+    hasBeenPrintedOrDownloaded: false
+  };
+
+  booking.documents.push(newDocRecord);
+  saveToStorage();
+
+  return {
+    docNo: allocatedNo,
+    status: 'issued',
+    isDraft: false,
+    isReprint: false,
+    docRecord: newDocRecord
+  };
+}
+
+function handleCreateQuotationRevision(booking) {
+  if (!booking) return;
+  booking.documents = Array.isArray(booking.documents) ? booking.documents : [];
+
+  const existingQuos = booking.documents.filter(d => d.docType === 'quotation');
+  const activeQuo = existingQuos.find(d => d.status !== 'superseded') || existingQuos[existingQuos.length - 1];
+
+  if (!activeQuo) {
+    getOrAllocateDocNo(booking, 'quotation', null, true);
+    updatePdfDocView();
+    return;
+  }
+
+  activeQuo.status = 'superseded';
+
+  const nextRev = (activeQuo.revision || 0) + 1;
+  const baseNo = activeQuo.baseDocNo || activeQuo.docNo.replace(/\s+Rev\s+\d+$/i, '');
+  const newDocNo = `${baseNo} Rev ${nextRev}`;
+
+  activeQuo.replacedByDocNo = newDocNo;
+
+  const newRevDoc = {
+    id: `doc-quo-${Date.now()}`,
+    docType: 'quotation',
+    monthIndex: null,
+    docNo: newDocNo,
+    baseDocNo: baseNo,
+    revision: nextRev,
+    status: 'issued',
+    date: formatLocalDate(new Date()),
+    amount: Number(booking.totalAmount || 0),
+    issuedAt: new Date().toISOString(),
+    replacesDocNo: activeQuo.docNo,
+    replacedByDocNo: null,
+    hasBeenPrintedOrDownloaded: false
+  };
+
+  booking.documents.push(newRevDoc);
+  booking.quotationNo = newDocNo;
+
+  saveToStorage();
+  updatePdfDocView();
+
+  const isBM = appState.settings.language === 'bm';
+  showToast(isBM ? `Pindaan sebut harga rasmi ${newDocNo} berjaya dijana!` : `Quotation revision ${newDocNo} created successfully!`);
+}
+
+function openVoidDocModal(booking) {
+  if (!booking) return;
+  const docType = appState.activePdfDocType || 'invoice';
+  const monthIdx = appState.activePdfMonthIndex;
+  booking.documents = Array.isArray(booking.documents) ? booking.documents : [];
+
+  let targetDoc = null;
+  let targetPayment = null;
+
+  if (!isMonthlyBooking(booking) && (docType === 'receipt' || docType === 'deposit_receipt')) {
+    const payments = Array.isArray(booking.payments) ? booking.payments : [];
+    targetPayment = payments.find(p => p.id === appState.activePdfPaymentId) || payments[payments.length - 1];
+    if (targetPayment) {
+      targetDoc = booking.documents.find(d => 
+        (d.paymentId && d.paymentId === targetPayment.id) || 
+        (d.docNo && targetPayment.receiptNo && d.docNo === targetPayment.receiptNo)
+      );
+      if (!targetDoc && targetPayment.receiptNo) {
+        targetDoc = booking.documents.find(d => d.docNo === targetPayment.receiptNo);
+      }
+    }
+  }
+
+  if (!targetDoc) {
+    if (isMonthlyBooking(booking) && monthIdx) {
+      targetDoc = booking.documents.find(d => d.docType === docType && d.monthIndex === monthIdx && d.status !== 'void');
+    } else {
+      targetDoc = booking.documents.find(d => d.docType === docType && !d.monthIndex && d.status !== 'void');
+    }
+  }
+
+  if (!targetDoc) {
+    showToast(appState.settings.language === 'bm' ? 'Dokumen asal belum diterbitkan untuk dibatalkan.' : 'No issued document found to void.');
+    return;
+  }
+
+  appState.pendingVoidBooking = booking;
+  appState.pendingVoidDoc = targetDoc;
+  appState.pendingVoidPayment = targetPayment;
+
+  const targetNoEl = document.getElementById('voidDocTargetNo');
+  if (targetNoEl) targetNoEl.textContent = targetDoc.docNo;
+
+  const targetAmtEl = document.getElementById('voidDocTargetAmount');
+  if (targetAmtEl) {
+    const displayAmt = targetPayment ? targetPayment.amount : (targetDoc.amount || booking.totalAmount || 0);
+    targetAmtEl.textContent = formatCurrency(displayAmt);
+  }
+
+  const modal = document.getElementById('voidDocModal');
+  if (modal) modal.classList.add('active');
+}
+
+function closeVoidDocModal() {
+  const modal = document.getElementById('voidDocModal');
+  if (modal) modal.classList.remove('active');
+  appState.pendingVoidBooking = null;
+  appState.pendingVoidDoc = null;
+  appState.pendingVoidPayment = null;
+}
+
+function handleConfirmVoidReissue() {
+  const booking = appState.pendingVoidBooking;
+  const oldDoc = appState.pendingVoidDoc;
+  const targetPayment = appState.pendingVoidPayment;
+  if (!booking || !oldDoc) return;
+
+  const reasonSelect = document.getElementById('voidDocReasonSelect');
+  const reasonInput = document.getElementById('voidDocReasonInput');
+  const selVal = reasonSelect ? reasonSelect.value : 'Kesilapan Amaun';
+  const customVal = reasonInput ? reasonInput.value.trim() : '';
+  const voidReason = customVal ? `${selVal}: ${customVal}` : selVal;
+
+  oldDoc.status = 'void';
+  oldDoc.voidedAt = new Date().toISOString();
+  oldDoc.voidReason = voidReason;
+
+  const year = new Date().getFullYear();
+  const isMonthly = booking.rentalType === 'monthly';
+  let newDocNo = '';
+
+  if (oldDoc.docType === 'invoice') {
+    appState.invoiceCounter = (appState.invoiceCounter || 1000) + 1;
+    const prefix = isMonthly ? (oldDoc.monthIndex ? `INV-M${oldDoc.monthIndex}` : 'INV-M') : 'INV';
+    newDocNo = `${prefix}-${year}-${String(appState.invoiceCounter).padStart(4, '0')}`;
+    if (!oldDoc.monthIndex) booking.invoiceNo = newDocNo;
+  } else if (oldDoc.docType === 'deposit_receipt') {
+    appState.depositReceiptCounter = (appState.depositReceiptCounter || 1000) + 1;
+    const prefix = isMonthly ? 'RCPT-BOOK-M' : 'RCPT-DEP';
+    newDocNo = `${prefix}-${year}-${String(appState.depositReceiptCounter).padStart(4, '0')}`;
+    if (!targetPayment) booking.depositReceiptNo = newDocNo;
+  } else if (oldDoc.docType === 'receipt') {
+    appState.paymentReceiptCounter = (appState.paymentReceiptCounter || 1000) + 1;
+    const prefix = isMonthly ? (oldDoc.monthIndex ? `RCPT-M${oldDoc.monthIndex}` : 'RCPT-M') : 'RCPT';
+    newDocNo = `${prefix}-${year}-${String(appState.paymentReceiptCounter).padStart(4, '0')}`;
+    if (!oldDoc.monthIndex && !targetPayment) booking.paymentReceiptNo = newDocNo;
+  } else if (oldDoc.docType === 'refund') {
+    appState.refundCounter = (appState.refundCounter || 1000) + 1;
+    newDocNo = `REF-${year}-${String(appState.refundCounter).padStart(4, '0')}`;
+  }
+
+  // If this belongs to a specific payment, update THAT payment's receiptNo
+  if (targetPayment) {
+    targetPayment.receiptNo = newDocNo;
+  } else {
+    const p = (booking.payments || []).find(x => x.receiptNo === oldDoc.docNo || (oldDoc.paymentId && x.id === oldDoc.paymentId));
+    if (p) p.receiptNo = newDocNo;
+  }
+
+  oldDoc.replacedByDocNo = newDocNo;
+
+  const newDoc = {
+    id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+    paymentId: targetPayment ? targetPayment.id : (oldDoc.paymentId || null),
+    docType: oldDoc.docType,
+    monthIndex: oldDoc.monthIndex,
+    docNo: newDocNo,
+    baseDocNo: newDocNo,
+    revision: 0,
+    status: 'issued',
+    date: formatLocalDate(new Date()),
+    amount: Number(targetPayment ? targetPayment.amount : (oldDoc.amount || booking.totalAmount || 0)),
+    issuedAt: new Date().toISOString(),
+    replacesDocNo: oldDoc.docNo,
+    replacedByDocNo: null,
+    hasBeenPrintedOrDownloaded: false
+  };
+
+  booking.documents.push(newDoc);
+  saveToStorage();
+  closeVoidDocModal();
+  updatePdfDocView();
+
+  const isBM = appState.settings.language === 'bm';
+  showToast(isBM 
+    ? `Dokumen ${oldDoc.docNo} telah dibatalkan (VOID). Nombor baharu ${newDocNo} telah diterbitkan!` 
+    : `Document ${oldDoc.docNo} marked VOID. Reissued under new number ${newDocNo}!`);
+}
+
+function isMonthlyBooking(b) {
+  return b && b.rentalType === 'monthly';
+}
+
+function renderDocumentHistoryTab(booking) {
+  if (!booking) return;
+  migrateExistingBookingDocuments();
+
+  const metaEl = document.getElementById('pdfHistoryBookingMeta');
+  const prop = getPropertyById(booking.propertyId);
+  if (metaEl) {
+    metaEl.textContent = `${booking.guestName} (${booking.guestPhone || '-'}) • ${prop ? prop.name : 'Homestay'}`;
+  }
+
+  const badgeEl = document.getElementById('pdfHistoryDocCountBadge');
+  const docs = Array.isArray(booking.documents) ? booking.documents : [];
+  if (badgeEl) {
+    badgeEl.textContent = `${docs.length} Dokumen`;
+  }
+
+  const tbody = document.getElementById('pdfHistoryTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  if (docs.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="padding:24px; text-align:center; color:#94a3b8;">
+          <i class="fa-solid fa-folder-open" style="font-size:24px; display:block; margin-bottom:6px;"></i>
+          Tiada rekod sejarah dokumen bagi tempahan ini lagi.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  const isBM = (appState.activePdfLang || appState.settings.language) === 'bm';
+
+  docs.slice().reverse().forEach(d => {
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid #f1f5f9';
+
+    let typeLabel = '';
+    let typeColor = '#0284c7';
+    if (d.docType === 'quotation') {
+      typeLabel = isBM ? 'Sebut Harga' : 'Quotation';
+      typeColor = '#ea580c';
+    } else if (d.docType === 'invoice') {
+      typeLabel = isBM ? (d.monthIndex ? `Invois Bulan ${d.monthIndex}` : 'Invois Rasmi') : (d.monthIndex ? `Month ${d.monthIndex} Invoice` : 'Official Invoice');
+      typeColor = '#7c3aed';
+    } else if (d.docType === 'deposit_receipt') {
+      typeLabel = isBM ? 'Resit Deposit' : 'Deposit Receipt';
+      typeColor = '#0284c7';
+    } else if (d.docType === 'receipt') {
+      typeLabel = isBM ? (d.monthIndex ? `Resit Sewa Bln ${d.monthIndex}` : 'Resit Bayaran Penuh') : (d.monthIndex ? `Month ${d.monthIndex} Receipt` : 'Payment Receipt');
+      typeColor = '#059669';
+    } else if (d.docType === 'refund') {
+      typeLabel = isBM ? 'Penyata Pemulangan' : 'Refund Statement';
+      typeColor = '#d97706';
+    }
+
+    let statusPill = '';
+    if (d.status === 'void') {
+      statusPill = `<span style="background:#fee2e2; color:#dc2626; font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px;">BATAL (VOID)</span>`;
+    } else if (d.status === 'superseded') {
+      statusPill = `<span style="background:#fef3c7; color:#b45309; font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px;">DIGANTIKAN</span>`;
+    } else if (d.status === 'draft') {
+      statusPill = `<span style="background:#f1f5f9; color:#475569; font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px;">DRAF</span>`;
+    } else {
+      statusPill = `<span style="background:#dcfce7; color:#166534; font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px;">DITERBITKAN</span>`;
+    }
+
+    let refHtml = '-';
+    if (d.replacesDocNo) {
+      refHtml = `<span style="color:#059669; font-weight:700;">Menggantikan: ${d.replacesDocNo}</span>`;
+    } else if (d.replacedByDocNo) {
+      refHtml = `<span style="color:#dc2626; font-weight:700;">Digantikan: ${d.replacedByDocNo}</span>`;
+    }
+    if (d.voidReason) {
+      refHtml += `<div style="font-size:10px; color:#64748b; margin-top:2px;">Sebab: ${d.voidReason}</div>`;
+    }
+
+    tr.innerHTML = `
+      <td style="padding:10px 8px; font-family:monospace; font-weight:800; color:#0f172a;">${d.docNo}</td>
+      <td style="padding:10px 8px; font-weight:700; color:${typeColor};">${typeLabel}</td>
+      <td style="padding:10px 8px; color:#64748b;">${d.date || '-'}</td>
+      <td style="padding:10px 8px; text-align:right; font-weight:800; color:#0f172a;">${formatCurrency(d.amount)}</td>
+      <td style="padding:10px 8px; text-align:center;">${statusPill}</td>
+      <td style="padding:10px 8px; font-size:11px;">${refHtml}</td>
+      <td style="padding:10px 8px; text-align:center;">
+        <button type="button" class="btn btn-outline btn-xs btn-view-historical-doc" data-docno="${d.docNo}" data-doctype="${d.docType}" data-month="${d.monthIndex || ''}" style="font-size:11px; padding:3px 8px; font-weight:700;">
+          <i class="fa-regular fa-eye"></i> Papar
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('.btn-view-historical-doc').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const docType = e.currentTarget.getAttribute('data-doctype');
+      const mIdx = e.currentTarget.getAttribute('data-month');
+      appState.activePdfDocType = docType;
+      appState.activePdfMonthIndex = mIdx ? parseInt(mIdx) : null;
+      updatePdfTypeTabsUI();
+      updatePdfDocView();
+    });
+  });
 }
 
 function runDataMigrations() {
@@ -1508,7 +2897,6 @@ function runDataMigrations() {
           settings: appState.settings,
           licenseKey: appState.licenseKey,
           isLicensed: appState.isLicensed,
-          isMasterAdmin: appState.isMasterAdmin,
           version: savedVersion,
           backupDate: new Date().toISOString()
         };
@@ -1525,6 +2913,7 @@ function runDataMigrations() {
       }
 
       // Ensure all bookings have rental types and tenant particulars & auto-settle balances for confirmed / completed stays
+      migrateBookingTenantModel();
       if (Array.isArray(appState.bookings)) {
         appState.bookings.forEach(b => {
           if (!b.rentalType) b.rentalType = 'daily';
@@ -1589,19 +2978,41 @@ function runDataMigrations() {
 }
 
 function saveToStorage() {
-  localStorage.setItem(STORAGE_KEYS.PROPERTIES, JSON.stringify(appState.properties));
-  localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(appState.bookings));
-  localStorage.setItem(STORAGE_KEYS.TURNOVERS, JSON.stringify(appState.turnovers));
-  localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(appState.expenses));
-  localStorage.setItem(STORAGE_KEYS.CONTACTS, JSON.stringify(appState.contacts));
-  localStorage.setItem(STORAGE_KEYS.PROMO_MEDIA, JSON.stringify(appState.promotionalMedia));
-  localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(appState.settings));
-  if (appState.isLicensed && appState.licenseKey) {
-    localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: appState.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
-    localStorage.setItem('staymanager_license_v2', JSON.stringify({ key: appState.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
-    localStorage.setItem('staymanager_license_permanent', appState.licenseKey);
-    localStorage.setItem('staymanager_is_licensed_forever', 'true');
-    localStorage.setItem('staymanager_license_activated', 'true');
+  try {
+    localStorage.setItem(STORAGE_KEYS.PROPERTIES, JSON.stringify(appState.properties));
+    localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(appState.bookings));
+    localStorage.setItem(STORAGE_KEYS.TURNOVERS, JSON.stringify(appState.turnovers));
+    localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(appState.expenses));
+    localStorage.setItem(STORAGE_KEYS.CONTACTS, JSON.stringify(appState.contacts));
+    localStorage.setItem(STORAGE_KEYS.PROMO_MEDIA, JSON.stringify(appState.promotionalMedia));
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(appState.settings));
+    if (appState.quotationCounter) {
+      localStorage.setItem('staymanager_quotation_counter', appState.quotationCounter.toString());
+    }
+    if (appState.invoiceCounter) {
+      localStorage.setItem('staymanager_invoice_counter', appState.invoiceCounter.toString());
+    }
+    if (appState.depositReceiptCounter) {
+      localStorage.setItem('staymanager_deposit_receipt_counter', appState.depositReceiptCounter.toString());
+    }
+    if (appState.paymentReceiptCounter) {
+      localStorage.setItem('staymanager_payment_receipt_counter', appState.paymentReceiptCounter.toString());
+    }
+    if (appState.refundCounter) {
+      localStorage.setItem('staymanager_refund_counter', appState.refundCounter.toString());
+    }
+    if (appState.isLicensed && appState.licenseKey) {
+      localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: appState.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
+      localStorage.setItem('staymanager_license_v2', JSON.stringify({ key: appState.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
+      localStorage.setItem('staymanager_license_permanent', appState.licenseKey);
+      localStorage.setItem('staymanager_license_activated', 'true');
+    }
+  } catch (err) {
+    if (err && (err.name === 'QuotaExceededError' || err.code === 22 || err.code === 1014)) {
+      showQuotaExceededAlert();
+    } else {
+      console.error('Storage save error:', err);
+    }
   }
 }
 
@@ -1767,7 +3178,7 @@ function seedDemoData() {
   appState.properties = [...INITIAL_PROPERTIES];
   
   const today = new Date();
-  const formatDate = (d) => d.toISOString().split('T')[0];
+  const formatDate = (d) => formatLocalDate(d);
 
   const dMinus2 = new Date(today); dMinus2.setDate(today.getDate() - 2);
   const dMinus1 = new Date(today); dMinus1.setDate(today.getDate() - 1);
@@ -2241,18 +3652,7 @@ function setupEventListeners() {
   document.getElementById('btnBuyLicenseViaWa')?.addEventListener('click', handleBuyLicenseRedirect);
   document.getElementById('licenseForm')?.addEventListener('submit', handleActivateLicenseSubmit);
 
-  // Admin License Generator Handlers
-  const adminGenForm = document.getElementById('adminGenForm');
-  if (adminGenForm) adminGenForm.addEventListener('submit', handleGenerateAdminLicense);
-  const btnCopyMagic = document.getElementById('btnCopyMagicLink');
-  if (btnCopyMagic) btnCopyMagic.addEventListener('click', handleCopyMagicLink);
-  const btnSendBuyer = document.getElementById('btnSendBuyerWa');
-  if (btnSendBuyer) btnSendBuyer.addEventListener('click', handleSendBuyerWa);
 
-  const btnAdminCheck = document.getElementById('btnAdminCheckUpdates');
-  if (btnAdminCheck) btnAdminCheck.addEventListener('click', () => checkForAppUpdates(true));
-  const btnAdminGuide = document.getElementById('btnAdminOpenGuide');
-  if (btnAdminGuide) btnAdminGuide.addEventListener('click', () => openUserGuideModal());
 
   // Rental Type Segmented Control (Daily vs Monthly)
   document.querySelectorAll('#rentalTypeSegmented .segment-btn').forEach(btn => {
@@ -2265,6 +3665,46 @@ function setupEventListeners() {
       updateBookingModalPricing();
     });
   });
+
+  // Tenant Type Segmented Control (Individual vs Company)
+  document.querySelectorAll('#tenantTypeSegmented .segment-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const type = btn.getAttribute('data-tenant-type') || 'individual';
+      setBookingTenantType(type);
+    });
+  });
+
+  // Signatory "Same as Contact Person" Checkbox & Live Mirroring
+  document.getElementById('bookingSignatorySameAsContact')?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      syncSignatoryWithContactPerson();
+    }
+  });
+
+  ['bookingContactPerson', 'bookingContactDesignation'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', () => {
+      const chk = document.getElementById('bookingSignatorySameAsContact');
+      if (chk && chk.checked) {
+        syncSignatoryWithContactPerson();
+      }
+    });
+  });
+
+  // Sync Occupants Count with Guest Count in Monthly mode
+  const occCountInput = document.getElementById('bookingOccupantsCount');
+  const guestCountInput = document.getElementById('bookingGuestCount');
+  if (occCountInput && guestCountInput) {
+    occCountInput.addEventListener('input', () => {
+      if (document.getElementById('bookingRentalType')?.value === 'monthly') {
+        guestCountInput.value = occCountInput.value;
+      }
+    });
+    guestCountInput.addEventListener('input', () => {
+      if (document.getElementById('bookingRentalType')?.value === 'monthly') {
+        occCountInput.value = guestCountInput.value;
+      }
+    });
+  }
 
   // Booking Form Submission & Dynamic Pricing Calc
   document.getElementById('bookingForm')?.addEventListener('submit', handleSaveBooking);
@@ -2379,6 +3819,7 @@ function setupEventListeners() {
   document.getElementById('btnPdfTabInvoice')?.addEventListener('click', () => setPdfDocType('invoice'));
   document.getElementById('btnPdfTabDeposit')?.addEventListener('click', () => setPdfDocType('deposit_receipt'));
   document.getElementById('btnPdfTabReceipt')?.addEventListener('click', () => setPdfDocType('receipt'));
+  document.getElementById('btnPdfTabHistory')?.addEventListener('click', () => setPdfDocType('history'));
 
   document.getElementById('btnPdfLangBM')?.addEventListener('click', () => setPdfLanguage('bm'));
   document.getElementById('btnPdfLangEN')?.addEventListener('click', () => setPdfLanguage('en'));
@@ -2452,6 +3893,46 @@ function setupEventListeners() {
     if (banner) banner.style.display = 'none';
   });
 
+  // Shortcut from Bank Warning Banner to Settings
+  document.getElementById('btnGoToSettingsFromPdfBankWarn')?.addEventListener('click', () => {
+    closePdfDocModal();
+    switchTab('settings');
+    setTimeout(() => {
+      const bankEl = document.getElementById('settingBankAccNumInput');
+      if (bankEl) {
+        bankEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        bankEl.focus();
+      }
+    }, 200);
+  });
+
+  // Document Lifecycle Toolbar Actions (B2)
+  document.getElementById('btnPdfMarkIssued')?.addEventListener('click', () => {
+    if (!appState.activePdfBooking) return;
+    const docType = appState.activePdfDocType || 'quotation';
+    const monthIdx = appState.activePdfMonthIndex;
+    const alloc = getOrAllocateDocNo(appState.activePdfBooking, docType, monthIdx, true, appState.activePdfPaymentId);
+    updatePdfDocView();
+    const isBM = appState.settings.language === 'bm';
+    showToast(isBM 
+      ? `Dokumen rasmi ${alloc.docNo} berjaya disahkan dan diterbitkan!` 
+      : `Official document ${alloc.docNo} successfully finalized and issued!`);
+  });
+
+  document.getElementById('btnPdfCreateRevision')?.addEventListener('click', () => {
+    if (!appState.activePdfBooking) return;
+    handleCreateQuotationRevision(appState.activePdfBooking);
+  });
+
+  document.getElementById('btnPdfVoidReissue')?.addEventListener('click', () => {
+    if (!appState.activePdfBooking) return;
+    openVoidDocModal(appState.activePdfBooking);
+  });
+
+  document.getElementById('btnCloseVoidDocModal')?.addEventListener('click', closeVoidDocModal);
+  document.getElementById('btnCancelVoidDoc')?.addEventListener('click', closeVoidDocModal);
+  document.getElementById('btnConfirmVoidReissue')?.addEventListener('click', handleConfirmVoidReissue);
+
   // Direct 1-Click PDF Download from WhatsApp Modal
   document.getElementById('btnDirectDownloadPdfFromWa')?.addEventListener('click', () => {
     const b = appState.activeWaBooking || (appState.bookings && appState.bookings[0]);
@@ -2501,10 +3982,7 @@ function setupEventListeners() {
         const secDep = parseFloat(document.getElementById('bookingSecurityDeposit')?.value) || 0;
         let nights = 0;
         if (checkInVal && checkOutVal) {
-          const d1 = new Date(checkInVal);
-          const d2 = new Date(checkOutVal);
-          const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
-          nights = diff > 0 ? diff : 0;
+          nights = calcNightsBetween(checkInVal, checkOutVal);
         }
         currentTotal = (nights * rateVal) + cleanVal + secDep;
       }
@@ -2512,13 +3990,14 @@ function setupEventListeners() {
       const depInput = document.getElementById('bookingDepositPaid');
       const hintEl = document.getElementById('bookingDepositPaidHint');
       const isBM = appState.settings.language === 'bm';
+      const cur = appState.settings.currency || 'RM';
 
       if (st === 'confirmed' || st === 'checked-in' || st === 'checked-out') {
         if (depInput && currentTotal > 0) {
           depInput.value = currentTotal;
         }
         if (hintEl) {
-          hintEl.textContent = isBM ? '✓ Bayaran penuh disahkan. Baki akan menjadi RM 0.00' : '✓ Full payment confirmed. Balance will be settled to RM 0.00';
+          hintEl.textContent = isBM ? `✓ Bayaran penuh disahkan. Baki akan menjadi ${cur} 0.00` : `✓ Full payment confirmed. Balance will be settled to ${cur} 0.00`;
           hintEl.style.color = 'var(--success)';
         }
       } else if (st === 'quotation') {
@@ -2554,8 +4033,25 @@ function setupEventListeners() {
   document.getElementById('btnImportDataInput')?.addEventListener('change', importDataBackup);
   const btnRestoreSnap = document.getElementById('btnRestoreAutoBackup');
   if (btnRestoreSnap) btnRestoreSnap.addEventListener('click', restoreAutoBackup);
-  document.getElementById('btnLoadDemoData')?.addEventListener('click', seedDemoData);
-  document.getElementById('btnResetAllData')?.addEventListener('click', resetAllData);
+  document.getElementById('btnResetAllData')?.addEventListener('click', openClearDataModal);
+
+  // Clear All Data Confirmation Modal Listeners
+  document.getElementById('btnCloseClearDataModal')?.addEventListener('click', closeClearDataModal);
+  document.getElementById('btnCancelClearData')?.addEventListener('click', closeClearDataModal);
+  document.getElementById('btnClearModalExportBackup')?.addEventListener('click', exportDataBackup);
+  document.getElementById('btnConfirmClearDataFinal')?.addEventListener('click', handleConfirmClearData);
+  document.getElementById('clearDataConfirmInput')?.addEventListener('input', (e) => {
+    const val = (e.target.value || '').trim().toUpperCase();
+    const btn = document.getElementById('btnConfirmClearDataFinal');
+    if (btn) btn.disabled = (val !== 'DELETE' && val !== 'PADAM');
+  });
+
+  // Backup Reminder Banner Listeners
+  document.getElementById('btnBackupReminderExport')?.addEventListener('click', () => {
+    exportDataBackup();
+    dismissBackupReminderBanner();
+  });
+  document.getElementById('btnDismissBackupReminder')?.addEventListener('click', dismissBackupReminderBanner);
 
   // App Update System Event Listeners
   const btnApplyUpdate = document.getElementById('btnApplyAppUpdate');
@@ -2948,11 +4444,8 @@ function applyDepositPreset(pct, targetStatus) {
   const cleanVal = parseFloat(document.getElementById('bookingCleaningFee').value) || 0;
 
   let nights = 0;
-  if (checkInVal && checkOutVal) {
-    const d1 = new Date(checkInVal);
-    const d2 = new Date(checkOutVal);
-    const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
-    nights = diff > 0 ? diff : 0;
+  if (checkInVal && checkOutVal && checkInVal < checkOutVal) {
+    nights = calcNightsBetween(checkInVal, checkOutVal);
   }
 
   const total = (nights * rateVal) + cleanVal;
@@ -3143,31 +4636,20 @@ function computeSimpleHash(str) {
   return Math.abs(hash).toString(16).toUpperCase().padStart(4, '0').slice(-4);
 }
 
-function generatePhoneLicenseKey(rawPhone) {
-  const cleanPhone = normalizePhoneNumber(rawPhone);
-  if (!cleanPhone || cleanPhone.length < 8) return null;
-
-  const part1 = computeSimpleHash(cleanPhone + LICENSE_SECRET_SALT);
-  const part2 = computeSimpleHash(LICENSE_SECRET_SALT + cleanPhone + 'PRO_2026');
-  return `STAY-${cleanPhone}-${part1}-${part2}`;
-}
-
 function verifyLicenseKey(rawKey, targetPhone = null) {
   if (!rawKey) return { valid: false, isMaster: false, phone: null, reason: 'Empty key' };
   const key = rawKey.trim().toUpperCase();
 
-  // 1. Check Master Admin Key (Secret Signature Check)
-  if (isMasterAdminKey(key)) {
-    return { valid: true, isMaster: true, phone: null, key };
-  }
-
-  // 2. Check Phone-Bound License Key: STAY-<CLEAN_PHONE>-<HASH1>-<HASH2>
+  // License Key Format: STAY-<CLEAN_PHONE>-<HASH1>-<HASH2>
+  // e.g. STAY-60123456789-3F1A-B4C2
   const parts = key.split('-');
   if (parts.length === 4 && parts[0] === 'STAY') {
     const keyPhone = parts[1];
-    const expectedKey = generatePhoneLicenseKey(keyPhone);
+    const hash1 = parts[2];
+    const hash2 = parts[3];
 
-    if (expectedKey === key) {
+    // Phone format check: 8 to 15 digits; signature parts must be 4 hex characters
+    if (/^\d{8,15}$/.test(keyPhone) && /^[0-9A-F]{4}$/.test(hash1) && /^[0-9A-F]{4}$/.test(hash2)) {
       if (targetPhone) {
         const cleanTarget = normalizePhoneNumber(targetPhone);
         if (cleanTarget && cleanTarget !== keyPhone) {
@@ -3178,7 +4660,7 @@ function verifyLicenseKey(rawKey, targetPhone = null) {
     }
   }
 
-  return { valid: false, isMaster: false, phone: null, reason: 'Invalid signature' };
+  return { valid: false, isMaster: false, phone: null, reason: 'Invalid signature format' };
 }
 
 function openLicenseModal() {
@@ -3206,7 +4688,7 @@ function handleActivateLicenseSubmit(e) {
   if (result.valid) {
     appState.isLicensed = true;
     appState.licenseKey = inputKey;
-    appState.isMasterAdmin = result.isMaster;
+    appState.isMasterAdmin = false;
 
     if (result.phone) {
       appState.settings.ownerPhone = '+' + result.phone;
@@ -3229,88 +4711,10 @@ function handleActivateLicenseSubmit(e) {
 }
 
 function handleBuyLicenseRedirect() {
-  const sellerNumber = (appState.settings.sellerPhone || '+60123456789').replace(/[^0-9]/g, '');
+  const sellerDigits = (SELLER_WHATSAPP || '').replace(/[^0-9]/g, '');
   const message = `Hi! I am using the StayManager Homestay app demo and would like to buy the Lifetime License. Please provide the price and payment details. Thank you!`;
-  const url = `https://wa.me/${sellerNumber}?text=${encodeURIComponent(message)}`;
+  const url = `https://wa.me/${sellerDigits}?text=${encodeURIComponent(message)}`;
   window.open(url, '_blank');
-}
-
-// ==========================================================================
-// ADMIN LICENSE GENERATOR (SELLER TOOL)
-// ==========================================================================
-
-function handleGenerateAdminLicense(e) {
-  e.preventDefault();
-  const buyerPhone = document.getElementById('adminBuyerPhoneInput').value.trim();
-  const buyerName = document.getElementById('adminBuyerNameInput').value.trim();
-
-  const cleanPhone = normalizePhoneNumber(buyerPhone);
-  if (!cleanPhone || cleanPhone.length < 8) {
-    alert('Please enter a valid international phone number (e.g. +60123456789 or 0123456789).');
-    return;
-  }
-
-  const licenseKey = generatePhoneLicenseKey(cleanPhone);
-  const baseUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-  const magicUrl = `${baseUrl}?phone=${cleanPhone}&key=${licenseKey}`;
-
-  document.getElementById('resBuyerPhone').textContent = `+${cleanPhone} ${buyerName ? `(${buyerName})` : ''}`;
-  document.getElementById('resLicenseKey').textContent = licenseKey;
-  document.getElementById('resMagicUrl').value = magicUrl;
-  document.getElementById('adminGenResultBox').classList.remove('hidden');
-
-  showToast('License Key & Magic Link generated!');
-}
-
-function handleCopyMagicLink() {
-  const magicUrl = document.getElementById('resMagicUrl').value;
-  if (!magicUrl) return;
-
-  navigator.clipboard.writeText(magicUrl).then(() => {
-    showToast('1-Click Magic Activation URL copied!');
-  }).catch(() => {
-    showToast('Copied URL!');
-  });
-}
-
-function handleSendBuyerWa() {
-  const magicUrl = document.getElementById('resMagicUrl').value;
-  const licenseKey = document.getElementById('resLicenseKey').textContent;
-  const buyerPhone = normalizePhoneNumber(document.getElementById('adminBuyerPhoneInput').value);
-  const buyerName = document.getElementById('adminBuyerNameInput').value.trim();
-  const isBM = appState.settings.language === 'bm';
-
-  if (!magicUrl || !buyerPhone) return;
-
-  let msg = '';
-  if (isBM) {
-    msg = `🎉 *TERIMA KASIH! LESEN APLIKASI HOMESTAY ANDA SUDAH DIAKTIFKAN*\n\n` +
-      `Salam sejahtera ${buyerName ? `*${buyerName}*` : ''}! Berikut adalah maklumat lesen dan pautan pemasangan peribadi anda:\n\n` +
-      `📱 *Nombor WhatsApp Berdaftar:* +${buyerPhone}\n` +
-      `🔑 *Kunci Lesen Anda:* *${licenseKey}*\n\n` +
-      `🚀 *PAUTAN AKTIVASI 1-KLIK:*\n${magicUrl}\n\n` +
-      `📌 *PANDUAN PEMASANGAN:*\n` +
-      `1. Tekan pautan di atas pada telefon anda.\n` +
-      `2. Aplikasi akan diaktifkan serta-merta tanpa had homestay.\n` +
-      `3. Untuk jadikan seperti app di telefon: Tekan Menu / Share ➔ "Add to Home Screen".\n\n` +
-      `💡 *JAMINAN TUKAR TELEFON:*\n` +
-      `Jika anda menukar telefon baru pada masa hadapan, simpan kunci lesen ini. Anda boleh menggunakannya semula pada telefon baru anda asalkan menggunakan nombor WhatsApp yang sama! ✨🏡`;
-  } else {
-    msg = `🎉 *THANK YOU! YOUR STAYMANAGER HOMESTAY LICENSE IS ACTIVE*\n\n` +
-      `Hello ${buyerName ? `*${buyerName}*` : ''}! Here are your private app license details and installation link:\n\n` +
-      `📱 *Registered WhatsApp:* +${buyerPhone}\n` +
-      `🔑 *Your License Key:* *${licenseKey}*\n\n` +
-      `🚀 *1-CLICK MAGIC ACTIVATION LINK:*\n${magicUrl}\n\n` +
-      `📌 *INSTALLATION STEPS:*\n` +
-      `1. Tap the link above on your smartphone.\n` +
-      `2. The app will unlock full unlimited features immediately.\n` +
-      `3. To install on phone: Tap Safari Share or Chrome Menu ➔ "Add to Home Screen".\n\n` +
-      `💡 *NEW PHONE FRIENDLY:*\n` +
-      `If you change or upgrade your phone in the future, your license remains valid forever under your WhatsApp number! ✨🏡`;
-  }
-
-  const waUrl = `https://wa.me/${buyerPhone}?text=${encodeURIComponent(msg)}`;
-  window.open(waUrl, '_blank');
 }
 
 // ==========================================================================
@@ -3371,17 +4775,10 @@ function renderHeader() {
   const demoBtn = document.getElementById('btnDemoToggle');
   if (demoBtn) {
     if (appState.isLicensed) {
-      if (appState.isMasterAdmin) {
-        demoBtn.innerHTML = `<i class="fa-solid fa-crown" style="color:#f59e0b;"></i> <span class="demo-badge-text" style="color:var(--primary); font-weight:800;">Admin</span>`;
-        demoBtn.title = 'Master Admin Mode (Click to open Generator & Settings)';
-        demoBtn.style.background = 'var(--primary-light)';
-        demoBtn.style.borderColor = 'rgba(2, 132, 199, 0.4)';
-      } else {
-        demoBtn.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> <span class="demo-badge-text" style="color:var(--success-text); font-weight:800;">Pro</span>`;
-        demoBtn.title = 'Lifetime Pro Active';
-        demoBtn.style.background = 'var(--success-light)';
-        demoBtn.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-      }
+      demoBtn.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> <span class="demo-badge-text" style="color:var(--success-text); font-weight:800;">Pro</span>`;
+      demoBtn.title = 'Lifetime Pro Active';
+      demoBtn.style.background = 'var(--success-light)';
+      demoBtn.style.borderColor = 'rgba(16, 185, 129, 0.4)';
     } else {
       demoBtn.innerHTML = `<i class="fa-solid fa-sparkles"></i> <span class="demo-badge-text">${t('demo_badge') || 'Demo'}</span>`;
       demoBtn.title = 'Demo Mode (Click to activate)';
@@ -3425,7 +4822,7 @@ function getFilteredBookings() {
   return appState.bookings.filter(b => b.propertyId === appState.selectedPropertyId);
 }
 
-function isCompletedTenancy(b, todayStr = new Date().toISOString().split('T')[0]) {
+function isCompletedTenancy(b, todayStr = formatLocalDate(new Date())) {
   if (!b) return false;
   if (b.rentalType === 'monthly') {
     return b.status === 'checked-out' || b.status === 'completed' || b.isHistorical === true || (b.checkOut && b.checkOut < todayStr);
@@ -3433,7 +4830,7 @@ function isCompletedTenancy(b, todayStr = new Date().toISOString().split('T')[0]
   return false;
 }
 
-function isHistoricalStay(b, todayStr = new Date().toISOString().split('T')[0]) {
+function isHistoricalStay(b, todayStr = formatLocalDate(new Date())) {
   if (!b) return false;
   if (b.rentalType === 'monthly') {
     return isCompletedTenancy(b, todayStr);
@@ -3465,7 +4862,7 @@ function formatCurrency(amount) {
 // ==========================================================================
 
 function renderDashboardTab() {
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
   const bookings = getFilteredBookings();
   const turnovers = getFilteredTurnovers();
 
@@ -3739,13 +5136,13 @@ function renderCalendarTab() {
   grid.innerHTML = '';
 
   const bookings = getFilteredBookings();
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
 
   // Previous month trailing days
   for (let i = firstDay - 1; i >= 0; i--) {
     const dayNum = daysInPrevMonth - i;
     const prevDate = new Date(currentYear, currentMonth - 1, dayNum);
-    const dateStr = prevDate.toISOString().split('T')[0];
+    const dateStr = formatLocalDate(prevDate);
     const cell = createCalDayCell(dayNum, dateStr, true, bookings, todayStr);
     grid.appendChild(cell);
   }
@@ -3753,7 +5150,7 @@ function renderCalendarTab() {
   // Current month days
   for (let day = 1; day <= daysInMonth; day++) {
     const currDate = new Date(currentYear, currentMonth, day);
-    const dateStr = currDate.toISOString().split('T')[0];
+    const dateStr = formatLocalDate(currDate);
     const cell = createCalDayCell(day, dateStr, false, bookings, todayStr);
     grid.appendChild(cell);
   }
@@ -3763,7 +5160,7 @@ function renderCalendarTab() {
   const remaining = (totalCells <= 35 ? 35 : 42) - totalCells;
   for (let day = 1; day <= remaining; day++) {
     const nextDate = new Date(currentYear, currentMonth + 1, day);
-    const dateStr = nextDate.toISOString().split('T')[0];
+    const dateStr = formatLocalDate(nextDate);
     const cell = createCalDayCell(day, dateStr, true, bookings, todayStr);
     grid.appendChild(cell);
   }
@@ -3897,7 +5294,7 @@ function createCalDayCell(dayNum, dateStr, isOtherMonth, bookings, todayStr) {
 
 function getIncomingBookings() {
   const allBookings = getFilteredBookings();
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
   const calFilter = appState.calFilterMode || 'checkin';
 
   const active = allBookings.filter(b => b.status !== 'cancelled' && b.status !== 'checked-out' && b.status !== 'completed' && !isCompletedTenancy(b, todayStr));
@@ -3943,7 +5340,7 @@ function renderCalendarListing() {
   list.innerHTML = '';
 
   const incomingBookings = getIncomingBookings();
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
   const lang = appState.settings.language || 'en';
   const isBM = lang === 'bm';
 
@@ -4435,7 +5832,7 @@ function renderBookingsTab() {
   const filterType = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
 
   let bookings = getFilteredBookings();
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
 
   // Apply status filter
   if (filterType === 'all') {
@@ -4460,8 +5857,13 @@ function renderBookingsTab() {
   // Apply search query
   if (query) {
     bookings = bookings.filter(b => 
-      b.guestName.toLowerCase().includes(query) ||
+      (b.guestName && b.guestName.toLowerCase().includes(query)) ||
+      (b.companyName && b.companyName.toLowerCase().includes(query)) ||
+      (b.companyRegNo && b.companyRegNo.toLowerCase().includes(query)) ||
+      (b.contactPerson && b.contactPerson.toLowerCase().includes(query)) ||
       (b.guestPhone && b.guestPhone.includes(query)) ||
+      (b.contactPhone && b.contactPhone.includes(query)) ||
+      (b.guestNric && b.guestNric.toLowerCase().includes(query)) ||
       (b.notes && b.notes.toLowerCase().includes(query))
     );
   }
@@ -4559,7 +5961,17 @@ function renderBookingsTab() {
       </div>
       
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
-        <h3 class="booking-guest-title">${b.guestName}</h3>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <h3 class="booking-guest-title" style="margin:0;">
+            ${b.guestName}
+            ${b.tenantType === 'company' ? `<span style="font-size:9.5px; font-weight:700; background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:4px; border:1px solid #cbd5e1; margin-left:4px; vertical-align:middle;"><i class="fa-solid fa-building"></i> ${isBM ? 'Syarikat' : 'Company'}</span>` : ''}
+          </h3>
+          ${(b.tenantType === 'company' && b.contactPerson) ? `
+            <div style="font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:4px;">
+              <i class="fa-solid fa-user-tie" style="color:var(--primary); font-size:10px;"></i> <span>${escapeHtml(b.contactPerson)}${b.contactDesignation ? ` (${escapeHtml(b.contactDesignation)})` : ''}</span>
+            </div>
+          ` : ''}
+        </div>
         <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
           ${(b.payments && b.payments.length > 0) ? `
             <button type="button" class="btn-open-receipt-gallery" data-bid="${b.id}" style="font-size:10px; font-weight:800; padding:2px 7px; border-radius:999px; background:#eff6ff; color:#1d4ed8; border:1px solid #93c5fd; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
@@ -4605,16 +6017,20 @@ function renderBookingsTab() {
           <button class="btn btn-outline btn-xs btn-open-monthly-invoices" data-bid="${b.id}" style="color:var(--primary); font-weight:700; border-color:var(--primary);" title="${t('btn_view_invoices')}">
             <i class="fa-solid fa-file-invoice-dollar"></i> ${t('btn_view_invoices')}
           </button>
-          <button class="btn btn-outline btn-xs btn-open-agreement-form" data-bid="${b.id}" style="color:#0284c7; font-weight:700; border-color:#0284c7; background:rgba(2,132,199,0.08);" title="${isBM ? 'Buka Borang & Isi Butiran Perjanjian (Contact Person, SSM, NRIC)' : 'Open Agreement Details Form (Contact Person, SSM, NRIC)'}">
+          <button class="btn btn-outline btn-xs btn-open-agreement-form" data-bid="${b.id}" onclick="openAgreementModal('${b.id}', 'form')" style="color:#0284c7; font-weight:700; border-color:#0284c7; background:rgba(2,132,199,0.08);" title="${isBM ? 'Buka Borang & Isi Butiran Perjanjian (Contact Person, SSM, NRIC)' : 'Open Agreement Details Form (Contact Person, SSM, NRIC)'}">
             <i class="fa-solid fa-pen-to-square"></i> ${isBM ? 'Borang Perjanjian' : 'Agreement Form'}
           </button>
-          <button class="btn btn-outline btn-xs btn-open-agreement-preview" data-bid="${b.id}" style="color:#0369a1; font-weight:700; border-color:#0369a1; background:rgba(3,105,161,0.06);" title="${isBM ? 'Lihat Pra Tonton Dokumen A4 Rasmi' : 'Preview Official A4 Agreement'}">
+          <button class="btn btn-outline btn-xs btn-open-agreement-preview" data-bid="${b.id}" onclick="openAgreementModal('${b.id}', 'preview')" style="color:#0369a1; font-weight:700; border-color:#0369a1; background:rgba(3,105,161,0.06);" title="${isBM ? 'Lihat Pra Tonton Dokumen A4 Rasmi' : 'Preview Official A4 Agreement'}">
             <i class="fa-solid fa-file-lines"></i> ${isBM ? 'Pra Tonton' : 'Preview'}
           </button>
-          <button class="btn btn-primary btn-xs btn-quick-download-agreement" data-bid="${b.id}" style="font-weight:700; background:linear-gradient(135deg, #0284c7, #0369a1); border-color:#0284c7;" title="${isBM ? 'Muat Turun Terus PDF Perjanjian ke Folder Downloads' : 'Download Agreement PDF directly to Downloads folder'}">
+          <button class="btn btn-primary btn-xs btn-quick-download-agreement" data-bid="${b.id}" onclick="openAgreementModal('${b.id}', 'preview'); setTimeout(downloadAgreementPdf, 400);" style="font-weight:700; background:linear-gradient(135deg, #0284c7, #0369a1); border-color:#0284c7;" title="${isBM ? 'Muat Turun Terus PDF Perjanjian ke Folder Downloads' : 'Download Agreement PDF directly to Downloads folder'}">
             <i class="fa-solid fa-file-arrow-down"></i> ${isBM ? 'PDF' : 'PDF'}
           </button>
-        ` : ''}
+        ` : `
+          <button class="btn btn-outline btn-xs btn-open-agreement-preview" data-bid="${b.id}" onclick="openAgreementModal('${b.id}', 'preview')" style="color:#0369a1; font-weight:700; border-color:#0369a1; background:rgba(3,105,161,0.06);" title="${isBM ? 'Jana Surat Perjanjian Sewaan bagi Tempahan Ini' : 'Generate Tenancy Agreement for this booking'}">
+            <i class="fa-solid fa-file-signature"></i> ${isBM ? 'Perjanjian' : 'Agreement'}
+          </button>
+        `}
 
         ${b.status === 'quotation' ? `
           <button class="btn btn-whatsapp btn-xs btn-open-wa" data-bid="${b.id}" data-wa="quotation">
@@ -5178,10 +6594,11 @@ function renderSettingsTab() {
   document.getElementById('settingCurrencySelect').value = appState.settings.currency || 'RM';
   
   const ownerPhoneInput = document.getElementById('settingOwnerPhoneInput');
-  if (ownerPhoneInput) ownerPhoneInput.value = appState.settings.ownerPhone || '+60123456789';
+  if (ownerPhoneInput) ownerPhoneInput.value = appState.settings.ownerPhone || '';
 
-  document.getElementById('settingSellerPhoneInput').value = appState.settings.sellerPhone || '+60123456789';
   document.getElementById('settingDefaultDepositPctInput').value = appState.settings.defaultDepositPct || 30;
+  const sstInput = document.getElementById('settingSstRateInput');
+  if (sstInput) sstInput.value = appState.settings.sstRate || 0;
   
   const langSelect = document.getElementById('settingLanguageSelect');
   if (langSelect) langSelect.value = appState.settings.language || 'en';
@@ -5271,28 +6688,18 @@ function renderSettingsTab() {
   const adminGenCard = document.getElementById('adminLicenseGenCard');
 
   if (appState.isLicensed) {
-    const isMaster = appState.isMasterAdmin || isMasterAdminKey(appState.licenseKey);
-    
-    if (isMaster) {
-      subTitle.textContent = `Key: ${appState.licenseKey} (Master Admin)`;
-      badge.textContent = '👑 MASTER ADMIN';
-      badge.style.background = 'var(--primary-light)';
-      badge.style.color = 'var(--primary-text)';
-      if (adminGenCard) adminGenCard.classList.remove('hidden');
-    } else {
-      const boundPhone = appState.licenseKey.split('-')[1] || appState.settings.ownerPhone;
-      subTitle.textContent = `Key: ${appState.licenseKey} (${isBM ? 'Terkunci ke' : 'Tied to'} +${boundPhone})`;
-      badge.textContent = isBM ? '✨ LESEN AKTIF' : '✨ LIFETIME ACTIVE';
-      badge.style.background = 'var(--success-light)';
-      badge.style.color = 'var(--success-text)';
-      if (adminGenCard) adminGenCard.classList.add('hidden');
-    }
+    const boundPhone = (appState.licenseKey && appState.licenseKey.split('-')[1]) || appState.settings.ownerPhone;
+    subTitle.textContent = `Key: ${appState.licenseKey} (${isBM ? 'Terkunci ke' : 'Tied to'} +${boundPhone})`;
+    badge.textContent = isBM ? '✨ LESEN AKTIF' : '✨ LIFETIME ACTIVE';
+    badge.style.background = 'var(--success-light)';
+    badge.style.color = 'var(--success-text)';
+    if (adminGenCard) adminGenCard.classList.add('hidden');
 
     actions.innerHTML = `
       <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); margin-bottom:10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <span style="font-size:12px; font-weight:700; color:var(--text-main);">
-            <i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> ${isMaster ? 'Master Admin Pro System' : (isBM ? 'Sistem Pro Diaktifkan' : 'Pro Lifetime License')}
+            <i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> ${isBM ? 'Sistem Pro Diaktifkan' : 'Pro Lifetime License'}
           </span>
           <span style="font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px; background:var(--primary-light); color:var(--primary-text);">
             v${APP_VERSION}
@@ -5322,10 +6729,6 @@ function renderSettingsTab() {
     document.getElementById('btnLicenseCheckUpdates')?.addEventListener('click', () => checkForAppUpdates(true));
     document.getElementById('btnLicenseOpenGuide')?.addEventListener('click', () => openUserGuideModal());
     document.getElementById('btnChangeLicenseKey')?.addEventListener('click', openLicenseModal);
-
-    // Wire Admin License card update & guide buttons if present
-    document.getElementById('btnAdminCheckUpdates')?.addEventListener('click', () => checkForAppUpdates(true));
-    document.getElementById('btnAdminOpenGuide')?.addEventListener('click', () => openUserGuideModal());
   } else {
     subTitle.textContent = isBM ? 'Tiada Lesen (Mod Demo)' : 'Unlicensed (Demo Mode)';
     badge.textContent = isBM ? 'DEMO' : 'DEMO';
@@ -5584,11 +6987,12 @@ function handleSavePreferences() {
   appState.settings.businessAddress = document.getElementById('settingBusinessAddressInput') ? document.getElementById('settingBusinessAddressInput').value.trim() : (appState.settings.businessAddress || '');
   appState.settings.businessEmail = document.getElementById('settingBusinessEmailInput') ? document.getElementById('settingBusinessEmailInput').value.trim() : (appState.settings.businessEmail || '');
   appState.settings.currency = document.getElementById('settingCurrencySelect').value || 'RM';
-  appState.settings.ownerPhone = newOwnerPhone || '+60123456789';
-  appState.settings.sellerPhone = newOwnerPhone || appState.settings.sellerPhone || '+60123456789';
+  appState.settings.ownerPhone = newOwnerPhone || '';
+  if (appState.settings.sellerPhone) delete appState.settings.sellerPhone;
   appState.settings.language = document.getElementById('settingLanguageSelect') ? document.getElementById('settingLanguageSelect').value : (appState.settings.language || 'en');
   appState.settings.defaultDepositPct = parseInt(document.getElementById('settingDefaultDepositPctInput').value) || 30;
   appState.settings.quotationValidityDays = parseInt(document.getElementById('settingQuotationValidityInput')?.value) || 3;
+  appState.settings.sstRate = parseFloat(document.getElementById('settingSstRateInput')?.value) || 0;
   appState.settings.standardNotes = document.getElementById('settingStandardNotesInput') ? document.getElementById('settingStandardNotesInput').value.trim() : (appState.settings.standardNotes || '');
 
   saveToStorage();
@@ -5605,12 +7009,12 @@ function getBookingOverlaps(propertyId, checkIn, checkOut, excludeBookingId = nu
   if (!propertyId || !checkIn || !checkOut) return [];
   if (checkIn >= checkOut) return [];
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
 
   return appState.bookings.filter(b => {
     if (b.propertyId !== propertyId) return false;
     if (excludeBookingId && b.id === excludeBookingId) return false;
-    if (b.status === 'cancelled') return false;
+    if (b.status === 'cancelled' || b.status === 'quotation') return false;
     // Completed historical tenancies and ended stays should not block future reservations
     if (b.status === 'checked-out' || b.status === 'completed' || isCompletedTenancy(b, todayStr)) return false;
     // Standard hotel interval overlap: (checkInA < checkOutB) && (checkOutA > checkInB)
@@ -5633,7 +7037,7 @@ function checkBookingModalOverlap() {
   const id = document.getElementById('bookingIdInput')?.value || null;
   const status = document.getElementById('bookingStatusSelect')?.value || 'booked';
 
-  if (status === 'cancelled' || !propertyId) {
+  if (status === 'cancelled' || status === 'quotation' || !propertyId) {
     alertEl.style.display = 'none';
     return;
   }
@@ -5652,7 +7056,7 @@ function checkBookingModalOverlap() {
     const dStart = new Date(mStart + 'T00:00:00');
     const dEnd = new Date(dStart);
     dEnd.setMonth(dEnd.getMonth() + mDuration);
-    checkOut = dEnd.toISOString().split('T')[0];
+    checkOut = formatLocalDate(dEnd);
   } else {
     checkIn = document.getElementById('bookingCheckIn')?.value;
     checkOut = document.getElementById('bookingCheckOut')?.value;
@@ -6009,6 +7413,86 @@ function handleConfirmChangeHomestay(e) {
 // 11. BOOKING MODAL LOGIC (DAILY & MONTHLY TENANCY)
 // ==========================================================================
 
+function syncSignatoryWithContactPerson() {
+  const chk = document.getElementById('bookingSignatorySameAsContact');
+  if (!chk || !chk.checked) return;
+
+  const contactName = document.getElementById('bookingContactPerson')?.value || '';
+  const contactDesig = document.getElementById('bookingContactDesignation')?.value || '';
+
+  const sigName = document.getElementById('bookingSignatoryName');
+  const sigDesig = document.getElementById('bookingSignatoryDesignation');
+
+  if (sigName) sigName.value = contactName;
+  if (sigDesig) sigDesig.value = contactDesig;
+}
+
+function applyTenantFormVisibility(rentalType, tenantType) {
+  const isMonthly = rentalType === 'monthly';
+  const isCompany = tenantType === 'company';
+
+  const secIndiv = document.getElementById('sectionTenantIndividual');
+  const secComp = document.getElementById('sectionTenantCompany');
+  const secContact = document.getElementById('sectionContactPerson');
+  const secSignatory = document.getElementById('sectionAuthorizedSignatory');
+  const secMonthlyExtras = document.getElementById('sectionMonthlyExtras');
+
+  // Role (a) TENANT: Individual vs Company
+  if (secIndiv) secIndiv.style.display = isCompany ? 'none' : 'block';
+  if (secComp) secComp.style.display = isCompany ? 'block' : 'none';
+
+  // Role (b) CONTACT PERSON: Required for Company, Optional for Individual in Monthly mode, Hidden for Individual in Daily mode
+  if (secContact) {
+    if (isCompany) {
+      secContact.style.display = 'block';
+    } else if (isMonthly) {
+      secContact.style.display = 'block';
+    } else {
+      secContact.style.display = 'none';
+    }
+  }
+
+  // Role (c) AUTHORIZED SIGNATORY: Only for Company in Monthly Tenancy mode
+  if (secSignatory) {
+    secSignatory.style.display = (isCompany && isMonthly) ? 'block' : 'none';
+  }
+
+  // Monthly Tenancy Extras: Emergency Contact & Occupants
+  if (secMonthlyExtras) {
+    secMonthlyExtras.style.display = isMonthly ? 'block' : 'none';
+  }
+
+  // Dynamic required attributes to prevent browser validation blocking hidden fields
+  const guestNameInput = document.getElementById('bookingGuestName');
+  const guestPhoneInput = document.getElementById('bookingGuestPhone');
+  const compNameInput = document.getElementById('bookingCompanyName');
+  const compRegInput = document.getElementById('bookingCompanyRegNo');
+  const contactPersonInput = document.getElementById('bookingContactPerson');
+  const contactPhoneInput = document.getElementById('bookingContactPhone');
+
+  if (guestNameInput) guestNameInput.required = !isCompany;
+  if (guestPhoneInput) guestPhoneInput.required = (!isCompany && !isMonthly);
+
+  if (compNameInput) compNameInput.required = isCompany;
+  if (compRegInput) compRegInput.required = isCompany;
+  if (contactPersonInput) contactPersonInput.required = isCompany;
+  if (contactPhoneInput) contactPhoneInput.required = isCompany;
+}
+
+function setBookingTenantType(type) {
+  const targetType = type === 'company' ? 'company' : 'individual';
+  const hiddenInput = document.getElementById('bookingTenantType');
+  if (hiddenInput) hiddenInput.value = targetType;
+
+  // Update segmented control buttons UI
+  document.querySelectorAll('#tenantTypeSegmented .segment-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-tenant-type') === targetType);
+  });
+
+  const rentalType = document.getElementById('bookingRentalType')?.value || 'daily';
+  applyTenantFormVisibility(rentalType, targetType);
+}
+
 function setBookingFormRentalType(type) {
   const isMonthly = type === 'monthly';
   document.getElementById('bookingRentalType').value = type;
@@ -6016,11 +7500,9 @@ function setBookingFormRentalType(type) {
   // Toggle Section Visibility
   const dailySection = document.getElementById('sectionDailyPricing');
   const monthlySection = document.getElementById('sectionMonthlyPricing');
-  const corpSection = document.getElementById('bookingCorporateFields');
   
   if (dailySection) dailySection.classList.toggle('hidden', isMonthly);
   if (monthlySection) monthlySection.classList.toggle('hidden', !isMonthly);
-  if (corpSection) corpSection.style.display = isMonthly ? 'block' : 'none';
 
   // Daily input elements to enable/disable
   const dailyInputs = [
@@ -6094,6 +7576,10 @@ function setBookingFormRentalType(type) {
   document.querySelectorAll('#rentalTypeSegmented .segment-btn').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-type') === type);
   });
+
+  // Re-evaluate Tenant section visibility based on rental type
+  const currentTenantType = document.getElementById('bookingTenantType')?.value || 'individual';
+  applyTenantFormVisibility(type, currentTenantType);
 }
 
 function openBookingModal(existingBooking = null, prefillDate = null, prefillPropertyId = null) {
@@ -6122,19 +7608,73 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
     propSelect.appendChild(opt);
   });
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
+  const tomorrowObj = new Date(); tomorrowObj.setDate(tomorrowObj.getDate() + 1);
+  const tomorrowStr = formatLocalDate(tomorrowObj);
 
   if (existingBooking) {
     document.getElementById('bookingModalTitle').textContent = 'Edit Booking / Tenancy';
     document.getElementById('bookingIdInput').value = existingBooking.id;
     document.getElementById('bookingPropertySelect').value = existingBooking.propertyId;
-    document.getElementById('bookingGuestName').value = existingBooking.guestName;
+
+    const rType = existingBooking.rentalType || 'daily';
+    setBookingFormRentalType(rType);
+
+    const tType = existingBooking.tenantType || (existingBooking.companyRegNo ? 'company' : 'individual');
+    setBookingTenantType(tType);
+
+    // Populate Role (a): TENANT (Individual)
+    document.getElementById('bookingGuestName').value = existingBooking.guestName || '';
     document.getElementById('bookingGuestPhone').value = existingBooking.guestPhone || '';
     document.getElementById('bookingGuestNric').value = existingBooking.guestNric || '';
     document.getElementById('bookingGuestEmail').value = existingBooking.guestEmail || '';
     document.getElementById('bookingGuestAddress').value = existingBooking.guestAddress || '';
-    document.getElementById('bookingGuestCount').value = existingBooking.guestCount || 2;
+
+    // Populate Role (a): TENANT (Company)
+    const elCompName = document.getElementById('bookingCompanyName');
+    if (elCompName) elCompName.value = existingBooking.companyName || (tType === 'company' ? existingBooking.guestName : '') || '';
+    const elReg = document.getElementById('bookingCompanyRegNo');
+    if (elReg) elReg.value = existingBooking.companyRegNo || (tType === 'company' ? existingBooking.guestNric : '') || '';
+    const elCompAddr = document.getElementById('bookingCompanyAddress');
+    if (elCompAddr) elCompAddr.value = existingBooking.companyAddress || (tType === 'company' ? existingBooking.guestAddress : '') || '';
+
+    // Populate Role (b): CONTACT PERSON
+    const elCP = document.getElementById('bookingContactPerson');
+    if (elCP) elCP.value = existingBooking.contactPerson || '';
+    const elCD = document.getElementById('bookingContactDesignation');
+    if (elCD) elCD.value = existingBooking.contactDesignation || '';
+    const elCPH = document.getElementById('bookingContactPhone');
+    if (elCPH) elCPH.value = existingBooking.contactPhone || (tType === 'company' ? existingBooking.guestPhone : '') || '';
+    const elCE = document.getElementById('bookingContactEmail');
+    if (elCE) elCE.value = existingBooking.contactEmail || (tType === 'company' ? existingBooking.guestEmail : '') || '';
+
+    // Populate Role (c): AUTHORIZED SIGNATORY (Company)
+    const elSigName = document.getElementById('bookingSignatoryName');
+    if (elSigName) elSigName.value = existingBooking.signatoryName || '';
+    const elSigDesig = document.getElementById('bookingSignatoryDesignation');
+    if (elSigDesig) elSigDesig.value = existingBooking.signatoryDesignation || '';
+    const elSigIc = document.getElementById('bookingSignatoryIc');
+    if (elSigIc) elSigIc.value = existingBooking.signatoryIc || existingBooking.contactIc || '';
+    const chkSigSame = document.getElementById('bookingSignatorySameAsContact');
+    if (chkSigSame) {
+      chkSigSame.checked = existingBooking.signatorySameAsContact !== undefined
+        ? !!existingBooking.signatorySameAsContact
+        : (tType === 'company' && !!existingBooking.signatoryName && existingBooking.signatoryName === existingBooking.contactPerson);
+    }
+
+    // Populate Monthly Extras: Emergency Contact & Occupants
+    const elEmName = document.getElementById('bookingEmergencyContactName');
+    if (elEmName) elEmName.value = existingBooking.emergencyContactName || '';
+    const elEmPhone = document.getElementById('bookingEmergencyContactPhone');
+    if (elEmPhone) elEmPhone.value = existingBooking.emergencyContactPhone || '';
+    const elEmRel = document.getElementById('bookingEmergencyContactRelation');
+    if (elEmRel) elEmRel.value = existingBooking.emergencyContactRelation || '';
+    const elOccCount = document.getElementById('bookingOccupantsCount');
+    if (elOccCount) elOccCount.value = existingBooking.occupantsCount || existingBooking.guestCount || 2;
+    const elOccNotes = document.getElementById('bookingOccupantsNotes');
+    if (elOccNotes) elOccNotes.value = existingBooking.occupantsNotes || '';
+
+    document.getElementById('bookingGuestCount').value = existingBooking.guestCount || existingBooking.occupantsCount || 2;
     document.getElementById('bookingChannel').value = existingBooking.channel || 'whatsapp';
     document.getElementById('bookingDepositPaid').value = existingBooking.depositPaid || 0;
     const currentSt = existingBooking.status || 'booked';
@@ -6143,7 +7683,7 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
     const hintEl = document.getElementById('bookingDepositPaidHint');
     if (hintEl) {
       if (currentSt === 'confirmed' || currentSt === 'checked-in' || currentSt === 'checked-out') {
-        hintEl.textContent = isBM ? '✓ Bayaran penuh disahkan. Baki: RM 0.00' : '✓ Full payment confirmed. Balance: RM 0.00';
+        hintEl.textContent = isBM ? `✓ Bayaran penuh disahkan. Baki: ${formatCurrency(0)}` : `✓ Full payment confirmed. Balance: ${formatCurrency(0)}`;
         hintEl.style.color = 'var(--success)';
       } else if (currentSt === 'booked') {
         hintEl.textContent = isBM ? `Deposit: ${formatCurrency(existingBooking.depositPaid)}. Baki: ${formatCurrency(existingBooking.balance)}` : `Deposit: ${formatCurrency(existingBooking.depositPaid)}. Balance: ${formatCurrency(existingBooking.balance)}`;
@@ -6162,9 +7702,6 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
       qGroup.style.display = (existingBooking.status === 'quotation') ? 'block' : 'none';
     }
 
-    const rType = existingBooking.rentalType || 'daily';
-    setBookingFormRentalType(rType);
-
     if (rType === 'monthly') {
       document.getElementById('bookingMonthlyStart').value = existingBooking.monthlyStart || existingBooking.checkIn;
       document.getElementById('bookingMonthlyDuration').value = existingBooking.monthlyDuration || 6;
@@ -6172,13 +7709,6 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
       document.getElementById('bookingRentalDeposit').value = existingBooking.rentalDeposit || 1200;
       document.getElementById('bookingUtilitiesDeposit').value = existingBooking.utilitiesDeposit || 300;
       document.getElementById('bookingAgreementFee').value = existingBooking.agreementFee || 150;
-
-      // Populate Corporate Tenant fields
-      const elReg = document.getElementById('bookingCompanyRegNo'); if (elReg) elReg.value = existingBooking.companyRegNo || '';
-      const elCP = document.getElementById('bookingContactPerson'); if (elCP) elCP.value = existingBooking.contactPerson || '';
-      const elCD = document.getElementById('bookingContactDesignation'); if (elCD) elCD.value = existingBooking.contactDesignation || '';
-      const elCI = document.getElementById('bookingContactIc'); if (elCI) elCI.value = existingBooking.contactIc || '';
-      const elCPH = document.getElementById('bookingContactPhone'); if (elCPH) elCPH.value = existingBooking.contactPhone || '';
     } else {
       document.getElementById('bookingCheckIn').value = existingBooking.checkIn;
       document.getElementById('bookingCheckOut').value = existingBooking.checkOut;
@@ -6226,15 +7756,37 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
 
     document.getElementById('bookingModalTitle').textContent = 'New Booking / Quotation';
     document.getElementById('bookingIdInput').value = '';
+
+    // Clear Role (a): TENANT (Individual)
+    document.getElementById('bookingGuestName').value = '';
+    document.getElementById('bookingGuestPhone').value = '';
     document.getElementById('bookingGuestNric').value = '';
     document.getElementById('bookingGuestEmail').value = '';
     document.getElementById('bookingGuestAddress').value = '';
 
+    // Clear Role (a): TENANT (Company)
+    const elCompName = document.getElementById('bookingCompanyName'); if (elCompName) elCompName.value = '';
     const elReg = document.getElementById('bookingCompanyRegNo'); if (elReg) elReg.value = '';
+    const elCompAddr = document.getElementById('bookingCompanyAddress'); if (elCompAddr) elCompAddr.value = '';
+
+    // Clear Role (b): CONTACT PERSON
     const elCP = document.getElementById('bookingContactPerson'); if (elCP) elCP.value = '';
     const elCD = document.getElementById('bookingContactDesignation'); if (elCD) elCD.value = '';
-    const elCI = document.getElementById('bookingContactIc'); if (elCI) elCI.value = '';
     const elCPH = document.getElementById('bookingContactPhone'); if (elCPH) elCPH.value = '';
+    const elCE = document.getElementById('bookingContactEmail'); if (elCE) elCE.value = '';
+
+    // Clear Role (c): AUTHORIZED SIGNATORY (Company)
+    const elSigName = document.getElementById('bookingSignatoryName'); if (elSigName) elSigName.value = '';
+    const elSigDesig = document.getElementById('bookingSignatoryDesignation'); if (elSigDesig) elSigDesig.value = '';
+    const elSigIc = document.getElementById('bookingSignatoryIc'); if (elSigIc) elSigIc.value = '';
+    const chkSigSame = document.getElementById('bookingSignatorySameAsContact'); if (chkSigSame) chkSigSame.checked = false;
+
+    // Clear Monthly Extras: Emergency Contact & Occupants
+    const elEmName = document.getElementById('bookingEmergencyContactName'); if (elEmName) elEmName.value = '';
+    const elEmPhone = document.getElementById('bookingEmergencyContactPhone'); if (elEmPhone) elEmPhone.value = '';
+    const elEmRel = document.getElementById('bookingEmergencyContactRelation'); if (elEmRel) elEmRel.value = '';
+    const elOccCount = document.getElementById('bookingOccupantsCount'); if (elOccCount) elOccCount.value = 2;
+    const elOccNotes = document.getElementById('bookingOccupantsNotes'); if (elOccNotes) elOccNotes.value = '';
 
     const receiptsSec = document.getElementById('bookingReceiptsSection');
     if (receiptsSec) receiptsSec.style.display = 'none';
@@ -6246,13 +7798,14 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
     }
 
     setBookingFormRentalType('daily');
+    setBookingTenantType('individual');
 
     const checkIn = prefillDate || todayStr;
     const dIn = new Date(checkIn + 'T00:00:00');
     const dOut = new Date(dIn); dOut.setDate(dIn.getDate() + 1);
     
     document.getElementById('bookingCheckIn').value = checkIn;
-    document.getElementById('bookingCheckOut').value = dOut.toISOString().split('T')[0];
+    document.getElementById('bookingCheckOut').value = formatLocalDate(dOut);
 
     document.getElementById('bookingMonthlyStart').value = checkIn;
     document.getElementById('bookingMonthlyDuration').value = 6;
@@ -6302,11 +7855,8 @@ function updateBookingModalPricing() {
     const secDep = parseFloat(document.getElementById('bookingSecurityDeposit').value) || 0;
 
     let nights = 0;
-    if (checkInVal && checkOutVal) {
-      const d1 = new Date(checkInVal);
-      const d2 = new Date(checkOutVal);
-      const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
-      nights = diff > 0 ? diff : 0;
+    if (checkInVal && checkOutVal && checkInVal < checkOutVal) {
+      nights = calcNightsBetween(checkInVal, checkOutVal);
     }
 
     document.getElementById('calcNightsCount').textContent = nights;
@@ -6324,26 +7874,123 @@ function updateBookingModalPricing() {
 function handleSaveBooking(e) {
   e.preventDefault();
 
+  const isBM = appState.settings.language === 'bm';
   const id = document.getElementById('bookingIdInput').value;
   const propertyId = document.getElementById('bookingPropertySelect').value;
   const rentalType = document.getElementById('bookingRentalType').value || 'daily';
-  const guestName = document.getElementById('bookingGuestName').value.trim();
-  const guestPhone = document.getElementById('bookingGuestPhone').value.trim();
+  const tenantType = document.getElementById('bookingTenantType')?.value || 'individual';
+  const isCompany = tenantType === 'company';
+  const isMonthly = rentalType === 'monthly';
+
+  // Role (a) TENANT: Individual fields
+  const rawGuestName = document.getElementById('bookingGuestName') ? document.getElementById('bookingGuestName').value.trim() : '';
+  const rawGuestPhone = document.getElementById('bookingGuestPhone') ? document.getElementById('bookingGuestPhone').value.trim() : '';
   const guestNric = document.getElementById('bookingGuestNric') ? document.getElementById('bookingGuestNric').value.trim() : '';
   const guestEmail = document.getElementById('bookingGuestEmail') ? document.getElementById('bookingGuestEmail').value.trim() : '';
   const guestAddress = document.getElementById('bookingGuestAddress') ? document.getElementById('bookingGuestAddress').value.trim() : '';
-  const guestCount = parseInt(document.getElementById('bookingGuestCount').value) || 2;
+
+  // Role (a) TENANT: Company fields
+  const companyName = document.getElementById('bookingCompanyName') ? document.getElementById('bookingCompanyName').value.trim() : '';
+  const companyRegNo = document.getElementById('bookingCompanyRegNo') ? document.getElementById('bookingCompanyRegNo').value.trim() : '';
+  const companyAddress = document.getElementById('bookingCompanyAddress') ? document.getElementById('bookingCompanyAddress').value.trim() : '';
+
+  // Role (b) CONTACT PERSON (Communication)
+  const contactPerson = document.getElementById('bookingContactPerson') ? document.getElementById('bookingContactPerson').value.trim() : '';
+  const contactDesignation = document.getElementById('bookingContactDesignation') ? document.getElementById('bookingContactDesignation').value.trim() : '';
+  const contactPhone = document.getElementById('bookingContactPhone') ? document.getElementById('bookingContactPhone').value.trim() : '';
+  const contactEmail = document.getElementById('bookingContactEmail') ? document.getElementById('bookingContactEmail').value.trim() : '';
+
+  // Role (c) AUTHORIZED SIGNATORY (Company)
+  const signatorySameAsContact = !!document.getElementById('bookingSignatorySameAsContact')?.checked;
+  const signatoryName = document.getElementById('bookingSignatoryName') ? document.getElementById('bookingSignatoryName').value.trim() : '';
+  const signatoryDesignation = document.getElementById('bookingSignatoryDesignation') ? document.getElementById('bookingSignatoryDesignation').value.trim() : '';
+  const signatoryIc = document.getElementById('bookingSignatoryIc') ? document.getElementById('bookingSignatoryIc').value.trim() : '';
+
+  // Extra Monthly Details: Emergency Contact & Occupants
+  const emergencyContactName = document.getElementById('bookingEmergencyContactName') ? document.getElementById('bookingEmergencyContactName').value.trim() : '';
+  const emergencyContactPhone = document.getElementById('bookingEmergencyContactPhone') ? document.getElementById('bookingEmergencyContactPhone').value.trim() : '';
+  const emergencyContactRelation = document.getElementById('bookingEmergencyContactRelation') ? document.getElementById('bookingEmergencyContactRelation').value.trim() : '';
+  const occupantsCount = parseInt(document.getElementById('bookingOccupantsCount')?.value) || 2;
+  const occupantsNotes = document.getElementById('bookingOccupantsNotes') ? document.getElementById('bookingOccupantsNotes').value.trim() : '';
+
+  const guestCount = isMonthly ? occupantsCount : (parseInt(document.getElementById('bookingGuestCount').value) || 2);
   const channel = document.getElementById('bookingChannel').value;
   const depositPaid = parseFloat(document.getElementById('bookingDepositPaid').value) || 0;
   let status = document.getElementById('bookingStatusSelect').value;
   const notes = document.getElementById('bookingNotes').value.trim();
   const quotationValidityDays = parseInt(document.getElementById('bookingQuotationValidity')?.value) || appState.settings.quotationValidityDays || 3;
 
-  const companyRegNo = document.getElementById('bookingCompanyRegNo') ? document.getElementById('bookingCompanyRegNo').value.trim() : '';
-  const contactPerson = document.getElementById('bookingContactPerson') ? document.getElementById('bookingContactPerson').value.trim() : '';
-  const contactDesignation = document.getElementById('bookingContactDesignation') ? document.getElementById('bookingContactDesignation').value.trim() : '';
-  const contactIc = document.getElementById('bookingContactIc') ? document.getElementById('bookingContactIc').value.trim() : '';
-  const contactPhone = document.getElementById('bookingContactPhone') ? document.getElementById('bookingContactPhone').value.trim() : '';
+  const phoneRegex = /^[\+]?[0-9\s\-]{6,20}$/;
+
+  // Role-Specific Validations
+  if (isCompany) {
+    if (!companyName) {
+      alert(isBM ? 'Sila masukkan nama berdaftar syarikat.' : 'Please enter corporate legal name.');
+      return;
+    }
+    if (companyName.length > 120) {
+      alert(isBM ? 'Nama syarikat terlalu panjang (maksimum 120 aksara).' : 'Company name is too long (maximum 120 characters).');
+      return;
+    }
+    if (!companyRegNo) {
+      alert(isBM ? 'Sila masukkan nombor SSM pendaftaran syarikat.' : 'Please enter company SSM registration number.');
+      return;
+    }
+    if (!contactPerson) {
+      alert(isBM ? 'Sila masukkan nama pegawai syarikat untuk dihubungi.' : 'Please enter company contact person name.');
+      return;
+    }
+    if (!contactPhone) {
+      alert(isBM ? 'Sila masukkan nombor telefon pegawai syarikat.' : 'Please enter company contact person phone number.');
+      return;
+    }
+    if (!phoneRegex.test(contactPhone)) {
+      alert(isBM ? 'Format nombor telefon pegawai syarikat tidak sah.' : 'Invalid contact person phone number format.');
+      return;
+    }
+  } else {
+    // Individual
+    if (!rawGuestName) {
+      alert(isBM ? 'Sila masukkan nama tetamu / penyewa.' : 'Please enter guest name.');
+      return;
+    }
+    if (rawGuestName.length > 120) {
+      alert(isBM ? 'Nama tetamu terlalu panjang (maksimum 120 aksara).' : 'Guest name is too long (maximum 120 characters).');
+      return;
+    }
+    if (!isMonthly && !rawGuestPhone) {
+      alert(isBM ? 'Sila masukkan nombor telefon tetamu.' : 'Please enter guest phone number.');
+      return;
+    }
+    if (rawGuestPhone && !phoneRegex.test(rawGuestPhone)) {
+      alert(isBM ? 'Format nombor telefon tetamu tidak sah (contoh: +60123456789 atau 012-3456789).' : 'Invalid guest phone number format (e.g. +60123456789 or 012-3456789).');
+      return;
+    }
+    if (contactPhone && !phoneRegex.test(contactPhone)) {
+      alert(isBM ? 'Format nombor telefon wakil tidak sah.' : 'Invalid contact phone number format.');
+      return;
+    }
+  }
+
+  if (emergencyContactPhone && !phoneRegex.test(emergencyContactPhone)) {
+    alert(isBM ? 'Format nombor telefon kontak kecemasan tidak sah.' : 'Invalid emergency contact phone number format.');
+    return;
+  }
+  if (guestAddress && guestAddress.length > 300) {
+    alert(isBM ? 'Alamat tetamu terlalu panjang (maksimum 300 aksara).' : 'Guest address is too long (maximum 300 characters).');
+    return;
+  }
+  if (notes && notes.length > 1000) {
+    alert(isBM ? 'Nota terlalu panjang (maksimum 1000 aksara).' : 'Notes are too long (maximum 1000 characters).');
+    return;
+  }
+
+  // Unified backward-compatible fields
+  const guestName = isCompany ? companyName : rawGuestName;
+  const guestPhone = isCompany ? contactPhone : (rawGuestPhone || contactPhone);
+  const primaryNric = isCompany ? companyRegNo : guestNric;
+  const primaryEmail = isCompany ? contactEmail : (guestEmail || contactEmail);
+  const primaryAddress = isCompany ? (companyAddress || guestAddress) : guestAddress;
 
   let checkIn = '';
   let checkOut = '';
@@ -6369,7 +8016,15 @@ function handleSaveBooking(e) {
     agreementFee = parseFloat(document.getElementById('bookingAgreementFee').value) || 0;
 
     if (!monthlyStart) {
-      alert('Please enter tenancy start date.');
+      alert(isBM ? 'Sila masukkan tarikh mula sewaan.' : 'Please enter tenancy start date.');
+      return;
+    }
+    if (monthlyDuration < 1) {
+      alert(isBM ? 'Tempoh sewaan minimum adalah 1 bulan.' : 'Minimum tenancy duration is 1 month.');
+      return;
+    }
+    if (monthlyRate < 0 || rentalDeposit < 0 || utilitiesDeposit < 0 || agreementFee < 0 || depositPaid < 0) {
+      alert(isBM ? 'Nilai kewangan tidak boleh negatif!' : 'Financial amounts cannot be negative!');
       return;
     }
 
@@ -6377,9 +8032,9 @@ function handleSaveBooking(e) {
     const dStart = new Date(monthlyStart + 'T00:00:00');
     const dEnd = new Date(dStart);
     dEnd.setMonth(dEnd.getMonth() + monthlyDuration);
-    checkOut = dEnd.toISOString().split('T')[0];
+    checkOut = formatLocalDate(dEnd);
 
-    const dDiff = Math.ceil((dEnd - dStart) / (1000 * 60 * 60 * 24));
+    const dDiff = calcNightsBetween(checkIn, checkOut);
     nights = dDiff > 0 ? dDiff : monthlyDuration * 30;
 
     totalAmount = monthlyRate + rentalDeposit + utilitiesDeposit + agreementFee;
@@ -6391,15 +8046,23 @@ function handleSaveBooking(e) {
     securityDeposit = parseFloat(document.getElementById('bookingSecurityDeposit').value) || 0;
 
     if (!checkIn || !checkOut || checkIn >= checkOut) {
-      alert('Check-out date must be after check-in date!');
+      alert(isBM ? 'Tarikh daftar keluar mestilah selepas tarikh daftar masuk!' : 'Check-out date must be after check-in date!');
+      return;
+    }
+    if (nightlyRate < 0 || cleaningFee < 0 || securityDeposit < 0 || depositPaid < 0) {
+      alert(isBM ? 'Kadar atau fi tidak boleh bernilai negatif!' : 'Rates and fees cannot be negative!');
       return;
     }
 
-    const d1 = new Date(checkIn);
-    const d2 = new Date(checkOut);
-    nights = Math.max(1, Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24)));
+    nights = calcNightsBetween(checkIn, checkOut);
     const totalRental = (nights * nightlyRate) + cleaningFee;
     totalAmount = totalRental + securityDeposit;
+  }
+
+  // Deposit cannot exceed total
+  if (depositPaid > totalAmount && totalAmount > 0) {
+    alert(isBM ? 'Bayaran deposit tidak boleh melebihi jumlah keseluruhan!' : 'Deposit paid cannot exceed total amount!');
+    return;
   }
 
   let finalDepositPaid = depositPaid;
@@ -6422,8 +8085,8 @@ function handleSaveBooking(e) {
     }
   }
 
-  // 1. STRICT OVERLAP CHECK: Prevent double-booking if status is not cancelled
-  if (status !== 'cancelled') {
+  // 1. STRICT OVERLAP CHECK: Prevent double-booking if status is not cancelled and not quotation
+  if (status !== 'cancelled' && status !== 'quotation') {
     const overlaps = getBookingOverlaps(propertyId, checkIn, checkOut, id);
     if (overlaps.length > 0) {
       openOverlapWarningModal(overlaps, propertyId, checkIn, checkOut, guestName, id);
@@ -6438,7 +8101,6 @@ function handleSaveBooking(e) {
   if (id && existingBooking && existingBooking.propertyId !== propertyId) {
     const oldProp = getPropertyById(existingBooking.propertyId);
     const newProp = getPropertyById(propertyId);
-    const isBM = appState.settings.language === 'bm';
     const auditText = isBM 
       ? `[Tukar Homestay: ${oldProp.name} → ${newProp.name} pada ${new Date().toLocaleDateString()}]`
       : `[Transferred Unit: ${oldProp.name} → ${newProp.name} on ${new Date().toLocaleDateString()}]`;
@@ -6452,24 +8114,45 @@ function handleSaveBooking(e) {
     });
   }
 
+  // Quotation Number Assignment from real incrementing counter
+  let quotationNo = id && existingBooking ? existingBooking.quotationNo : null;
+  if (status === 'quotation' && !quotationNo) {
+    appState.quotationCounter = (appState.quotationCounter || 0) + 1;
+    const qYear = new Date().getFullYear();
+    quotationNo = `QT-${qYear}-${String(appState.quotationCounter).padStart(4, '0')}`;
+  }
+
   const bookingData = {
     id: id || `b-${Date.now()}`,
     propertyId,
     rentalType,
+    tenantType,
     guestName,
     guestPhone,
-    guestNric,
-    guestEmail,
-    guestAddress,
-    companyRegNo: companyRegNo || (rentalType === 'monthly' ? guestNric : ''),
+    guestNric: primaryNric,
+    guestEmail: primaryEmail,
+    guestAddress: primaryAddress,
+    companyName: isCompany ? companyName : '',
+    companyRegNo: isCompany ? companyRegNo : '',
+    companyAddress: isCompany ? (companyAddress || primaryAddress) : '',
     contactPerson,
     contactDesignation,
-    contactIc,
+    contactIc: isCompany ? (signatoryIc || '') : (guestNric || ''),
     contactPhone,
+    contactEmail,
+    signatoryName: isCompany ? (signatoryName || (signatorySameAsContact ? contactPerson : '')) : '',
+    signatoryDesignation: isCompany ? (signatoryDesignation || (signatorySameAsContact ? contactDesignation : '')) : '',
+    signatoryIc: isCompany ? signatoryIc : '',
+    signatorySameAsContact: isCompany ? signatorySameAsContact : false,
+    emergencyContactName: isMonthly ? emergencyContactName : '',
+    emergencyContactPhone: isMonthly ? emergencyContactPhone : '',
+    emergencyContactRelation: isMonthly ? emergencyContactRelation : '',
+    occupantsCount: isMonthly ? occupantsCount : (parseInt(document.getElementById('bookingGuestCount').value) || 2),
+    occupantsNotes: isMonthly ? occupantsNotes : '',
     checkIn,
     checkOut,
     nights,
-    guestCount,
+    guestCount: isMonthly ? occupantsCount : (parseInt(document.getElementById('bookingGuestCount').value) || 2),
     channel,
     nightlyRate,
     cleaningFee,
@@ -6484,6 +8167,7 @@ function handleSaveBooking(e) {
     depositPaid: finalDepositPaid,
     balance,
     status,
+    quotationNo,
     quotationValidityDays,
     notes: finalNotes,
     createdAt: new Date().toISOString()
@@ -6493,6 +8177,54 @@ function handleSaveBooking(e) {
     const idx = appState.bookings.findIndex(b => b.id === id);
     if (idx !== -1) appState.bookings[idx] = { ...appState.bookings[idx], ...bookingData };
   } else {
+    // Initial deposit / payment receipt allocation (B2 Follow-up)
+    if (finalDepositPaid > 0) {
+      const year = new Date().getFullYear();
+      const isFull = bookingData.balance <= 0 && bookingData.totalAmount > 0;
+      let initReceiptNo = '';
+      if (isFull) {
+        appState.paymentReceiptCounter = (appState.paymentReceiptCounter || 1000) + 1;
+        initReceiptNo = (rentalType === 'monthly' ? 'RCPT-M-' : 'RCPT-') + year + '-' + String(appState.paymentReceiptCounter).padStart(4, '0');
+        bookingData.paymentReceiptNo = initReceiptNo;
+      } else {
+        appState.depositReceiptCounter = (appState.depositReceiptCounter || 1000) + 1;
+        initReceiptNo = (rentalType === 'monthly' ? 'RCPT-BOOK-M-' : 'RCPT-DEP-') + year + '-' + String(appState.depositReceiptCounter).padStart(4, '0');
+        bookingData.depositReceiptNo = initReceiptNo;
+      }
+      const initPayment = {
+        id: 'pay-init-' + Date.now(),
+        type: isFull ? 'full' : 'deposit',
+        receiptNo: initReceiptNo,
+        amount: finalDepositPaid,
+        monthIndex: null,
+        date: checkIn || formatLocalDate(new Date()),
+        time: '12:00',
+        dateTime: (checkIn || formatLocalDate(new Date())) + 'T12:00:00',
+        bankName: 'Direct Payment / Deposit',
+        referenceNo: 'INIT-DEP',
+        notes: isFull ? 'Full payment on booking creation' : 'Deposit on booking creation',
+        createdAt: new Date().toISOString()
+      };
+      bookingData.payments = [initPayment];
+      bookingData.documents = Array.isArray(bookingData.documents) ? bookingData.documents : [];
+      bookingData.documents.push({
+        id: `doc-pay-${initPayment.id}`,
+        paymentId: initPayment.id,
+        docType: isFull ? 'receipt' : 'deposit_receipt',
+        monthIndex: null,
+        docNo: initReceiptNo,
+        baseDocNo: initReceiptNo,
+        revision: 0,
+        status: 'issued',
+        date: initPayment.date,
+        amount: finalDepositPaid,
+        issuedAt: initPayment.dateTime,
+        replacesDocNo: null,
+        replacedByDocNo: null,
+        hasBeenPrintedOrDownloaded: false
+      });
+    }
+
     appState.bookings.push(bookingData);
 
     // Auto-create turnover task for check-out date
@@ -6570,7 +8302,12 @@ function handleProcessDepositRefund(e) {
   const netRefund = Math.max(0, (rentalDep + utilDep) - (dedUtil + dedRepair));
   const notes = document.getElementById('refundNotesInput').value.trim();
 
+  appState.refundCounter = (appState.refundCounter || 1000) + 1;
+  const year = new Date().getFullYear();
+  const refundNo = `REF-${year}-${String(appState.refundCounter).padStart(4, '0')}`;
+
   booking.refundDetails = {
+    refundNo,
     rentalDep,
     utilDep,
     dedUtil,
@@ -6580,6 +8317,24 @@ function handleProcessDepositRefund(e) {
     refundedAt: new Date().toISOString()
   };
   booking.status = 'checked-out';
+
+  // Record into booking.documents for Document History & audit tracking (B2)
+  booking.documents = Array.isArray(booking.documents) ? booking.documents : [];
+  booking.documents.push({
+    id: `doc-ref-${Date.now()}`,
+    docType: 'refund',
+    monthIndex: null,
+    docNo: refundNo,
+    baseDocNo: refundNo,
+    revision: 0,
+    status: 'issued',
+    date: formatLocalDate(new Date()),
+    amount: netRefund,
+    issuedAt: new Date().toISOString(),
+    replacesDocNo: null,
+    replacedByDocNo: null,
+    hasBeenPrintedOrDownloaded: false
+  });
 
   saveToStorage();
   closeAllModals();
@@ -6614,9 +8369,9 @@ function getOrInitMonthlyInvoices(booking) {
       invoices.push({
         monthIndex: i,
         invoiceNo: `INV-M${i}-${booking.id.slice(-5).toUpperCase()}`,
-        periodStart: curStart.toISOString().split('T')[0],
-        periodEnd: curEnd.toISOString().split('T')[0],
-        dueDate: dueDate.toISOString().split('T')[0],
+        periodStart: formatLocalDate(curStart),
+        periodEnd: formatLocalDate(curEnd),
+        dueDate: formatLocalDate(dueDate),
         rentAmount: booking.monthlyRate || 0,
         utilityCharges: 0,
         totalAmount: booking.monthlyRate || 0,
@@ -6999,12 +8754,30 @@ function handleSavePaymentProof(e) {
     return;
   }
 
+  const year = new Date().getFullYear();
+  let paymentReceiptNo = '';
+  if (type === 'deposit') {
+    appState.depositReceiptCounter = (appState.depositReceiptCounter || 1000) + 1;
+    paymentReceiptNo = (booking.rentalType === 'monthly' ? 'RCPT-BOOK-M-' : 'RCPT-DEP-') + year + '-' + String(appState.depositReceiptCounter).padStart(4, '0');
+    booking.depositReceiptNo = paymentReceiptNo;
+  } else if (type === 'monthly_rent') {
+    appState.paymentReceiptCounter = (appState.paymentReceiptCounter || 1000) + 1;
+    paymentReceiptNo = 'RCPT-M' + (monthIndex || 1) + '-' + year + '-' + String(appState.paymentReceiptCounter).padStart(4, '0');
+  } else {
+    appState.paymentReceiptCounter = (appState.paymentReceiptCounter || 1000) + 1;
+    paymentReceiptNo = (booking.rentalType === 'monthly' ? 'RCPT-M-' : 'RCPT-') + year + '-' + String(appState.paymentReceiptCounter).padStart(4, '0');
+    if (booking.balance <= amount) {
+      booking.paymentReceiptNo = paymentReceiptNo;
+    }
+  }
+
   const newPayment = {
     id: 'pay-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
     type,
+    receiptNo: paymentReceiptNo,
     amount,
     monthIndex,
-    date: dateTime ? dateTime.split('T')[0] : new Date().toISOString().split('T')[0],
+    date: dateTime ? dateTime.split('T')[0] : formatLocalDate(new Date()),
     time: dateTime ? dateTime.split('T')[1] : '',
     dateTime: dateTime || new Date().toISOString(),
     bankName,
@@ -7017,6 +8790,24 @@ function handleSavePaymentProof(e) {
 
   booking.payments = booking.payments || [];
   booking.payments.push(newPayment);
+
+  // Record into booking.documents for Document History & audit tracking (B2)
+  booking.documents = Array.isArray(booking.documents) ? booking.documents : [];
+  booking.documents.push({
+    id: `doc-pay-${newPayment.id}`,
+    docType: type === 'deposit' ? 'deposit_receipt' : 'receipt',
+    monthIndex: monthIndex || null,
+    docNo: paymentReceiptNo,
+    baseDocNo: paymentReceiptNo,
+    revision: 0,
+    status: 'issued',
+    date: newPayment.date,
+    amount: amount,
+    issuedAt: newPayment.dateTime,
+    replacesDocNo: null,
+    replacedByDocNo: null,
+    hasBeenPrintedOrDownloaded: false
+  });
 
   const totalPaid = booking.payments.reduce((sum, p) => sum + (p.amount || 0), 0);
   booking.depositPaid = totalPaid;
@@ -7124,14 +8915,19 @@ function openReceiptViewerModal(booking) {
       let typeBadge = '';
       if (p.type === 'deposit') {
         typeBadge = `<span style="font-size:10.5px; font-weight:800; background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:999px;">🟡 ${isBM ? 'Deposit Tempahan' : 'Booking Deposit'}</span>`;
-      } else if (p.type === 'balance' || p.type === 'full') {
-        typeBadge = `<span style="font-size:10.5px; font-weight:800; background:#dcfce7; color:#166534; padding:2px 8px; border-radius:999px;">🟢 ${p.type === 'full' ? (isBM ? 'Bayaran Penuh' : 'Full Payment') : (isBM ? 'Baki Bayaran' : 'Balance Settlement')}</span>`;
+      } else if (p.type === 'balance') {
+        typeBadge = `<span style="font-size:10.5px; font-weight:800; background:#ecfdf5; color:#065f46; padding:2px 8px; border-radius:999px;">⚖️ ${isBM ? 'Baki Bayaran' : 'Balance Settlement'}</span>`;
+      } else if (p.type === 'full') {
+        typeBadge = `<span style="font-size:10.5px; font-weight:800; background:#eff6ff; color:#1e40af; padding:2px 8px; border-radius:999px;">💎 ${isBM ? 'Bayaran Penuh' : 'Full Payment'}</span>`;
       } else if (p.type === 'monthly_rent') {
         typeBadge = `<span style="font-size:10.5px; font-weight:800; background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:999px;">📑 ${isBM ? `Sewa Bulan ke-${p.monthIndex || 1}` : `Month ${p.monthIndex || 1} Rent`}</span>`;
       } else if (p.type === 'security_deposit') {
         typeBadge = `<span style="font-size:10.5px; font-weight:800; background:#f3e8ff; color:#6b21a8; padding:2px 8px; border-radius:999px;">🔒 ${isBM ? 'Deposit Keselamatan' : 'Security Deposit'}</span>`;
       } else {
         typeBadge = `<span style="font-size:10.5px; font-weight:800; background:var(--bg-surface-subtle); color:var(--text-main); padding:2px 8px; border-radius:999px;">📦 ${p.type}</span>`;
+      }
+      if (p.receiptNo) {
+        typeBadge += `<span style="font-family:monospace; font-weight:800; font-size:10.5px; color:#475569; margin-left:6px; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${p.receiptNo}</span>`;
       }
 
       const formattedDate = p.dateTime ? p.dateTime.replace('T', ' ') : (p.date || '-');
@@ -7172,6 +8968,9 @@ function openReceiptViewerModal(booking) {
         </div>
 
         <div class="receipt-actions-row">
+          <button type="button" class="btn btn-outline btn-xs btn-open-payment-receipt" data-pid="${p.id}" data-type="${p.type || 'deposit'}" data-mid="${p.monthIndex || ''}" style="color:var(--primary); border-color:var(--primary);">
+            <i class="fa-solid fa-file-invoice"></i> ${isBM ? 'Lihat Resit Rasmi' : 'Official Receipt'}
+          </button>
           ${p.receiptImage ? `
             <button type="button" class="btn btn-outline btn-xs btn-view-full-slip" data-idx="${idx}">
               <i class="fa-solid fa-magnifying-glass-plus"></i> ${isBM ? 'Lihat Penuh' : 'View Slip'}
@@ -7187,6 +8986,16 @@ function openReceiptViewerModal(booking) {
       `;
 
       listContainer.appendChild(card);
+    });
+
+    listContainer.querySelectorAll('.btn-open-payment-receipt').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const pType = e.currentTarget.getAttribute('data-type');
+        const pMid = e.currentTarget.getAttribute('data-mid');
+        const pId = e.currentTarget.getAttribute('data-pid');
+        closeAllModals();
+        openPdfDocModal(booking, pType === 'deposit' ? 'deposit_receipt' : 'receipt', pMid ? parseInt(pMid) : null, pId);
+      });
     });
 
     listContainer.querySelectorAll('.btn-copy-ref-pill').forEach(btn => {
@@ -7262,7 +9071,7 @@ function openReceiptLightbox(imageUrl, title = 'Bank Receipt Proof') {
     downloadBtn.onclick = () => {
       const a = document.createElement('a');
       a.href = imageUrl;
-      a.download = `Receipt_${new Date().toISOString().split('T')[0]}.jpg`;
+      a.download = `Receipt_${formatLocalDate(new Date())}.jpg`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -8060,7 +9869,7 @@ function openExpenseModal() {
     propSelect.appendChild(opt);
   });
 
-  document.getElementById('expenseDateInput').value = new Date().toISOString().split('T')[0];
+  document.getElementById('expenseDateInput').value = formatLocalDate(new Date());
   document.getElementById('expenseModal').classList.add('active');
 }
 
@@ -8336,7 +10145,7 @@ function generateServiceDispatchMessage() {
     urgencyText;
 
   if (serviceType === 'turnover_clean' || turnover) {
-    const targetDate = turnover ? turnover.date : new Date().toISOString().split('T')[0];
+    const targetDate = turnover ? turnover.date : formatLocalDate(new Date());
     body += `📅 *${isBM ? 'Tarikh Tugasan' : 'Target Date'}:* ${targetDate}\n` +
             `⏰ *${isBM ? 'Waktu Pembersihan' : 'Cleaning Window'}:* ${prop.checkOutTime || '12:00 PM'} - ${prop.checkInTime || '3:00 PM'}\n`;
   }
@@ -8461,7 +10270,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
 
   // Dynamic multi-month period calculation
   const mIndex = appState.activeWaMonthIndex || 1;
-  const rawDateStr = booking.checkIn || booking.monthlyStart || new Date().toISOString().split('T')[0];
+  const rawDateStr = booking.checkIn || booking.monthlyStart || formatLocalDate(new Date());
   const parsedStart = new Date(rawDateStr.includes('T') ? rawDateStr : rawDateStr + 'T00:00:00');
   const startD = isNaN(parsedStart.getTime()) ? new Date() : parsedStart;
   const curMonthStart = new Date(startD);
@@ -8470,12 +10279,12 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
   curMonthEnd.setMonth(curMonthEnd.getMonth() + 1);
   curMonthEnd.setDate(curMonthEnd.getDate() - 1);
 
-  const startStr = curMonthStart.toISOString().split('T')[0];
-  const endStr = curMonthEnd.toISOString().split('T')[0];
+  const startStr = formatLocalDate(curMonthStart);
+  const endStr = formatLocalDate(curMonthEnd);
 
   const dueDate = new Date(curMonthStart);
   dueDate.setDate(dueDate.getDate() + 6);
-  const dueStr = dueDate.toISOString().split('T')[0];
+  const dueStr = formatLocalDate(dueDate);
 
   const extraUtility = parseFloat(document.getElementById('waInvoiceExtraInput')?.value) || 0;
   const rentAmt = booking.monthlyRate || 0;
@@ -8487,7 +10296,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
   const validityDays = parseInt(booking.quotationValidityDays) || parseInt(settings.quotationValidityDays) || 3;
   const expDateObj = new Date();
   expDateObj.setDate(expDateObj.getDate() + validityDays);
-  const expDateStr = expDateObj.toISOString().split('T')[0];
+  const expDateStr = formatLocalDate(expDateObj);
 
   let msg = '';
 
@@ -8518,7 +10327,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
             `\n📌 *SYARAT & POLISI SEWAAN BULANAN:*\n` +
             `1. Bayaran sewa bulanan dikutip secara pendahuluan (advance) pada awal setiap bulan sewaan melalui Invois Rasmi.\n` +
             `2. Bagi sewaan jangka panjang melebihi 1 bulan, bil utiliti (elektrik & air) adalah mengikut kadar penggunaan bulanan sebenar (dibayar terus oleh penyewa atau dimasukkan ke dalam invois sewa bulanan).\n` +
-            `3. Deposit Keselamatan (1 bulan sewa: RM ${rDep.toFixed(2)}) dan Deposit Utiliti (RM ${uDep.toFixed(2)}) akan dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada penyelesaian bil utiliti dan pemeriksaan unit.\n` +
+            `3. Deposit Keselamatan (1 bulan sewa: ${currency} ${rDep.toFixed(2)}) dan Deposit Utiliti (${currency} ${uDep.toFixed(2)}) akan dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada penyelesaian bil utiliti dan pemeriksaan unit.\n` +
             `4. Sebut harga ini sah selama *${validityDays} hari* sehingga *${expDateStr}*. ✨🏡`;
         } else {
           msg = `📋 *SEBUT HARGA RASMI - ${prop.name.toUpperCase()}*\n` +
@@ -9020,7 +10829,6 @@ const PDF_DOC_I18N = {
     lblPdfBillTo: 'Dikeluarkan Kepada',
 
     thPdfItem: 'Perkara / Huraian',
-    thPdfHsn: 'Kod / HSN',
     thPdfQty: 'Kuantiti',
     thPdfRate: 'Kadar Seunit',
     thPdfTax: 'Cukai / SST',
@@ -9029,8 +10837,8 @@ const PDF_DOC_I18N = {
     lblPdfSubTotalTable: 'Jumlah Kasar Pakej',
     lblPdfExtraCharges: 'Caj Tambahan (+)',
     lblPdfTaxableAmount: 'Jumlah Kasar Pakej Penginapan',
-    lblPdfCgst: 'SST / Cukai Perkhidmatan @ 0%',
-    lblPdfSgst: 'Cukai Warisan / Pelancongan @ RM 0.00',
+    lblPdfSst: 'SST / Cukai Perkhidmatan',
+    lblPdfHostSsmTitle: 'No. Pendaftaran SSM:',
     lblPdfDepositReq: 'Deposit Komitmen Diperlukan:',
     lblPdfDepositPaidRow: 'Bayaran Deposit Diterima (+):',
     lblPdfDepositDeductedRow: 'Tolak: Deposit Telah Dibayar (-):',
@@ -9094,7 +10902,7 @@ const PDF_DOC_I18N = {
       'Bayaran Sewa Pendahuluan: Sewa bulanan dikutip secara pendahuluan bagi setiap bulan (bukan bayaran sekaligus bagi keseluruhan tempoh sewaan).',
       'Invois Sewaan Bulanan: Invois sewaan bulanan bagi bulan-bulan seterusnya akan dikeluarkan pada setiap awal bulan sebelum tarikh akhir bayaran.',
       'Caj Bil Utiliti: Bagi sewaan jangka panjang melebihi 1 bulan, penyewa membayar bil utiliti (elektrik & air) terus kepada pembekal atau ditambah ke dalam invois sewa bulanan mengikut kadar penggunaan bulanan sebenar.',
-      'Pemulangan Deposit: Deposit Sewaan (1 bulan sewa) dan Deposit Utiliti (RM 300.00) akan dipulangkan sepenuhnya dalam tempoh 14 hari selepas tamat tempoh sewaan dan penyerahan kunci, tertakluk kepada penyelesaian bil utiliti tertunggak dan pemeriksaan keadaan unit yang baik.',
+      'Pemulangan Deposit: Deposit Sewaan (1 bulan sewa) dan Deposit Utiliti akan dipulangkan sepenuhnya dalam tempoh 14 hari selepas tamat tempoh sewaan dan penyerahan kunci, tertakluk kepada penyelesaian bil utiliti tertunggak dan pemeriksaan keadaan unit yang baik.',
       'Pengesahan Tempahan: Dokumen ini sah selama tempoh yang dinyatakan. Unit hanya disahkan dan dikunci selepas bayaran tempahan/booking awal diterima.'
     ],
     termsInvoiceMonthly: [
@@ -9128,17 +10936,16 @@ const PDF_DOC_I18N = {
     lblPdfBillTo: 'Bill To',
 
     thPdfItem: 'Items',
-    thPdfHsn: 'HSN/Code',
     thPdfQty: 'Quantity',
     thPdfRate: 'Rate Per Unit',
-    thPdfTax: 'Tax Per Unit',
+    thPdfTax: 'Tax / SST',
     thPdfAmount: 'Amount',
 
     lblPdfSubTotalTable: 'Package Sub Total',
     lblPdfExtraCharges: 'Extra Charges (+)',
     lblPdfTaxableAmount: 'Total Accommodation Package',
-    lblPdfCgst: 'SST / Service Tax @ 0%',
-    lblPdfSgst: 'Tourism / Heritage Tax @ RM 0.00',
+    lblPdfSst: 'SST / Service Tax',
+    lblPdfHostSsmTitle: 'SSM Reg No:',
     lblPdfDepositReq: 'Deposit Required:',
     lblPdfDepositPaidRow: 'Deposit Payment Received (+):',
     lblPdfDepositDeductedRow: 'Less: Deposit Paid (-):',
@@ -9202,7 +11009,7 @@ const PDF_DOC_I18N = {
       'Advance Monthly Rental: Rental is collected in advance for each month and not as a lump sum for the entire tenancy duration.',
       'Subsequent Monthly Invoices: Rental invoice for each subsequent month will be issued at the beginning of each month prior to payment due date.',
       'Utility Usage Policy: For long-term rental exceeding 1 month, tenant will pay utility bills (electricity & water) directly to utility providers or added into the monthly rental invoice based on actual usage charges.',
-      'Refundable Deposits: Rental Deposit (1 month rental) and Utilities Deposit (RM 300.00) are fully refundable at the end of tenancy subject to utility arrears settlement and satisfactory unit condition.',
+      'Refundable Deposits: Rental Deposit (1 month rental) and Utilities Deposit are fully refundable at the end of tenancy subject to utility arrears settlement and satisfactory unit condition.',
       'Reservation Confirmation: Unit is secured and confirmed only upon receipt of the initial booking commitment fee.'
     ],
     termsInvoiceMonthly: [
@@ -9215,13 +11022,13 @@ const PDF_DOC_I18N = {
 };
 
 /**
- * Convert numeric Ringgit currency into words (Malay & English)
+ * Convert numeric currency into words respecting the chosen currency
  */
-function numberToWordsMYR(amount, lang = 'bm') {
+function numberToWords(amount, currency = 'RM', lang = 'bm') {
   amount = parseFloat(amount) || 0;
   if (amount < 0) amount = Math.abs(amount);
-  const ringgit = Math.floor(amount);
-  const sen = Math.round((amount - ringgit) * 100);
+  const whole = Math.floor(amount);
+  const cents = Math.round((amount - whole) * 100);
 
   const unitsBM = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Lapan', 'Sembilan'];
   const unitsEN = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
@@ -9284,34 +11091,96 @@ function numberToWordsMYR(amount, lang = 'bm') {
     return n.toString();
   }
 
+  const curUpper = (currency || 'RM').toUpperCase().trim();
+  let majorBM = 'Ringgit', minorBM = 'Sen', majorEN = 'Ringgit', minorEN = 'Cents';
+
+  if (curUpper === 'RM' || curUpper === 'MYR') {
+    majorBM = 'Ringgit Malaysia';
+    minorBM = 'Sen';
+    majorEN = 'Malaysian Ringgit';
+    minorEN = 'Cents';
+  } else if (curUpper === '$' || curUpper === 'USD' || curUpper === 'AUD' || curUpper === 'CAD' || curUpper === 'NZD') {
+    majorBM = 'Dolar';
+    minorBM = 'Sen';
+    majorEN = 'Dollars';
+    minorEN = 'Cents';
+  } else if (curUpper === 'SGD' || curUpper === 'S$') {
+    majorBM = 'Dolar Singapura';
+    minorBM = 'Sen';
+    majorEN = 'Singapore Dollars';
+    minorEN = 'Cents';
+  } else if (curUpper === '£' || curUpper === 'GBP') {
+    majorBM = 'Pound Sterling';
+    minorBM = 'Pence';
+    majorEN = 'Pounds';
+    minorEN = 'Pence';
+  } else if (curUpper === '€' || curUpper === 'EUR') {
+    majorBM = 'Euro';
+    minorBM = 'Sen';
+    majorEN = 'Euros';
+    minorEN = 'Cents';
+  } else if (curUpper === 'RP' || curUpper === 'IDR') {
+    majorBM = 'Rupiah';
+    minorBM = 'Sen';
+    majorEN = 'Rupiah';
+    minorEN = 'Sen';
+  } else if (curUpper === '฿' || curUpper === 'THB') {
+    majorBM = 'Baht';
+    minorBM = 'Satang';
+    majorEN = 'Baht';
+    minorEN = 'Satang';
+  } else {
+    majorBM = curUpper;
+    minorBM = 'Sen';
+    majorEN = curUpper;
+    minorEN = 'Cents';
+  }
+
   if (lang === 'bm') {
     let result = '';
-    if (ringgit === 0) {
-      result = 'Sifar Ringgit';
+    if (whole === 0) {
+      result = 'Sifar ' + majorBM;
     } else {
-      result = 'Ringgit Malaysia ' + convertBM(ringgit);
+      result = majorBM + ' ' + convertBM(whole);
     }
-    if (sen > 0) {
-      result += ' Dan ' + convertBM(sen) + ' Sen';
+    if (cents > 0) {
+      result += ' Dan ' + convertBM(cents) + ' ' + minorBM;
     }
     result += ' Sahaja';
     return result.toUpperCase();
   } else {
     let result = '';
-    if (ringgit === 0) {
-      result = 'Zero Ringgit';
+    if (whole === 0) {
+      result = 'Zero ' + majorEN;
     } else {
-      result = 'Malaysian Ringgit ' + convertEN(ringgit);
+      result = convertEN(whole) + ' ' + majorEN;
     }
-    if (sen > 0) {
-      result += ' And ' + convertEN(sen) + ' Cents';
+    if (cents > 0) {
+      result += ' And ' + convertEN(cents) + ' ' + minorEN;
     }
     result += ' Only';
     return result.toUpperCase();
   }
 }
 
-function openPdfDocModal(booking, defaultDocType = 'quotation', monthIndex = null) {
+function numberToWordsMYR(amount, lang = 'bm') {
+  return numberToWords(amount, appState?.settings?.currency || 'RM', lang);
+}
+
+function formatTime12H(timeStr) {
+  if (!timeStr) return '12:00 PM';
+  if (timeStr.toUpperCase().includes('AM') || timeStr.toUpperCase().includes('PM')) return timeStr;
+  const parts = timeStr.split(':');
+  if (parts.length < 2) return timeStr;
+  let h = parseInt(parts[0], 10);
+  const m = parts[1].slice(0, 2);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  if (h === 0) h = 12;
+  return `${h}:${m} ${ampm}`;
+}
+
+function openPdfDocModal(booking, defaultDocType = 'quotation', monthIndex = null, paymentId = null) {
   if (!booking) {
     booking = appState.bookings && appState.bookings[0];
     if (!booking) {
@@ -9325,7 +11194,20 @@ function openPdfDocModal(booking, defaultDocType = 'quotation', monthIndex = nul
 
   appState.activePdfBooking = booking;
   appState.activePdfMonthIndex = monthIndex ? parseInt(monthIndex) : null;
+  appState.activePdfPaymentId = paymentId || null;
   const isMonthly = booking.rentalType === 'monthly';
+
+  // Default active payment for non-monthly bookings
+  if (!isMonthly && Array.isArray(booking.payments) && booking.payments.length > 0) {
+    if (!appState.activePdfPaymentId) {
+      if (defaultDocType === 'deposit_receipt') {
+        const depP = booking.payments.find(p => p.type === 'deposit');
+        appState.activePdfPaymentId = depP ? depP.id : booking.payments[0].id;
+      } else {
+        appState.activePdfPaymentId = booking.payments[booking.payments.length - 1].id;
+      }
+    }
+  }
 
   // Intelligently select default document type
   const paidAmt = Number(booking.depositPaid || (booking.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0) || 0);
@@ -9509,6 +11391,15 @@ function closePdfDocModal() {
 
 function setPdfDocType(type) {
   appState.activePdfDocType = type;
+  const booking = appState.activePdfBooking;
+  if (booking && !isMonthlyBooking(booking) && Array.isArray(booking.payments) && booking.payments.length > 0) {
+    if (type === 'deposit_receipt') {
+      const depP = booking.payments.find(p => p.type === 'deposit');
+      appState.activePdfPaymentId = depP ? depP.id : booking.payments[0].id;
+    } else if (type === 'receipt') {
+      appState.activePdfPaymentId = booking.payments[booking.payments.length - 1].id;
+    }
+  }
   updatePdfTypeTabsUI();
   updatePdfDocView();
 }
@@ -9539,7 +11430,8 @@ function updatePdfTypeTabsUI() {
     { id: 'btnPdfTabQuotation', type: 'quotation' },
     { id: 'btnPdfTabInvoice', type: 'invoice' },
     { id: 'btnPdfTabDeposit', type: 'deposit_receipt' },
-    { id: 'btnPdfTabReceipt', type: 'receipt' }
+    { id: 'btnPdfTabReceipt', type: 'receipt' },
+    { id: 'btnPdfTabHistory', type: 'history' }
   ];
 
   tabs.forEach(t => {
@@ -9590,26 +11482,105 @@ function updatePdfDocView() {
   const t = PDF_DOC_I18N[lang] || PDF_DOC_I18N.bm;
   const currency = settings.currency || 'RM';
 
+  // Check if viewing Document History tab (B2)
+  if (docType === 'history') {
+    const sheet = document.getElementById('printablePdfSheet');
+    const waPrompt = document.getElementById('pdfWaPromptBanner');
+    const histContainer = document.getElementById('pdfHistoryContainer');
+    const actionCard = document.getElementById('pdfActionStatusCard');
+    const statusBar = document.getElementById('pdfDocStatusBar');
+    const bankWarn = document.getElementById('pdfBankWarningBanner');
+    if (sheet) sheet.style.display = 'none';
+    if (waPrompt) waPrompt.style.display = 'none';
+    if (actionCard) actionCard.style.display = 'none';
+    if (statusBar) statusBar.style.display = 'none';
+    if (bankWarn) bankWarn.style.display = 'none';
+    if (histContainer) {
+      histContainer.style.display = 'block';
+      renderDocumentHistoryTab(booking);
+    }
+    return;
+  } else {
+    const sheet = document.getElementById('printablePdfSheet');
+    const histContainer = document.getElementById('pdfHistoryContainer');
+    const statusBar = document.getElementById('pdfDocStatusBar');
+    if (sheet) sheet.style.display = 'block';
+    if (histContainer) histContainer.style.display = 'none';
+    if (statusBar) statusBar.style.display = 'flex';
+  }
+
+  // Missing Bank Details Warning Banner (B1)
+  const bankWarnBanner = document.getElementById('pdfBankWarningBanner');
+  if (bankWarnBanner) {
+    if (docType === 'quotation' || docType === 'invoice') {
+      const hasBank = !!((settings.bankAccNum && settings.bankAccNum.trim()) || (settings.duitNow && settings.duitNow.trim()));
+      bankWarnBanner.style.display = hasBank ? 'none' : 'flex';
+    } else {
+      bankWarnBanner.style.display = 'none';
+    }
+  }
+
   // 1. Host Information
   const bizNameEl = document.getElementById('pdfHostBizName');
-  if (bizNameEl) bizNameEl.textContent = settings.businessName || 'MY HOMESTAY';
+  if (bizNameEl) bizNameEl.textContent = settings.businessName || prop.name || 'HOMESTAY';
 
   const ssmEl = document.getElementById('pdfHostSsm');
-  if (ssmEl) {
-    ssmEl.textContent = settings.businessSsm ? settings.businessSsm : '20260100988-X (SSM)';
+  const ssmRow = document.getElementById('pdfHostSsmRow');
+  const lblSsmTitle = document.getElementById('lblPdfHostSsmTitle');
+  if (lblSsmTitle) lblSsmTitle.textContent = t.lblPdfHostSsmTitle || 'SSM Reg No:';
+  if (ssmRow && ssmEl) {
+    if (settings.businessSsm && settings.businessSsm.trim()) {
+      ssmRow.style.display = 'block';
+      ssmEl.textContent = settings.businessSsm.trim();
+    } else {
+      ssmRow.style.display = 'none';
+    }
   }
 
   const addrEl = document.getElementById('pdfHostAddress');
-  if (addrEl) addrEl.textContent = settings.businessAddress || prop.address || 'Premis Homestay & Perkhidmatan Penginapan';
+  if (addrEl) {
+    const fullAddr = settings.businessAddress || prop.address || '';
+    if (fullAddr.trim()) {
+      addrEl.style.display = 'block';
+      addrEl.textContent = fullAddr.trim();
+    } else {
+      addrEl.style.display = 'none';
+    }
+  }
 
   const phoneEl = document.getElementById('pdfHostPhone');
-  if (phoneEl) phoneEl.textContent = settings.ownerPhone || prop.contactPhone || '-';
+  const phoneRow = phoneEl ? phoneEl.parentElement : null;
+  const hostPhone = settings.ownerPhone || prop.contactPhone || '';
+  if (phoneRow && phoneEl) {
+    if (hostPhone.trim()) {
+      phoneRow.style.display = 'block';
+      phoneEl.textContent = hostPhone.trim();
+    } else {
+      phoneRow.style.display = 'none';
+    }
+  }
 
   const emailEl = document.getElementById('pdfHostEmail');
-  if (emailEl) emailEl.textContent = settings.businessEmail || (settings.ownerPhone ? `host@${settings.ownerPhone.replace(/\D/g, '')}.com` : 'host@myhomestay.com');
+  const emailRow = emailEl ? emailEl.parentElement : null;
+  if (emailRow && emailEl) {
+    if (settings.businessEmail && settings.businessEmail.trim()) {
+      emailRow.style.display = 'block';
+      emailEl.textContent = settings.businessEmail.trim();
+    } else {
+      emailRow.style.display = 'none';
+    }
+  }
 
   const premisIdEl = document.getElementById('pdfHostPremisId');
-  if (premisIdEl) premisIdEl.textContent = prop.id ? `HM-${prop.id.replace(/\D/g, '')}` : 'HM-1088';
+  const premisIdRow = document.getElementById('pdfHostIdRow');
+  if (premisIdRow && premisIdEl) {
+    if (prop.id && prop.id.toString().trim()) {
+      premisIdRow.style.display = 'block';
+      premisIdEl.textContent = `HM-${prop.id.toString().replace(/\D/g, '') || prop.id}`;
+    } else {
+      premisIdRow.style.display = 'none';
+    }
+  }
 
   // 2. Tenancy & Rental Type Determination
   const isMonthly = booking.rentalType === 'monthly';
@@ -9668,11 +11639,92 @@ function updatePdfDocView() {
     balAmt = Math.max(0, grandTotal - depositPaidAmt);
   }
 
+  // Resolve selected payment and running summary figures for per-payment receipts
+  const payments = Array.isArray(booking.payments) ? booking.payments : [];
+  let selectedPayment = null;
+  let pIdx = -1;
+  let cumulativePaid = 0;
+  let balanceAfter = 0;
+
+  if (!isMonthly && (docType === 'receipt' || docType === 'deposit_receipt')) {
+    if (payments.length > 0) {
+      if (appState.activePdfPaymentId) {
+        selectedPayment = payments.find(p => p.id === appState.activePdfPaymentId) || null;
+      }
+      if (!selectedPayment) {
+        if (docType === 'deposit_receipt') {
+          selectedPayment = payments.find(p => p.type === 'deposit') || payments[0];
+        } else {
+          selectedPayment = payments[payments.length - 1];
+        }
+        appState.activePdfPaymentId = selectedPayment ? selectedPayment.id : null;
+      }
+      pIdx = payments.findIndex(p => p.id === selectedPayment.id);
+      if (pIdx === -1) pIdx = payments.length - 1;
+      const paymentsUpTo = payments.slice(0, pIdx + 1);
+      cumulativePaid = paymentsUpTo.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+      balanceAfter = Math.max(0, grandTotal - cumulativePaid);
+    } else {
+      cumulativePaid = depositPaidAmt;
+      balanceAfter = Math.max(0, grandTotal - cumulativePaid);
+    }
+  } else {
+    cumulativePaid = depositPaidAmt;
+    balanceAfter = balAmt;
+  }
+
+  // Populate & toggle payment selector dropdown (Per-Payment Receipts)
+  const paymentSelectGroup = document.getElementById('pdfPaymentSelectGroup');
+  const paymentSelect = document.getElementById('pdfPaymentSelect');
+  const paymentBadge = document.getElementById('pdfPaymentCountBadge');
+  const paymentHint = document.getElementById('pdfPaymentRunningSummaryHint');
+
+  const showPaymentDropdown = !isMonthly && (docType === 'receipt' || docType === 'deposit_receipt') && payments.length > 1;
+  if (paymentSelectGroup) {
+    if (showPaymentDropdown) {
+      paymentSelectGroup.style.display = 'block';
+      if (paymentBadge) {
+        paymentBadge.textContent = lang === 'bm' ? `${payments.length} Bayaran Direkod` : `${payments.length} Payments Recorded`;
+      }
+      if (paymentSelect) {
+        paymentSelect.innerHTML = '';
+        payments.forEach((p, idx) => {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          const pNum = idx + 1;
+          const pTypeLabel = p.type === 'deposit' 
+            ? (lang === 'bm' ? 'Deposit' : 'Deposit') 
+            : (p.type === 'balance' ? (lang === 'bm' ? 'Baki' : 'Balance') : (p.type === 'full' ? (lang === 'bm' ? 'Penuh' : 'Full') : (lang === 'bm' ? 'Bayaran' : 'Payment')));
+          const pRef = (p.reference || p.ref || p.referenceNo) ? ` [${(p.bank || p.bankName) ? (p.bank || p.bankName) + ': ' : ''}${p.reference || p.ref || p.referenceNo}]` : ((p.bank || p.bankName) ? ` [${p.bank || p.bankName}]` : '');
+          const pRcpt = p.receiptNo ? ` (${p.receiptNo})` : '';
+          opt.textContent = `${pNum}. ${p.date || '-'} • ${currency} ${Number(p.amount || 0).toFixed(2)} - ${pTypeLabel}${pRef}${pRcpt}`;
+          if (selectedPayment && p.id === selectedPayment.id) {
+            opt.selected = true;
+          }
+          paymentSelect.appendChild(opt);
+        });
+        paymentSelect.onchange = (e) => {
+          appState.activePdfPaymentId = e.target.value;
+          updatePdfDocView();
+        };
+      }
+      if (paymentHint && selectedPayment) {
+        paymentHint.innerHTML = lang === 'bm'
+          ? `<span style="color:#0284c7; font-weight:700;">Bayaran Ini:</span> ${currency} ${Number(selectedPayment.amount || 0).toFixed(2)} &nbsp;|&nbsp; <span style="font-weight:700;">Kumulatif:</span> ${currency} ${cumulativePaid.toFixed(2)} &nbsp;|&nbsp; <span style="font-weight:700;">Baki:</span> <strong style="color:${balanceAfter <= 0.009 ? '#059669' : '#b45309'}">${currency} ${balanceAfter.toFixed(2)}</strong>`
+          : `<span style="color:#0284c7; font-weight:700;">This Payment:</span> ${currency} ${Number(selectedPayment.amount || 0).toFixed(2)} &nbsp;|&nbsp; <span style="font-weight:700;">Cumulative:</span> ${currency} ${cumulativePaid.toFixed(2)} &nbsp;|&nbsp; <span style="font-weight:700;">Balance:</span> <strong style="color:${balanceAfter <= 0.009 ? '#059669' : '#b45309'}">${currency} ${balanceAfter.toFixed(2)}</strong>`;
+      }
+    } else {
+      paymentSelectGroup.style.display = 'none';
+      if (paymentHint) paymentHint.textContent = '';
+    }
+  }
+
   // Update Deposit balance hint in toolbar
   const depBalHint = document.getElementById('pdfDepositBalanceHint');
   if (depBalHint) {
-    depBalHint.textContent = lang === 'bm' ? `Baki: ${currency} ${balAmt.toFixed(2)}` : `Bal: ${currency} ${balAmt.toFixed(2)}`;
-    depBalHint.style.color = balAmt > 0 ? '#b45309' : '#059669';
+    const displayBal = (!isMonthly && (docType === 'receipt' || docType === 'deposit_receipt')) ? balanceAfter : balAmt;
+    depBalHint.textContent = lang === 'bm' ? `Baki: ${currency} ${displayBal.toFixed(2)}` : `Bal: ${currency} ${displayBal.toFixed(2)}`;
+    depBalHint.style.color = displayBal > 0 ? '#b45309' : '#059669';
   }
 
   // 3. Document Number & Date & Meta
@@ -9752,15 +11804,123 @@ function updatePdfDocView() {
       badgeBg = '#dbeafe'; badgeColor = '#1e40af'; titleColor = '#0284c7';
     } else if (docType === 'receipt') {
       docPrefix = 'REC';
-      docTitle = t.docTitleReceipt;
+      const isPaidFull = !isMonthly ? (balanceAfter <= 0.009) : true;
+      docTitle = isPaidFull ? t.docTitleReceipt : (lang === 'bm' ? 'Resit Rasmi Pembayaran (Bahagian)' : 'Official Payment Receipt (Partial)');
       docNoTitle = t.lblPdfDocNoTitleReceipt;
       docDateTitle = t.lblPdfDocDateTitleReceipt;
-      docBadge = t.docBadgeReceipt;
-      badgeBg = '#d1fae5'; badgeColor = '#065f46'; titleColor = '#059669';
+      docBadge = isPaidFull ? t.docBadgeReceipt : (lang === 'bm' ? 'RESIT BAYARAN SEBAHAGIAN' : 'PARTIAL PAYMENT RECEIPT');
+      badgeBg = isPaidFull ? '#d1fae5' : '#e0f2fe';
+      badgeColor = isPaidFull ? '#065f46' : '#0369a1';
+      titleColor = isPaidFull ? '#059669' : '#0284c7';
     }
   }
 
-  const fullDocNo = `${docPrefix}-${year}-${idShort}`;
+  // Allocate or retrieve document number and audit status (B2)
+  const alloc = getOrAllocateDocNo(booking, docType, activeMonthIdx, false, appState.activePdfPaymentId);
+  const fullDocNo = alloc.docNo;
+  const docRecord = alloc.docRecord;
+  const isDraft = alloc.isDraft;
+  const isReprint = alloc.isReprint;
+
+  // Status Badge on Sheet (DRAF, BATAL, DIGANTIKAN, SALINAN / COPY)
+  const docStatusBadge = document.getElementById('pdfDocStatusBadge');
+  if (docStatusBadge) {
+    if (isDraft) {
+      docStatusBadge.style.display = 'inline-block';
+      docStatusBadge.textContent = 'DRAF';
+      docStatusBadge.style.background = '#f1f5f9';
+      docStatusBadge.style.color = '#475569';
+    } else if (docRecord && docRecord.status === 'void') {
+      docStatusBadge.style.display = 'inline-block';
+      docStatusBadge.textContent = 'BATAL (VOID)';
+      docStatusBadge.style.background = '#fee2e2';
+      docStatusBadge.style.color = '#dc2626';
+    } else if (docRecord && docRecord.status === 'superseded') {
+      docStatusBadge.style.display = 'inline-block';
+      docStatusBadge.textContent = 'DIGANTIKAN (SUPERSEDED)';
+      docStatusBadge.style.background = '#fef3c7';
+      docStatusBadge.style.color = '#d97706';
+    } else if (isReprint) {
+      docStatusBadge.style.display = 'inline-block';
+      docStatusBadge.textContent = 'SALINAN / COPY';
+      docStatusBadge.style.background = '#e0f2fe';
+      docStatusBadge.style.color = '#0284c7';
+    } else {
+      docStatusBadge.style.display = 'none';
+    }
+  }
+
+  // Toolbar Status Pill & Action Buttons (B2)
+  const toolbarPill = document.getElementById('pdfToolbarStatusPill');
+  const btnMarkIssued = document.getElementById('btnPdfMarkIssued');
+  const btnCreateRev = document.getElementById('btnPdfCreateRevision');
+  const btnVoidReissue = document.getElementById('btnPdfVoidReissue');
+  const toolbarNotice = document.getElementById('pdfToolbarReplacedNotice');
+
+  if (toolbarPill) {
+    if (isDraft) {
+      toolbarPill.textContent = 'DRAF';
+      toolbarPill.style.background = '#e2e8f0';
+      toolbarPill.style.color = '#475569';
+    } else if (docRecord && docRecord.status === 'void') {
+      toolbarPill.textContent = 'BATAL (VOID)';
+      toolbarPill.style.background = '#fee2e2';
+      toolbarPill.style.color = '#dc2626';
+    } else if (docRecord && docRecord.status === 'superseded') {
+      toolbarPill.textContent = 'DIGANTIKAN (SUPERSEDED)';
+      toolbarPill.style.background = '#fef3c7';
+      toolbarPill.style.color = '#b45309';
+    } else {
+      toolbarPill.textContent = isReprint ? 'DITERBITKAN (SALINAN)' : 'DITERBITKAN (ISSUED)';
+      toolbarPill.style.background = '#dcfce7';
+      toolbarPill.style.color = '#166534';
+    }
+  }
+
+  if (btnMarkIssued) {
+    btnMarkIssued.style.display = isDraft ? 'inline-flex' : 'none';
+  }
+  if (btnCreateRev) {
+    btnCreateRev.style.display = (docType === 'quotation' && !isDraft && docRecord?.status !== 'void') ? 'inline-flex' : 'none';
+  }
+  if (btnVoidReissue) {
+    btnVoidReissue.style.display = ((docType === 'invoice' || docType === 'deposit_receipt' || docType === 'receipt') && !isDraft && docRecord?.status !== 'void') ? 'inline-flex' : 'none';
+  }
+
+  if (toolbarNotice) {
+    if (docRecord?.replacesDocNo) {
+      toolbarNotice.style.display = 'inline';
+      toolbarNotice.textContent = `• Menggantikan ${docRecord.replacesDocNo}`;
+    } else if (docRecord?.replacedByDocNo) {
+      toolbarNotice.style.display = 'inline';
+      toolbarNotice.textContent = `• Digantikan oleh ${docRecord.replacedByDocNo}`;
+    } else {
+      toolbarNotice.style.display = 'none';
+    }
+  }
+
+  // Replaces Banner on Printable Sheet
+  const replacesBanner = document.getElementById('pdfReplacesBanner');
+  const replacesText = document.getElementById('pdfReplacesText');
+  if (replacesBanner && replacesText) {
+    if (docRecord && docRecord.replacesDocNo) {
+      replacesBanner.style.display = 'block';
+      replacesText.textContent = `${lang === 'bm' ? 'Menggantikan Dokumen Batal / Replaces Voided' : 'Replaces Voided'}: ${docRecord.replacesDocNo}`;
+    } else {
+      replacesBanner.style.display = 'none';
+    }
+  }
+
+  // Void Banner on Printable Sheet
+  const voidBanner = document.getElementById('pdfVoidBanner');
+  if (voidBanner) {
+    if (docRecord && docRecord.status === 'void') {
+      voidBanner.style.display = 'block';
+      voidBanner.innerHTML = `⚠️ DOKUMEN INI TELAH DIBATALKAN (VOID)${docRecord.voidReason ? ` — Sebab: ${docRecord.voidReason}` : ''}${docRecord.replacedByDocNo ? `<br><span style="font-size:11px; font-weight:normal;">Digantikan oleh dokumen baharu: <strong>${docRecord.replacedByDocNo}</strong></span>` : ''}`;
+    } else {
+      voidBanner.style.display = 'none';
+    }
+  }
 
   const titleEl = document.getElementById('pdfDocTitle');
   if (titleEl) {
@@ -9779,8 +11939,19 @@ function updatePdfDocView() {
 
   const docDateEl = document.getElementById('pdfDocDate');
   if (docDateEl) {
-    const d = new Date();
-    docDateEl.textContent = d.toLocaleDateString(lang === 'bm' ? 'ms-MY' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' 12:00 PM';
+    let rawDate = null;
+    let timeStr = '12:00 PM';
+    if (!isMonthly && (docType === 'receipt' || docType === 'deposit_receipt') && selectedPayment) {
+      rawDate = selectedPayment.dateTime || selectedPayment.date;
+      timeStr = selectedPayment.time || (selectedPayment.dateTime && selectedPayment.dateTime.includes('T') ? selectedPayment.dateTime.split('T')[1].slice(0, 5) : '12:00 PM');
+    } else if (docRecord) {
+      rawDate = docRecord.date || docRecord.issuedAt;
+      timeStr = (docRecord.issuedAt && docRecord.issuedAt.includes('T')) ? docRecord.issuedAt.split('T')[1].slice(0, 5) : '12:00 PM';
+    }
+    const d = rawDate ? new Date(rawDate.includes('T') ? rawDate : rawDate + 'T12:00:00') : new Date();
+    const formattedDate = (isNaN(d.getTime()) ? new Date() : d).toLocaleDateString(lang === 'bm' ? 'ms-MY' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const formattedTime = timeStr.includes('M') ? timeStr : formatTime12H(timeStr);
+    docDateEl.textContent = `${formattedDate} ${formattedTime}`.trim();
   }
 
   // Validity calculation (Quotation only)
@@ -9819,7 +11990,19 @@ function updatePdfDocView() {
   const lblPayMethodTitle = document.getElementById('lblPdfPayMethodTitle');
   const payMethodText = document.getElementById('pdfDocPayMethodText');
   const userPayRef = document.getElementById('pdfPaymentRefInput')?.value.trim();
-  const paymentRefStr = userPayRef || (booking.lastPaymentRef ? `${booking.lastPaymentBank || 'Bank'} - ${booking.lastPaymentRef}` : '');
+
+  let paymentRefStr = '';
+  if (!isMonthly && (docType === 'deposit_receipt' || docType === 'receipt') && selectedPayment) {
+    const bankName = selectedPayment.bank || selectedPayment.bankName || '';
+    const refVal = selectedPayment.reference || selectedPayment.ref || selectedPayment.referenceNo || '';
+    if (bankName && refVal) {
+      paymentRefStr = `${bankName} - ${refVal}`;
+    } else {
+      paymentRefStr = refVal || bankName || (lang === 'bm' ? 'Pindahan Bank' : 'Bank Transfer');
+    }
+  } else {
+    paymentRefStr = userPayRef || (booking.lastPaymentRef ? `${booking.lastPaymentBank || 'Bank'} - ${booking.lastPaymentRef}` : '');
+  }
 
   if (lblPayMethodTitle) lblPayMethodTitle.textContent = t.lblPdfPayMethodTitle;
   if (payMethodRow && payMethodText) {
@@ -9831,19 +12014,67 @@ function updatePdfDocView() {
     }
   }
 
-  // Watermark
+  // Transaction Reference row in the printable bank card
+  const txRefRow = document.getElementById('pdfTxRefRow');
+  const lblTxRef = document.getElementById('lblPdfTxRef');
+  const txRefVal = document.getElementById('pdfTxRefVal');
+  if (txRefRow && txRefVal) {
+    const selBank = selectedPayment ? (selectedPayment.bank || selectedPayment.bankName || '') : '';
+    const selRef = selectedPayment ? (selectedPayment.reference || selectedPayment.ref || selectedPayment.referenceNo || '') : '';
+    if ((docType === 'deposit_receipt' || docType === 'receipt') && (selBank || selRef)) {
+      txRefRow.style.display = 'flex';
+      if (lblTxRef) lblTxRef.textContent = lang === 'bm' ? 'No. Rujukan / Ref:' : 'Reference / Trans ID:';
+      txRefVal.textContent = selBank && selRef ? `${selBank} - ${selRef}` : (selRef || selBank);
+    } else {
+      txRefRow.style.display = 'none';
+    }
+  }
+
+  // Watermark (B1 & B2 Strict Audit Rule)
+  // "PAID IN FULL" must appear ONLY on documents that are genuinely fully paid (receipt with balance zero).
+  // It must NEVER appear on quotations, invoices with a balance, or partial payment receipts!
   const watermark = document.getElementById('pdfPaidWatermark');
   if (watermark) {
-    if (docType === 'deposit_receipt' || (isMonthly && docType === 'deposit_receipt')) {
+    if (docRecord && docRecord.status === 'void') {
+      watermark.classList.remove('hidden');
+      watermark.textContent = 'BATAL / VOID';
+      watermark.style.color = 'rgba(239, 68, 68, 0.22)';
+      watermark.style.borderColor = 'rgba(239, 68, 68, 0.35)';
+    } else if (docRecord && docRecord.status === 'superseded') {
+      watermark.classList.remove('hidden');
+      watermark.textContent = 'DIGANTIKAN / SUPERSEDED';
+      watermark.style.color = 'rgba(245, 158, 11, 0.22)';
+      watermark.style.borderColor = 'rgba(245, 158, 11, 0.35)';
+    } else if (docType === 'receipt') {
+      if (isMonthly) {
+        if ((currentMonthInv && currentMonthInv.status === 'paid') || (!currentMonthInv && balAmt <= 0.009)) {
+          watermark.classList.remove('hidden');
+          watermark.textContent = lang === 'bm' ? 'TELAH LUNAS' : 'PAID IN FULL';
+          watermark.style.color = 'rgba(16, 185, 129, 0.16)';
+          watermark.style.borderColor = 'rgba(16, 185, 129, 0.28)';
+        } else {
+          watermark.classList.add('hidden');
+        }
+      } else {
+        // Daily booking receipt
+        if (balanceAfter <= 0.009) {
+          watermark.classList.remove('hidden');
+          watermark.textContent = lang === 'bm' ? 'TELAH LUNAS' : 'PAID IN FULL';
+          watermark.style.color = 'rgba(16, 185, 129, 0.16)';
+          watermark.style.borderColor = 'rgba(16, 185, 129, 0.28)';
+        } else {
+          // Earlier partial payment receipt - strictly NEVER show paid in full stamp!
+          watermark.classList.remove('hidden');
+          watermark.textContent = lang === 'bm' ? 'BAYARAN DITERIMA' : 'PAYMENT RECEIVED';
+          watermark.style.color = 'rgba(2, 132, 199, 0.16)';
+          watermark.style.borderColor = 'rgba(2, 132, 199, 0.28)';
+        }
+      }
+    } else if (docType === 'deposit_receipt') {
       watermark.classList.remove('hidden');
       watermark.textContent = lang === 'bm' ? 'DEPOSIT DITERIMA' : 'DEPOSIT PAID';
       watermark.style.color = 'rgba(2, 132, 199, 0.16)';
       watermark.style.borderColor = 'rgba(2, 132, 199, 0.28)';
-    } else if (docType === 'receipt' || (isMonthly && currentMonthInv && currentMonthInv.status === 'paid')) {
-      watermark.classList.remove('hidden');
-      watermark.textContent = lang === 'bm' ? 'TELAH LUNAS' : 'PAID IN FULL';
-      watermark.style.color = 'rgba(16, 185, 129, 0.16)';
-      watermark.style.borderColor = 'rgba(16, 185, 129, 0.28)';
     } else {
       watermark.classList.add('hidden');
     }
@@ -9963,7 +12194,6 @@ function updatePdfDocView() {
             <strong style="color:#0f172a; display:block;">${lang === 'bm' ? `Sewa Bulanan (Bulan ke-${currentMonthInv.monthIndex})` : `Monthly Rental (Month ${currentMonthInv.monthIndex})`}</strong>
             <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? `Kitaran sewaan dari ${currentMonthInv.periodStart} hingga ${currentMonthInv.periodEnd}` : `Rental billing period from ${currentMonthInv.periodStart} to ${currentMonthInv.periodEnd}`}</span>
           </td>
-          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">997212</td>
           <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Bulan' : 'Mth'}</td>
           <td style="padding:8px 8px; text-align:right;">${Number(currentMonthInv.rentAmount || mRate).toFixed(2)}</td>
           <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
@@ -9980,7 +12210,6 @@ function updatePdfDocView() {
               <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Caj Penggunaan Utiliti Sebenar (Air & Elektrik)' : 'Actual Utility Usage Charges (Water & Electricity)'}</strong>
               <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Caj bil utiliti sebenar yang ditambah ke dalam sewa bulanan mengikut penggunaan' : 'Actual utility usage charges added into monthly rental invoice per usage'}</span>
             </td>
-            <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998412</td>
             <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Pakej' : 'Unit'}</td>
             <td style="padding:8px 8px; text-align:right;">${Number(currentMonthInv.utilityCharges).toFixed(2)}</td>
             <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
@@ -10001,7 +12230,6 @@ function updatePdfDocView() {
             <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Sewa Bulan Pertama (Bayaran Pendahuluan)' : '1st Month Advance Rental'}</strong>
             <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Bayaran sewa bulan pertama dikutip secara pendahuluan (sewa bagi setiap bulan berikutnya diinvois pada awal bulan)' : 'Advance payment for 1st month rental (subsequent months invoiced at the beginning of each month)'}</span>
           </td>
-          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">997212</td>
           <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Bulan' : 'Mth'}</td>
           <td style="padding:8px 8px; text-align:right;">${mRate.toFixed(2)}</td>
           <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
@@ -10018,7 +12246,6 @@ function updatePdfDocView() {
             <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Deposit Keselamatan Sewaan (1 Bulan Sewa)' : 'Rental Security Deposit (1 Month Rent)'}</strong>
             <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Deposit sekuriti 1 bulan sewa (Boleh dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada keadaan premis)' : 'Security deposit equal to 1 month rent (Fully refundable at end of tenancy subject to unit handover)'}</span>
           </td>
-          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">997219</td>
           <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Bulan' : 'Mth'}</td>
           <td style="padding:8px 8px; text-align:right;">${rDep.toFixed(2)}</td>
           <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
@@ -10033,9 +12260,8 @@ function updatePdfDocView() {
           <td style="padding:8px 8px; text-align:center; font-weight:700; color:#64748b;">${rIdx++}</td>
           <td style="padding:8px 8px;">
             <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Deposit Utiliti / Air & Elektrik (Boleh Dipulangkan)' : 'Utilities Deposit / Water & Electricity (Refundable)'}</strong>
-            <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Deposit cagaran utiliti RM300 (Boleh dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada penyelesaian bil utiliti)' : 'Utility security deposit of RM300 (Fully refundable at end of tenancy subject to utility arrears settlement)'}</span>
+            <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Deposit cagaran utiliti (Boleh dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada penyelesaian bil utiliti)' : 'Utility security deposit (Fully refundable at end of tenancy subject to utility arrears settlement)'}</span>
           </td>
-          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">997220</td>
           <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Pakej' : 'Unit'}</td>
           <td style="padding:8px 8px; text-align:right;">${uDep.toFixed(2)}</td>
           <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
@@ -10053,7 +12279,6 @@ function updatePdfDocView() {
               <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Yuran Perjanjian Sewa & Duti Setem' : 'Tenancy Agreement & Legal Stamp Duty'}</strong>
               <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penyediaan dokumen kontrak perjanjian sewaan & duti setem sah' : 'Tenancy contract preparation, administrative documentation & legal stamp duty'}</span>
             </td>
-            <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998211</td>
             <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Dok' : 'Doc'}</td>
             <td style="padding:8px 8px; text-align:right;">${aFee.toFixed(2)}</td>
             <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
@@ -10072,7 +12297,6 @@ function updatePdfDocView() {
             <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Kadar Caj Bil Utiliti Bulanan (Elektrik & Air)' : 'Monthly Utilities Billing Policy (Electricity & Water)'}</strong>
             <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Bagi sewaan jangka panjang melebihi 1 bulan, penyewa membayar bil utiliti terus kepada pembekal atau ditambah ke dalam invois sewa bulanan mengikut kadar penggunaan sebenar setiap bulan' : 'In long term rental over 1 month, tenant will pay direct or plus in monthly rental per usage charges'}</span>
           </td>
-          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998412</td>
           <td style="padding:8px 8px; text-align:center; font-weight:700;">-</td>
           <td style="padding:8px 8px; text-align:right; font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Kadar Sebenar' : 'Actual Rate'}</td>
           <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
@@ -10094,7 +12318,6 @@ function updatePdfDocView() {
           <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Sewa Penginapan Homestay (Accommodation Stay)' : 'Homestay Accommodation Rental'}</strong>
           <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? `Penginapan dari ${booking.checkIn} hingga ${booking.checkOut} (${nights} malam)` : `Stay from ${booking.checkIn} to ${booking.checkOut} (${nights} nights)`}</span>
         </td>
-        <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">996311</td>
         <td style="padding:8px 8px; text-align:center; font-weight:700;">${nights}.00</td>
         <td style="padding:8px 8px; text-align:right;">${ratePerNight.toFixed(2)}</td>
         <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
@@ -10113,7 +12336,6 @@ function updatePdfDocView() {
             <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Fi Pembersihan & Pengemasan (Turnover Cleaning Fee)' : 'Sanitized Cleaning & Turnover Fee'}</strong>
             <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penyediaan cadar bersih, tuala, sanitasi premis dan pengemasan' : 'Fresh linen, bath towels, room sanitization and turnover service'}</span>
           </td>
-          <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998533</td>
           <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00</td>
           <td style="padding:8px 8px; text-align:right;">${Number(booking.cleaningFee).toFixed(2)}</td>
           <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
@@ -10132,7 +12354,6 @@ function updatePdfDocView() {
           <strong style="color:#0f172a; display:block;">${lang === 'bm' ? 'Utiliti, Elektrik, Air & WiFi Berkelajuan Tinggi' : 'Utilities, Electricity, Water & High-Speed WiFi'}</strong>
           <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? 'Penghawa dingin sepenuhnya, bekalan air bersih dan internet tanpa had' : 'Full air-conditioning, clean water supply and unlimited high-speed WiFi access'}</span>
         </td>
-        <td style="padding:8px 8px; text-align:center; font-family:monospace; color:#64748b;">998412</td>
         <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00</td>
         <td style="padding:8px 8px; text-align:right;">0.00</td>
         <td style="padding:8px 8px; text-align:center; color:#64748b;">0.00</td>
@@ -10334,49 +12555,54 @@ function updatePdfDocView() {
     const depositPct = settings.defaultDepositPct || 30;
     const depReqAmount = booking.depositAmount && booking.depositAmount > 0 ? booking.depositAmount : (grandTotal * depositPct / 100);
 
-    if (docType === 'deposit_receipt') {
-      if (depRow) depRow.style.display = 'none';
-      if (paidRow && paidVal && paidLbl) {
-        paidRow.style.display = 'flex';
-        paidLbl.textContent = t.lblPdfDepositPaidRow;
-        paidVal.textContent = `(+) ${currency} ${depositPaidAmt.toFixed(2)}`;
-        paidVal.style.color = '#059669';
-      }
-      if (balRow && balVal && balLbl) {
-        balRow.style.display = 'flex';
-        balLbl.textContent = t.lblPdfBalance;
-        balVal.textContent = `${currency} ${balAmt.toFixed(2)} (${lang === 'bm' ? 'BELUM JELAS' : 'PENDING'})`;
-        balVal.style.color = '#b45309';
-      }
-      if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalDepositReceipt;
-      if (grandTotalEl) {
-        grandTotalEl.textContent = `${currency} ${depositPaidAmt.toFixed(2)}`;
-        grandTotalEl.style.color = '#0284c7';
-      }
-      if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleDeposit;
-      if (wordsEl) wordsEl.textContent = numberToWordsMYR(depositPaidAmt, lang);
+    if (docType === 'deposit_receipt' || docType === 'receipt') {
+      const thisPaymentAmt = selectedPayment ? Number(selectedPayment.amount || 0) : (docType === 'deposit_receipt' ? depositPaidAmt : grandTotal);
 
-    } else if (docType === 'receipt') {
       if (depRow) depRow.style.display = 'none';
+
       if (paidRow && paidVal && paidLbl) {
         paidRow.style.display = 'flex';
-        paidLbl.textContent = t.lblPdfPaid;
-        paidVal.textContent = `${currency} ${grandTotal.toFixed(2)} (${lang === 'bm' ? 'PENUH' : 'FULL'})`;
+        paidLbl.textContent = lang === 'bm' ? 'Jumlah Telah Dibayar (Kumulatif):' : 'Total Paid to Date (Cumulative):';
+        paidVal.textContent = `(+) ${currency} ${cumulativePaid.toFixed(2)}`;
         paidVal.style.color = '#059669';
       }
+
       if (balRow && balVal && balLbl) {
         balRow.style.display = 'flex';
-        balLbl.textContent = t.lblPdfBalance;
-        balVal.textContent = `${currency} 0.00 (${lang === 'bm' ? 'LUNAS / SELESAI' : 'SETTLED'})`;
-        balVal.style.color = '#059669';
+        balLbl.textContent = lang === 'bm' ? 'Baki Selepas Bayaran Ini:' : 'Balance After This Payment:';
+        if (balanceAfter <= 0.009) {
+          balVal.textContent = `${currency} 0.00 (${lang === 'bm' ? 'TELAH LUNAS' : 'PAID IN FULL'})`;
+          balVal.style.color = '#059669';
+        } else {
+          balVal.textContent = `${currency} ${balanceAfter.toFixed(2)} (${lang === 'bm' ? 'BELUM JELAS' : 'PENDING'})`;
+          balVal.style.color = '#b45309';
+        }
       }
-      if (grandTotalLbl) grandTotalLbl.textContent = t.lblPdfGrandTotalReceipt;
+
+      if (grandTotalLbl) {
+        if (docType === 'deposit_receipt') {
+          grandTotalLbl.textContent = t.lblPdfGrandTotalDepositReceipt;
+        } else if (balanceAfter <= 0.009) {
+          grandTotalLbl.textContent = lang === 'bm' ? 'JUMLAH BAYARAN PENUH DITERIMA' : 'TOTAL PAYMENT RECEIVED (PAID IN FULL)';
+        } else {
+          grandTotalLbl.textContent = lang === 'bm' ? 'JUMLAH BAYARAN DITERIMA (BAHAGIAN)' : 'PARTIAL PAYMENT RECEIVED';
+        }
+      }
+
       if (grandTotalEl) {
-        grandTotalEl.textContent = `${currency} ${grandTotal.toFixed(2)}`;
-        grandTotalEl.style.color = '#059669';
+        grandTotalEl.textContent = `${currency} ${thisPaymentAmt.toFixed(2)}`;
+        grandTotalEl.style.color = (docType === 'deposit_receipt') ? '#0284c7' : '#059669';
       }
-      if (wordsTitleLbl) wordsTitleLbl.textContent = t.lblPdfWordsTitleGeneral;
-      if (wordsEl) wordsEl.textContent = numberToWordsMYR(grandTotal, lang);
+
+      if (wordsTitleLbl) {
+        wordsTitleLbl.textContent = (docType === 'deposit_receipt')
+          ? t.lblPdfWordsTitleDeposit
+          : (lang === 'bm' ? 'Jumlah Bayaran Resit Ini Dalam Perkataan' : 'Amount Received in Words');
+      }
+
+      if (wordsEl) {
+        wordsEl.textContent = numberToWordsMYR(thisPaymentAmt, lang);
+      }
 
     } else if (docType === 'invoice') {
       if (depRow) depRow.style.display = 'none';
@@ -10460,27 +12686,76 @@ function updatePdfDocView() {
     });
   }
 
-  // 9. Bank Details
+  // 9. Bank Details (Only use user's saved settings, hide if empty)
   const bankNameEl = document.getElementById('pdfBankName');
-  if (bankNameEl) bankNameEl.textContent = settings.bankName || 'Maybank';
+  const bankNameRow = bankNameEl ? bankNameEl.closest('div') : null;
+  if (bankNameRow && bankNameEl) {
+    if (settings.bankName && settings.bankName.trim()) {
+      bankNameRow.style.display = 'flex';
+      bankNameEl.textContent = settings.bankName.trim();
+    } else {
+      bankNameRow.style.display = 'none';
+    }
+  }
 
   const bankAccNumEl = document.getElementById('pdfBankAccNum');
-  if (bankAccNumEl) bankAccNumEl.textContent = settings.bankAccNum || '5123 4567 8901';
+  const bankAccNumRow = bankAccNumEl ? bankAccNumEl.closest('div') : null;
+  if (bankAccNumRow && bankAccNumEl) {
+    if (settings.bankAccNum && settings.bankAccNum.trim()) {
+      bankAccNumRow.style.display = 'flex';
+      bankAccNumEl.textContent = settings.bankAccNum.trim();
+    } else {
+      bankAccNumRow.style.display = 'none';
+    }
+  }
 
   const bankAccHolderEl = document.getElementById('pdfBankAccHolder');
-  if (bankAccHolderEl) bankAccHolderEl.textContent = settings.bankAccHolder || settings.businessName || 'Homestay Host';
+  const bankAccHolderRow = bankAccHolderEl ? bankAccHolderEl.closest('div') : null;
+  if (bankAccHolderRow && bankAccHolderEl) {
+    const holder = settings.bankAccHolder || settings.businessName || '';
+    if (holder && holder.trim()) {
+      bankAccHolderRow.style.display = 'flex';
+      bankAccHolderEl.textContent = holder.trim();
+    } else {
+      bankAccHolderRow.style.display = 'none';
+    }
+  }
 
   const bankBranchEl = document.getElementById('pdfBankBranch');
-  if (bankBranchEl) bankBranchEl.textContent = settings.bankBranch || 'Changlun / Cawangan Utama';
+  const bankBranchRow = bankBranchEl ? bankBranchEl.closest('div') : null;
+  if (bankBranchRow && bankBranchEl) {
+    if (settings.bankBranch && settings.bankBranch.trim()) {
+      bankBranchRow.style.display = 'flex';
+      bankBranchEl.textContent = settings.bankBranch.trim();
+    } else {
+      bankBranchRow.style.display = 'none';
+    }
+  }
 
   const duitNowEl = document.getElementById('pdfDuitNow');
   const duitNowRow = document.getElementById('pdfDuitNowRow');
   if (duitNowRow && duitNowEl) {
-    if (settings.duitNow) {
+    if (settings.duitNow && settings.duitNow.trim()) {
       duitNowRow.style.display = 'flex';
-      duitNowEl.textContent = settings.duitNow;
+      duitNowEl.textContent = settings.duitNow.trim();
     } else {
       duitNowRow.style.display = 'none';
+    }
+  }
+
+  // 10. Optional Sales & Service Tax (SST)
+  const sstRate = parseFloat(settings.sstRate) || 0;
+  const sstRow = document.getElementById('pdfRowSst');
+  const sstLbl = document.getElementById('lblPdfSst');
+  const sstVal = document.getElementById('pdfValSst');
+  if (sstRow && sstLbl && sstVal) {
+    if (sstRate > 0) {
+      const sstAmount = (grandTotal * sstRate) / 100;
+      sstRow.style.display = 'flex';
+      sstLbl.textContent = `${t.lblPdfSst || 'SST'} (${sstRate}%):`;
+      sstVal.textContent = `${currency} ${sstAmount.toFixed(2)}`;
+    } else {
+      sstRow.style.display = 'none';
     }
   }
 
@@ -10491,9 +12766,6 @@ function updatePdfDocView() {
   // Translated Labels
   const thItemEl = document.getElementById('thPdfItem');
   if (thItemEl) thItemEl.textContent = t.thPdfItem;
-
-  const thHsnEl = document.getElementById('thPdfHsn');
-  if (thHsnEl) thHsnEl.textContent = t.thPdfHsn;
 
   const thQtyEl = document.getElementById('thPdfQty');
   if (thQtyEl) thQtyEl.textContent = t.thPdfQty;
@@ -10515,12 +12787,6 @@ function updatePdfDocView() {
 
   const taxableLbl = document.getElementById('lblPdfTaxableAmount');
   if (taxableLbl) taxableLbl.textContent = t.lblPdfTaxableAmount;
-
-  const cgstLbl = document.getElementById('lblPdfCgst');
-  if (cgstLbl) cgstLbl.textContent = t.lblPdfCgst;
-
-  const sgstLbl = document.getElementById('lblPdfSgst');
-  if (sgstLbl) sgstLbl.textContent = t.lblPdfSgst;
 
   const discLbl = document.getElementById('lblPdfDiscount');
   if (discLbl) discLbl.textContent = t.lblPdfDiscount;
@@ -10630,8 +12896,10 @@ function getPdfDocMeta() {
   }
 
   const cleanName = (booking.guestName || 'Tetamu').replace(/[^a-zA-Z0-9_-]/g, '_');
-  const fileName = `${prefix}_${year}_${idShort}_${cleanName}.pdf`;
-  const fullDocNo = `${prefix.replace(/_/g, '-')}-${year}-${idShort}`;
+  const domDocNo = document.getElementById('pdfDocNo')?.textContent?.trim();
+  const fullDocNo = (domDocNo && !domDocNo.includes('(Draf)')) ? domDocNo : `${prefix.replace(/_/g, '-')}-${year}-${idShort}`;
+  const docNoClean = fullDocNo.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const fileName = `${docNoClean}_${cleanName}.pdf`;
   return { booking, docType, lang, isBM, prop, year, idShort, prefix, docTitle, cleanName, fileName, fullDocNo, isMonthly, activeMonth };
 }
 
@@ -10962,14 +13230,49 @@ function sharePdfViaWhatsApp() {
       const balHandover = Math.max(0, totalMoveIn - bookingFee);
 
       message = isBM
-        ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi sewaan bulanan di *${prop.name}* (${booking.monthlyStart || booking.checkIn}, tempoh ${booking.monthlyDuration || 6} Bulan).\n\n💰 *Perincian Pakej Kemasukan (Move-In):*\n• Sewa Bulan Pertama (Pendahuluan): ${currency} ${mRate.toFixed(2)}\n• Deposit Keselamatan Sewa (1 Bulan Sewa): ${currency} ${rDep.toFixed(2)}\n• Deposit Utiliti (Air & Elektrik): ${currency} ${uDep.toFixed(2)}\n${aFee > 0 ? `• Yuran Perjanjian Sewa & Duti Setem: ${currency} ${aFee.toFixed(2)}\n` : ''}----------------------------------------\n💵 *Jumlah Bayaran Kemasukan:* *${currency} ${totalMoveIn.toFixed(2)}*\n🔒 *Bayaran Booking Diperlukan untuk Kunci Unit:* ${currency} ${bookingFee.toFixed(2)}\n⏳ *Baki Sebelum Serahan Kunci:* ${currency} ${balHandover.toFixed(2)}\n\n📌 *Syarat & Polisi Sewaan Bulanan:*\n1. Bayaran sewa bulanan dikutip secara pendahuluan (advance) pada awal setiap bulan sewaan melalui Invois Rasmi.\n2. Bagi sewaan jangka panjang melebihi 1 bulan, bil utiliti (elektrik & air) adalah mengikut kadar penggunaan bulanan sebenar (dibayar terus oleh penyewa atau dimasukkan ke dalam invois sewa bulanan).\n3. Deposit Keselamatan (1 bulan sewa) dan Deposit Utiliti (RM 300) akan dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada bil utiliti dan pemeriksaan unit.\n\n📄 *Sila rujuk fail PDF yang dilampirkan.*\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
-        : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) for the monthly tenancy at *${prop.name}* (${booking.monthlyStart || booking.checkIn}, duration ${booking.monthlyDuration || 6} Months).\n\n💰 *Move-in Initial Package Breakdown:*\n• 1st Month Advance Rent: ${currency} ${mRate.toFixed(2)}\n• Rental Security Deposit (1 Month Rent): ${currency} ${rDep.toFixed(2)}\n• Utilities Deposit (Electricity & Water): ${currency} ${uDep.toFixed(2)}\n${aFee > 0 ? `• Tenancy Agreement & Stamp Duty: ${currency} ${aFee.toFixed(2)}\n` : ''}----------------------------------------\n💵 *Total Move-in Package:* *${currency} ${totalMoveIn.toFixed(2)}*\n🔒 *Booking Fee to Reserve Unit:* ${currency} ${bookingFee.toFixed(2)}\n⏳ *Balance Due upon Key Handover:* ${currency} ${balHandover.toFixed(2)}\n\n📌 *Monthly Tenancy Terms & Policies:*\n1. Monthly rental is collected in advance at the beginning of each rental month via official invoice.\n2. In long-term rentals over 1 month, utilities (electricity & water) are charged per actual usage (paid directly by tenant or added into monthly invoice).\n3. Rental Deposit (1 month rent) and Utilities Deposit (RM 300) are fully refundable at the end of tenancy subject to utility clearance and unit inspection.\n\n📄 *Please refer to the attached PDF file.*\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+        ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi sewaan bulanan di *${prop.name}* (${booking.monthlyStart || booking.checkIn}, tempoh ${booking.monthlyDuration || 6} Bulan).\n\n💰 *Perincian Pakej Kemasukan (Move-In):*\n• Sewa Bulan Pertama (Pendahuluan): ${currency} ${mRate.toFixed(2)}\n• Deposit Keselamatan Sewa (1 Bulan Sewa): ${currency} ${rDep.toFixed(2)}\n• Deposit Utiliti (Air & Elektrik): ${currency} ${uDep.toFixed(2)}\n${aFee > 0 ? `• Yuran Perjanjian Sewa & Duti Setem: ${currency} ${aFee.toFixed(2)}\n` : ''}----------------------------------------\n💵 *Jumlah Bayaran Kemasukan:* *${currency} ${totalMoveIn.toFixed(2)}*\n🔒 *Bayaran Booking Diperlukan untuk Kunci Unit:* ${currency} ${bookingFee.toFixed(2)}\n⏳ *Baki Sebelum Serahan Kunci:* ${currency} ${balHandover.toFixed(2)}\n\n📌 *Syarat & Polisi Sewaan Bulanan:*\n1. Bayaran sewa bulanan dikutip secara pendahuluan (advance) pada awal setiap bulan sewaan melalui Invois Rasmi.\n2. Bagi sewaan jangka panjang melebihi 1 bulan, bil utiliti (elektrik & air) adalah mengikut kadar penggunaan bulanan sebenar (dibayar terus oleh penyewa atau dimasukkan ke dalam invois sewa bulanan).\n3. Deposit Keselamatan (1 bulan sewa) dan Deposit Utiliti (${currency} ${uDep.toFixed(2)}) akan dipulangkan sepenuhnya pada akhir tempoh sewaan tertakluk kepada bil utiliti dan pemeriksaan unit.\n\n📄 *Sila rujuk fail PDF yang dilampirkan.*\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+        : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) for the monthly tenancy at *${prop.name}* (${booking.monthlyStart || booking.checkIn}, duration ${booking.monthlyDuration || 6} Months).\n\n💰 *Move-in Initial Package Breakdown:*\n• 1st Month Advance Rent: ${currency} ${mRate.toFixed(2)}\n• Rental Security Deposit (1 Month Rent): ${currency} ${rDep.toFixed(2)}\n• Utilities Deposit (Electricity & Water): ${currency} ${uDep.toFixed(2)}\n${aFee > 0 ? `• Tenancy Agreement & Stamp Duty: ${currency} ${aFee.toFixed(2)}\n` : ''}----------------------------------------\n💵 *Total Move-in Package:* *${currency} ${totalMoveIn.toFixed(2)}*\n🔒 *Booking Fee to Reserve Unit:* ${currency} ${bookingFee.toFixed(2)}\n⏳ *Balance Due upon Key Handover:* ${currency} ${balHandover.toFixed(2)}\n\n📌 *Monthly Tenancy Terms & Policies:*\n1. Monthly rental is collected in advance at the beginning of each rental month via official invoice.\n2. In long-term rentals over 1 month, utilities (electricity & water) are charged per actual usage (paid directly by tenant or added into monthly invoice).\n3. Rental Deposit (1 month rent) and Utilities Deposit (${currency} ${uDep.toFixed(2)}) are fully refundable at the end of tenancy subject to utility clearance and unit inspection.\n\n📄 *Please refer to the attached PDF file.*\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
     }
   } else {
+    // Non-monthly / Daily booking
+    const payments = Array.isArray(booking.payments) ? booking.payments : [];
+    let selectedPayment = null;
+    let cumulativePaid = 0;
+    let balanceAfter = 0;
+    let thisPaymentAmt = 0;
+
+    if (payments.length > 0) {
+      if (appState.activePdfPaymentId) {
+        selectedPayment = payments.find(p => p.id === appState.activePdfPaymentId) || null;
+      }
+      if (!selectedPayment) {
+        if (docType === 'deposit_receipt') {
+          selectedPayment = payments.find(p => p.type === 'deposit') || payments[0];
+        } else {
+          selectedPayment = payments[payments.length - 1];
+        }
+      }
+      const pIdx = payments.findIndex(p => p.id === selectedPayment.id);
+      const paymentsUpTo = payments.slice(0, pIdx >= 0 ? pIdx + 1 : 1);
+      cumulativePaid = paymentsUpTo.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+      balanceAfter = Math.max(0, grandTotal - cumulativePaid);
+      thisPaymentAmt = Number(selectedPayment.amount || 0);
+    } else {
+      thisPaymentAmt = depositPaidAmt;
+      cumulativePaid = depositPaidAmt;
+      balanceAfter = Math.max(0, grandTotal - cumulativePaid);
+    }
+
     if (docType === 'deposit_receipt') {
+      const pRef = selectedPayment && (selectedPayment.reference || selectedPayment.ref || selectedPayment.referenceNo) ? ` (Ruj: ${selectedPayment.reference || selectedPayment.ref || selectedPayment.referenceNo})` : '';
       message = isBM
-        ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi bayaran deposit penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Rekod Bayaran:*\n• Jumlah Pakej: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Diterima:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Baki Sebelum Masuk:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
-        : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) confirming your deposit payment for the stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Payment Record:*\n• Total Package: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Received:* *${currency} ${depositPaidAmt.toFixed(2)}*\n• 💳 *Remaining Balance:* *${currency} ${balAmt.toFixed(2)}*\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+        ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi bayaran deposit penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Rekod Bayaran:*\n• Jumlah Pakej: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Diterima:* *${currency} ${thisPaymentAmt.toFixed(2)}*${pRef}\n• 💵 *Jumlah Telah Dibayar:* *${currency} ${cumulativePaid.toFixed(2)}*\n• 💳 *Baki Sebelum Masuk:* *${currency} ${balanceAfter.toFixed(2)}*\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+        : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) confirming your deposit payment for the stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Payment Record:*\n• Total Package: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Deposit Received:* *${currency} ${thisPaymentAmt.toFixed(2)}*${pRef}\n• 💵 *Total Paid to Date:* *${currency} ${cumulativePaid.toFixed(2)}*\n• 💳 *Remaining Balance:* *${currency} ${balanceAfter.toFixed(2)}*\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
+    } else if (docType === 'receipt') {
+      const pRef = selectedPayment && (selectedPayment.reference || selectedPayment.ref || selectedPayment.referenceNo) ? ` (Ruj: ${selectedPayment.reference || selectedPayment.ref || selectedPayment.referenceNo})` : '';
+      message = isBM
+        ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi bayaran penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Perincian Bayaran:*\n• Jumlah Pakej: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Bayaran Diterima (Resit Ini):* *${currency} ${thisPaymentAmt.toFixed(2)}*${pRef}\n• 💵 *Jumlah Telah Dibayar (Kumulatif):* *${currency} ${cumulativePaid.toFixed(2)}*\n• ${balanceAfter <= 0.009 ? '🎉 *Status: TELAH LUNAS SEPENUHNYA (Baki: RM 0.00)*' : `💳 *Baki Selepas Bayaran Ini:* *${currency} ${balanceAfter.toFixed(2)}*`}\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
+        : `Greetings ${booking.guestName}.\n\nAttached is the official *${docTitle}* (*Ref: ${fullDocNo}*) for your stay at *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n💰 *Payment Breakdown:*\n• Total Package: ${currency} ${grandTotal.toFixed(2)}\n• ✅ *Payment Received (This Receipt):* *${currency} ${thisPaymentAmt.toFixed(2)}*${pRef}\n• 💵 *Total Paid to Date (Cumulative):* *${currency} ${cumulativePaid.toFixed(2)}*\n• ${balanceAfter <= 0.009 ? '🎉 *Status: PAID IN FULL (Balance: RM 0.00)*' : `💳 *Balance After This Payment:* *${currency} ${balanceAfter.toFixed(2)}*`}\n\n📄 *Please refer to the attached PDF file.* Kindly let us know if your accounts / finance department requires any further verification.\n\nThank you.\n*${appState.settings.businessName || 'Homestay Management'}*`;
     } else {
       message = isBM
         ? `Salam Sejahtera ${booking.guestName}.\n\nDilampirkan dokumen rasmi *${docTitle}* (*No: ${fullDocNo}*) bagi penginapan di *${prop.name}* (${booking.checkIn} → ${booking.checkOut}).\n\n📄 *Sila rujuk fail PDF yang dilampirkan.* Sila maklumkan kepada kami sekiranya pihak kewangan / pejabat anda memerlukan sebarang pengesahan lanjut.\n\nTerima kasih.\n*${appState.settings.businessName || 'Pengurusan Homestay'}*`
@@ -11206,35 +13509,95 @@ function openGuestGuideModal() {
 // 16. DATA BACKUP, EXPORT & RESTORE
 // ==========================================================================
 
-function exportDataBackup() {
+async function exportDataBackup() {
   const isLangBm = appState.settings.language === 'bm';
+  const images = {};
+
+  // 1. Harvest from IndexedDB
+  try {
+    const dbImages = await getAllImagesFromDB();
+    if (Array.isArray(dbImages)) {
+      for (const item of dbImages) {
+        if (item && item.id && item.dataUrl) {
+          images[item.id] = item.dataUrl;
+        }
+      }
+    } else if (dbImages && typeof dbImages === 'object') {
+      Object.assign(images, dbImages);
+    }
+  } catch (e) {
+    console.warn('Notice: Could not load images from IndexedDB for backup:', e);
+  }
+
+  // 2. Harvest any images still in localStorage or memory (bookings and promo media)
+  if (Array.isArray(appState.bookings)) {
+    for (const b of appState.bookings) {
+      if (Array.isArray(b.payments)) {
+        for (const p of b.payments) {
+          if (p.receiptImage && p.receiptImage.startsWith('data:image')) {
+            const imgId = p.receiptImageId || `img-rcpt-${b.id}-${p.id || 'slip'}`;
+            images[imgId] = p.receiptImage;
+            p.receiptImageId = imgId;
+          }
+        }
+      }
+    }
+  }
+
+  if (Array.isArray(appState.promotionalMedia)) {
+    for (const m of appState.promotionalMedia) {
+      if (m.imageData && m.imageData.startsWith('data:image')) {
+        const imgId = m.imageId || `img-promo-${m.id}`;
+        images[imgId] = m.imageData;
+        m.imageId = imgId;
+      }
+    }
+  }
+
+  // 3. Harvest any cached items
+  IMAGE_CACHE.forEach((val, key) => {
+    if (key && val && !images[key]) {
+      images[key] = val;
+    }
+  });
+
   const exportObject = {
     version: APP_VERSION,
     exportDate: new Date().toISOString(),
-    properties: appState.properties,
-    bookings: appState.bookings,
-    turnovers: appState.turnovers,
-    expenses: appState.expenses,
-    contacts: appState.contacts,
-    maintenanceTeam: appState.contacts, // Explicitly named Maintenance Team & Suppliers directory
-    maintenanceTasks: appState.turnovers, // Maintenance and turnover cleaning records
-    promotionalMedia: appState.promotionalMedia,
-    settings: appState.settings,
-    licenseKey: appState.licenseKey,
-    isLicensed: appState.isLicensed,
-    isMasterAdmin: appState.isMasterAdmin
+    properties: appState.properties || [],
+    bookings: appState.bookings || [],
+    turnovers: appState.turnovers || [],
+    expenses: appState.expenses || [],
+    contacts: appState.contacts || [],
+    maintenanceTeam: appState.contacts || [], // Explicitly named Maintenance Team & Suppliers directory
+    maintenanceTasks: appState.turnovers || [], // Maintenance and turnover cleaning records
+    promotionalMedia: appState.promotionalMedia || [],
+    settings: appState.settings || {},
+    quotationCounter: appState.quotationCounter || 1001,
+    invoiceCounter: appState.invoiceCounter || 1001,
+    depositReceiptCounter: appState.depositReceiptCounter || 1001,
+    paymentReceiptCounter: appState.paymentReceiptCounter || 1001,
+    refundCounter: appState.refundCounter || 1001,
+    images: images,
+    licenseKey: appState.licenseKey || '',
+    isLicensed: appState.isLicensed || false
   };
 
   const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportObject, null, 2));
   const downloadAnchor = document.createElement('a');
   downloadAnchor.setAttribute('href', dataStr);
-  downloadAnchor.setAttribute('download', `StayManager_Backup_${new Date().toISOString().split('T')[0]}.json`);
+  downloadAnchor.setAttribute('download', `StayManager_Backup_${formatLocalDate(new Date())}.json`);
   document.body.appendChild(downloadAnchor);
   downloadAnchor.click();
   downloadAnchor.remove();
+
+  // Record last backup date to silence reminder banner
+  localStorage.setItem('staymanager_last_backup_date', formatLocalDate(new Date()));
+  dismissBackupReminderBanner();
+
   showToast(isLangBm 
-    ? '🎉 Fail sandaran (termasuk Pasukan Penyelenggaraan & Tempahan) berjaya dimuat turun!' 
-    : '🎉 Backup file (including Maintenance Team, Bookings & Payments) downloaded safely!');
+    ? '🎉 Fail sandaran penuh (termasuk Imej, Pasukan & Tempahan) berjaya dimuat turun!' 
+    : '🎉 Full backup file (including Images, Team, Bookings & Receipts) downloaded safely!');
 }
 
 function importDataBackup(event) {
@@ -11243,60 +13606,187 @@ function importDataBackup(event) {
 
   const isLangBm = appState.settings.language === 'bm';
   const reader = new FileReader();
-  reader.onload = function(e) {
+
+  reader.onload = async function(e) {
     try {
       const data = JSON.parse(e.target.result);
-      if (data.properties && Array.isArray(data.properties)) {
-        appState.properties = data.properties;
-        appState.bookings = data.bookings || [];
-        appState.turnovers = data.turnovers || data.maintenanceTasks || [];
-        appState.expenses = data.expenses || [];
-        appState.contacts = (Array.isArray(data.maintenanceTeam) && data.maintenanceTeam.length > 0)
-          ? data.maintenanceTeam
-          : (Array.isArray(data.contacts) ? data.contacts : [...DEFAULT_CONTACTS]);
-        appState.promotionalMedia = data.promotionalMedia || [...DEFAULT_PROMO_MEDIA];
-        appState.settings = data.settings || DEFAULT_SETTINGS;
-        if (data.licenseKey) {
-          const check = verifyLicenseKey(data.licenseKey, null);
-          if (check.valid) {
-            appState.isLicensed = true;
-            appState.licenseKey = data.licenseKey;
-            appState.isMasterAdmin = check.isMaster;
+
+      // Validate schema
+      if (!data || typeof data !== 'object' || !Array.isArray(data.properties)) {
+        alert(isLangBm 
+          ? 'Format fail sandaran tidak sah. Fail mesti mengandungi senarai homestay.' 
+          : 'Invalid backup file format. File must contain valid homestay property records.');
+        event.target.value = '';
+        return;
+      }
+
+      const propCount = data.properties.length;
+      const bookCount = (data.bookings && data.bookings.length) || 0;
+      const expCount = (data.expenses && data.expenses.length) || 0;
+      const imgCount = (data.images && typeof data.images === 'object') 
+        ? (Array.isArray(data.images) ? data.images.length : Object.keys(data.images).length) 
+        : 0;
+
+      const confirmMsg = isLangBm
+        ? `Adakah anda pasti mahu memulihkan data ini?\n\n` +
+          `• Homestay: ${propCount} unit\n` +
+          `• Tempahan: ${bookCount} rekod\n` +
+          `• Perbelanjaan: ${expCount} rekod\n` +
+          `• Imej/Resit: ${imgCount} fail\n\n` +
+          `⚠️ NOTIS: Salinan keselamatan peranti ini akan disimpan secara automatik sebelum data digantikan.`
+        : `Are you sure you want to restore this backup?\n\n` +
+          `• Homestays: ${propCount} units\n` +
+          `• Bookings: ${bookCount} records\n` +
+          `• Expenses: ${expCount} records\n` +
+          `• Images/Receipts: ${imgCount} files\n\n` +
+          `⚠️ NOTICE: A safety snapshot will be created automatically before existing data is replaced.`;
+
+      if (!confirm(confirmMsg)) {
+        event.target.value = '';
+        return;
+      }
+
+      // 1. SAVE SAFETY SNAPSHOT OF CURRENT DATA BEFORE OVERWRITING (Undo safety)
+      const deviceOwnerPhone = normalizePhoneNumber(appState.settings?.ownerPhone || '');
+      const preRestoreSnapshot = {
+        version: APP_VERSION,
+        backupDate: new Date().toISOString(),
+        properties: appState.properties || [],
+        bookings: appState.bookings || [],
+        turnovers: appState.turnovers || [],
+        expenses: appState.expenses || [],
+        contacts: appState.contacts || [],
+        promotionalMedia: appState.promotionalMedia || [],
+        settings: appState.settings || {},
+        quotationCounter: appState.quotationCounter || 1001,
+        invoiceCounter: appState.invoiceCounter || 1001,
+        depositReceiptCounter: appState.depositReceiptCounter || 1001,
+        paymentReceiptCounter: appState.paymentReceiptCounter || 1001,
+        refundCounter: appState.refundCounter || 1001,
+        licenseKey: appState.licenseKey || '',
+        isLicensed: appState.isLicensed || false
+      };
+      localStorage.setItem('staymanager_pre_restore_snapshot', JSON.stringify(preRestoreSnapshot));
+      localStorage.setItem('staymanager_auto_backup', JSON.stringify(preRestoreSnapshot));
+
+      // 2. RESTORE DATA OBJECTS
+      appState.properties = data.properties;
+      appState.bookings = Array.isArray(data.bookings) ? data.bookings : [];
+      migrateBookingTenantModel();
+      appState.turnovers = Array.isArray(data.turnovers) ? data.turnovers : (Array.isArray(data.maintenanceTasks) ? data.maintenanceTasks : []);
+      appState.expenses = Array.isArray(data.expenses) ? data.expenses : [];
+      appState.contacts = (Array.isArray(data.maintenanceTeam) && data.maintenanceTeam.length > 0)
+        ? data.maintenanceTeam
+        : (Array.isArray(data.contacts) ? data.contacts : [...DEFAULT_CONTACTS]);
+      appState.promotionalMedia = Array.isArray(data.promotionalMedia) ? data.promotionalMedia : [...DEFAULT_PROMO_MEDIA];
+      appState.settings = data.settings ? { ...DEFAULT_SETTINGS, ...data.settings } : DEFAULT_SETTINGS;
+
+      // Restore document counters if present
+      if (typeof data.quotationCounter === 'number') appState.quotationCounter = data.quotationCounter;
+      if (typeof data.invoiceCounter === 'number') appState.invoiceCounter = data.invoiceCounter;
+      if (typeof data.depositReceiptCounter === 'number') appState.depositReceiptCounter = data.depositReceiptCounter;
+      if (typeof data.paymentReceiptCounter === 'number') appState.paymentReceiptCounter = data.paymentReceiptCounter;
+      if (typeof data.refundCounter === 'number') appState.refundCounter = data.refundCounter;
+
+      // Freeze all numbers in restored bookings and ensure counters are >= highest in data
+      migrateExistingBookingDocuments();
+      syncDocumentCounters();
+
+      // 3. RESTORE IMAGES TO IndexedDB
+      if (data.images) {
+        if (Array.isArray(data.images)) {
+          for (const item of data.images) {
+            if (item && item.id && item.dataUrl) {
+              await saveImageToDB(item.id, item.dataUrl);
+            }
           }
-        } else if (data.isLicensed) {
-          appState.isLicensed = true;
-          if (data.isMasterAdmin) appState.isMasterAdmin = true;
+        } else if (typeof data.images === 'object') {
+          for (const [imgId, imgData] of Object.entries(data.images)) {
+            if (imgId && typeof imgData === 'string') {
+              await saveImageToDB(imgId, imgData);
+            } else if (imgData && typeof imgData === 'object' && imgData.id && imgData.dataUrl) {
+              await saveImageToDB(imgData.id, imgData.dataUrl);
+            }
+          }
         }
-        saveToStorage();
-        renderApp();
-        showToast(isLangBm 
-          ? '🎉 Salinan sandaran (termasuk Pasukan Penyelenggaraan & Tempahan) berjaya dipulihkan!' 
-          : '🎉 Backup (including Maintenance Team & Bookings) restored successfully!');
+      }
+
+      // 4. RESTORE LICENSE STRICT VALIDATION
+      // Ignore data.isLicensed and data.isMasterAdmin completely.
+      // Only restore a license if data.licenseKey verifies, AND the key's bound phone matches the owner phone on this device.
+      let showLicenseMismatchAlert = false;
+
+      if (data.licenseKey && typeof data.licenseKey === 'string') {
+        const check = verifyLicenseKey(data.licenseKey, deviceOwnerPhone || null);
+        if (check.valid && deviceOwnerPhone && check.phone === deviceOwnerPhone) {
+          appState.isLicensed = true;
+          appState.licenseKey = data.licenseKey;
+          appState.isMasterAdmin = false;
+          localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({
+            key: data.licenseKey,
+            isLicensed: true,
+            activatedAt: new Date().toISOString()
+          }));
+        } else {
+          appState.isLicensed = false;
+          appState.licenseKey = '';
+          appState.isMasterAdmin = false;
+          localStorage.removeItem(STORAGE_KEYS.LICENSE);
+          showLicenseMismatchAlert = true;
+        }
       } else {
-        alert(isLangBm ? 'Format fail sandaran tidak sah.' : 'Invalid backup file format.');
+        appState.isLicensed = false;
+        appState.licenseKey = '';
+        appState.isMasterAdmin = false;
+        localStorage.removeItem(STORAGE_KEYS.LICENSE);
+      }
+
+      // Run image migration on any legacy unmigrated base64 that came from the backup
+      await migrateImagesToIndexedDB();
+
+      localStorage.setItem('staymanager_initialized', 'true');
+      localStorage.setItem('staymanager_last_backup_date', formatLocalDate(new Date()));
+      saveToStorage();
+      renderApp();
+      dismissBackupReminderBanner();
+
+      showToast(isLangBm 
+        ? '🎉 Salinan sandaran (termasuk Imej, Pasukan & Tempahan) berjaya dipulihkan!' 
+        : '🎉 Full backup (including Images, Team & Bookings) restored successfully!');
+
+      if (showLicenseMismatchAlert) {
+        setTimeout(() => {
+          alert(isLangBm
+            ? 'ℹ️ Makluman Lesen Pro: Lesen tidak dipulihkan secara automatik kerana nombor telefon pemilik peranti ini tidak sepadan dengan lesen dalam fail sandaran. Sila masukkan semula Kunci Lesen Pro anda di menu Tetapan jika ini peranti sah anda.'
+            : 'ℹ️ Pro License Notice: Pro license was not restored automatically because this device\'s owner phone does not match the key in the backup. Please re-activate with your Pro license key in Settings if this is your device.');
+        }, 500);
       }
     } catch (err) {
-      alert(isLangBm ? 'Ralat membaca fail sandaran JSON.' : 'Error parsing JSON backup file.');
+      console.error('Backup restore error:', err);
+      alert(isLangBm ? `Ralat membaca fail sandaran: ${err.message}` : `Error parsing backup file: ${err.message}`);
+    } finally {
+      event.target.value = '';
     }
   };
+
   reader.readAsText(file);
 }
 
 function restoreAutoBackup() {
-  const autoBackupStr = localStorage.getItem('staymanager_auto_backup');
+  const autoBackupStr = localStorage.getItem('staymanager_pre_restore_snapshot') || localStorage.getItem('staymanager_auto_backup');
   if (!autoBackupStr) {
     alert(t('no_auto_backup_found'));
     return;
   }
   try {
     const data = JSON.parse(autoBackupStr);
-    const dateStr = data.backupDate ? new Date(data.backupDate).toLocaleString() : 'Pre-update';
+    const dateStr = data.backupDate ? new Date(data.backupDate).toLocaleString() : 'Safety Snapshot';
     const propCount = (data.properties && data.properties.length) || 0;
     const bookCount = (data.bookings && data.bookings.length) || 0;
     const isLangBm = appState.settings.language === 'bm';
     const promptMsg = isLangBm 
-      ? `Salinan Keselamatan Sebelum Kemaskini dijumpai!\nTarikh: ${dateStr}\nHomestay: ${propCount} unit\nTempahan: ${bookCount} rekod\n\nAdakah anda mahu memulihkan data ini sekarang?`
-      : `Pre-Update Safety Snapshot found!\nDate: ${dateStr}\nHomestays: ${propCount} units\nBookings: ${bookCount} records\n\nDo you want to restore this data now?`;
+      ? `Salinan Keselamatan dijumpai!\nTarikh: ${dateStr}\nHomestay: ${propCount} unit\nTempahan: ${bookCount} rekod\n\nAdakah anda mahu memulihkan data ini sekarang?`
+      : `Safety Snapshot found!\nDate: ${dateStr}\nHomestays: ${propCount} units\nBookings: ${bookCount} records\n\nDo you want to restore this data now?`;
 
     if (confirm(promptMsg)) {
       if (Array.isArray(data.properties)) appState.properties = data.properties;
@@ -11310,20 +13800,28 @@ function restoreAutoBackup() {
       }
       if (Array.isArray(data.promotionalMedia)) appState.promotionalMedia = data.promotionalMedia;
       if (data.settings) appState.settings = { ...DEFAULT_SETTINGS, ...data.settings };
+      
+      // Strict license restore: only if key passes verifyLicenseKey with current ownerPhone
       if (data.licenseKey) {
-        const check = verifyLicenseKey(data.licenseKey, null);
+        const check = verifyLicenseKey(data.licenseKey, appState.settings?.ownerPhone);
         if (check.valid) {
           appState.isLicensed = true;
           appState.licenseKey = data.licenseKey;
-          appState.isMasterAdmin = check.isMaster;
+          appState.isMasterAdmin = false;
+        } else {
+          appState.isLicensed = false;
+          appState.licenseKey = '';
+          appState.isMasterAdmin = false;
         }
-      } else if (data.isLicensed) {
-        appState.isLicensed = true;
-        if (data.isMasterAdmin) appState.isMasterAdmin = true;
+      } else {
+        appState.isLicensed = false;
+        appState.licenseKey = '';
+        appState.isMasterAdmin = false;
       }
+
       saveToStorage();
       renderApp();
-      showToast(isLangBm ? '🎉 Salinan keselamatan (termasuk Pasukan Penyelenggaraan) berjaya dipulihkan!' : '🎉 Safety snapshot (including Maintenance Team) successfully restored!');
+      showToast(isLangBm ? '🎉 Salinan keselamatan berjaya dipulihkan!' : '🎉 Safety snapshot successfully restored!');
     }
   } catch (err) {
     alert('Error restoring safety snapshot: ' + err.message);
@@ -11334,7 +13832,6 @@ function resetAllData() {
   if (confirm('Are you sure you want to clear all homestays, bookings, turnovers, and expenses? Your license key and preferences will be preserved.')) {
     const preservedLicense = appState.licenseKey;
     const preservedIsLicensed = appState.isLicensed;
-    const preservedIsMaster = appState.isMasterAdmin;
     const preservedSettings = { ...appState.settings };
 
     appState.properties = [];
@@ -11346,7 +13843,7 @@ function resetAllData() {
     appState.selectedPropertyId = 'all';
     appState.isLicensed = preservedIsLicensed;
     appState.licenseKey = preservedLicense;
-    appState.isMasterAdmin = preservedIsMaster;
+    appState.isMasterAdmin = false;
     appState.settings = preservedSettings;
 
     // Mark as initialized so demo data does not auto-seed on reload
@@ -12005,21 +14502,29 @@ function openProSystemModal() {
   const subEl = document.getElementById('proModalSub');
 
   if (titleEl) {
-    titleEl.textContent = appState.isMasterAdmin 
-      ? (isBM ? 'Hab Pentadbir (Master Admin)' : 'Master Admin Hub') 
-      : (isBM ? 'Hab Sistem StayManager Pro' : 'StayManager Pro Hub');
+    titleEl.textContent = isBM ? 'Hab Sistem StayManager Pro' : 'StayManager Pro Hub';
   }
   if (subEl) {
     subEl.textContent = isBM ? 'Status Akaun & Akses Pantas' : 'System Status & Quick Tools';
   }
 
   if (statusText) {
-    if (appState.isMasterAdmin) {
-      statusText.textContent = '👑 MASTER ADMIN';
-      statusText.style.color = 'var(--primary)';
+    const isOffline = !navigator.onLine;
+
+    if (appState.isLicensed && appState.licenseKey) {
+      const check = verifyLicenseKey(appState.licenseKey, appState.settings?.ownerPhone);
+      if (check.valid) {
+        statusText.textContent = isOffline 
+          ? (isBM ? '✨ LESEN PRO SEUMUR HIDUP (Luar Talian)' : '✨ LIFETIME PRO ACTIVE (Offline)')
+          : (isBM ? '✨ LESEN PRO SEUMUR HIDUP' : '✨ LIFETIME PRO ACTIVE');
+        statusText.style.color = 'var(--success)';
+      } else {
+        statusText.textContent = isBM ? '⚠️ KUNCI TIDAK SAH' : '⚠️ INVALID LICENSE';
+        statusText.style.color = 'var(--danger)';
+      }
     } else {
-      statusText.textContent = isBM ? '✨ LESEN PRO SEUMUR HIDUP' : '✨ LIFETIME PRO ACTIVE';
-      statusText.style.color = 'var(--success)';
+      statusText.textContent = isBM ? '⏱️ MOD PERCUBAAN / DEMO' : '⏱️ TRIAL / FREE DEMO';
+      statusText.style.color = 'var(--warning)';
     }
   }
 
@@ -12656,7 +15161,55 @@ function initAgreementGenerator() {
     startInput.addEventListener('change', handleDatesChange);
     endInput.addEventListener('change', handleDatesChange);
   }
+
+  // Real-time live synchronization: Any edit in the form instantly refreshes the document preview
+  const formWrapEl = document.getElementById('agrTabFormContainer');
+  if (formWrapEl) {
+    formWrapEl.addEventListener('input', () => {
+      renderAgreementPreview();
+    });
+    formWrapEl.addEventListener('change', () => {
+      renderAgreementPreview();
+    });
+  }
 }
+
+/**
+ * Set active agreement language cleanly ('bm' or 'en')
+ */
+function setAgreementLanguage(lang = 'bm') {
+  appState.activeAgreementLang = (lang === 'en') ? 'en' : 'bm';
+  const btnBM = document.getElementById('btnAgrLangBM');
+  const btnEN = document.getElementById('btnAgrLangEN');
+  if (btnBM && btnEN) {
+    if (appState.activeAgreementLang === 'en') {
+      btnEN.classList.add('active');
+      btnBM.classList.remove('active');
+    } else {
+      btnBM.classList.add('active');
+      btnEN.classList.remove('active');
+    }
+  }
+  renderAgreementPreview();
+}
+window.setAgreementLanguage = setAgreementLanguage;
+
+/**
+ * Re-populate agreement form from selected booking
+ */
+function repopulateAgreementForm() {
+  const bSelect = document.getElementById('agrBookingSelect');
+  const bid = bSelect ? bSelect.value : null;
+  const b = appState.bookings.find(x => x.id === bid) || null;
+  if (b) {
+    populateAgreementForm(b, true);
+    renderAgreementPreview();
+    showToast(appState.settings.language === 'bm' ? 'Maklumat tempahan berjaya dimuatkan semula!' : 'Booking particulars re-populated successfully!');
+  } else {
+    showToast(appState.settings.language === 'bm' ? 'Sila pilih rekod tempahan di atas.' : 'Please select a booking record above.');
+  }
+}
+window.repopulateAgreementForm = repopulateAgreementForm;
 
 /**
  * Switch agreement modal tab cleanly ('form' vs 'preview')
@@ -12739,15 +15292,7 @@ function openAgreementModal(booking = null, defaultTab = 'form') {
     switchAgreementTab(defaultTab || 'form');
 
     // 4. Update language toggle active pill
-    const btnBM = document.getElementById('btnAgrLangBM');
-    const btnEN = document.getElementById('btnAgrLangEN');
-    if (appState.activeAgreementLang === 'en') {
-      if (btnEN) btnEN.classList.add('active');
-      if (btnBM) btnBM.classList.remove('active');
-    } else {
-      if (btnBM) btnBM.classList.add('active');
-      if (btnEN) btnEN.classList.remove('active');
-    }
+    setAgreementLanguage(appState.activeAgreementLang);
 
     // 5. Open modal with explicit flex display, top scroll & guaranteed highest z-index
     const modal = document.getElementById('agreementGeneratorModal');
@@ -12757,6 +15302,7 @@ function openAgreementModal(booking = null, defaultTab = 'form') {
       modal.style.zIndex = '99999';
       modal.style.opacity = '1';
       modal.style.visibility = 'visible';
+      modal.style.pointerEvents = 'auto';
       const modalBody = modal.querySelector('.modal-body');
       if (modalBody) modalBody.scrollTop = 0;
     }
@@ -12769,6 +15315,10 @@ function openAgreementModal(booking = null, defaultTab = 'form') {
     if (modal) {
       modal.style.setProperty('display', 'flex', 'important');
       modal.classList.add('active');
+      modal.style.zIndex = '99999';
+      modal.style.opacity = '1';
+      modal.style.visibility = 'visible';
+      modal.style.pointerEvents = 'auto';
     }
   }
 }
@@ -12831,7 +15381,7 @@ function populateAgreementBookingSelect(selectedBookingId = null) {
 function populateAgreementForm(booking = null, forceReset = false) {
   const settings = appState.settings || {};
   const isBM = appState.settings.language === 'bm';
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
 
   // Check if booking has saved agreement draft
   if (booking && booking.tenancyAgreement && !forceReset) {
@@ -12899,7 +15449,7 @@ function populateAgreementForm(booking = null, forceReset = false) {
 
   // Auto-populate from fresh booking & settings
   const isCorporateTenant = booking 
-    ? (detectIsCompany(booking.guestName, booking.notes) || !!booking.companyRegNo || !!booking.contactPerson) 
+    ? (booking.tenantType === 'company' || detectIsCompany(booking.guestName, booking.notes) || !!booking.companyRegNo || !!booking.contactPerson) 
     : false;
   const isCorporateLandlord = !!(settings.businessSsm || settings.businessRegNo);
 
@@ -12921,7 +15471,7 @@ function populateAgreementForm(booking = null, forceReset = false) {
   // Landlord
   document.getElementById('agrLandlordName').value = settings.ownerLegalName || settings.businessName || 'Pengurusan Homestay & Kediaman';
   document.getElementById('agrLandlordIc').value = isCorporateLandlord ? (settings.businessSsm || settings.businessRegNo || '') : (settings.ownerIc || '');
-  document.getElementById('agrLandlordPhone').value = settings.businessPhone || settings.phone || settings.ownerPhone || '+60123456789';
+  document.getElementById('agrLandlordPhone').value = settings.businessPhone || settings.phone || settings.ownerPhone || '';
   document.getElementById('agrLandlordAddress').value = settings.businessAddress || 'Malaysia';
 
   const elLCName = document.getElementById('agrLandlordContactName');
@@ -12931,22 +15481,22 @@ function populateAgreementForm(booking = null, forceReset = false) {
   if (elLCDesig) elLCDesig.value = '';
   if (elLCIc) elLCIc.value = '';
 
-  // Tenant
-  document.getElementById('agrTenantName').value = booking ? booking.guestName : '';
-  document.getElementById('agrTenantIc').value = booking ? (booking.companyRegNo || booking.guestIc || '') : '';
-  document.getElementById('agrTenantPhone').value = booking ? (booking.guestPhone || '') : '';
-  document.getElementById('agrTenantEmail').value = booking ? (booking.guestEmail || '') : '';
-  document.getElementById('agrTenantAddress').value = booking ? (booking.guestAddress || '') : '';
+  // Tenant (Legal Party)
+  document.getElementById('agrTenantName').value = booking ? (isCorporateTenant ? (booking.companyName || booking.guestName) : booking.guestName) : '';
+  document.getElementById('agrTenantIc').value = booking ? (isCorporateTenant ? (booking.companyRegNo || booking.guestNric || '') : (booking.guestNric || '')) : '';
+  document.getElementById('agrTenantPhone').value = booking ? (isCorporateTenant ? (booking.contactPhone || booking.guestPhone || '') : (booking.guestPhone || '')) : '';
+  document.getElementById('agrTenantEmail').value = booking ? (isCorporateTenant ? (booking.contactEmail || booking.guestEmail || '') : (booking.guestEmail || '')) : '';
+  document.getElementById('agrTenantAddress').value = booking ? (isCorporateTenant ? (booking.companyAddress || booking.guestAddress || '') : (booking.guestAddress || '')) : '';
 
-  // Corporate tenant contact person
+  // Corporate tenant contact person & authorized signatory
   const elCName = document.getElementById('agrTenantContactName');
   const elCDesig = document.getElementById('agrTenantContactDesignation');
   const elCIc = document.getElementById('agrTenantContactIc');
   const elCPhone = document.getElementById('agrTenantContactPhone');
-  if (elCName) elCName.value = booking?.contactPerson || '';
-  if (elCDesig) elCDesig.value = booking?.contactDesignation || (isCorporateTenant ? (isBM ? 'Pengurus / Wakil Syarikat' : 'Company Representative / Manager') : '');
-  if (elCIc) elCIc.value = booking?.contactIc || '';
-  if (elCPhone) elCPhone.value = booking?.contactPhone || (isCorporateTenant ? (booking?.guestPhone || '') : '');
+  if (elCName) elCName.value = booking ? (booking.signatoryName || booking.contactPerson || '') : '';
+  if (elCDesig) elCDesig.value = booking ? (booking.signatoryDesignation || booking.contactDesignation || (isCorporateTenant ? (isBM ? 'Pengarah / Wakil Diberikuasa' : 'Director / Authorized Representative') : '')) : '';
+  if (elCIc) elCIc.value = booking ? (booking.signatoryIc || booking.contactIc || '') : '';
+  if (elCPhone) elCPhone.value = booking ? (booking.contactPhone || (isCorporateTenant ? (booking.guestPhone || '') : '')) : '';
 
   // Property
   document.getElementById('agrPropertyName').value = prop ? prop.name : '';
@@ -14010,6 +16560,22 @@ function saveAgreementDraft() {
     showToast(isBM ? 'Borang perjanjian dikemas kini.' : 'Agreement form updated.');
   }
 }
+
+// Global Window Exports for Tenancy Agreement Engine
+window.openAgreementModal = openAgreementModal;
+window.closeAllModals = closeAllModals;
+window.switchAgreementTab = switchAgreementTab;
+window.renderAgreementPreview = renderAgreementPreview;
+window.setAgreementLandlordType = setAgreementLandlordType;
+window.setAgreementTenantType = setAgreementTenantType;
+window.setAgreementLanguage = setAgreementLanguage;
+window.repopulateAgreementForm = repopulateAgreementForm;
+window.addCustomInventoryRow = addCustomInventoryRow;
+window.saveAgreementDraft = saveAgreementDraft;
+window.printAgreementDocument = printAgreementDocument;
+window.sendAgreementEmail = sendAgreementEmail;
+window.shareAgreementWhatsApp = shareAgreementWhatsApp;
+window.downloadAgreementPdf = downloadAgreementPdf;
 
 // Start application
 if (document.readyState === 'loading') {

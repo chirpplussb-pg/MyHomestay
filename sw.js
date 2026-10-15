@@ -1,5 +1,5 @@
-// Service Worker for Homestay Manager PWA - Version 2.7.8
-const CACHE_NAME = 'staymanager-cache-v2.7.8-live';
+// Service Worker for Homestay Manager PWA - Version 2.7.11
+const CACHE_NAME = 'staymanager-cache-v2.7.11-live';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -89,19 +89,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Other assets: Stale-While-Revalidate
+  // 3. Other assets (fonts, icons, CDN scripts): Stale-While-Revalidate with full offline caching
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
         fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
           }
         }).catch(() => {});
         return cachedResponse;
       }
       return fetch(event.request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+        if (!networkResponse || (networkResponse.status !== 200 && networkResponse.type !== 'opaque')) {
           return networkResponse;
         }
         const responseToCache = networkResponse.clone();
@@ -109,6 +109,11 @@ self.addEventListener('fetch', (event) => {
           cache.put(event.request, responseToCache);
         });
         return networkResponse;
+      }).catch(() => {
+        // Fallback for document navigation when completely offline
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
       });
     })
   );
