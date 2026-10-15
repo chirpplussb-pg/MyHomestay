@@ -7,10 +7,19 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.7.11';
+const APP_VERSION = '2.8.0';
 
 // SELLER WHATSAPP NUMBER - For Buy License inquiries (Single Source of Truth)
 const SELLER_WHATSAPP = '+60124022462';
+
+// CLOUDFLARE WORKER LICENSE SERVER CONFIGURATION (Public Key Only)
+const LICENSE_API_URL = 'https://staymanager-license-server.homestaymanager.workers.dev';
+const LICENSE_PUBLIC_KEY_JWK = {
+  "kty": "EC",
+  "crv": "P-256",
+  "x": "2O0fWckxh69Mk2ca1PLWBFzTrlR2GSOv32PxwOMcM4E",
+  "y": "DbZzhpTDL8eGNd1UrHPQeKl4NoyIjzivQT2QCR51Tpk"
+};
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -20,7 +29,9 @@ const STORAGE_KEYS = {
   CONTACTS: 'staymanager_contacts_v2',
   PROMO_MEDIA: 'staymanager_promo_media_v2',
   SETTINGS: 'staymanager_settings_v2',
-  LICENSE: 'staymanager_license_v2',
+  TOKEN: 'staymanager_license_token',
+  DEVICE_ID: 'staymanager_device_id',
+  LAST_SEEN_AT: 'staymanager_last_seen_at',
   VERSION: 'staymanager_app_version'
 };
 
@@ -1662,6 +1673,10 @@ function closeClearDataModal() {
 function handleConfirmClearData() {
   const preservedLicense = appState.licenseKey;
   const preservedIsLicensed = appState.isLicensed;
+  const preservedToken = appState.licenseToken;
+  const preservedPayload = appState.licensePayload;
+  const preservedDays = appState.licenseDaysRemaining;
+  const preservedProState = appState.proHubState;
   const preservedSettings = { ...appState.settings };
 
   appState.properties = [];
@@ -1672,6 +1687,10 @@ function handleConfirmClearData() {
   appState.promotionalMedia = [];
   appState.selectedPropertyId = 'all';
   appState.isLicensed = preservedIsLicensed;
+  appState.licenseToken = preservedToken;
+  appState.licensePayload = preservedPayload;
+  appState.licenseDaysRemaining = preservedDays;
+  appState.proHubState = preservedProState;
   appState.licenseKey = preservedLicense;
   appState.isMasterAdmin = false;
   appState.settings = preservedSettings;
@@ -1759,8 +1778,11 @@ let appState = {
   promoSearchQuery: '',
   settings: { ...DEFAULT_SETTINGS },
   isLicensed: false,
-  isMasterAdmin: false,
+  licenseToken: null,
   licenseKey: null,
+  licensePayload: null,
+  licenseDaysRemaining: 0,
+  proHubState: 'CHECKING',
   selectedPropertyId: 'all',
   activeTab: 'dashboard',
   currentCalDate: new Date(),
@@ -1788,7 +1810,7 @@ window.appState = appState;
 // 2. INITIALIZATION & DEMO DATA SEEDING
 // ==========================================================================
 
-function initApp() {
+async function initApp() {
   loadFromStorage();
 
   // Auto-purge stale cache if app upgraded to new version
@@ -1800,6 +1822,17 @@ function initApp() {
     }
   }
 
+  // Purge legacy license keys and boolean bypass flags permanently
+  localStorage.removeItem('staymanager_is_licensed_forever');
+  localStorage.removeItem('staymanager_license_activated');
+  localStorage.removeItem('staymanager_license_permanent');
+  localStorage.removeItem('staymanager_license_v2');
+  localStorage.removeItem('staymanager_license');
+  localStorage.removeItem('staymanager_license_key');
+
+  // Cryptographically evaluate stored token
+  await evaluateLicenseState();
+
   // Check URL params for Demo or 1-Click Auto-Activation (?phone=...&key=...)
   const urlParams = new URLSearchParams(window.location.search);
   const isDemoParam = urlParams.get('demo') === '1';
@@ -1808,25 +1841,32 @@ function initApp() {
 
   if (keyParam) {
     const rawTargetPhone = phoneParam || appState.settings.ownerPhone;
-    const verification = verifyLicenseKey(keyParam, rawTargetPhone);
-
-    if (verification.valid) {
-      appState.isLicensed = true;
-      appState.licenseKey = keyParam.toUpperCase();
-      appState.isMasterAdmin = false;
-      
-      if (verification.phone) {
-        appState.settings.ownerPhone = '+' + verification.phone;
+    if (rawTargetPhone && navigator.onLine) {
+      try {
+        await activateWithServer(keyParam, rawTargetPhone);
+        showToast(appState.settings.language === 'bm' 
+          ? '🎉 Tahniah! Lesen Pro berjaya diaktifkan!' 
+          : '🎉 Pro License activated successfully!');
+      } catch (err) {
+        console.warn('URL auto-activation error:', err);
+        const phoneInput = document.getElementById('licensePhoneInput');
+        const keyInput = document.getElementById('licenseKeyInput');
+        if (phoneInput && rawTargetPhone) phoneInput.value = rawTargetPhone;
+        if (keyInput) keyInput.value = keyParam.toUpperCase();
+        openLicenseModal();
       }
-      
-      saveToStorage();
-      showToast('🎉 Lifetime License Activated Successfully!');
+    } else {
+      const phoneInput = document.getElementById('licensePhoneInput');
+      const keyInput = document.getElementById('licenseKeyInput');
+      if (phoneInput && rawTargetPhone) phoneInput.value = rawTargetPhone;
+      if (keyInput) keyInput.value = keyParam.toUpperCase();
+      openLicenseModal();
+    }
 
-      // Remove query params from address bar for clean PWA URL
-      if (window.history.replaceState) {
-        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-        window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
-      }
+    // Remove query params from address bar for clean PWA URL
+    if (window.history.replaceState) {
+      const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+      window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
     }
   }
 
@@ -1881,6 +1921,36 @@ function initApp() {
   try {
     initPWAUpdateService();
   } catch (e) { console.warn('PWA update service note:', e); }
+
+  // Online silent refresh check (if token is older than 7 days)
+  if (navigator.onLine && appState.licenseToken) {
+    checkAndRefreshTokenSilently().catch(err => console.warn('[License Refresh] Silent check note:', err));
+  } else if (appState.proHubState === 'CLOCK_ERROR') {
+    const isBM = appState.settings.language === 'bm';
+    setTimeout(() => {
+      alert(isBM 
+        ? '⚠️ Ralat Jam Peranti: Tarikh peranti anda lebih awal daripada rekod sebelum ini. Sila betulkan tarikh & masa telefon anda atau sambung ke internet untuk mengesahkan lesen.' 
+        : '⚠️ Device Clock Error: Your device date/time is earlier than previously recorded. Please set your device clock correctly or connect to the internet to verify your license.');
+    }, 800);
+  }
+
+  // Connectivity change listeners
+  window.addEventListener('online', () => {
+    if (appState.licenseToken) {
+      checkAndRefreshTokenSilently().catch(() => {});
+    }
+    if (appState.isLicensed) {
+      appState.proHubState = 'ACTIVE';
+      renderApp();
+    }
+  });
+
+  window.addEventListener('offline', () => {
+    if (appState.isLicensed) {
+      appState.proHubState = 'OFFLINE';
+      renderApp();
+    }
+  });
 }
 
 function loadFromStorage() {
@@ -1961,73 +2031,12 @@ function loadFromStorage() {
     appState.refundCounter = savedRefCounter ? parseInt(savedRefCounter, 10) : 1001;
     if (isNaN(appState.refundCounter) || appState.refundCounter < 1) appState.refundCounter = 1001;
     
-    // License Recovery across legacy & modern storage keys
-    const savedLicense = localStorage.getItem(STORAGE_KEYS.LICENSE) 
-      || localStorage.getItem('staymanager_license_v2')
-      || localStorage.getItem('staymanager_license')
-      || localStorage.getItem('staymanager_license_permanent')
-      || localStorage.getItem('staymanager_license_key');
-
-    let foundKey = null;
-
-    if (savedLicense) {
-      if (typeof savedLicense === 'string' && (savedLicense.startsWith('{') || savedLicense.startsWith('"'))) {
-        try {
-          const parsed = JSON.parse(savedLicense);
-          foundKey = (parsed && parsed.key) ? parsed.key : (typeof parsed === 'string' ? parsed : null);
-        } catch (e) {
-          foundKey = savedLicense.trim();
-        }
-      } else if (typeof savedLicense === 'string') {
-        foundKey = savedLicense.trim();
-      }
-    }
-
-    if (!foundKey && appState.settings && appState.settings.licenseKey) {
-      foundKey = appState.settings.licenseKey;
-    }
-
-    // A license MUST always come from a key that passes verifyLicenseKey()
-    if (foundKey) {
-      const check = verifyLicenseKey(foundKey, null);
-      if (check.valid) {
-        appState.isLicensed = true;
-        appState.licenseKey = foundKey;
-        appState.isMasterAdmin = false;
-        if (check.phone && (!appState.settings.ownerPhone || appState.settings.ownerPhone === DEFAULT_SETTINGS.ownerPhone)) {
-          appState.settings.ownerPhone = '+' + check.phone;
-        }
-      } else {
-        appState.isLicensed = false;
-        appState.licenseKey = null;
-        appState.isMasterAdmin = false;
-      }
-    } else {
-      appState.isLicensed = false;
-      appState.licenseKey = null;
-      appState.isMasterAdmin = false;
-    }
-
-    // Purge legacy bypass flag if present
-    localStorage.removeItem('staymanager_is_licensed_forever');
-
-    // Safety fallback: Check pre-update auto-backup if license dropped or data is empty
+    // Safety fallback: Check pre-update auto-backup if property/booking data is empty
     const autoBackupStr = localStorage.getItem('staymanager_auto_backup');
     if (autoBackupStr) {
       try {
         const autoBackup = JSON.parse(autoBackupStr);
         if (autoBackup) {
-          // Restore license ONLY if the backup contains a valid key passing verifyLicenseKey
-          if (!appState.isLicensed && autoBackup.licenseKey) {
-            const checkBackup = verifyLicenseKey(autoBackup.licenseKey, appState.settings?.ownerPhone);
-            if (checkBackup.valid) {
-              appState.isLicensed = true;
-              appState.licenseKey = autoBackup.licenseKey;
-              appState.isMasterAdmin = false;
-              localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: autoBackup.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
-            }
-          }
-
           // Restore properties and records if empty
           if ((!appState.properties || appState.properties.length === 0) && Array.isArray(autoBackup.properties) && autoBackup.properties.length > 0) {
             appState.properties = autoBackup.properties;
@@ -2042,12 +2051,6 @@ function loadFromStorage() {
       } catch (bErr) {
         console.warn('Auto backup check notice:', bErr);
       }
-    }
-
-    // If verified active, save validated key
-    if (appState.isLicensed && appState.licenseKey) {
-      localStorage.setItem('staymanager_license_activated', 'true');
-      localStorage.setItem('staymanager_license_permanent', appState.licenseKey);
     }
 
     // Run schema migrations and auto-safety snapshot
@@ -3000,12 +3003,6 @@ function saveToStorage() {
     }
     if (appState.refundCounter) {
       localStorage.setItem('staymanager_refund_counter', appState.refundCounter.toString());
-    }
-    if (appState.isLicensed && appState.licenseKey) {
-      localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({ key: appState.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
-      localStorage.setItem('staymanager_license_v2', JSON.stringify({ key: appState.licenseKey, isLicensed: true, activatedAt: new Date().toISOString() }));
-      localStorage.setItem('staymanager_license_permanent', appState.licenseKey);
-      localStorage.setItem('staymanager_license_activated', 'true');
     }
   } catch (err) {
     if (err && (err.name === 'QuotaExceededError' || err.code === 22 || err.code === 1014)) {
@@ -4612,13 +4609,12 @@ function applyLanguageUI() {
 }
 
 // ==========================================================================
-// LICENSE & PHONE-BOUND CRYPTOGRAPHIC ENGINE
+// LICENSE & SERVER-SIDE CRYPTOGRAPHIC ENGINE (WebCrypto ECDSA P-256)
 // ==========================================================================
 
 function normalizePhoneNumber(rawPhone) {
   if (!rawPhone) return '';
-  let digits = rawPhone.replace(/[^0-9]/g, '');
-  // Normalize Malaysian phone prefixes (01x -> 601x)
+  let digits = rawPhone.toString().replace(/[^0-9]/g, '');
   if (digits.startsWith('01') && digits.length >= 10 && digits.length <= 11) {
     digits = '6' + digits;
   } else if (digits.startsWith('0') && digits.length >= 9) {
@@ -4627,92 +4623,453 @@ function normalizePhoneNumber(rawPhone) {
   return digits;
 }
 
-function computeSimpleHash(str) {
-  let hash = 5381;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) + hash) + str.charCodeAt(i);
-    hash = hash & hash;
+function getOrCreateDeviceId() {
+  let id = localStorage.getItem(STORAGE_KEYS.DEVICE_ID);
+  if (!id || typeof id !== 'string' || id.length < 8 || id.length > 64 || !/^[A-Za-z0-9_-]+$/.test(id)) {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      id = crypto.randomUUID();
+    } else {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      id = 'dev-' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    localStorage.setItem(STORAGE_KEYS.DEVICE_ID, id);
   }
-  return Math.abs(hash).toString(16).toUpperCase().padStart(4, '0').slice(-4);
+  return id;
 }
 
-function verifyLicenseKey(rawKey, targetPhone = null) {
-  if (!rawKey) return { valid: false, isMaster: false, phone: null, reason: 'Empty key' };
-  const key = rawKey.trim().toUpperCase();
+function base64UrlToString(b64u) {
+  if (!b64u) return '';
+  let b64 = b64u.replace(/-/g, '+').replace(/_/g, '/');
+  while (b64.length % 4) b64 += '=';
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new TextDecoder().decode(bytes);
+}
 
-  // License Key Format: STAY-<CLEAN_PHONE>-<HASH1>-<HASH2>
-  // e.g. STAY-60123456789-3F1A-B4C2
-  const parts = key.split('-');
-  if (parts.length === 4 && parts[0] === 'STAY') {
-    const keyPhone = parts[1];
-    const hash1 = parts[2];
-    const hash2 = parts[3];
+function base64UrlToArrayBuffer(b64u) {
+  if (!b64u) return new ArrayBuffer(0);
+  let b64 = b64u.replace(/-/g, '+').replace(/_/g, '/');
+  while (b64.length % 4) b64 += '=';
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
 
-    // Phone format check: 8 to 15 digits; signature parts must be 4 hex characters
-    if (/^\d{8,15}$/.test(keyPhone) && /^[0-9A-F]{4}$/.test(hash1) && /^[0-9A-F]{4}$/.test(hash2)) {
-      if (targetPhone) {
-        const cleanTarget = normalizePhoneNumber(targetPhone);
-        if (cleanTarget && cleanTarget !== keyPhone) {
-          return { valid: false, isMaster: false, phone: keyPhone, reason: 'Phone mismatch' };
-        }
-      }
-      return { valid: true, isMaster: false, phone: keyPhone, key };
+let cachedCryptoPublicKey = null;
+async function getCryptoPublicKey() {
+  if (cachedCryptoPublicKey) return cachedCryptoPublicKey;
+  if (!window.crypto || !window.crypto.subtle) {
+    throw new Error('WebCrypto subtle is not supported in this environment');
+  }
+  cachedCryptoPublicKey = await window.crypto.subtle.importKey(
+    'jwk',
+    LICENSE_PUBLIC_KEY_JWK,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['verify']
+  );
+  return cachedCryptoPublicKey;
+}
+
+async function verifyLicenseToken(token) {
+  if (!token || typeof token !== 'string') {
+    return { valid: false, error: 'Empty token' };
+  }
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    return { valid: false, error: 'Malformed token structure' };
+  }
+
+  const [encodedHeader, encodedPayload, encodedSignature] = parts;
+  const dataToVerify = `${encodedHeader}.${encodedPayload}`;
+  const signatureBytes = base64UrlToArrayBuffer(encodedSignature);
+
+  try {
+    const publicKey = await getCryptoPublicKey();
+    const isValid = await window.crypto.subtle.verify(
+      { name: 'ECDSA', hash: { name: 'SHA-256' } },
+      publicKey,
+      signatureBytes,
+      new TextEncoder().encode(dataToVerify)
+    );
+
+    if (!isValid) {
+      return { valid: false, error: 'Invalid cryptographic signature' };
+    }
+
+    const payload = JSON.parse(base64UrlToString(encodedPayload));
+    return { valid: true, payload };
+  } catch (err) {
+    return { valid: false, error: err.message || 'Verification failed' };
+  }
+}
+
+async function evaluateLicenseState() {
+  const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  if (!token) {
+    appState.isLicensed = false;
+    appState.licenseToken = null;
+    appState.licensePayload = null;
+    appState.licenseDaysRemaining = 0;
+    appState.proHubState = 'UNLICENSED';
+    return { isLicensed: false };
+  }
+
+  const verification = await verifyLicenseToken(token);
+  if (!verification.valid) {
+    console.warn('[License Engine] Token rejected:', verification.error);
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    appState.isLicensed = false;
+    appState.licenseToken = null;
+    appState.licensePayload = null;
+    appState.licenseDaysRemaining = 0;
+    appState.proHubState = 'UNLICENSED';
+    return { isLicensed: false, error: verification.error };
+  }
+
+  const payload = verification.payload;
+  const currentDeviceId = getOrCreateDeviceId();
+
+  // Enforce device-binding
+  if (!payload.deviceId || payload.deviceId !== currentDeviceId) {
+    console.warn('[License Engine] Token deviceId mismatch. Registered:', payload.deviceId, 'Current:', currentDeviceId);
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    appState.isLicensed = false;
+    appState.licenseToken = null;
+    appState.licensePayload = null;
+    appState.licenseDaysRemaining = 0;
+    appState.proHubState = 'UNLICENSED';
+    return { isLicensed: false, error: 'DEVICE_MISMATCH' };
+  }
+
+  // Monotonic device clock verification (prevent backward clock rollback)
+  const nowMs = Date.now();
+  const savedLastSeen = localStorage.getItem(STORAGE_KEYS.LAST_SEEN_AT);
+  if (savedLastSeen) {
+    const lastSeenMs = parseInt(savedLastSeen, 10);
+    // If device clock is earlier than lastSeenAt by more than 1 day (86400 * 1000 ms)
+    if (!isNaN(lastSeenMs) && (lastSeenMs - nowMs > 86400 * 1000)) {
+      console.warn('[License Engine] Device clock rolled back! lastSeenAt:', new Date(lastSeenMs), 'current:', new Date(nowMs));
+      appState.isLicensed = false;
+      appState.licenseToken = token;
+      appState.licensePayload = payload;
+      appState.licenseDaysRemaining = 0;
+      appState.proHubState = 'CLOCK_ERROR';
+      return { isLicensed: false, clockError: true };
     }
   }
 
-  return { valid: false, isMaster: false, phone: null, reason: 'Invalid signature format' };
+  // Update last seen to current time if current time is >= lastSeen
+  const lastSeenMs = savedLastSeen ? parseInt(savedLastSeen, 10) : 0;
+  if (isNaN(lastSeenMs) || nowMs >= lastSeenMs) {
+    localStorage.setItem(STORAGE_KEYS.LAST_SEEN_AT, nowMs.toString());
+  }
+
+  const nowSec = Math.floor(nowMs / 1000);
+  const expSec = parseInt(payload.exp, 10) || 0;
+  const daysRemaining = Math.max(0, Math.floor((expSec - nowSec) / 86400));
+
+  appState.licenseToken = token;
+  appState.licensePayload = payload;
+  appState.licenseDaysRemaining = daysRemaining;
+
+  if (nowSec > expSec) {
+    // Token expired locally
+    appState.isLicensed = false;
+    appState.proHubState = 'NEEDS_RECONNECT';
+    return { isLicensed: false, expired: true, daysRemaining: 0 };
+  }
+
+  // Token valid and unexpired
+  appState.isLicensed = true;
+  appState.proHubState = navigator.onLine ? 'ACTIVE' : 'OFFLINE';
+  return { isLicensed: true, payload, daysRemaining };
+}
+
+function formatLicenseDate(sec, lang = 'en') {
+  if (!sec) return '-';
+  const d = new Date(sec * 1000);
+  return d.toLocaleDateString(lang === 'bm' ? 'ms-MY' : 'en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
+function getLicenseErrorMessage(errorCode, lang = 'en') {
+  const isBM = lang === 'bm';
+  switch (errorCode) {
+    case 'CLOCK_ERROR':
+      return isBM
+        ? 'Jam peranti anda tidak tepat (lebih awal daripada rekod sebelum ini). Sila betulkan tarikh & masa telefon anda atau sambung ke internet.'
+        : 'Your device clock is earlier than previously recorded. Please set your device date and time correctly or connect to the internet.';
+    case 'INVALID_CREDENTIALS':
+      return isBM
+        ? 'Kunci lesen atau nombor telefon WhatsApp tidak sah. Sila semak semula maklumat anda.'
+        : 'Invalid license key or WhatsApp phone number. Please verify your details.';
+    case 'REVOKED':
+      return isBM
+        ? 'Kunci lesen ini telah dibatalkan oleh pentadbir. Sila hubungi penjual di WhatsApp.'
+        : 'This license key has been revoked. Please contact the seller on WhatsApp.';
+    case 'DEVICE_LIMIT_REACHED':
+      return isBM
+        ? 'Had maksimum peranti telah dicapai untuk lesen ini. Sila hubungi penjual di WhatsApp untuk menetapkan semula senarai peranti.'
+        : 'Maximum device limit reached for this license. Please contact the seller on WhatsApp to reset your registered devices.';
+    case 'RATE_LIMITED':
+      return isBM
+        ? 'Terlalu banyak percubaan gagal dari alamat IP anda. Sila tunggu 15 minit sebelum mencuba lagi.'
+        : 'Too many failed attempts from your IP address. Please wait 15 minutes before trying again.';
+    case 'DEVICE_RESET':
+      return isBM
+        ? 'Pendaftaran peranti anda telah diset semula oleh pentadbir. Sila aktifkan semula menggunakan kunci lesen anda.'
+        : 'Your device registration was reset by admin. Please re-activate using your license key.';
+    case 'TOKEN_EXPIRED':
+      return isBM
+        ? 'Sesi lesen anda telah tamat tempoh lebih 30 hari. Sila aktifkan semula menggunakan kunci lesen anda.'
+        : 'Your license session expired more than 30 days ago. Please re-activate with your license key.';
+    case 'INVALID_TOKEN':
+      return isBM
+        ? 'Token pengesahan lesen tidak sah. Sila aktifkan semula aplikasi.'
+        : 'The license verification token is invalid. Please re-activate.';
+    case 'LICENSE_NOT_FOUND':
+      return isBM
+        ? 'Rekod lesen tidak dijumpai di pelayan. Sila pastikan kunci lesen anda sah.'
+        : 'License record not found on the server. Please verify your license key.';
+    case 'MISSING_FIELDS':
+      return isBM
+        ? 'Sila masukkan kedua-dua nombor telefon WhatsApp dan kunci lesen anda.'
+        : 'Please enter both your WhatsApp phone number and license key.';
+    case 'INVALID_DEVICE_ID':
+      return isBM
+        ? 'Pengesahan identiti peranti gagal. Sila muat semula halaman dan cuba lagi.'
+        : 'Device identification check failed. Please refresh the page and try again.';
+    case 'PAYLOAD_TOO_LARGE':
+      return isBM
+        ? 'Data permintaan terlalu besar. Sila cuba lagi.'
+        : 'Request data was too large. Please try again.';
+    case 'SERVER_ERROR':
+      return isBM
+        ? 'Pelayan lesen mengalami ralat sementara. Sila cuba sebentar lagi.'
+        : 'The license server encountered a temporary error. Please try again in a few moments.';
+    default:
+      return isBM
+        ? 'Tidak dapat menyambung ke pelayan lesen. Sila periksa sambungan internet anda.'
+        : 'Unable to reach the license server. Please verify your internet connection.';
+  }
+}
+
+async function activateWithServer(rawKey, rawPhone) {
+  if (!rawKey || !rawPhone) {
+    const err = new Error('Missing fields');
+    err.code = 'MISSING_FIELDS';
+    throw err;
+  }
+
+  const cleanKey = rawKey.trim().toUpperCase();
+  const cleanPhone = normalizePhoneNumber(rawPhone);
+  const deviceId = getOrCreateDeviceId();
+
+  const response = await fetch(`${LICENSE_API_URL}/activate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      key: cleanKey,
+      phone: cleanPhone,
+      deviceId: deviceId
+    })
+  });
+
+  const data = await response.json().catch(() => ({ error: 'SERVER_ERROR' }));
+
+  if (!response.ok || !data.success || !data.token) {
+    const err = new Error(data.message || 'Activation failed');
+    err.code = data.error || 'SERVER_ERROR';
+    throw err;
+  }
+
+  localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+  appState.licenseToken = data.token;
+  appState.licenseKey = cleanKey;
+  if (cleanPhone) {
+    appState.settings.ownerPhone = '+' + cleanPhone;
+  }
+
+  await evaluateLicenseState();
+  saveToStorage();
+  return data;
 }
 
 function openLicenseModal() {
   const phoneInput = document.getElementById('licensePhoneInput');
   const keyInput = document.getElementById('licenseKeyInput');
-  
+
   if (phoneInput) phoneInput.value = appState.settings.ownerPhone || '';
   if (keyInput) keyInput.value = appState.licenseKey || '';
-  
+
   document.getElementById('licenseModal').classList.add('active');
 }
 
-function handleActivateLicenseSubmit(e) {
+async function handleActivateLicenseSubmit(e) {
   e.preventDefault();
-  const inputPhone = document.getElementById('licensePhoneInput').value.trim();
-  const inputKey = document.getElementById('licenseKeyInput').value.trim().toUpperCase();
+  const isBM = appState.settings.language === 'bm';
+  const phoneInput = document.getElementById('licensePhoneInput');
+  const keyInput = document.getElementById('licenseKeyInput');
+  const submitBtn = document.getElementById('btnActivateLicenseSubmit');
 
-  if (!inputKey) {
-    alert('Please enter your license key.');
+  const inputPhone = phoneInput ? phoneInput.value.trim() : '';
+  const inputKey = keyInput ? keyInput.value.trim().toUpperCase() : '';
+
+  if (!inputKey || !inputPhone) {
+    alert(isBM 
+      ? 'Sila masukkan nombor WhatsApp dan kunci lesen anda.' 
+      : 'Please enter both your WhatsApp phone number and license key.');
     return;
   }
 
-  const result = verifyLicenseKey(inputKey, inputPhone);
+  const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${isBM ? 'Mengesahkan Lesen...' : 'Activating App...'}`;
+  }
 
-  if (result.valid) {
-    appState.isLicensed = true;
-    appState.licenseKey = inputKey;
-    appState.isMasterAdmin = false;
-
-    if (result.phone) {
-      appState.settings.ownerPhone = '+' + result.phone;
-      appState.settings.sellerPhone = '+' + result.phone;
-    } else if (inputPhone) {
-      appState.settings.ownerPhone = inputPhone;
-    }
-
-    saveToStorage();
+  try {
+    await activateWithServer(inputKey, inputPhone);
     closeAllModals();
     renderApp();
-    showToast('🎉 Congratulations! Lifetime License activated successfully!');
-  } else {
-    if (result.reason === 'Phone mismatch') {
-      alert(`⚠️ License Key mismatch!\n\nThis license key is locked to phone number: +${result.phone}.\nPlease ensure you enter the registered phone number.`);
+    showToast(isBM ? '🎉 Tahniah! Lesen Pro berjaya diaktifkan!' : '🎉 Congratulations! Pro License activated successfully!');
+  } catch (err) {
+    const errorCode = err.code || 'SERVER_ERROR';
+    const friendlyMsg = getLicenseErrorMessage(errorCode, isBM ? 'bm' : 'en');
+
+    if (errorCode === 'REVOKED' || errorCode === 'DEVICE_LIMIT_REACHED') {
+      if (confirm(`${friendlyMsg}\n\n${isBM ? 'Adakah anda mahu menghubungi penjual melalui WhatsApp sekarang?' : 'Would you like to contact the seller on WhatsApp now?'}`)) {
+        handleBuyLicenseRedirect();
+      }
     } else {
-      alert('❌ Invalid License Key.\n\nPlease verify your registered WhatsApp number and license key, or contact support via WhatsApp to get a valid key.');
+      alert(`❌ ${friendlyMsg}`);
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnHtml;
+    }
+  }
+}
+
+async function checkAndRefreshTokenSilently(forceCheck = false) {
+  if (!navigator.onLine) {
+    if (appState.isLicensed) appState.proHubState = 'OFFLINE';
+    return;
+  }
+
+  const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  if (!token) return;
+
+  await evaluateLicenseState();
+  const payload = appState.licensePayload;
+  if (!payload) return;
+
+  const nowSec = Math.floor(Date.now() / 1000);
+  const tokenAgeSec = nowSec - (payload.iat || 0);
+  const isOlderThan7Days = tokenAgeSec >= 7 * 86400;
+
+  if (!isOlderThan7Days && !forceCheck && appState.isLicensed) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${LICENSE_API_URL}/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ token })
+    });
+
+    const data = await response.json().catch(() => ({ error: 'SERVER_ERROR' }));
+    const isBM = appState.settings.language === 'bm';
+
+    if (response.ok && data.success && data.token) {
+      localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+      localStorage.setItem(STORAGE_KEYS.LAST_SEEN_AT, Date.now().toString());
+      appState.licenseToken = data.token;
+      await evaluateLicenseState();
+      appState.proHubState = 'ACTIVE';
+      renderApp();
+      console.log('[License Engine] Token refreshed silently. Valid for 60 days.');
+      return;
+    }
+
+    const errorCode = data.error || 'SERVER_ERROR';
+
+    if (errorCode === 'REVOKED') {
+      appState.isLicensed = false;
+      appState.licenseToken = null;
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      appState.proHubState = 'REVOKED';
+      renderApp();
+      alert(isBM 
+        ? '🚫 Kunci lesen anda telah dibatalkan oleh pentadbir. Sila hubungi penjual di WhatsApp.' 
+        : '🚫 Your license has been revoked by admin. Please contact the seller on WhatsApp.');
+      return;
+    }
+
+    if (errorCode === 'DEVICE_RESET') {
+      appState.isLicensed = false;
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      appState.proHubState = 'DEVICE_RESET';
+      renderApp();
+      alert(isBM 
+        ? '🔄 Pendaftaran peranti anda telah diset semula. Sila aktifkan semula menggunakan kunci lesen anda.' 
+        : '🔄 Your device registration was reset by admin. Please re-activate using your license key.');
+      openLicenseModal();
+      return;
+    }
+
+    if (errorCode === 'TOKEN_EXPIRED') {
+      appState.isLicensed = false;
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      appState.proHubState = 'NEEDS_RECONNECT';
+      renderApp();
+      alert(isBM 
+        ? '⏱️ Sesi lesen anda telah tamat tempoh lebih 30 hari. Sila aktifkan semula menggunakan kunci lesen anda.' 
+        : '⏱️ Your license session has expired. Please re-activate using your license key.');
+      openLicenseModal();
+      return;
+    }
+
+    if (errorCode === 'LICENSE_NOT_FOUND' || errorCode === 'INVALID_TOKEN') {
+      appState.isLicensed = false;
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      appState.proHubState = 'UNLICENSED';
+      renderApp();
+      return;
+    }
+  } catch (netErr) {
+    console.warn('[License Engine] Network error during refresh:', netErr);
+    // Network error must NOT lock Pro if local token is still within validity
+    if (appState.isLicensed) {
+      appState.proHubState = 'SERVER_UNREACHABLE';
     }
   }
 }
 
 function handleBuyLicenseRedirect() {
   const sellerDigits = (SELLER_WHATSAPP || '').replace(/[^0-9]/g, '');
-  const message = `Hi! I am using the StayManager Homestay app demo and would like to buy the Lifetime License. Please provide the price and payment details. Thank you!`;
+  const devId = getOrCreateDeviceId().slice(0, 8);
+  const isBM = appState.settings.language === 'bm';
+  const message = isBM
+    ? `Salam, saya menggunakan aplikasi StayManager Homestay (ID Peranti: ${devId}). Saya ingin bertanya mengenai pembelian/bantuan Lesen Pro Seumur Hidup. Terima kasih!`
+    : `Hi! I am using the StayManager Homestay app (Device ID: ${devId}). I would like to inquire about purchasing/support for the Lifetime Pro License. Thank you!`;
   const url = `https://wa.me/${sellerDigits}?text=${encodeURIComponent(message)}`;
   window.open(url, '_blank');
 }
@@ -4776,7 +5133,7 @@ function renderHeader() {
   if (demoBtn) {
     if (appState.isLicensed) {
       demoBtn.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> <span class="demo-badge-text" style="color:var(--success-text); font-weight:800;">Pro</span>`;
-      demoBtn.title = 'Lifetime Pro Active';
+      demoBtn.title = (appState.currentLang === 'bm' ? 'Lesen Pro Aktif' : 'Pro Active');
       demoBtn.style.background = 'var(--success-light)';
       demoBtn.style.borderColor = 'rgba(16, 185, 129, 0.4)';
     } else {
@@ -6688,9 +7045,14 @@ function renderSettingsTab() {
   const adminGenCard = document.getElementById('adminLicenseGenCard');
 
   if (appState.isLicensed) {
-    const boundPhone = (appState.licenseKey && appState.licenseKey.split('-')[1]) || appState.settings.ownerPhone;
-    subTitle.textContent = `Key: ${appState.licenseKey} (${isBM ? 'Terkunci ke' : 'Tied to'} +${boundPhone})`;
-    badge.textContent = isBM ? '✨ LESEN AKTIF' : '✨ LIFETIME ACTIVE';
+    const boundPhone = appState.licensePayload?.phone || appState.settings.ownerPhone || '';
+    const maskedDev = getOrCreateDeviceId().slice(0, 8) + '...';
+    const daysLeft = appState.licenseDaysRemaining || 0;
+    const nextCheckDateStr = formatLicenseDate((appState.licensePayload?.iat || 0) + 7 * 86400, isBM ? 'bm' : 'en');
+    const renewalDateStr = formatLicenseDate(appState.licensePayload?.exp || 0, isBM ? 'bm' : 'en');
+
+    subTitle.textContent = `${isBM ? 'Terkunci ke WhatsApp' : 'Tied to WhatsApp'}: +${boundPhone} • ${isBM ? 'Semakan' : 'Next check'}: ${nextCheckDateStr}`;
+    badge.textContent = isBM ? '✨ LESEN PRO AKTIF' : '✨ PRO ACTIVE';
     badge.style.background = 'var(--success-light)';
     badge.style.color = 'var(--success-text)';
     if (adminGenCard) adminGenCard.classList.add('hidden');
@@ -6699,15 +7061,20 @@ function renderSettingsTab() {
       <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); margin-bottom:10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <span style="font-size:12px; font-weight:700; color:var(--text-main);">
-            <i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> ${isBM ? 'Sistem Pro Diaktifkan' : 'Pro Lifetime License'}
+            <i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> ${isBM ? 'Sistem Pro Aktif' : 'StayManager Pro'}
           </span>
           <span style="font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px; background:var(--primary-light); color:var(--primary-text);">
             v${APP_VERSION}
           </span>
         </div>
         <p style="font-size:11.5px; color:var(--text-muted); margin:0 0 10px 0;">
-          <i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${isBM ? 'Akses penuh tanpa had & data peribadi luar talian aktif.' : 'Full unlimited access & private offline data active.'}
+          <i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${isBM ? 'Akses penuh tanpa had & pengesahan kriptografi selamat aktif.' : 'Full unlimited access & secure cryptographic verification active.'}
         </p>
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px; display:flex; flex-direction:column; gap:4px; line-height:1.4;">
+          <div><i class="fa-solid fa-mobile-screen"></i> <strong>${isBM ? 'ID Peranti' : 'Device ID'}:</strong> <code>${maskedDev}</code></div>
+          <div><i class="fa-solid fa-arrows-rotate"></i> <strong>${isBM ? 'Semakan Seterusnya' : 'Next Check'}:</strong> ${nextCheckDateStr}</div>
+          <div><i class="fa-solid fa-calendar-check"></i> <strong>${isBM ? 'Tarikh Pembaharuan' : 'Renewal Date'}:</strong> ${renewalDateStr} (${daysLeft} ${isBM ? 'hari lagi' : 'days remaining'})</div>
+        </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button type="button" class="btn btn-primary btn-sm" id="btnLicenseCheckUpdates" style="font-weight:700; flex:1; min-width:140px; justify-content:center;">
             <i class="fa-solid fa-rotate"></i> ${isBM ? 'Semak Kemas Kini' : 'Check for Updates'}
@@ -6718,7 +7085,7 @@ function renderSettingsTab() {
         </div>
         <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border-color); display:flex; justify-content:space-between; align-items:center;">
           <span style="font-size:11px; color:var(--text-muted);">
-            <i class="fa-solid fa-clock-rotate-left"></i> Zero Data Loss Update
+            <i class="fa-solid fa-shield-halved"></i> Cloudflare Workers KV
           </span>
           <button type="button" class="btn btn-outline btn-xs" id="btnChangeLicenseKey">
             <i class="fa-solid fa-arrows-rotate"></i> ${isBM ? 'Tukar Lesen' : 'Change Key'}
@@ -13578,9 +13945,7 @@ async function exportDataBackup() {
     depositReceiptCounter: appState.depositReceiptCounter || 1001,
     paymentReceiptCounter: appState.paymentReceiptCounter || 1001,
     refundCounter: appState.refundCounter || 1001,
-    images: images,
-    licenseKey: appState.licenseKey || '',
-    isLicensed: appState.isLicensed || false
+    images: images
   };
 
   const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportObject, null, 2));
@@ -13647,7 +14012,6 @@ function importDataBackup(event) {
       }
 
       // 1. SAVE SAFETY SNAPSHOT OF CURRENT DATA BEFORE OVERWRITING (Undo safety)
-      const deviceOwnerPhone = normalizePhoneNumber(appState.settings?.ownerPhone || '');
       const preRestoreSnapshot = {
         version: APP_VERSION,
         backupDate: new Date().toISOString(),
@@ -13662,9 +14026,7 @@ function importDataBackup(event) {
         invoiceCounter: appState.invoiceCounter || 1001,
         depositReceiptCounter: appState.depositReceiptCounter || 1001,
         paymentReceiptCounter: appState.paymentReceiptCounter || 1001,
-        refundCounter: appState.refundCounter || 1001,
-        licenseKey: appState.licenseKey || '',
-        isLicensed: appState.isLicensed || false
+        refundCounter: appState.refundCounter || 1001
       };
       localStorage.setItem('staymanager_pre_restore_snapshot', JSON.stringify(preRestoreSnapshot));
       localStorage.setItem('staymanager_auto_backup', JSON.stringify(preRestoreSnapshot));
@@ -13711,35 +14073,9 @@ function importDataBackup(event) {
         }
       }
 
-      // 4. RESTORE LICENSE STRICT VALIDATION
-      // Ignore data.isLicensed and data.isMasterAdmin completely.
-      // Only restore a license if data.licenseKey verifies, AND the key's bound phone matches the owner phone on this device.
-      let showLicenseMismatchAlert = false;
-
-      if (data.licenseKey && typeof data.licenseKey === 'string') {
-        const check = verifyLicenseKey(data.licenseKey, deviceOwnerPhone || null);
-        if (check.valid && deviceOwnerPhone && check.phone === deviceOwnerPhone) {
-          appState.isLicensed = true;
-          appState.licenseKey = data.licenseKey;
-          appState.isMasterAdmin = false;
-          localStorage.setItem(STORAGE_KEYS.LICENSE, JSON.stringify({
-            key: data.licenseKey,
-            isLicensed: true,
-            activatedAt: new Date().toISOString()
-          }));
-        } else {
-          appState.isLicensed = false;
-          appState.licenseKey = '';
-          appState.isMasterAdmin = false;
-          localStorage.removeItem(STORAGE_KEYS.LICENSE);
-          showLicenseMismatchAlert = true;
-        }
-      } else {
-        appState.isLicensed = false;
-        appState.licenseKey = '';
-        appState.isMasterAdmin = false;
-        localStorage.removeItem(STORAGE_KEYS.LICENSE);
-      }
+      // 4. PRESERVE DEVICE'S EXISTING LICENSE
+      // Backups never contain or override the device's cryptographic license token.
+      await evaluateLicenseState();
 
       // Run image migration on any legacy unmigrated base64 that came from the backup
       await migrateImagesToIndexedDB();
@@ -13753,14 +14089,6 @@ function importDataBackup(event) {
       showToast(isLangBm 
         ? '🎉 Salinan sandaran (termasuk Imej, Pasukan & Tempahan) berjaya dipulihkan!' 
         : '🎉 Full backup (including Images, Team & Bookings) restored successfully!');
-
-      if (showLicenseMismatchAlert) {
-        setTimeout(() => {
-          alert(isLangBm
-            ? 'ℹ️ Makluman Lesen Pro: Lesen tidak dipulihkan secara automatik kerana nombor telefon pemilik peranti ini tidak sepadan dengan lesen dalam fail sandaran. Sila masukkan semula Kunci Lesen Pro anda di menu Tetapan jika ini peranti sah anda.'
-            : 'ℹ️ Pro License Notice: Pro license was not restored automatically because this device\'s owner phone does not match the key in the backup. Please re-activate with your Pro license key in Settings if this is your device.');
-        }, 500);
-      }
     } catch (err) {
       console.error('Backup restore error:', err);
       alert(isLangBm ? `Ralat membaca fail sandaran: ${err.message}` : `Error parsing backup file: ${err.message}`);
@@ -13772,7 +14100,7 @@ function importDataBackup(event) {
   reader.readAsText(file);
 }
 
-function restoreAutoBackup() {
+async function restoreAutoBackup() {
   const autoBackupStr = localStorage.getItem('staymanager_pre_restore_snapshot') || localStorage.getItem('staymanager_auto_backup');
   if (!autoBackupStr) {
     alert(t('no_auto_backup_found'));
@@ -13801,23 +14129,8 @@ function restoreAutoBackup() {
       if (Array.isArray(data.promotionalMedia)) appState.promotionalMedia = data.promotionalMedia;
       if (data.settings) appState.settings = { ...DEFAULT_SETTINGS, ...data.settings };
       
-      // Strict license restore: only if key passes verifyLicenseKey with current ownerPhone
-      if (data.licenseKey) {
-        const check = verifyLicenseKey(data.licenseKey, appState.settings?.ownerPhone);
-        if (check.valid) {
-          appState.isLicensed = true;
-          appState.licenseKey = data.licenseKey;
-          appState.isMasterAdmin = false;
-        } else {
-          appState.isLicensed = false;
-          appState.licenseKey = '';
-          appState.isMasterAdmin = false;
-        }
-      } else {
-        appState.isLicensed = false;
-        appState.licenseKey = '';
-        appState.isMasterAdmin = false;
-      }
+      // Preserve device's active cryptographic license token
+      await evaluateLicenseState();
 
       saveToStorage();
       renderApp();
@@ -13829,9 +14142,13 @@ function restoreAutoBackup() {
 }
 
 function resetAllData() {
-  if (confirm('Are you sure you want to clear all homestays, bookings, turnovers, and expenses? Your license key and preferences will be preserved.')) {
+  if (confirm('Are you sure you want to clear all homestays, bookings, turnovers, and expenses? Your license and preferences will be preserved.')) {
     const preservedLicense = appState.licenseKey;
     const preservedIsLicensed = appState.isLicensed;
+    const preservedToken = appState.licenseToken;
+    const preservedPayload = appState.licensePayload;
+    const preservedDays = appState.licenseDaysRemaining;
+    const preservedProState = appState.proHubState;
     const preservedSettings = { ...appState.settings };
 
     appState.properties = [];
@@ -13842,6 +14159,10 @@ function resetAllData() {
     appState.promotionalMedia = [];
     appState.selectedPropertyId = 'all';
     appState.isLicensed = preservedIsLicensed;
+    appState.licenseToken = preservedToken;
+    appState.licensePayload = preservedPayload;
+    appState.licenseDaysRemaining = preservedDays;
+    appState.proHubState = preservedProState;
     appState.licenseKey = preservedLicense;
     appState.isMasterAdmin = false;
     appState.settings = preservedSettings;
@@ -14500,6 +14821,8 @@ function openProSystemModal() {
   const verText = document.getElementById('proModalVersionText');
   const titleEl = document.getElementById('proModalTitle');
   const subEl = document.getElementById('proModalSub');
+  const iconEl = document.getElementById('proModalIcon');
+  const detailsEl = document.getElementById('proModalDetailsContainer');
 
   if (titleEl) {
     titleEl.textContent = isBM ? 'Hab Sistem StayManager Pro' : 'StayManager Pro Hub';
@@ -14507,29 +14830,281 @@ function openProSystemModal() {
   if (subEl) {
     subEl.textContent = isBM ? 'Status Akaun & Akses Pantas' : 'System Status & Quick Tools';
   }
+  if (verText) {
+    verText.textContent = `v${APP_VERSION}`;
+  }
 
-  if (statusText) {
-    const isOffline = !navigator.onLine;
+  // Derive current state
+  const devId = getOrCreateDeviceId();
+  const maskedDev = devId.slice(0, 8) + '...';
+  const boundPhone = appState.licensePayload?.phone || (appState.settings.ownerPhone ? normalizePhoneNumber(appState.settings.ownerPhone) : '');
+  const daysLeft = appState.licenseDaysRemaining || 0;
+  const isOnline = navigator.onLine;
 
-    if (appState.isLicensed && appState.licenseKey) {
-      const check = verifyLicenseKey(appState.licenseKey, appState.settings?.ownerPhone);
-      if (check.valid) {
-        statusText.textContent = isOffline 
-          ? (isBM ? '✨ LESEN PRO SEUMUR HIDUP (Luar Talian)' : '✨ LIFETIME PRO ACTIVE (Offline)')
-          : (isBM ? '✨ LESEN PRO SEUMUR HIDUP' : '✨ LIFETIME PRO ACTIVE');
-        statusText.style.color = 'var(--success)';
-      } else {
-        statusText.textContent = isBM ? '⚠️ KUNCI TIDAK SAH' : '⚠️ INVALID LICENSE';
-        statusText.style.color = 'var(--danger)';
-      }
-    } else {
-      statusText.textContent = isBM ? '⏱️ MOD PERCUBAAN / DEMO' : '⏱️ TRIAL / FREE DEMO';
-      statusText.style.color = 'var(--warning)';
+  let state = appState.proHubState || 'UNLICENSED';
+
+  // Dynamic real-time adjustment
+  if (appState.isLicensed) {
+    if (!isOnline) {
+      state = 'OFFLINE';
+    } else if (state !== 'SERVER_UNREACHABLE') {
+      state = 'ACTIVE';
     }
   }
 
-  if (verText) {
-    verText.textContent = `v${APP_VERSION}`;
+  let statusLabel = '';
+  let statusColor = 'var(--text-main)';
+  let iconClass = 'fa-circle-check';
+  let iconColor = 'var(--success)';
+  let detailsHtml = '';
+
+  switch (state) {
+    case 'CHECKING':
+      statusLabel = isBM ? '⏳ Menyemak Status...' : '⏳ Checking Status...';
+      statusColor = 'var(--text-muted)';
+      iconClass = 'fa-circle-notch fa-spin';
+      iconColor = 'var(--primary)';
+      detailsHtml = `
+        <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:12px; color:var(--text-muted);">
+          ${isBM ? 'Sedang menyemak token lesen dengan pelayan...' : 'Validating cryptographic license token with server...'}
+        </div>
+      `;
+      break;
+
+    case 'ACTIVE':
+      statusLabel = isBM ? '✨ LESEN PRO AKTIF' : '✨ PRO ACTIVE';
+      statusColor = 'var(--success)';
+      iconClass = 'fa-circle-check';
+      iconColor = 'var(--success)';
+      const activeNextCheck = formatLicenseDate((appState.licensePayload?.iat || 0) + 7 * 86400, isBM ? 'bm' : 'en');
+      const activeRenewal = formatLicenseDate(appState.licensePayload?.exp || 0, isBM ? 'bm' : 'en');
+      detailsHtml = `
+        <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:12px; line-height:1.5;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="color:var(--text-muted);"><i class="fa-solid fa-mobile-screen"></i> ${isBM ? 'ID Peranti' : 'Device ID'}:</span>
+            <code style="font-weight:700;">${maskedDev}</code>
+          </div>
+          ${boundPhone ? `
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="color:var(--text-muted);"><i class="fa-brands fa-whatsapp"></i> WhatsApp:</span>
+            <span style="font-weight:700;">+${boundPhone}</span>
+          </div>` : ''}
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="color:var(--text-muted);"><i class="fa-solid fa-arrows-rotate"></i> ${isBM ? 'Semakan Seterusnya' : 'Next Check'}:</span>
+            <span style="font-weight:700;">${activeNextCheck}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="color:var(--text-muted);"><i class="fa-solid fa-calendar-check"></i> ${isBM ? 'Tarikh Pembaharuan' : 'Renewal Date'}:</span>
+            <span style="font-weight:700; color:var(--primary);">${activeRenewal} (${daysLeft} ${isBM ? 'hari lagi' : 'days remaining'})</span>
+          </div>
+          <div style="margin-top:6px; font-size:11px; color:var(--text-muted); border-top:1px dashed var(--border-color); padding-top:6px;">
+            <i class="fa-solid fa-shield-halved" style="color:var(--primary); margin-right:4px;"></i>
+            ${isBM ? 'Disahkan melalui WebCrypto ECDSA P-256. Bersedia untuk operasi luar talian 100%.' : 'Verified via WebCrypto ECDSA P-256. 100% private offline-ready.'}
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'OFFLINE':
+      statusLabel = isBM 
+        ? `✨ LESEN PRO AKTIF (${daysLeft}H LUAR TALIAN)` 
+        : `✨ PRO ACTIVE (${daysLeft}d OFFLINE)`;
+      statusColor = 'var(--success)';
+      iconClass = 'fa-wifi-slash';
+      iconColor = 'var(--success)';
+      const offNextCheck = formatLicenseDate((appState.licensePayload?.iat || 0) + 7 * 86400, isBM ? 'bm' : 'en');
+      const offRenewal = formatLicenseDate(appState.licensePayload?.exp || 0, isBM ? 'bm' : 'en');
+      detailsHtml = `
+        <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:12px; line-height:1.5;">
+          <div style="margin-bottom:6px; font-weight:700; color:var(--success);">
+            <i class="fa-solid fa-circle-check"></i> ${isBM ? 'Mod Luar Talian Berfungsi Penuh' : 'Fully Functional Offline Mode'}
+          </div>
+          <div style="color:var(--text-muted); font-size:11.5px; margin-bottom:6px;">
+            ${isBM 
+              ? `Aplikasi berfungsi sepenuhnya tanpa internet. Semakan seterusnya pada ${offNextCheck}; pembaharuan pada ${offRenewal}.` 
+              : `App works 100% offline. Next check on ${offNextCheck}; renewal on ${offRenewal}.`}
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); border-top:1px dashed var(--border-color); padding-top:6px;">
+            <span>${isBM ? 'ID Peranti' : 'Device ID'}: <code>${maskedDev}</code></span>
+            <span>${isBM ? 'Pembaharuan' : 'Renewal'}: ${offRenewal}</span>
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'CLOCK_ERROR':
+      statusLabel = isBM ? '⚠️ RALAT JAM PERANTI' : '⚠️ DEVICE CLOCK ERROR';
+      statusColor = 'var(--warning)';
+      iconClass = 'fa-clock-rotate-left';
+      iconColor = 'var(--warning)';
+      detailsHtml = `
+        <div style="background:var(--warning-light); color:var(--warning-text); padding:12px; border-radius:var(--radius-md); border:1px solid rgba(245, 158, 11, 0.3); font-size:12px; line-height:1.5;">
+          <div style="font-weight:800; margin-bottom:4px;">
+            ${isBM ? 'Tarikh Peranti Tidak Tepat' : 'Device Clock Discrepancy'}
+          </div>
+          <div style="font-size:11.5px; margin-bottom:10px;">
+            ${isBM 
+              ? 'Jam peranti anda ditetapkan lebih awal daripada rekod penggunaan sebelum ini. Sila betulkan tarikh & masa pada tetapan telefon anda atau sambung ke internet untuk mengesahkan lesen.' 
+              : 'Your device clock is set earlier than previously recorded. Please set your device date & time correctly in system settings, or connect to the internet to verify your license.'}
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn btn-primary btn-sm btn-block" id="btnProReconnectNow">
+              <i class="fa-solid fa-rotate"></i> ${isBM ? 'Sambung & Sahkan' : 'Connect & Verify'}
+            </button>
+            <button type="button" class="btn btn-outline btn-sm btn-block" id="btnProReactivateModal">
+              <i class="fa-solid fa-key"></i> ${isBM ? 'Masukkan Kunci' : 'Enter Key'}
+            </button>
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'NEEDS_RECONNECT':
+      statusLabel = isBM ? '⚠️ PERLU SAMBUNGAN INTERNET' : '⚠️ NEEDS RECONNECT';
+      statusColor = 'var(--warning)';
+      iconClass = 'fa-triangle-exclamation';
+      iconColor = 'var(--warning)';
+      detailsHtml = `
+        <div style="background:var(--warning-light); color:var(--warning-text); padding:10px 12px; border-radius:var(--radius-md); border:1px solid rgba(245, 158, 11, 0.3); font-size:12px; line-height:1.5;">
+          <div style="font-weight:800; margin-bottom:4px;">
+            ${isBM ? 'Sesi Lesen Telah Tamat' : 'License Session Expired'}
+          </div>
+          <div style="font-size:11.5px; margin-bottom:8px;">
+            ${isBM 
+              ? 'Sila sambung ke internet untuk memperbaharui pengesahan lesen anda secara automatik atau masukkan semula kunci lesen.' 
+              : 'Please connect to the internet to auto-refresh your license verification, or re-enter your license key.'}
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn btn-primary btn-sm btn-block" id="btnProReconnectNow">
+              <i class="fa-solid fa-rotate"></i> ${isBM ? 'Segarkan Sambungan' : 'Reconnect & Refresh'}
+            </button>
+            <button type="button" class="btn btn-outline btn-sm btn-block" id="btnProReactivateModal">
+              <i class="fa-solid fa-key"></i> ${isBM ? 'Masukkan Kunci' : 'Enter Key'}
+            </button>
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'REVOKED':
+      statusLabel = isBM ? '🚫 LESEN DIBATALKAN' : '🚫 LICENSE REVOKED';
+      statusColor = 'var(--danger)';
+      iconClass = 'fa-ban';
+      iconColor = 'var(--danger)';
+      detailsHtml = `
+        <div style="background:var(--danger-light); color:var(--danger-text); padding:12px; border-radius:var(--radius-md); border:1px solid rgba(239, 68, 68, 0.3); font-size:12px; line-height:1.5;">
+          <div style="font-weight:800; margin-bottom:4px;">
+            ${isBM ? 'Lesen Dibatalkan oleh Pentadbir' : 'License Revoked by Admin'}
+          </div>
+          <div style="font-size:11.5px; margin-bottom:10px;">
+            ${isBM 
+              ? 'Kunci lesen ini telah dibatalkan. Sila hubungi penjual melalui WhatsApp untuk mengaktifkan semula akaun anda.' 
+              : 'This license key has been revoked. Please contact the seller on WhatsApp to restore your access.'}
+          </div>
+          <button type="button" class="btn btn-whatsapp btn-block" id="btnProContactSellerRevoked">
+            <i class="fa-brands fa-whatsapp"></i> ${isBM ? 'Hubungi Penjual di WhatsApp' : 'Contact Seller on WhatsApp'}
+          </button>
+        </div>
+      `;
+      break;
+
+    case 'DEVICE_LIMIT_REACHED':
+      statusLabel = isBM ? '⚠️ HAD PERANTI DICAPAI' : '⚠️ DEVICE LIMIT REACHED';
+      statusColor = 'var(--danger)';
+      iconClass = 'fa-mobile-screen-button';
+      iconColor = 'var(--danger)';
+      detailsHtml = `
+        <div style="background:var(--danger-light); color:var(--danger-text); padding:12px; border-radius:var(--radius-md); border:1px solid rgba(239, 68, 68, 0.3); font-size:12px; line-height:1.5;">
+          <div style="font-weight:800; margin-bottom:4px;">
+            ${isBM ? 'Had Maksimum Peranti Dicapai' : 'Maximum Devices Reached'}
+          </div>
+          <div style="font-size:11.5px; margin-bottom:10px;">
+            ${isBM 
+              ? 'Lesen ini telah digunakan pada bilangan peranti maksimum. Hubungi penjual untuk menetapkan semula senarai peranti anda.' 
+              : 'This license has been registered on the maximum allowed devices. Contact seller to reset registered devices.'}
+          </div>
+          <button type="button" class="btn btn-whatsapp btn-block" id="btnProContactSellerDevLimit">
+            <i class="fa-brands fa-whatsapp"></i> ${isBM ? 'Hubungi Penjual di WhatsApp' : 'Contact Seller on WhatsApp'}
+          </button>
+        </div>
+      `;
+      break;
+
+    case 'SERVER_UNREACHABLE':
+      statusLabel = isBM 
+        ? `🌐 PELAYAN LUAR TALIAN (Pro Aktif)` 
+        : `🌐 SERVER UNREACHABLE (Pro Active)`;
+      statusColor = 'var(--primary)';
+      iconClass = 'fa-cloud-slash';
+      iconColor = 'var(--primary)';
+      const unreachNextCheck = formatLicenseDate((appState.licensePayload?.iat || 0) + 7 * 86400, isBM ? 'bm' : 'en');
+      const unreachRenewal = formatLicenseDate(appState.licensePayload?.exp || 0, isBM ? 'bm' : 'en');
+      detailsHtml = `
+        <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:12px; line-height:1.5;">
+          <div style="font-weight:700; color:var(--primary); margin-bottom:4px;">
+            ${isBM ? 'Pelayan Lesen Tidak Dapat Dihubungi' : 'License Server Unreachable'}
+          </div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:6px;">
+            ${isBM 
+              ? `Tidak dapat menghubungi pelayan lesen sekarang, tetapi lesen Pro anda kekal aktif menggunakan token tempatan (${daysLeft} hari lagi). Tarikh semakan seterusnya: ${unreachNextCheck}; tarikh pembaharuan: ${unreachRenewal}.` 
+              : `Could not reach license server, but your Pro license remains fully active using local cryptographic token (${daysLeft} days remaining). Next check: ${unreachNextCheck}; renewal: ${unreachRenewal}.`}
+          </div>
+        </div>
+      `;
+      break;
+
+    default: // UNLICENSED / DEMO
+      statusLabel = isBM ? '⏱️ MOD PERCUBAAN / DEMO' : '⏱️ TRIAL / FREE DEMO';
+      statusColor = 'var(--warning)';
+      iconClass = 'fa-crown';
+      iconColor = 'var(--warning)';
+      detailsHtml = `
+        <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:12px; line-height:1.5;">
+          <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:8px;">
+            ${isBM 
+              ? 'Anda sedang menggunakan mod demo. Buka akses penuh tanpa had dengan Kunci Lesen Pro Seumur Hidup.' 
+              : 'You are using free demo mode. Unlock unlimited homestays, WhatsApp automation, and reports with a Lifetime Pro Key.'}
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn btn-primary btn-sm btn-block" id="btnProActivateDemo">
+              <i class="fa-solid fa-key"></i> ${isBM ? 'Aktifkan Lesen' : 'Activate License'}
+            </button>
+            <button type="button" class="btn btn-whatsapp btn-sm btn-block" id="btnProBuyDemo">
+              <i class="fa-brands fa-whatsapp"></i> ${isBM ? 'Beli Lesen' : 'Buy License'}
+            </button>
+          </div>
+        </div>
+      `;
+      break;
+  }
+
+  if (statusText) {
+    statusText.textContent = statusLabel;
+    statusText.style.color = statusColor;
+  }
+  if (iconEl) {
+    iconEl.className = `fa-solid ${iconClass}`;
+    iconEl.style.color = iconColor;
+  }
+  if (detailsEl) {
+    detailsEl.innerHTML = detailsHtml;
+
+    // Attach event listeners for dynamic action buttons
+    document.getElementById('btnProContactSellerRevoked')?.addEventListener('click', handleBuyLicenseRedirect);
+    document.getElementById('btnProContactSellerDevLimit')?.addEventListener('click', handleBuyLicenseRedirect);
+    document.getElementById('btnProReconnectNow')?.addEventListener('click', () => {
+      closeProSystemModal();
+      checkAndRefreshTokenSilently(true);
+    });
+    document.getElementById('btnProReactivateModal')?.addEventListener('click', () => {
+      closeProSystemModal();
+      openLicenseModal();
+    });
+    document.getElementById('btnProActivateDemo')?.addEventListener('click', () => {
+      closeProSystemModal();
+      openLicenseModal();
+    });
+    document.getElementById('btnProBuyDemo')?.addEventListener('click', handleBuyLicenseRedirect);
   }
 
   modal.classList.add('active');

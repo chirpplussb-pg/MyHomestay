@@ -1,5 +1,5 @@
-// Service Worker for Homestay Manager PWA - Version 2.7.11
-const CACHE_NAME = 'staymanager-cache-v2.7.11-live';
+// Service Worker for Homestay Manager PWA - Version 2.8.0
+const CACHE_NAME = 'staymanager-cache-v2.8.0-live';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -52,6 +52,11 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
+
+  // Never intercept or cache requests to the Cloudflare Worker license server, admin tool, or license-server
+  if (url.origin.includes('workers.dev') || url.pathname.includes('admin.html') || url.pathname.includes('license-server')) {
+    return;
+  }
 
   // 1. version.json is always 100% fresh from network
   if (url.pathname.includes('version.json')) {
