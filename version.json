@@ -1,1 +1,1 @@
-{"version":"2.8.1","releaseDate":"2026-10-16","changelog":"StayManager v2.8.1: Dedicated license purchase page integration with offline guards, split WhatsApp seller support channel with device diagnostics, cart icon consistency, and user guide purchase instructions."}
+{"version":"2.8.2","releaseDate":"2026-10-16","changelog":"StayManager v2.8.2: Resilient license key cleaning (whitespace, invisible chars, unicode dash normalization, canonical format), real-time key cleaning live preview, key format hints, and support diagnostics for phone mismatches."}

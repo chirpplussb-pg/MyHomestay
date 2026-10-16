@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.8.1';
+const APP_VERSION = '2.8.2';
 
 // SELLER WHATSAPP NUMBER - For Buy License inquiries (Single Source of Truth)
 const SELLER_WHATSAPP = '+60124022462';
@@ -498,6 +498,8 @@ const TRANSLATIONS = {
     lic_modal_sub: 'One-time purchase • Zero monthly fees',
     lic_phone: 'Your Registered WhatsApp Phone Number',
     lic_key: 'Enter Your Activation License Key',
+    lic_key_hint: 'Copy and paste the key from WhatsApp. Keys never contain 0, 1, I or O.',
+    lic_key_preview_label: 'Cleaned key:',
     btn_activate_app: 'Activate Full App',
 
     // Action Feed Tags & Buttons
@@ -1077,6 +1079,8 @@ const TRANSLATIONS = {
     lic_modal_sub: 'Pembelian sekali • Tiada yuran bulanan',
     lic_phone: 'Nombor WhatsApp Berdaftar Anda',
     lic_key: 'Masukkan Kunci Lesen Aktivasi Anda',
+    lic_key_hint: 'Salin dan tampal kunci dari WhatsApp. Kunci tidak mengandungi 0, 1, I atau O.',
+    lic_key_preview_label: 'Kunci yang dibersihkan:',
     btn_activate_app: 'Aktifkan Aplikasi Penuh',
 
     // Action Feed Tags & Buttons
@@ -3653,6 +3657,7 @@ function setupEventListeners() {
     handleContactSellerWhatsApp('presale');
   });
   document.getElementById('licenseForm')?.addEventListener('submit', handleActivateLicenseSubmit);
+  document.getElementById('licenseKeyInput')?.addEventListener('input', updateLicenseKeyPreview);
 
 
 
@@ -4628,6 +4633,67 @@ function normalizePhoneNumber(rawPhone) {
   return digits;
 }
 
+/**
+ * Canonical license key cleaner:
+ * - Uppercase
+ * - Remove all whitespace and zero-width/invisible characters
+ * - Treat dash-like characters (– — − ‐ ‑ etc.) as hyphens
+ * - Keep only characters A-Z and 2-9
+ * - Rebuild canonical format: STAY-XXXXX-XXXXX-XXXXX-XXXXX (4 letters STAY + 20 chars)
+ * - Returns null if not exactly 24 chars starting with STAY
+ */
+function cleanLicenseKey(rawKey) {
+  if (!rawKey || typeof rawKey !== 'string') return null;
+  let s = rawKey.toUpperCase();
+  s = s.replace(/[\s\u200B-\u200D\uFEFF\u200E\u200F\u202A-\u202E\u2060-\u206F]/g, '');
+  s = s.replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE63\uFF0D-]/g, '-');
+  s = s.replace(/[^A-Z2-9]/g, '');
+  if (s.length !== 24 || !s.startsWith('STAY')) {
+    return null;
+  }
+  return `STAY-${s.slice(4, 9)}-${s.slice(9, 14)}-${s.slice(14, 19)}-${s.slice(19, 24)}`;
+}
+
+function formatLicenseKeyPreview(rawKey) {
+  if (!rawKey || typeof rawKey !== 'string') return '';
+  let s = rawKey.toUpperCase();
+  s = s.replace(/[\s\u200B-\u200D\uFEFF\u200E\u200F\u202A-\u202E\u2060-\u206F]/g, '');
+  s = s.replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE63\uFF0D-]/g, '-');
+  s = s.replace(/[^A-Z2-9]/g, '');
+  if (!s) return '';
+  const parts = [];
+  if (s.length > 0) parts.push(s.slice(0, 4));
+  if (s.length > 4) parts.push(s.slice(4, 9));
+  if (s.length > 9) parts.push(s.slice(9, 14));
+  if (s.length > 14) parts.push(s.slice(14, 19));
+  if (s.length > 19) parts.push(s.slice(19, 24));
+  return parts.join('-');
+}
+
+function updateLicenseKeyPreview() {
+  const keyInput = document.getElementById('licenseKeyInput');
+  const previewContainer = document.getElementById('licenseKeyPreviewContainer');
+  const previewEl = document.getElementById('licenseKeyPreview');
+  if (!keyInput || !previewContainer || !previewEl) return;
+
+  const raw = keyInput.value || '';
+  const preview = formatLicenseKeyPreview(raw);
+  const isFullClean = cleanLicenseKey(raw);
+
+  if (!raw.trim() || !preview) {
+    previewContainer.style.display = 'none';
+    previewEl.textContent = '';
+  } else {
+    previewContainer.style.display = 'flex';
+    previewEl.textContent = preview;
+    if (isFullClean) {
+      previewEl.style.color = 'var(--success, #16a34a)';
+    } else {
+      previewEl.style.color = 'var(--primary, #3b82f6)';
+    }
+  }
+}
+
 function getOrCreateDeviceId() {
   let id = localStorage.getItem(STORAGE_KEYS.DEVICE_ID);
   if (!id || typeof id !== 'string' || id.length < 8 || id.length > 64 || !/^[A-Za-z0-9_-]+$/.test(id)) {
@@ -4877,7 +4943,12 @@ async function activateWithServer(rawKey, rawPhone) {
     throw err;
   }
 
-  const cleanKey = rawKey.trim().toUpperCase();
+  const cleanKey = cleanLicenseKey(rawKey);
+  if (!cleanKey) {
+    const err = new Error('Invalid license key or WhatsApp phone number.');
+    err.code = 'INVALID_CREDENTIALS';
+    throw err;
+  }
   const cleanPhone = normalizePhoneNumber(rawPhone);
   const deviceId = getOrCreateDeviceId();
 
@@ -4920,6 +4991,8 @@ function openLicenseModal() {
   if (phoneInput) phoneInput.value = appState.settings.ownerPhone || '';
   if (keyInput) keyInput.value = appState.licenseKey || '';
 
+  updateLicenseKeyPreview();
+
   document.getElementById('licenseModal').classList.add('active');
 }
 
@@ -4931,12 +5004,19 @@ async function handleActivateLicenseSubmit(e) {
   const submitBtn = document.getElementById('btnActivateLicenseSubmit');
 
   const inputPhone = phoneInput ? phoneInput.value.trim() : '';
-  const inputKey = keyInput ? keyInput.value.trim().toUpperCase() : '';
+  const rawKey = keyInput ? keyInput.value : '';
 
-  if (!inputKey || !inputPhone) {
+  if (!rawKey.trim() || !inputPhone) {
     alert(isBM 
       ? 'Sila masukkan nombor WhatsApp dan kunci lesen anda.' 
       : 'Please enter both your WhatsApp phone number and license key.');
+    return;
+  }
+
+  const cleanKey = cleanLicenseKey(rawKey);
+  if (!cleanKey) {
+    const friendlyMsg = getLicenseErrorMessage('INVALID_CREDENTIALS', isBM ? 'bm' : 'en');
+    alert(`❌ ${friendlyMsg}`);
     return;
   }
 
@@ -4947,7 +5027,7 @@ async function handleActivateLicenseSubmit(e) {
   }
 
   try {
-    await activateWithServer(inputKey, inputPhone);
+    await activateWithServer(cleanKey, inputPhone);
     closeAllModals();
     renderApp();
     showToast(isBM ? '🎉 Tahniah! Lesen Pro berjaya diaktifkan!' : '🎉 Congratulations! Pro License activated successfully!');
