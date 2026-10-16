@@ -5,12 +5,14 @@
 > An all-in-one, mobile-first management system for homestay hosts, apartment managers, and room rental operators.  
 > *Sistem pengurusan lengkap untuk pemilik homestay, apartmen, dan bilik sewa terus dari telefon pintar anda.*
 
+> 🗓️ **Guide version / Versi panduan:** for app **v2.8.0** — updated / dikemas kini **16 Oct 2026**
+
 ---
 
 ## 🌟 TABLE OF CONTENTS / SENARAI KANDUNGAN
 
 1. [How to Install on Your Phone / Cara Pasang di Telefon Pintar](#1-how-to-install-on-your-phone--cara-pasang-di-telefon-pintar)
-2. [Activating Your License Key / Cara Aktifkan Lesen Anda](#2-activating-your-license-key--cara-aktifkan-lesen-anda)
+2. [Buying & Activating Your License / Membeli & Mengaktifkan Lesen](#2-buying--activating-your-license--membeli--mengaktifkan-lesen)
 3. [Setting Up Your Profile & Bank / Tetapan Profil & Bank](#3-setting-up-your-profile--bank--tetapan-profil--bank)
 4. [Adding Homestays & Room Rentals / Tambah Unit & Bilik Sewa](#4-adding-homestays--room-rentals--tambah-unit--bilik-sewa)
 5. [Recording Bookings (Daily vs. Monthly) / Merekod Tempahan (Harian & Bulanan)](#5-recording-bookings-daily-vs-monthly--merekod-tempahan-harian--bulanan)
@@ -21,7 +23,9 @@
 9. [Deposit Refunds & Move-Out / Pemulangan Deposit & Tamat Sewaan](#9-deposit-refunds--move-out--pemulangan-deposit--tamat-sewaan)
 10. [Turnover, Maintenance Team & Suppliers Directory / Pengurusan Pembersihan, Pasukan Penyelenggaraan & Pembekal](#10-turnover-maintenance-team--suppliers-directory--pengurusan-pembersihan-pasukan-penyelenggaraan--pembekal)
 11. [Finances & Monthly Profit Reports / Laporan Kewangan & Untung Bersih](#11-finances--monthly-profit-reports--laporan-kewangan--untung-bersih)
-12. [Data Backup & Updates / Sandaran Data & Kemas Kini](#12-data-backup--updates--sandaran-data--kemas-kini)
+12. [Zero-Data-Loss Updates & Backups / Kemas Kini Tanpa Hilang Data](#12-zero-data-loss-updates--backups--kemas-kini-tanpa-hilang-data)
+13. [Promotional Media & Marketing Hub / Hab Media Promosi & Pemasaran](#13-promotional-media--marketing-hub--hab-media-promosi--pemasaran)
+14. [1-Click Cache Purge & Force Reload / Butang 1-Sentuhan Bersihkan Cache Sistem](#14-1-click-cache-purge--force-reload--butang-1-sentuhan-bersihkan-cache-sistem)
 
 ---
 
@@ -45,14 +49,109 @@ You do not need to download anything from the App Store or Google Play. The app 
 
 ---
 
-## 2. Activating Your License Key / Cara Aktifkan Lesen Anda
+## 2. Buying & Activating Your License / Membeli & Mengaktifkan Lesen
 
-1. Open the app and go to the **Settings (⚙️)** tab (or tap the **DEMO** badge in the header).
-2. Tap **"Enter License Key"** (*Masukkan Kunci Lesen*).
-3. Confirm your registered **WhatsApp Phone Number** (e.g. `+60123456789`).
-4. Paste your **License Key** (e.g. `STAY-60123456789-XXXX-XXXX`).
-5. Tap **"Activate Full App"**.
-6. Your license is now active with unlimited homestays and zero recurring monthly fees!
+The app is a **one-time purchase with no monthly fees**. You can try it in demo mode first; a license key unlocks the full app.
+*Aplikasi ini adalah **pembelian sekali sahaja tanpa yuran bulanan**. Anda boleh cuba mod demo dahulu; kunci lesen membuka aplikasi sepenuhnya.*
+
+### 🛒 A. How to Buy / Cara Membeli
+
+#### 🇬🇧 English
+1. Open the purchase page: **[https://staymanager-license-server.homestaymanager.workers.dev/buy](https://staymanager-license-server.homestaymanager.workers.dev/buy)** (or tap the **Buy License** button in the app).
+2. Enter your **name** and the **WhatsApp number you will use in the app**. Add a note if you like, tick the privacy consent box, and tap submit.
+3. You will see a **request reference** (like `REQ-ABCD-1234`), the **amount to pay**, and our **bank transfer details**.
+4. Make the bank transfer for the exact amount. Put your **request reference** in the transfer's *payment details / recipient reference* field.
+5. Send your payment receipt using the **WhatsApp** button on the page (or message us at **+60 12-402 2462**).
+6. After we confirm your payment, we send your **license key** by WhatsApp. It looks like this: `STAY-XXXXX-XXXXX-XXXXX-XXXXX`.
+7. Keep your key private and store it safely (for example in a password manager). Please do not share it.
+
+> 💡 We confirm every payment by hand, so your key is sent after the money reaches our account.
+> ⚠️ Please make sure the amount and account details are correct before sending your receipt. Activated license keys are non-refundable.
+
+#### 🇲🇾 Bahasa Melayu
+1. Buka halaman pembelian: **[https://staymanager-license-server.homestaymanager.workers.dev/buy](https://staymanager-license-server.homestaymanager.workers.dev/buy)** (atau tekan butang **Beli Lesen** dalam aplikasi).
+2. Isi **nama** anda dan **nombor WhatsApp yang akan anda gunakan dalam aplikasi**. Tambah nota jika perlu, tandakan kotak persetujuan privasi, kemudian hantar.
+3. Anda akan melihat **nombor rujukan permintaan** (seperti `REQ-ABCD-1234`), **jumlah bayaran**, dan **butiran akaun bank** kami.
+4. Buat pindahan bank dengan jumlah yang tepat. Masukkan **nombor rujukan** anda dalam ruangan *butiran pembayaran / rujukan penerima*.
+5. Hantar resit bayaran melalui butang **WhatsApp** pada halaman itu (atau mesej kami di **+60 12-402 2462**).
+6. Selepas bayaran disahkan, kami hantar **kunci lesen** anda melalui WhatsApp. Bentuknya: `STAY-XXXXX-XXXXX-XXXXX-XXXXX`.
+7. Simpan kunci anda dengan selamat (contohnya dalam pengurus kata laluan) dan jangan kongsikannya.
+
+> 💡 Setiap pembayaran disahkan secara manual, jadi kunci dihantar selepas wang diterima dalam akaun kami.
+> ⚠️ Sila pastikan jumlah dan maklumat akaun adalah tepat sebelum menghantar resit. Kunci lesen yang telah diaktifkan tidak boleh dibatalkan atau dikembalikan wang.
+
+---
+
+### 🔑 B. How to Activate / Cara Mengaktifkan
+
+#### 🇬🇧 English
+1. Make sure your phone is **connected to the internet** (needed for activation).
+2. Open the app and go to the **Settings (⚙️)** tab (or tap the **DEMO** badge in the header).
+3. Tap **"Enter License Key"**.
+4. Type the **same WhatsApp number you used when buying**. Either `0123456789` or `+60123456789` works.
+5. Paste your **license key**.
+6. Tap **"Activate Full App"**.
+7. The header badge changes to **✨ PRO ACTIVE** and the **Pro Hub** shows your renewal date. Done!
+
+#### 🇲🇾 Bahasa Melayu
+1. Pastikan telefon anda **disambungkan ke internet** (diperlukan semasa pengaktifan).
+2. Buka aplikasi dan pergi ke tab **Tetapan (⚙️)** (atau tekan lencana **DEMO** di bahagian atas).
+3. Tekan **"Masukkan Kunci Lesen"**.
+4. Taip **nombor WhatsApp yang sama semasa anda membeli**. `0123456789` atau `+60123456789` kedua-duanya diterima.
+5. Tampal **kunci lesen** anda.
+6. Tekan **"Aktifkan Aplikasi Penuh"**.
+7. Lencana di bahagian atas bertukar kepada **✨ LESEN PRO AKTIF** dan **Hab Pro** memaparkan tarikh pembaharuan. Selesai!
+
+---
+
+### 📲 C. Using Your License on More Than One Device / Guna Lesen di Lebih Daripada Satu Peranti
+
+#### 🇬🇧 English
+* One key works on **up to 2 devices** (for example your phone and a tablet), unless the seller told you a different limit.
+* On each device: install the app, then activate with the **same key and the same WhatsApp number**.
+* **Switching to a new phone?** Install the app, restore your data (see section 12), then **activate again**. If the app says the device limit is reached, message the seller at **+60 12-402 2462** and ask to reset your device list, then activate again.
+* **Your license is not part of your backup file.** Restoring a backup brings back your homestays, bookings and settings, but you activate the license separately. This keeps your key safe if a backup file is shared.
+
+#### 🇲🇾 Bahasa Melayu
+* Satu kunci boleh digunakan pada **sehingga 2 peranti** (contohnya telefon dan tablet), kecuali penjual memberitahu had yang berbeza.
+* Pada setiap peranti: pasang aplikasi, kemudian aktifkan dengan **kunci dan nombor WhatsApp yang sama**.
+* **Tukar telefon baru?** Pasang aplikasi, pulihkan data anda (lihat bahagian 12), kemudian **aktifkan semula**. Jika aplikasi memaparkan had peranti dicapai, mesej penjual di **+60 12-402 2462** dan minta senarai peranti anda ditetapkan semula, kemudian aktifkan semula.
+* **Lesen anda tidak termasuk dalam fail sandaran.** Memulihkan sandaran mengembalikan unit, tempahan dan tetapan anda, tetapi lesen diaktifkan secara berasingan. Ini melindungi kunci anda jika fail sandaran dikongsi.
+
+---
+
+### 🌐 D. Working Offline & Periodic Check-Ins / Bekerja Tanpa Internet & Semakan Berkala
+
+#### 🇬🇧 English
+* After activation the app **works offline**. Bookings, invoices, receipts and agreements do not need internet.
+* When you are online, the app quietly **renews your license about once a week**. You do not need to do anything.
+* If you stay offline for a long time (about **2 months**), the Pro Hub will show *Needs reconnect*. Just open the app once with internet and it renews itself.
+* If it has been much longer, the app may ask you to **enter your key again**. Your data is safe; just activate again.
+* Keep your phone's **date and time correct**. If the clock is set earlier than before, the app will ask you to fix it.
+* **Privacy:** the license check sends only your key, your phone number and a random device ID. **Your bookings and guest data never leave your phone.**
+
+#### 🇲🇾 Bahasa Melayu
+* Selepas pengaktifan, aplikasi **berfungsi tanpa internet**. Tempahan, invois, resit dan perjanjian tidak memerlukan internet.
+* Apabila anda dalam talian, aplikasi **memperbaharui lesen anda secara senyap kira-kira seminggu sekali**. Anda tidak perlu buat apa-apa.
+* Jika anda tidak berhubung internet untuk tempoh yang lama (kira-kira **2 bulan**), Hab Pro akan memaparkan *Perlu sambung semula*. Cuma buka aplikasi sekali dengan internet dan ia memperbaharui sendiri.
+* Jika sudah terlalu lama, aplikasi mungkin meminta anda **memasukkan kunci semula**. Data anda selamat; cuma aktifkan semula.
+* Pastikan **tarikh dan masa** telefon anda betul. Jika jam ditetapkan lebih awal daripada sebelumnya, aplikasi akan meminta anda membetulkannya.
+* **Privasi:** semakan lesen hanya menghantar kunci, nombor telefon dan ID peranti rawak anda. **Data tempahan dan tetamu anda tidak pernah meninggalkan telefon anda.**
+
+---
+
+### 🛠️ E. Troubleshooting Activation / Penyelesaian Masalah Pengaktifan
+
+| Message / Mesej | What it means / Maksudnya | What to do / Tindakan |
+|---|---|---|
+| *Invalid license key or WhatsApp phone number* / *Kunci lesen atau nombor telefon WhatsApp tidak sah* | The key or phone number does not match | Copy and paste the key again. Use the **same number you gave when buying**. / Salin dan tampal kunci semula. Guna **nombor yang sama semasa membeli**. |
+| *Too many failed attempts… wait 15 minutes* / *Terlalu banyak percubaan gagal… tunggu 15 minit* | Several wrong tries in a row | Wait 15 minutes, then try again carefully. / Tunggu 15 minit, kemudian cuba semula dengan teliti. |
+| *Maximum device limit reached* / *Had maksimum peranti dicapai* | The key is already used on its maximum number of devices | Message the seller at +60 12-402 2462 to reset your device list. / Mesej penjual di +60 12-402 2462 untuk menetapkan semula senarai peranti. |
+| *This license key has been revoked* / *Kunci lesen ini telah dibatalkan* | The key is no longer valid | Contact the seller at +60 12-402 2462. / Hubungi penjual di +60 12-402 2462. |
+| *Device registration was reset* / *License session expired* / *Token invalid* | The app needs to confirm your license again | Tap **Enter License Key** and activate again. Your data is safe. / Tekan **Masukkan Kunci Lesen** dan aktifkan semula. Data anda selamat. |
+| *Your device clock is earlier than previously recorded* / *Jam peranti anda tidak tepat* | Your phone's date or time is wrong | Set the date and time to automatic, or connect to the internet. / Tetapkan tarikh dan masa kepada automatik, atau sambung ke internet. |
+| *Could not reach license server* / *Tidak dapat menghubungi pelayan lesen* | No internet or a temporary server problem | Pro keeps working. Try again later. / Pro terus berfungsi. Cuba lagi kemudian. |
+| I lost my key / Saya hilang kunci | — | Message the seller at +60 12-402 2462. We can arrange a replacement after checking your purchase details. / Mesej penjual di +60 12-402 2462. Kami boleh uruskan penggantian selepas semak butiran pembelian anda. |
 
 ---
 
@@ -347,7 +446,7 @@ Need emergency aircond repair, a plumber for a leak, or need to order fresh beds
 ## 12. Zero-Data-Loss Updates & Backups / Kemas Kini Tanpa Hilang Data
 
 ### 🔒 100% Data Preservation Guarantee (Why Your Data is Always Safe)
-* **Technical Guarantee**: All your homestay units, active bookings, guest particulars, turnover schedules, income/expenses, and license keys are stored in your device browser's persistent **`localStorage`**.
+* **Technical Guarantee**: All your homestay units, active bookings, guest particulars, turnover schedules, and income/expenses are stored in your device browser's persistent **`localStorage`**. Your license activation is stored securely on your device, separately from your business data.
 * **Code vs Data Separation**: When an update is deployed, only the application code (HTML, CSS, JavaScript) stored in the Service Worker Cache is updated. **Your `localStorage` database is completely separate and is never deleted, wiped, or modified during an update.**
 * **Offline Resilient**: You can safely update even on mobile data without worrying about losing past records.
 
@@ -379,8 +478,8 @@ Need emergency aircond repair, a plumber for a leak, or need to order fresh beds
 Although updates are completely non-destructive, taking regular backups is good practice for every business owner:
 1. Go to **Settings (⚙️)** > Scroll down to **"Data Backup & Export"**.
 2. Tap **"Export Backup (.json)"** (*Eksport Sandaran*).
-3. A `.json` file containing your entire business data (all homestays, bookings, expenses, turnovers, and license) will be saved to your device, iCloud, Google Drive, or WhatsApp.
-4. **To Restore**: If you ever switch to a brand-new phone or tablet, simply open the app, tap **"Import Backup (.json)"**, select your file, and all your records are restored instantly!
+3. A `.json` file containing your entire business data (all homestays, bookings, expenses and turnovers) will be saved to your device, iCloud, Google Drive, or WhatsApp. **It does not contain your license** — on a new phone you activate again with your key (see section 2).
+4. **To Restore**: If you ever switch to a brand-new phone or tablet, simply open the app, tap **"Import Backup (.json)"**, select your file, and all your records are restored instantly! Then activate your license again.
 
 ---
 
@@ -389,11 +488,15 @@ Although updates are completely non-destructive, taking regular backups is good 
 * **Q: Will updating the app delete my bookings or customer phone numbers?**  
   **A:** **No, never.** Your records are stored in persistent local storage on your phone, completely isolated from application code updates.
 * **Q: Do I need to buy a new license or re-enter my license key after updating?**  
-  **A:** **No.** Your license key is permanently stored and validated locally. Updates preserve your Pro / Master activation status automatically.
+  **A:** **No.** Updates keep your Pro activation. You only need to enter your key again if you move to a new phone, clear the app's data, or the app asks you to reconnect after a very long time offline.
+* **Q: Does my backup file contain my license?**  
+  **A:** **No**, by design. This protects your key if a backup file is shared. Restore your data from the backup, then activate again.
+* **Q: Does the app send my bookings or guest details to your server?**  
+  **A:** **No.** The license check sends only your key, phone number and a random device ID. Your business data stays on your phone.
 * **Q: What if I update while having no internet connection?**  
   **A:** The app continues functioning offline seamlessly with your existing version. As soon as you reconnect to the internet, it will detect the update banner.
 * **Q: How do I transfer my homestay data when I upgrade to a new phone?**  
-  **A:** Tap **Export Backup (.json)** on your old phone > Send the file to your new phone (via WhatsApp, AirDrop, or Email) > Open the app on your new phone > Tap **Import Backup (.json)**. Everything restores in 2 seconds!
+  **A:** Tap **Export Backup (.json)** on your old phone > Send the file to your new phone (via WhatsApp, AirDrop, or Email) > Open the app on your new phone > Tap **Import Backup (.json)**. Everything restores in 2 seconds! Then tap **Enter License Key** and activate again (if the device limit is reached, message the seller to reset it).
 
 ---
 
@@ -413,12 +516,14 @@ Although updates are completely non-destructive, taking regular backups is good 
 | 🧹 **Cleaner Dispatch** | Turnovers tab > `WhatsApp Cleaner` |
 | 👷 **Team & Suppliers Directory** | Settings tab > `Maintenance Team & Suppliers` |
 | 🛠️ **Service & Supply Alerts** | Turnovers tab > `🛠️ Service / Supply Alert` |
+| 🛒 **Buy a License** | Purchase page: https://staymanager-license-server.homestaymanager.workers.dev/buy or the `Buy License` button |
+| 🔑 **Activate / Check License** | Settings tab > `Enter License Key`, or tap the **PRO** / **DEMO** badge (Pro Hub) |
 | ⚙️ **Bank & Profile Settings** | Settings tab in bottom navigation |
 | 📥 **Export Data Backup** | Settings tab > `Export Backup (.json)` |
 
 ---
 
-## 10. Promotional Media & Marketing Hub / Hab Media Promosi & Pemasaran
+## 13. Promotional Media & Marketing Hub / Hab Media Promosi & Pemasaran
 
 ### 🇬🇧 English: Promotional Media & Marketing Hub
 * **What is it?** A centralized marketing toolkit built directly into your homestay manager. Store property photos, holiday posters, video walkthrough links, and ready-to-use copywriting pitches.
@@ -442,7 +547,7 @@ Although updates are completely non-destructive, taking regular backups is good 
 
 ---
 
-## 11. 1-Click Cache Purge & Force Reload (v2.7.7) / Butang 1-Sentuhan Bersihkan Cache Sistem
+## 14. 1-Click Cache Purge & Force Reload / Butang 1-Sentuhan Bersihkan Cache Sistem
 
 ### 🇬🇧 English: Instant Cache Refresh
 Modern Progressive Web Apps (PWA) cache files on your phone or laptop for ultra-fast offline access. Occasionally, after an update, a browser may continue loading an older cached version of JavaScript scripts or stylesheets.
@@ -452,7 +557,7 @@ Modern Progressive Web Apps (PWA) cache files on your phone or laptop for ultra-
   * The app automatically:
     1. Unregisters any outdated Service Workers.
     2. Deletes all obsolete caches.
-    3. Re-downloads the latest scripts (`v2.7.7`).
+    3. Re-downloads the latest scripts (latest version).
     4. Reloads the window fresh.
   * **Zero Data Loss Guarantee**: All your homestay properties, bookings, receipts, and settings in `localStorage` remain **100% intact and untouched**.
 
@@ -464,7 +569,7 @@ Aplikasi PWA moden menyimpan fail dalam memori pelayar untuk membolehkan penggun
   * Sistem akan secara automatik:
     1. Membatalkan pendaftaran Service Worker lama.
     2. Mengosongkan cache fail aplikasi yang lapuk.
-    3. Memuat turun kod versi terkini (`v2.7.7`).
+    3. Memuat turun kod versi terkini (versi terkini).
     4. Memuat semula skrin secara serta-merta.
   * **Jaminan Sifar Kehilangan Data**: Semua rekod homestay, tempahan, resit bayaran, dan tetapan bank dalam `localStorage` anda adalah **100% selamat dan tidak akan dipadamkan**.
 

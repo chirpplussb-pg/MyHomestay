@@ -14,7 +14,7 @@
   <meta http-equiv="Expires" content="0">
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=2.8.0">
+  <link rel="stylesheet" href="styles.css?v=2.8.1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -567,7 +567,7 @@
               <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
               <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
             </div>
-            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.8.0</span>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.8.1</span>
           </div>
 
           <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
@@ -1426,9 +1426,14 @@
 
           <div class="license-buy-section">
             <p class="card-subtitle" style="text-align:center; margin-bottom:8px;">Don't have a license key yet?</p>
-            <button class="btn btn-whatsapp btn-block" id="btnBuyLicenseViaWa">
-              <i class="fa-brands fa-whatsapp"></i> Buy License via WhatsApp
+            <button class="btn btn-warning btn-block" id="btnBuyLicenseViaWa">
+              <i class="fa-solid fa-cart-shopping"></i> <span data-i18n="buy_license">Buy License</span>
             </button>
+            <div style="text-align:center; margin-top:10px;">
+              <a href="javascript:void(0)" id="linkPresaleWhatsApp" style="font-size:12px; color:var(--text-muted); text-decoration:underline; cursor:pointer;">
+                <i class="fa-brands fa-whatsapp" style="color:var(--whatsapp); margin-right:4px;"></i><span data-i18n="presale_questions">Questions before buying? Ask on WhatsApp</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -2048,7 +2053,7 @@
             </div>
             <div style="text-align:right;">
               <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">App Version</div>
-              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.8.0</div>
+              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.8.1</div>
             </div>
           </div>
 
@@ -3343,6 +3348,6 @@
       document.head.appendChild(s);
     }
   </script>
-  <script src="app.js?v=2.8.0"></script>
+  <script src="app.js?v=2.8.1"></script>
 </body>
 </html>

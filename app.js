@@ -7,13 +7,14 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.8.0';
+const APP_VERSION = '2.8.1';
 
 // SELLER WHATSAPP NUMBER - For Buy License inquiries (Single Source of Truth)
 const SELLER_WHATSAPP = '+60124022462';
 
 // CLOUDFLARE WORKER LICENSE SERVER CONFIGURATION (Public Key Only)
 const LICENSE_API_URL = 'https://staymanager-license-server.homestaymanager.workers.dev';
+const BUY_PAGE_URL = LICENSE_API_URL + '/buy';
 const LICENSE_PUBLIC_KEY_JWK = {
   "kty": "EC",
   "crv": "P-256",
@@ -261,7 +262,6 @@ const TRANSLATIONS = {
     app_pref_title: 'App Preferences & Seller Info',
     business_name_label: 'Business / Brand Name',
     seller_phone_label: 'Seller Support / Order WhatsApp Number',
-    seller_phone_hint: 'Buyers will contact this WhatsApp number when clicking "Buy License".',
     currency_label: 'Currency Symbol',
     owner_phone_label: 'Owner WhatsApp Phone Number (Bound to License)',
     owner_phone_hint: 'Your official WhatsApp number. Used in quotations and permanently bound to your app license.',
@@ -282,7 +282,8 @@ const TRANSLATIONS = {
     duitnow_label: 'DuitNow ID / QR / Transfer Note',
     btn_save_bank: 'Save Payment Details',
     app_license_title: 'App License',
-    admin_gen_title: 'Admin License Generator',
+    buy_license: 'Buy License',
+    presale_questions: 'Questions before buying? Ask on WhatsApp',
     admin_gen_sub: 'Generate phone-bound licenses and 1-click WhatsApp onboarding links for buyers.',
     buyer_phone_label: "Buyer's WhatsApp Phone Number",
     buyer_name_label: 'Buyer Name / Homestay Name (Optional)',
@@ -865,7 +866,6 @@ const TRANSLATIONS = {
     app_pref_title: 'Pilihan Aplikasi & Maklumat Penjual',
     business_name_label: 'Nama Homestay / Perniagaan',
     seller_phone_label: 'Nombor WhatsApp Sokongan / Tempahan',
-    seller_phone_hint: 'Pembeli akan menghubungi nombor WhatsApp ini apabila menekan "Beli Lesen".',
     currency_label: 'Simbol Mata Wang',
     owner_phone_label: 'Nombor WhatsApp Pemilik (Terkunci ke Lesen)',
     owner_phone_hint: 'Nombor WhatsApp rasmi anda. Digunakan dalam sebut harga dan diikat secara kekal pada lesen aplikasi anda.',
@@ -886,7 +886,8 @@ const TRANSLATIONS = {
     duitnow_label: 'ID DuitNow / QR / Nota Rujukan',
     btn_save_bank: 'Simpan Maklumat Pembayaran',
     app_license_title: 'Lesen Aplikasi',
-    admin_gen_title: 'Penjana Kunci Lesen (Admin)',
+    buy_license: 'Beli Lesen',
+    presale_questions: 'Soalan sebelum membeli? Tanya di WhatsApp',
     admin_gen_sub: 'Jana lesen terikat nombor telefon dan pautan aktivasi 1-klik WhatsApp untuk pembeli.',
     buyer_phone_label: 'Nombor WhatsApp Pembeli',
     buyer_name_label: 'Nama Pembeli / Nama Homestay (Pilihan)',
@@ -3645,8 +3646,12 @@ function setupEventListeners() {
 
   // License & Sales Event Handlers
   document.getElementById('btnOpenActivateModal')?.addEventListener('click', openLicenseModal);
-  document.getElementById('btnBuyLicense')?.addEventListener('click', handleBuyLicenseRedirect);
-  document.getElementById('btnBuyLicenseViaWa')?.addEventListener('click', handleBuyLicenseRedirect);
+  document.getElementById('btnBuyLicense')?.addEventListener('click', handleBuyLicense);
+  document.getElementById('btnBuyLicenseViaWa')?.addEventListener('click', handleBuyLicense);
+  document.getElementById('linkPresaleWhatsApp')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleContactSellerWhatsApp('presale');
+  });
   document.getElementById('licenseForm')?.addEventListener('submit', handleActivateLicenseSubmit);
 
 
@@ -4952,7 +4957,7 @@ async function handleActivateLicenseSubmit(e) {
 
     if (errorCode === 'REVOKED' || errorCode === 'DEVICE_LIMIT_REACHED') {
       if (confirm(`${friendlyMsg}\n\n${isBM ? 'Adakah anda mahu menghubungi penjual melalui WhatsApp sekarang?' : 'Would you like to contact the seller on WhatsApp now?'}`)) {
-        handleBuyLicenseRedirect();
+        handleContactSellerWhatsApp(errorCode === 'REVOKED' ? 'revoked' : 'device_limit_reached');
       }
     } else {
       alert(`❌ ${friendlyMsg}`);
@@ -5063,15 +5068,55 @@ async function checkAndRefreshTokenSilently(forceCheck = false) {
   }
 }
 
-function handleBuyLicenseRedirect() {
+function handleBuyLicense() {
+  const isBM = appState.settings.language === 'bm';
+  if (!navigator.onLine) {
+    const msg = isBM
+      ? 'Sambungan internet diperlukan untuk membuka halaman pembelian.'
+      : 'An internet connection is needed to open the purchase page.';
+    if (typeof showToast === 'function') {
+      showToast(msg);
+    } else {
+      alert(msg);
+    }
+    return;
+  }
+  window.open(BUY_PAGE_URL, '_blank', 'noopener');
+}
+
+function handleContactSellerWhatsApp(reason = 'general') {
   const sellerDigits = (SELLER_WHATSAPP || '').replace(/[^0-9]/g, '');
   const devId = getOrCreateDeviceId().slice(0, 8);
   const isBM = appState.settings.language === 'bm';
+
+  let reasonLineEn = 'Reason: General question / support';
+  let reasonLineBm = 'Sebab: Soalan umum / bantuan sokongan';
+
+  if (reason === 'revoked') {
+    reasonLineEn = 'Reason: License revoked';
+    reasonLineBm = 'Sebab: Lesen dibatalkan';
+  } else if (reason === 'device_limit_reached') {
+    reasonLineEn = 'Reason: Device limit reached';
+    reasonLineBm = 'Sebab: Had peranti telah dicapai';
+  } else if (reason === 'presale') {
+    reasonLineEn = 'Reason: Pre-activation inquiry';
+    reasonLineBm = 'Sebab: Pertanyaan sebelum pengaktifan';
+  }
+
+  const openingEn = reason === 'presale'
+    ? 'Hi! I have a question before buying StayManager Pro.'
+    : 'Hi! I need assistance with my StayManager Pro license.';
+
+  const openingBm = reason === 'presale'
+    ? 'Salam, saya ada soalan sebelum membeli StayManager Pro.'
+    : 'Salam, saya memerlukan bantuan mengenai lesen StayManager Pro saya.';
+
   const message = isBM
-    ? `Salam, saya menggunakan aplikasi StayManager Homestay (ID Peranti: ${devId}). Saya ingin bertanya mengenai pembelian/bantuan Lesen Pro Seumur Hidup. Terima kasih!`
-    : `Hi! I am using the StayManager Homestay app (Device ID: ${devId}). I would like to inquire about purchasing/support for the Lifetime Pro License. Thank you!`;
+    ? `${openingBm}\nID Peranti: ${devId}\n${reasonLineBm}\nTerima kasih!`
+    : `${openingEn}\nDevice ID: ${devId}\n${reasonLineEn}\nThank you!`;
+
   const url = `https://wa.me/${sellerDigits}?text=${encodeURIComponent(message)}`;
-  window.open(url, '_blank');
+  window.open(url, '_blank', 'noopener');
 }
 
 // ==========================================================================
@@ -7108,13 +7153,13 @@ function renderSettingsTab() {
         <button class="btn btn-primary btn-sm" id="btnActivateFromSettings">
           <i class="fa-solid fa-key"></i> ${isBM ? 'Masukkan Kunci Lesen' : 'Enter License Key'}
         </button>
-        <button class="btn btn-whatsapp btn-sm" id="btnBuyFromSettings">
-          <i class="fa-brands fa-whatsapp"></i> ${isBM ? 'Beli Lesen' : 'Buy License'}
+        <button class="btn btn-warning btn-sm" id="btnBuyFromSettings">
+          <i class="fa-solid fa-cart-shopping"></i> ${isBM ? 'Beli Lesen' : 'Buy License'}
         </button>
       </div>
     `;
     document.getElementById('btnActivateFromSettings').addEventListener('click', openLicenseModal);
-    document.getElementById('btnBuyFromSettings').addEventListener('click', handleBuyLicenseRedirect);
+    document.getElementById('btnBuyFromSettings').addEventListener('click', handleBuyLicense);
   }
 
   const verBadge = document.getElementById('appCurrentVersionBadge');
@@ -14257,18 +14302,22 @@ const USER_GUIDE_DATA = {
       content: `
         <div class="guide-step">
           <div class="guide-step-num">1</div>
-          <div class="guide-step-text">Go to the <strong>Settings (⚙️)</strong> tab (or tap the <strong>DEMO</strong> badge in the header).</div>
+          <div class="guide-step-text"><strong>No key yet?</strong> Tap <strong>Buy License</strong> to request one on the purchase page. After your payment is confirmed you receive the key on WhatsApp.</div>
         </div>
         <div class="guide-step">
           <div class="guide-step-num">2</div>
-          <div class="guide-step-text">Tap <strong>"Enter License Key"</strong>.</div>
+          <div class="guide-step-text">Go to the <strong>Settings (⚙️)</strong> tab (or tap the <strong>DEMO</strong> badge in the header).</div>
         </div>
         <div class="guide-step">
           <div class="guide-step-num">3</div>
-          <div class="guide-step-text">Enter your registered <strong>WhatsApp Phone Number</strong> (e.g. <code>+60123456789</code>) and paste your <strong>License Key</strong>.</div>
+          <div class="guide-step-text">Tap <strong>"Enter License Key"</strong>.</div>
         </div>
         <div class="guide-step">
           <div class="guide-step-num">4</div>
+          <div class="guide-step-text">Enter your registered <strong>WhatsApp Phone Number</strong> (e.g. <code>+60123456789</code>) and paste your <strong>License Key</strong>.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">5</div>
           <div class="guide-step-text">Tap <strong>"Activate Full App"</strong>. You now have lifetime access with unlimited homestays!</div>
         </div>
       `
@@ -14549,18 +14598,22 @@ const USER_GUIDE_DATA = {
       content: `
         <div class="guide-step">
           <div class="guide-step-num">1</div>
-          <div class="guide-step-text">Pergi ke tab <strong>Tetapan (⚙️)</strong> (atau tekan lencana <strong>DEMO</strong> di bar atas).</div>
+          <div class="guide-step-text"><strong>Belum ada kunci?</strong> Tekan <strong>Beli Lesen</strong> untuk membuat permohonan di halaman pembelian. Selepas bayaran anda disahkan, anda menerima kunci lesen melalui WhatsApp.</div>
         </div>
         <div class="guide-step">
           <div class="guide-step-num">2</div>
-          <div class="guide-step-text">Tekan <strong>"Masukkan Kunci Lesen"</strong>.</div>
+          <div class="guide-step-text">Pergi ke tab <strong>Tetapan (⚙️)</strong> (atau tekan lencana <strong>DEMO</strong> di bar atas).</div>
         </div>
         <div class="guide-step">
           <div class="guide-step-num">3</div>
-          <div class="guide-step-text">Masukkan <strong>Nombor WhatsApp Berdaftar</strong> anda (cth: <code>+60123456789</code>) dan tampal <strong>Kunci Lesen</strong> anda.</div>
+          <div class="guide-step-text">Tekan <strong>"Masukkan Kunci Lesen"</strong>.</div>
         </div>
         <div class="guide-step">
           <div class="guide-step-num">4</div>
+          <div class="guide-step-text">Masukkan <strong>Nombor WhatsApp Berdaftar</strong> anda (cth: <code>+60123456789</code>) dan tampal <strong>Kunci Lesen</strong> anda.</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">5</div>
           <div class="guide-step-text">Tekan <strong>"Aktifkan Aplikasi Penuh"</strong>. Anda kini memiliki akses seumur hidup dengan unit tanpa had!</div>
         </div>
       `
@@ -15069,8 +15122,8 @@ function openProSystemModal() {
             <button type="button" class="btn btn-primary btn-sm btn-block" id="btnProActivateDemo">
               <i class="fa-solid fa-key"></i> ${isBM ? 'Aktifkan Lesen' : 'Activate License'}
             </button>
-            <button type="button" class="btn btn-whatsapp btn-sm btn-block" id="btnProBuyDemo">
-              <i class="fa-brands fa-whatsapp"></i> ${isBM ? 'Beli Lesen' : 'Buy License'}
+            <button type="button" class="btn btn-warning btn-sm btn-block" id="btnProBuyDemo">
+              <i class="fa-solid fa-cart-shopping"></i> ${isBM ? 'Beli Lesen' : 'Buy License'}
             </button>
           </div>
         </div>
@@ -15090,8 +15143,8 @@ function openProSystemModal() {
     detailsEl.innerHTML = detailsHtml;
 
     // Attach event listeners for dynamic action buttons
-    document.getElementById('btnProContactSellerRevoked')?.addEventListener('click', handleBuyLicenseRedirect);
-    document.getElementById('btnProContactSellerDevLimit')?.addEventListener('click', handleBuyLicenseRedirect);
+    document.getElementById('btnProContactSellerRevoked')?.addEventListener('click', () => handleContactSellerWhatsApp('revoked'));
+    document.getElementById('btnProContactSellerDevLimit')?.addEventListener('click', () => handleContactSellerWhatsApp('device_limit_reached'));
     document.getElementById('btnProReconnectNow')?.addEventListener('click', () => {
       closeProSystemModal();
       checkAndRefreshTokenSilently(true);
@@ -15104,7 +15157,7 @@ function openProSystemModal() {
       closeProSystemModal();
       openLicenseModal();
     });
-    document.getElementById('btnProBuyDemo')?.addEventListener('click', handleBuyLicenseRedirect);
+    document.getElementById('btnProBuyDemo')?.addEventListener('click', handleBuyLicense);
   }
 
   modal.classList.add('active');
