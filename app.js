@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.8.2';
+const APP_VERSION = '2.8.3';
 
 // SELLER WHATSAPP NUMBER - For Buy License inquiries (Single Source of Truth)
 const SELLER_WHATSAPP = '+60124022462';
@@ -497,9 +497,12 @@ const TRANSLATIONS = {
     lic_modal_title: 'Unlock Lifetime License',
     lic_modal_sub: 'One-time purchase • Zero monthly fees',
     lic_phone: 'Your Registered WhatsApp Phone Number',
+    lic_phone_hint: 'Type the same WhatsApp number you used when buying. Do not add a 0 after +60.',
+    lic_phone_preview_label: 'We will use:',
     lic_key: 'Enter Your Activation License Key',
     lic_key_hint: 'Copy and paste the key from WhatsApp. Keys never contain 0, 1, I or O.',
     lic_key_preview_label: 'Cleaned key:',
+    btn_paste_key: 'Paste',
     btn_activate_app: 'Activate Full App',
 
     // Action Feed Tags & Buttons
@@ -1078,9 +1081,12 @@ const TRANSLATIONS = {
     lic_modal_title: 'Buka Kunci Lesen Seumur Hidup',
     lic_modal_sub: 'Pembelian sekali • Tiada yuran bulanan',
     lic_phone: 'Nombor WhatsApp Berdaftar Anda',
+    lic_phone_hint: 'Taip nombor WhatsApp yang sama digunakan semasa membeli. Jangan tambah 0 selepas +60.',
+    lic_phone_preview_label: 'Kami akan gunakan:',
     lic_key: 'Masukkan Kunci Lesen Aktivasi Anda',
     lic_key_hint: 'Salin dan tampal kunci dari WhatsApp. Kunci tidak mengandungi 0, 1, I atau O.',
     lic_key_preview_label: 'Kunci yang dibersihkan:',
+    btn_paste_key: 'Tampal',
     btn_activate_app: 'Aktifkan Aplikasi Penuh',
 
     // Action Feed Tags & Buttons
@@ -3657,7 +3663,11 @@ function setupEventListeners() {
     handleContactSellerWhatsApp('presale');
   });
   document.getElementById('licenseForm')?.addEventListener('submit', handleActivateLicenseSubmit);
+  document.getElementById('licensePhoneInput')?.addEventListener('input', updateLicensePhonePreview);
+  document.getElementById('licensePhoneInput')?.addEventListener('paste', () => setTimeout(updateLicensePhonePreview, 0));
   document.getElementById('licenseKeyInput')?.addEventListener('input', updateLicenseKeyPreview);
+  document.getElementById('licenseKeyInput')?.addEventListener('paste', () => setTimeout(updateLicenseKeyPreview, 0));
+  document.getElementById('btnPasteLicenseKey')?.addEventListener('click', handlePasteLicenseKey);
 
 
 
@@ -4634,31 +4644,115 @@ function normalizePhoneNumber(rawPhone) {
 }
 
 /**
- * Canonical license key cleaner:
- * - Uppercase
- * - Remove all whitespace and zero-width/invisible characters
- * - Treat dash-like characters (– — − ‐ ‑ etc.) as hyphens
- * - Keep only characters A-Z and 2-9
- * - Rebuild canonical format: STAY-XXXXX-XXXXX-XXXXX-XXXXX (4 letters STAY + 20 chars)
- * - Returns null if not exactly 24 chars starting with STAY
+ * Strict License Phone Normalizer (matches server rules):
+ * - digits = remove all non-digits
+ * - drop leading "00"
+ * - if starting with "60", drop ONE extra "0" directly after 60 (60012... -> 6012...)
+ * - else if starting with "0", replace with "60"
+ * - else if starting with "1" and has 9 or 10 digits, prefix "60"
+ * - reject results < 9 or > 15 digits
  */
-function cleanLicenseKey(rawKey) {
-  if (!rawKey || typeof rawKey !== 'string') return null;
-  let s = rawKey.toUpperCase();
-  s = s.replace(/[\s\u200B-\u200D\uFEFF\u200E\u200F\u202A-\u202E\u2060-\u206F]/g, '');
-  s = s.replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE63\uFF0D-]/g, '-');
-  s = s.replace(/[^A-Z2-9]/g, '');
-  if (s.length !== 24 || !s.startsWith('STAY')) {
-    return null;
+function normalizeLicensePhone(raw) {
+  if (!raw && raw !== 0) return '';
+  let digits = String(raw).replace(/\D/g, '');
+  if (digits.startsWith('00')) {
+    digits = digits.slice(2);
   }
-  return `STAY-${s.slice(4, 9)}-${s.slice(9, 14)}-${s.slice(14, 19)}-${s.slice(19, 24)}`;
+  if (digits.startsWith('60')) {
+    if (digits.startsWith('600')) {
+      digits = '60' + digits.slice(3);
+    }
+  } else if (digits.startsWith('0')) {
+    digits = '60' + digits.slice(1);
+  } else if (digits.startsWith('1') && (digits.length === 9 || digits.length === 10)) {
+    digits = '60' + digits;
+  }
+  if (digits.length < 9 || digits.length > 15) {
+    return '';
+  }
+  return digits;
+}
+
+function formatDisplayLicensePhone(raw) {
+  if (!raw) return '';
+  const clean = normalizeLicensePhone(raw);
+  if (!clean) return '';
+  if (clean.startsWith('60')) {
+    if (clean.length === 11) {
+      return '+60 ' + clean.slice(2, 4) + '-' + clean.slice(4, 7) + ' ' + clean.slice(7);
+    }
+    if (clean.length === 12) {
+      return '+60 ' + clean.slice(2, 4) + '-' + clean.slice(4, 8) + ' ' + clean.slice(8);
+    }
+    if (clean.length === 10) {
+      return '+60 ' + clean.slice(2, 3) + '-' + clean.slice(3, 6) + ' ' + clean.slice(6);
+    }
+    return '+60 ' + clean.slice(2);
+  }
+  return '+' + clean;
+}
+
+function updateLicensePhonePreview() {
+  const phoneInput = document.getElementById('licensePhoneInput');
+  const previewContainer = document.getElementById('licensePhonePreviewContainer');
+  const previewEl = document.getElementById('licensePhonePreview');
+  if (!phoneInput || !previewContainer || !previewEl) return;
+
+  const raw = phoneInput.value || '';
+  const formatted = formatDisplayLicensePhone(raw);
+
+  if (!raw.trim() || !formatted) {
+    previewContainer.style.display = 'none';
+    previewEl.textContent = '';
+  } else {
+    previewContainer.style.display = 'flex';
+    previewEl.textContent = formatted;
+  }
+}
+
+/**
+ * Intelligent License Key Extractor:
+ * - Uppercase
+ * - Strip zero-width and invisible characters
+ * - Treat dash-like characters (– — − ‐ ‑ etc.) as hyphens
+ * - Searches for STAY followed by 20 chars [A-Z2-9] (excluding 0, 1, I, O)
+ * - Allows spaces or no hyphens between blocks
+ * - Extracts first matching canonical key
+ */
+function extractLicenseKey(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  let s = raw.toUpperCase();
+  s = s.replace(/[\u200B-\u200D\uFEFF\u200E\u200F\u202A-\u202E\u2060-\u206F]/g, '');
+  s = s.replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE63\uFF0D]/g, '-');
+
+  const re = /(?:^|[^A-Z0-9])STAY(?:[\s-]*[A-Z2-9]){20}(?![A-Z0-9])/g;
+  const match = s.match(re);
+  if (!match || match.length === 0) return null;
+
+  const rawMatch = match[0];
+  const stayIdx = rawMatch.indexOf('STAY');
+  const cleanChars = rawMatch.slice(stayIdx).replace(/[^A-Z2-9]/g, '');
+  if (cleanChars.length !== 24 || !cleanChars.startsWith('STAY')) return null;
+
+  return `STAY-${cleanChars.slice(4, 9)}-${cleanChars.slice(9, 14)}-${cleanChars.slice(14, 19)}-${cleanChars.slice(19, 24)}`;
+}
+
+function cleanLicenseKey(rawKey) {
+  return extractLicenseKey(rawKey);
 }
 
 function formatLicenseKeyPreview(rawKey) {
   if (!rawKey || typeof rawKey !== 'string') return '';
+  const extracted = extractLicenseKey(rawKey);
+  if (extracted) return extracted;
+
   let s = rawKey.toUpperCase();
-  s = s.replace(/[\s\u200B-\u200D\uFEFF\u200E\u200F\u202A-\u202E\u2060-\u206F]/g, '');
+  s = s.replace(/[\u200B-\u200D\uFEFF\u200E\u200F\u202A-\u202E\u2060-\u206F]/g, '');
   s = s.replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE63\uFF0D-]/g, '-');
+  const stayIdx = s.indexOf('STAY');
+  if (stayIdx !== -1) {
+    s = s.slice(stayIdx);
+  }
   s = s.replace(/[^A-Z2-9]/g, '');
   if (!s) return '';
   const parts = [];
@@ -4677,10 +4771,19 @@ function updateLicenseKeyPreview() {
   if (!keyInput || !previewContainer || !previewEl) return;
 
   const raw = keyInput.value || '';
-  const preview = formatLicenseKeyPreview(raw);
-  const isFullClean = cleanLicenseKey(raw);
+  const extracted = extractLicenseKey(raw);
 
-  if (!raw.trim() || !preview) {
+  // If input contains a valid key embedded inside a larger message or unformatted blocks,
+  // extract and canonicalize the input value
+  if (extracted && raw.trim() !== extracted && (raw.length > 29 || raw.indexOf(' ') !== -1 || raw.indexOf('\n') !== -1 || !raw.startsWith('STAY-'))) {
+    keyInput.value = extracted;
+  }
+
+  const currentVal = keyInput.value || '';
+  const preview = formatLicenseKeyPreview(currentVal);
+  const isFullClean = cleanLicenseKey(currentVal);
+
+  if (!currentVal.trim() || !preview) {
     previewContainer.style.display = 'none';
     previewEl.textContent = '';
   } else {
@@ -4691,6 +4794,40 @@ function updateLicenseKeyPreview() {
     } else {
       previewEl.style.color = 'var(--primary, #3b82f6)';
     }
+  }
+}
+
+async function handlePasteLicenseKey() {
+  const isBM = appState.settings.language === 'bm';
+  const keyInput = document.getElementById('licenseKeyInput');
+  if (!keyInput) return;
+
+  let pastedText = '';
+  if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+    try {
+      pastedText = await navigator.clipboard.readText();
+    } catch (err) {
+      console.warn('Clipboard readText failed or permission denied:', err);
+    }
+  }
+
+  if (pastedText && pastedText.trim()) {
+    const extracted = extractLicenseKey(pastedText);
+    keyInput.value = extracted || pastedText.trim();
+    updateLicenseKeyPreview();
+    showToast(isBM ? '📋 Kunci ditampal dari papan keratan!' : '📋 Key pasted from clipboard!');
+    return;
+  }
+
+  // Friendly fallback if clipboard API is blocked, denied, or returns empty
+  const fallback = prompt(isBM
+    ? 'Tampal kunci lesen atau mesej WhatsApp anda di sini:'
+    : 'Paste your license key or WhatsApp message here:');
+  if (fallback && fallback.trim()) {
+    const extracted = extractLicenseKey(fallback);
+    keyInput.value = extracted || fallback.trim();
+    updateLicenseKeyPreview();
+    showToast(isBM ? '📋 Kunci dimasukkan!' : '📋 Key entered!');
   }
 }
 
@@ -4949,7 +5086,12 @@ async function activateWithServer(rawKey, rawPhone) {
     err.code = 'INVALID_CREDENTIALS';
     throw err;
   }
-  const cleanPhone = normalizePhoneNumber(rawPhone);
+  const cleanPhone = normalizeLicensePhone(rawPhone);
+  if (!cleanPhone) {
+    const err = new Error('Invalid license key or WhatsApp phone number.');
+    err.code = 'INVALID_CREDENTIALS';
+    throw err;
+  }
   const deviceId = getOrCreateDeviceId();
 
   const response = await fetch(`${LICENSE_API_URL}/activate`, {
@@ -4991,6 +5133,7 @@ function openLicenseModal() {
   if (phoneInput) phoneInput.value = appState.settings.ownerPhone || '';
   if (keyInput) keyInput.value = appState.licenseKey || '';
 
+  updateLicensePhonePreview();
   updateLicenseKeyPreview();
 
   document.getElementById('licenseModal').classList.add('active');
@@ -5014,7 +5157,8 @@ async function handleActivateLicenseSubmit(e) {
   }
 
   const cleanKey = cleanLicenseKey(rawKey);
-  if (!cleanKey) {
+  const cleanPhone = normalizeLicensePhone(inputPhone);
+  if (!cleanKey || !cleanPhone) {
     const friendlyMsg = getLicenseErrorMessage('INVALID_CREDENTIALS', isBM ? 'bm' : 'en');
     alert(`❌ ${friendlyMsg}`);
     return;
@@ -14970,7 +15114,7 @@ function openProSystemModal() {
   // Derive current state
   const devId = getOrCreateDeviceId();
   const maskedDev = devId.slice(0, 8) + '...';
-  const boundPhone = appState.licensePayload?.phone || (appState.settings.ownerPhone ? normalizePhoneNumber(appState.settings.ownerPhone) : '');
+  const boundPhone = appState.licensePayload?.phone || (appState.settings.ownerPhone ? normalizeLicensePhone(appState.settings.ownerPhone) : '');
   const daysLeft = appState.licenseDaysRemaining || 0;
   const isOnline = navigator.onLine;
 
@@ -15020,7 +15164,7 @@ function openProSystemModal() {
           ${boundPhone ? `
           <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
             <span style="color:var(--text-muted);"><i class="fa-brands fa-whatsapp"></i> WhatsApp:</span>
-            <span style="font-weight:700;">+${boundPhone}</span>
+            <span style="font-weight:700;">${formatDisplayLicensePhone(boundPhone) || ('+' + boundPhone)}</span>
           </div>` : ''}
           <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
             <span style="color:var(--text-muted);"><i class="fa-solid fa-arrows-rotate"></i> ${isBM ? 'Semakan Seterusnya' : 'Next Check'}:</span>
@@ -17285,10 +17429,36 @@ window.sendAgreementEmail = sendAgreementEmail;
 window.shareAgreementWhatsApp = shareAgreementWhatsApp;
 window.downloadAgreementPdf = downloadAgreementPdf;
 
+// License Engine Exports
+window.normalizeLicensePhone = normalizeLicensePhone;
+window.formatDisplayLicensePhone = formatDisplayLicensePhone;
+window.extractLicenseKey = extractLicenseKey;
+window.cleanLicenseKey = cleanLicenseKey;
+window.formatLicenseKeyPreview = formatLicenseKeyPreview;
+window.updateLicensePhonePreview = updateLicensePhonePreview;
+window.updateLicenseKeyPreview = updateLicenseKeyPreview;
+window.handlePasteLicenseKey = handlePasteLicenseKey;
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    normalizePhoneNumber,
+    normalizeLicensePhone,
+    formatDisplayLicensePhone,
+    extractLicenseKey,
+    cleanLicenseKey,
+    formatLicenseKeyPreview,
+    verifyLicenseToken,
+    evaluateLicenseState,
+    getLicenseErrorMessage
+  };
+}
+
 // Start application
-if (document.readyState === 'loading') {
-  window.addEventListener('DOMContentLoaded', initApp);
-} else {
-  initApp();
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
 }
 

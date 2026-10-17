@@ -14,7 +14,7 @@
   <meta http-equiv="Expires" content="0">
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=2.8.2">
+  <link rel="stylesheet" href="styles.css?v=2.8.3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -567,7 +567,7 @@
               <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
               <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
             </div>
-            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.8.2</span>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.8.3</span>
           </div>
 
           <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
@@ -1406,11 +1406,23 @@
           <form id="licenseForm" style="margin-top: 14px;">
             <div class="form-group">
               <label class="form-label required" data-i18n="lic_phone">Your Registered WhatsApp Phone Number</label>
-              <input type="tel" id="licensePhoneInput" class="form-control" placeholder="e.g. +60123456789" required>
+              <input type="tel" id="licensePhoneInput" class="form-control" placeholder="e.g. 012-345 6789" inputmode="tel" required>
+              <div id="licensePhonePreviewContainer" style="display: none; margin-top: 6px; font-size: 12px; padding: 6px 10px; border-radius: var(--radius-sm); background: var(--bg-surface-subtle); border: 1px dashed var(--border-color); align-items: center; justify-content: space-between;">
+                <span class="text-muted" style="font-size: 11px;" data-i18n="lic_phone_preview_label">We will use:</span>
+                <span id="licensePhonePreview" style="font-family: monospace; font-weight: 700; color: var(--primary); letter-spacing: 0.5px;"></span>
+              </div>
+              <span class="card-subtitle" id="licensePhoneHint" style="font-size: 11px; display:block; margin-top:4px; color:var(--text-muted);" data-i18n="lic_phone_hint">
+                Type the same WhatsApp number you used when buying. Do not add a 0 after +60.
+              </span>
             </div>
             <div class="form-group">
               <label class="form-label required" data-i18n="lic_key">Enter Your Activation License Key</label>
-              <input type="text" id="licenseKeyInput" class="form-control" placeholder="e.g. STAY-XXXXX-XXXXX-XXXXX-XXXXX" style="text-transform: uppercase; font-family: monospace; font-weight: 700; letter-spacing: 1px;" required>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id="licenseKeyInput" class="form-control" placeholder="e.g. STAY-XXXXX-XXXXX-XXXXX-XXXXX" style="text-transform: uppercase; font-family: monospace; font-weight: 700; letter-spacing: 1px; flex:1;" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" required>
+                <button type="button" class="btn btn-outline" id="btnPasteLicenseKey" style="white-space:nowrap; padding:0 12px; font-weight:600;" title="Paste from clipboard">
+                  <i class="fa-regular fa-clipboard"></i> <span data-i18n="btn_paste_key">Paste</span>
+                </button>
+              </div>
               <div id="licenseKeyPreviewContainer" style="display: none; margin-top: 6px; font-size: 12px; padding: 6px 10px; border-radius: var(--radius-sm); background: var(--bg-surface-subtle); border: 1px dashed var(--border-color); align-items: center; justify-content: space-between;">
                 <span class="text-muted" style="font-size: 11px;" data-i18n="lic_key_preview_label">Cleaned key:</span>
                 <span id="licenseKeyPreview" style="font-family: monospace; font-weight: 700; color: var(--primary); letter-spacing: 0.5px;"></span>
@@ -2060,7 +2072,7 @@
             </div>
             <div style="text-align:right;">
               <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">App Version</div>
-              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.8.2</div>
+              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.8.3</div>
             </div>
           </div>
 
@@ -3355,6 +3367,6 @@
       document.head.appendChild(s);
     }
   </script>
-  <script src="app.js?v=2.8.2"></script>
+  <script src="app.js?v=2.8.3"></script>
 </body>
 </html>
