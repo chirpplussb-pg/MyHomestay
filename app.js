@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.8.3';
+const APP_VERSION = '2.8.4';
 
 // SELLER WHATSAPP NUMBER - For Buy License inquiries (Single Source of Truth)
 const SELLER_WHATSAPP = '+60124022462';
@@ -21,6 +21,8 @@ const LICENSE_PUBLIC_KEY_JWK = {
   "x": "2O0fWckxh69Mk2ca1PLWBFzTrlR2GSOv32PxwOMcM4E",
   "y": "DbZzhpTDL8eGNd1UrHPQeKl4NoyIjzivQT2QCR51Tpk"
 };
+
+let testOverridePublicKeyJwk = null;
 
 const STORAGE_KEYS = {
   PROPERTIES: 'staymanager_properties_v2',
@@ -738,6 +740,7 @@ const TRANSLATIONS = {
     backup_reminder_msg: 'Reminder: You have bookings and have not exported a backup in the last 14 days.',
     btn_backup_now: 'Export Backup Now',
     clear_data_modal_title: 'Clear All Data?',
+    link_user_guide: 'User guide / Panduan pengguna',
     clear_data_modal_sub: 'Permanent action: All homestays, bookings, expenses & receipts will be erased from this device.',
     clear_data_backup_advice: 'Protect your data first!',
     clear_data_backup_desc: 'We strongly recommend exporting a full backup file (.json) to your device before clearing data.',
@@ -1354,7 +1357,8 @@ const TRANSLATIONS = {
     btn_confirm_delete: 'Sahkan Padam Semua',
     storage_quota_alert_title: 'Had Kuota Storan Penuh',
     storage_quota_alert_msg: 'Storan peranti hampir penuh. Sila eksport fail sandaran dari Tetapan dan padam resit lama untuk meneruskan penyimpanan.',
-    storage_protected_msg: 'Storan dilindungi daripada dipadam automatik oleh pelayar.'
+    storage_protected_msg: 'Storan dilindungi daripada dipadam automatik oleh pelayar.',
+    link_user_guide: 'User guide / Panduan pengguna'
   }
 };
 
@@ -4876,9 +4880,10 @@ async function getCryptoPublicKey() {
   if (!window.crypto || !window.crypto.subtle) {
     throw new Error('WebCrypto subtle is not supported in this environment');
   }
+  const keyJwk = testOverridePublicKeyJwk || LICENSE_PUBLIC_KEY_JWK;
   cachedCryptoPublicKey = await window.crypto.subtle.importKey(
     'jwk',
-    LICENSE_PUBLIC_KEY_JWK,
+    keyJwk,
     { name: 'ECDSA', namedCurve: 'P-256' },
     false,
     ['verify']
@@ -5121,9 +5126,9 @@ async function activateWithServer(rawKey, rawPhone) {
     appState.settings.ownerPhone = '+' + cleanPhone;
   }
 
-  await evaluateLicenseState();
+  const evalResult = await evaluateLicenseState();
   saveToStorage();
-  return data;
+  return { ...data, evalResult };
 }
 
 function openLicenseModal() {
@@ -5132,6 +5137,9 @@ function openLicenseModal() {
 
   if (phoneInput) phoneInput.value = appState.settings.ownerPhone || '';
   if (keyInput) keyInput.value = appState.licenseKey || '';
+
+  const errBox = document.getElementById('licenseActivationErrorBox');
+  if (errBox) errBox.style.display = 'none';
 
   updateLicensePhonePreview();
   updateLicenseKeyPreview();
@@ -5148,6 +5156,9 @@ async function handleActivateLicenseSubmit(e) {
 
   const inputPhone = phoneInput ? phoneInput.value.trim() : '';
   const rawKey = keyInput ? keyInput.value : '';
+
+  const errBox = document.getElementById('licenseActivationErrorBox');
+  if (errBox) errBox.style.display = 'none';
 
   if (!rawKey.trim() || !inputPhone) {
     alert(isBM 
@@ -5171,10 +5182,80 @@ async function handleActivateLicenseSubmit(e) {
   }
 
   try {
-    await activateWithServer(cleanKey, inputPhone);
-    closeAllModals();
-    renderApp();
-    showToast(isBM ? '🎉 Tahniah! Lesen Pro berjaya diaktifkan!' : '🎉 Congratulations! Pro License activated successfully!');
+    const activateResult = await activateWithServer(cleanKey, inputPhone);
+
+    // CRITICAL REQUIREMENT 1: Check appState.isLicensed after activateWithServer returns
+    if (appState.isLicensed === true) {
+      if (errBox) errBox.style.display = 'none';
+      try { closeAllModals(); } catch (_) {}
+      try { renderApp(); } catch (_) {}
+      showToast(isBM ? '🎉 Tahniah! Lesen Pro berjaya diaktifkan!' : '🎉 Congratulations! Pro License activated successfully!');
+      return;
+    }
+
+    // If appState.isLicensed is false, do NOT show success toast!
+    let refCode = 'ERR_VERIFY_FAILED';
+    let errTitleEn = 'Verification Failed';
+    let errTitleBm = 'Pengesahan Lesen Gagal';
+    let errMsgEn = 'The license could not be activated and verified on this device.';
+    let errMsgBm = 'Lesen tidak dapat diaktifkan dan disahkan pada peranti ini.';
+
+    const isSecure = (typeof window !== 'undefined' && window.isSecureContext !== false);
+    const hasCrypto = (typeof window !== 'undefined' && window.crypto && window.crypto.subtle);
+
+    if (!isSecure || !hasCrypto) {
+      refCode = !isSecure ? 'ERR_INSECURE_CONTEXT' : 'ERR_CRYPTO_UNAVAILABLE';
+      errTitleEn = 'Secure Connection Needed';
+      errTitleBm = 'Sambungan Selamat Diperlukan';
+      errMsgEn = 'A secure connection (HTTPS) is required to verify cryptographic license keys on this device. Please open the app over HTTPS or localhost.';
+      errMsgBm = 'Sambungan selamat (HTTPS) diperlukan untuk mengesahkan kunci lesen kriptografi pada peranti ini. Sila buka aplikasi melalui HTTPS atau localhost.';
+    } else if (appState.proHubState === 'CLOCK_ERROR' || activateResult?.evalResult?.clockError) {
+      refCode = 'ERR_CLOCK_ROLLBACK';
+      errTitleEn = 'Device Clock Problem';
+      errTitleBm = 'Masalah Jam Peranti';
+      errMsgEn = 'Your device date and time is earlier than previously recorded. Please set your device clock to the correct time and try again.';
+      errMsgBm = 'Tarikh dan masa peranti anda tidak tepat (lebih awal daripada rekod terdahulu). Sila betulkan jam peranti anda dan cuba lagi.';
+    } else if (activateResult?.evalResult?.expired || appState.proHubState === 'NEEDS_RECONNECT') {
+      refCode = 'ERR_TOKEN_EXPIRED';
+      errTitleEn = 'Activation Token Expired';
+      errTitleBm = 'Token Pengaktifan Tamat Tempoh';
+      errMsgEn = 'The activation token received has expired. Please check your internet connection and try activating again.';
+      errMsgBm = 'Token pengaktifan yang diterima telah tamat tempoh. Sila semak sambungan internet anda dan cuba aktifkan semula.';
+    } else if (activateResult?.evalResult?.error === 'DEVICE_MISMATCH' || (appState.licensePayload && appState.licensePayload.deviceId !== getOrCreateDeviceId())) {
+      refCode = 'ERR_DEVICE_MISMATCH';
+      errTitleEn = 'Device Mismatch';
+      errTitleBm = 'Peranti Tidak Sepadan';
+      errMsgEn = 'This license token could not be verified on this device due to a device ID mismatch. Please contact the seller if you changed phones.';
+      errMsgBm = 'Token lesen ini tidak dapat disahkan pada peranti ini kerana ID peranti tidak sepadan. Sila hubungi penjual jika anda menukar telefon.';
+    } else {
+      refCode = 'ERR_SIGNATURE_INVALID';
+      errTitleEn = 'License Verification Failed';
+      errTitleBm = 'Pengesahan Lesen Gagal';
+      errMsgEn = 'The license token signature could not be verified on this device. Please check your license key or contact the seller.';
+      errMsgBm = 'Tandatangan token lesen tidak dapat disahkan pada peranti ini. Sila semak kunci lesen anda atau hubungi penjual.';
+    }
+
+    const errTitleEl = document.getElementById('licenseActivationErrorTitle');
+    const errCodeEl = document.getElementById('licenseActivationErrorCode');
+    const errMsgEl = document.getElementById('licenseActivationErrorMsg');
+    const btnContact = document.getElementById('btnContactSellerActivationError');
+    const btnContactText = document.getElementById('btnContactSellerActivationErrorText');
+
+    if (errBox) {
+      if (errTitleEl) errTitleEl.textContent = isBM ? errTitleBm : errTitleEn;
+      if (errCodeEl) errCodeEl.textContent = refCode;
+      if (errMsgEl) errMsgEl.textContent = isBM ? errMsgBm : errMsgEn;
+      if (btnContactText) btnContactText.textContent = isBM ? 'Hubungi Penjual di WhatsApp' : 'Contact Seller on WhatsApp';
+      if (btnContact) {
+        btnContact.onclick = () => handleContactSellerWhatsApp('verification_failed', refCode);
+      }
+      errBox.style.display = 'block';
+      if (typeof errBox.scrollIntoView === 'function') {
+        errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    } else {
+      alert(`❌ [${refCode}] ${isBM ? errMsgBm : errMsgEn}`);
+    }
   } catch (err) {
     const errorCode = err.code || 'SERVER_ERROR';
     const friendlyMsg = getLicenseErrorMessage(errorCode, isBM ? 'bm' : 'en');
@@ -5184,7 +5265,28 @@ async function handleActivateLicenseSubmit(e) {
         handleContactSellerWhatsApp(errorCode === 'REVOKED' ? 'revoked' : 'device_limit_reached');
       }
     } else {
-      alert(`❌ ${friendlyMsg}`);
+      const errBox = document.getElementById('licenseActivationErrorBox');
+      const errTitleEl = document.getElementById('licenseActivationErrorTitle');
+      const errCodeEl = document.getElementById('licenseActivationErrorCode');
+      const errMsgEl = document.getElementById('licenseActivationErrorMsg');
+      const btnContact = document.getElementById('btnContactSellerActivationError');
+      const btnContactText = document.getElementById('btnContactSellerActivationErrorText');
+
+      if (errBox) {
+        if (errTitleEl) errTitleEl.textContent = isBM ? 'Ralat Pengaktifan' : 'Activation Error';
+        if (errCodeEl) errCodeEl.textContent = errorCode;
+        if (errMsgEl) errMsgEl.textContent = friendlyMsg;
+        if (btnContactText) btnContactText.textContent = isBM ? 'Hubungi Penjual di WhatsApp' : 'Contact Seller on WhatsApp';
+        if (btnContact) {
+          btnContact.onclick = () => handleContactSellerWhatsApp('general', errorCode);
+        }
+        errBox.style.display = 'block';
+        if (typeof errBox.scrollIntoView === 'function') {
+          errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else {
+        alert(`❌ ${friendlyMsg}`);
+      }
     }
   } finally {
     if (submitBtn) {
@@ -5308,7 +5410,7 @@ function handleBuyLicense() {
   window.open(BUY_PAGE_URL, '_blank', 'noopener');
 }
 
-function handleContactSellerWhatsApp(reason = 'general') {
+function handleContactSellerWhatsApp(reason = 'general', refCode = null) {
   const sellerDigits = (SELLER_WHATSAPP || '').replace(/[^0-9]/g, '');
   const devId = getOrCreateDeviceId().slice(0, 8);
   const isBM = appState.settings.language === 'bm';
@@ -5325,6 +5427,9 @@ function handleContactSellerWhatsApp(reason = 'general') {
   } else if (reason === 'presale') {
     reasonLineEn = 'Reason: Pre-activation inquiry';
     reasonLineBm = 'Sebab: Pertanyaan sebelum pengaktifan';
+  } else if (reason === 'verification_failed') {
+    reasonLineEn = `Reason: Verification failed${refCode ? ` (${refCode})` : ''}`;
+    reasonLineBm = `Sebab: Pengesahan lesen gagal${refCode ? ` (${refCode})` : ''}`;
   }
 
   const openingEn = reason === 'presale'
@@ -5335,9 +5440,12 @@ function handleContactSellerWhatsApp(reason = 'general') {
     ? 'Salam, saya ada soalan sebelum membeli StayManager Pro.'
     : 'Salam, saya memerlukan bantuan mengenai lesen StayManager Pro saya.';
 
+  const refSnippetEn = (refCode && reason !== 'verification_failed') ? `\nRef: ${refCode}` : '';
+  const refSnippetBm = (refCode && reason !== 'verification_failed') ? `\nRuj: ${refCode}` : '';
+
   const message = isBM
-    ? `${openingBm}\nID Peranti: ${devId}\n${reasonLineBm}\nTerima kasih!`
-    : `${openingEn}\nDevice ID: ${devId}\n${reasonLineEn}\nThank you!`;
+    ? `${openingBm}\nID Peranti: ${devId}${refSnippetBm}\n${reasonLineBm}\nTerima kasih!`
+    : `${openingEn}\nDevice ID: ${devId}${refSnippetEn}\n${reasonLineEn}\nThank you!`;
 
   const url = `https://wa.me/${sellerDigits}?text=${encodeURIComponent(message)}`;
   window.open(url, '_blank', 'noopener');
@@ -15089,6 +15197,74 @@ const USER_GUIDE_DATA = {
   ]
 };
 
+async function getSupportDiagnosticsData() {
+  const isSecure = typeof window !== 'undefined' && window.isSecureContext !== false;
+  const hasCryptoSubtle = !!(typeof window !== 'undefined' && window.crypto && window.crypto.subtle);
+  const devId = getOrCreateDeviceId().slice(0, 8);
+  const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  const hasToken = !!storedToken;
+
+  let verifyResult = 'None (No token stored)';
+  if (hasToken) {
+    if (appState.isLicensed) {
+      verifyResult = 'Valid (Active)';
+    } else {
+      try {
+        const v = await verifyLicenseToken(storedToken);
+        if (v.valid) {
+          verifyResult = 'Signature Valid (Unlicensed)';
+        } else {
+          verifyResult = `Invalid: ${v.error || 'Verification failed'}`;
+        }
+      } catch (e) {
+        verifyResult = `Error: ${e.message || 'Verification error'}`;
+      }
+    }
+  }
+
+  const savedLastSeen = localStorage.getItem(STORAGE_KEYS.LAST_SEEN_AT);
+  let clockStatus = 'OK (Normal)';
+  if (savedLastSeen) {
+    const lsMs = parseInt(savedLastSeen, 10);
+    if (!isNaN(lsMs) && (lsMs - Date.now() > 86400 * 1000)) {
+      clockStatus = 'Clock Rolled Back (Error)';
+    }
+  }
+
+  const proState = appState.proHubState || 'UNLICENSED';
+  const network = typeof navigator !== 'undefined' && navigator.onLine ? 'Online' : 'Offline';
+  const ua = typeof navigator !== 'undefined' && navigator.userAgent ? navigator.userAgent : 'Unknown';
+
+  return {
+    version: APP_VERSION,
+    isSecureContext: String(isSecure),
+    cryptoSubtle: hasCryptoSubtle ? 'Yes' : 'No',
+    deviceId: devId,
+    tokenStored: hasToken ? 'Yes' : 'No',
+    tokenVerification: verifyResult,
+    clockStatus: clockStatus,
+    proHubState: proState,
+    network: network,
+    userAgent: ua
+  };
+}
+
+function formatDiagnosticsForWhatsApp(diag) {
+  return [
+    '📋 *StayManager Support Diagnostics*',
+    `• App Version: v${diag.version}`,
+    `• Secure Context: ${diag.isSecureContext}`,
+    `• WebCrypto Subtle: ${diag.cryptoSubtle}`,
+    `• Short Device ID: ${diag.deviceId}`,
+    `• Token Stored: ${diag.tokenStored}`,
+    `• Token Verification: ${diag.tokenVerification}`,
+    `• Clock Status: ${diag.clockStatus}`,
+    `• Pro Hub State: ${diag.proHubState}`,
+    `• Network: ${diag.network}`,
+    `• User Agent: ${diag.userAgent}`
+  ].join('\n');
+}
+
 function openProSystemModal() {
   const modal = document.getElementById('proSystemModal');
   if (!modal) return;
@@ -15383,6 +15559,55 @@ function openProSystemModal() {
     });
     document.getElementById('btnProBuyDemo')?.addEventListener('click', handleBuyLicense);
   }
+
+  // Diagnostics Section (Pro Hub)
+  const diagContentEl = document.getElementById('proModalDiagnosticsContent');
+  if (diagContentEl) {
+    diagContentEl.innerHTML = '<div style="color:var(--text-muted); padding:4px 0;"><i class="fa-solid fa-spinner fa-spin"></i> Reading diagnostics...</div>';
+  }
+
+  getSupportDiagnosticsData().then(diag => {
+    if (diagContentEl) {
+      diagContentEl.innerHTML = `
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; margin-bottom: 6px;">
+          <div><span style="color:var(--text-main); font-weight:700;">Version:</span> v${escapeHtml(diag.version)}</div>
+          <div><span style="color:var(--text-main); font-weight:700;">Secure:</span> ${escapeHtml(diag.isSecureContext)}</div>
+          <div><span style="color:var(--text-main); font-weight:700;">Crypto:</span> ${escapeHtml(diag.cryptoSubtle)}</div>
+          <div><span style="color:var(--text-main); font-weight:700;">Device ID:</span> ${escapeHtml(diag.deviceId)}</div>
+          <div><span style="color:var(--text-main); font-weight:700;">Token Stored:</span> ${escapeHtml(diag.tokenStored)}</div>
+          <div><span style="color:var(--text-main); font-weight:700;">Clock:</span> ${escapeHtml(diag.clockStatus)}</div>
+          <div><span style="color:var(--text-main); font-weight:700;">Hub State:</span> ${escapeHtml(diag.proHubState)}</div>
+          <div><span style="color:var(--text-main); font-weight:700;">Network:</span> ${escapeHtml(diag.network)}</div>
+        </div>
+        <div style="margin-bottom: 4px;"><span style="color:var(--text-main); font-weight:700;">Verification:</span> ${escapeHtml(diag.tokenVerification)}</div>
+        <div style="font-size: 10px; color:var(--text-muted); line-height: 1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(diag.userAgent)}"><span style="color:var(--text-main); font-weight:700;">UA:</span> ${escapeHtml(diag.userAgent)}</div>
+      `;
+    }
+
+    const copyBtn = document.getElementById('btnCopyDiagnostics');
+    if (copyBtn) {
+      copyBtn.onclick = async () => {
+        const text = formatDiagnosticsForWhatsApp(diag);
+        try {
+          if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+          }
+          showToast(isBM ? '📋 Diagnostik disalin ke papan keratan!' : '📋 Diagnostics copied to clipboard!');
+        } catch (err) {
+          alert(text);
+        }
+      };
+    }
+  });
 
   modal.classList.add('active');
 }
@@ -17438,6 +17663,11 @@ window.formatLicenseKeyPreview = formatLicenseKeyPreview;
 window.updateLicensePhonePreview = updateLicensePhonePreview;
 window.updateLicenseKeyPreview = updateLicenseKeyPreview;
 window.handlePasteLicenseKey = handlePasteLicenseKey;
+window.handleActivateLicenseSubmit = handleActivateLicenseSubmit;
+window.getSupportDiagnosticsData = getSupportDiagnosticsData;
+window.formatDiagnosticsForWhatsApp = formatDiagnosticsForWhatsApp;
+window.handleContactSellerWhatsApp = handleContactSellerWhatsApp;
+window.openProSystemModal = openProSystemModal;
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -17449,7 +17679,21 @@ if (typeof module !== 'undefined' && module.exports) {
     formatLicenseKeyPreview,
     verifyLicenseToken,
     evaluateLicenseState,
-    getLicenseErrorMessage
+    getLicenseErrorMessage,
+    handleActivateLicenseSubmit,
+    getSupportDiagnosticsData,
+    formatDiagnosticsForWhatsApp,
+    handleContactSellerWhatsApp,
+    openProSystemModal,
+    setTestLicensePublicKey: function (jwk) {
+      testOverridePublicKeyJwk = jwk;
+      cachedCryptoPublicKey = null;
+    },
+    appState,
+    activateWithServer,
+    getCryptoPublicKey,
+    STORAGE_KEYS,
+    APP_VERSION
   };
 }
 

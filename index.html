@@ -14,7 +14,7 @@
   <meta http-equiv="Expires" content="0">
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=2.8.3">
+  <link rel="stylesheet" href="styles.css?v=2.8.4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -567,7 +567,7 @@
               <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
               <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
             </div>
-            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.8.3</span>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.8.4</span>
           </div>
 
           <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
@@ -1441,6 +1441,16 @@
             <button type="submit" class="btn btn-primary btn-block" id="btnActivateLicenseSubmit" data-i18n="btn_activate_app">
               <i class="fa-solid fa-key"></i> Activate Full App
             </button>
+            <div id="licenseActivationErrorBox" style="display: none; margin-top: 12px; padding: 12px 14px; border-radius: var(--radius-md); background: rgba(239, 68, 68, 0.08); border: 1px solid var(--danger); color: var(--text-main);">
+              <div style="font-weight: 700; font-size: 13.5px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i><span id="licenseActivationErrorTitle">Verification Failed</span></span>
+                <span id="licenseActivationErrorCode" style="font-family: monospace; font-size: 10.5px; padding: 2px 6px; background: rgba(239, 68, 68, 0.15); color: var(--danger); border-radius: 4px; font-weight: 700;">ERR_CODE</span>
+              </div>
+              <p id="licenseActivationErrorMsg" style="font-size: 12px; line-height: 1.45; margin: 0 0 10px 0; color: var(--text-muted);"></p>
+              <button type="button" class="btn btn-outline btn-block btn-sm" id="btnContactSellerActivationError" style="border-color: var(--danger); color: var(--danger); font-weight: 600;">
+                <i class="fa-brands fa-whatsapp" style="margin-right: 6px;"></i><span id="btnContactSellerActivationErrorText">Contact Seller on WhatsApp</span>
+              </button>
+            </div>
           </form>
 
           <div class="license-buy-section">
@@ -1451,6 +1461,11 @@
             <div style="text-align:center; margin-top:10px;">
               <a href="javascript:void(0)" id="linkPresaleWhatsApp" style="font-size:12px; color:var(--text-muted); text-decoration:underline; cursor:pointer;">
                 <i class="fa-brands fa-whatsapp" style="color:var(--whatsapp); margin-right:4px;"></i><span data-i18n="presale_questions">Questions before buying? Ask on WhatsApp</span>
+              </a>
+            </div>
+            <div style="text-align:center; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border-color);">
+              <a href="./user-guide.html" target="_blank" rel="noopener" id="linkUserGuideLicenseModal" style="font-size:12px; color:var(--primary); text-decoration:underline; display:inline-flex; align-items:center; gap:5px; font-weight:600;">
+                <i class="fa-solid fa-book-open"></i> <span data-i18n="link_user_guide">User guide / Panduan pengguna</span>
               </a>
             </div>
           </div>
@@ -2072,7 +2087,7 @@
             </div>
             <div style="text-align:right;">
               <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">App Version</div>
-              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.8.3</div>
+              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.8.4</div>
             </div>
           </div>
 
@@ -2112,6 +2127,26 @@
                 <div style="font-size:10.5px; color:var(--text-muted);">Urus profil, akaun bank & tetapan</div>
               </div>
             </button>
+          </div>
+
+          <!-- Support Diagnostics Section -->
+          <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color);" id="proModalDiagnosticsSection">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+              <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">
+                <i class="fa-solid fa-stethoscope" style="margin-right: 4px;"></i> <span data-i18n="pro_diagnostics_title">Support Diagnostics</span>
+              </span>
+              <button type="button" class="btn btn-outline btn-xs" id="btnCopyDiagnostics" style="font-size: 11px; padding: 4px 10px; font-weight: 600;">
+                <i class="fa-regular fa-copy" style="margin-right: 4px;"></i> <span data-i18n="btn_copy_diagnostics">Copy Diagnostics</span>
+              </button>
+            </div>
+            <div id="proModalDiagnosticsContent" style="background: var(--bg-surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 11px; font-family: monospace; line-height: 1.5; color: var(--text-muted); word-break: break-all;">
+              <!-- Generated dynamically by openProSystemModal -->
+            </div>
+            <div style="text-align:center; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border-color);">
+              <a href="./user-guide.html" target="_blank" rel="noopener" id="linkUserGuideProHub" style="font-size:12px; color:var(--primary); text-decoration:underline; display:inline-flex; align-items:center; gap:5px; font-weight:600;">
+                <i class="fa-solid fa-book-open"></i> <span data-i18n="link_user_guide">User guide / Panduan pengguna</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -3367,6 +3402,6 @@
       document.head.appendChild(s);
     }
   </script>
-  <script src="app.js?v=2.8.3"></script>
+  <script src="app.js?v=2.8.4"></script>
 </body>
 </html>
