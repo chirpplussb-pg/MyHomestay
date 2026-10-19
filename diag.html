@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex"><title>Activation test</title>
+<style>
+:root{--bg:#f6f8f9;--ink:#14232b;--muted:#4f5f69;--line:#d6dfe4;--card:#fff;--ok:#0b7a3b;--bad:#b42318;--warn:#9a6700;--accent:#0369a1;color-scheme:light dark}
+@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--ink:#e6edf3;--muted:#a3b3bf;--line:#2b3b53;--card:#16213a;--ok:#5fd18a;--bad:#ff8a80;--warn:#e0b04c;--accent:#62c3f2}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:16px;max-width:42rem;margin:0 auto}
+h1{font-size:1.25rem;margin:.2rem 0 .3rem}p{margin:.4rem 0;color:var(--muted);font-size:.92rem}
+label{display:block;font-weight:600;margin:.9rem 0 .25rem;font-size:.92rem}
+input{width:100%;font:inherit;padding:.7rem .8rem;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+button{font:inherit;font-weight:650;padding:.8rem 1rem;border-radius:10px;border:0;background:var(--accent);color:#fff;margin-top:1rem;width:100%;min-height:46px}
+@media(prefers-color-scheme:dark){button{color:#06202f}}
+button.secondary{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.row{border-bottom:1px solid var(--line);padding:.55rem 0;word-break:break-word}.row b{display:block}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.det{color:var(--muted);font-size:.88rem}
+.verdict{margin-top:1rem;padding:.8rem 1rem;border-radius:10px;border:2px solid var(--line);background:var(--card);font-weight:600}
+</style></head><body>
+<h1>Activation test</h1>
+<p>Runs the full activation on this phone and shows what happens at each step. It never stores your key. It uses a one-off test device ID, so it uses one device slot on the license.</p>
+<label for="ph">WhatsApp phone number</label><input id="ph" type="tel" inputmode="tel" autocomplete="off" placeholder="e.g. 012-345 6789">
+<label for="ky">License key</label><input id="ky" type="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="STAY-XXXXX-XXXXX-XXXXX-XXXXX">
+<button id="go" type="button">Run test</button>
+<div id="out" aria-live="polite"></div>
+<button id="copy" class="secondary" type="button" style="display:none">Copy report</button>
+<script>
+(function(){
+var API="https://staymanager-license-server.homestaymanager.workers.dev", JWK={kty:"EC",crv:"P-256",x:"2O0fWckxh69Mk2ca1PLWBFzTrlR2GSOv32PxwOMcM4E",y:"DbZzhpTDL8eGNd1UrHPQeKl4NoyIjzivQT2QCR51Tpk"};
+var out=document.getElementById('out'), lines=[];
+function add(cls,title,detail){var d=document.createElement('div');d.className='row';d.innerHTML='<b class="'+cls+'"></b><span class="det"></span>';d.firstChild.textContent=(cls==='ok'?'\u2714 ':cls==='bad'?'\u2718 ':'\u2022 ')+title;d.lastChild.textContent=detail||'';out.appendChild(d);lines.push((cls==='ok'?'[OK] ':cls==='bad'?'[FAIL] ':'[..] ')+title+(detail?' - '+detail:''));}
+function b64uToBytes(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';var b=atob(s),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
+function b64uToStr(s){return new TextDecoder().decode(b64uToBytes(s));}
+function cleanKey(raw){var u=String(raw||'').toUpperCase().replace(/[\u200B-\u200D\uFEFF]/g,'').replace(/[^A-Z0-9]/g,'');var i=u.indexOf('STAY');if(i<0)return null;var body=u.slice(i+4,i+24);if(!/^[A-HJ-NP-Z2-9]{20}$/.test(body))return null;return 'STAY-'+body.match(/.{5}/g).join('-');}
+function cleanPhone(raw){var d=String(raw||'').replace(/\D/g,'');if(d.indexOf('00')===0)d=d.slice(2);if(d.indexOf('60')===0){if(d.indexOf('600')===0)d='60'+d.slice(3);}else if(d.indexOf('0')===0)d='60'+d.slice(1);else if(d.charAt(0)==='1'&&(d.length===9||d.length===10))d='60'+d;return(d.length<9||d.length>15)?'':d;}
+function uuid(){return (self.crypto&&crypto.randomUUID)?crypto.randomUUID():('t'+Date.now().toString(36)+Math.random().toString(36).slice(2,10));}
+async function run(){
+  out.innerHTML='';lines=[];document.getElementById('copy').style.display='none';
+  var key=cleanKey(document.getElementById('ky').value), phone=cleanPhone(document.getElementById('ph').value);
+  add('..','Environment','secure page (https): '+(window.isSecureContext!==false)+' | crypto.subtle: '+!!(self.crypto&&crypto.subtle)+' | online: '+navigator.onLine+' | time: '+new Date().toISOString()+' | browser: '+navigator.userAgent.slice(0,110));
+  if(!(self.crypto&&crypto.subtle)){add('bad','Secure crypto engine is missing','This browser or page cannot verify licenses. Open the app in Chrome or Safari over https.');return finish('The browser has no secure crypto engine.');}
+  if(!key){add('bad','Key not recognised','Paste the key again.');return finish('Key not recognised.');}
+  if(!phone){add('bad','Phone number not recognised','Check the number.');return finish('Phone not recognised.');}
+  add('ok','Inputs understood','phone used: +'+phone.slice(0,2)+' ...'+phone.slice(-4));
+  var deviceId='diagtest-'+uuid(), res, data;
+  try{ res=await fetch(API+'/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:key,phone:phone,deviceId:deviceId})}); }
+  catch(e){add('bad','Could not reach the license server',String(e&&e.message||e));return finish('Network or server problem.');}
+  try{data=await res.json();}catch(e){data=null;}
+  add(res.ok?'ok':'bad','Server answered','HTTP '+res.status+(data&&data.error?' | '+data.error:'')+(data&&data.deviceCount!==undefined?' | devices '+data.deviceCount:''));
+  if(!res.ok||!data||!data.token){return finish(res.ok?'Server answered OK but sent no token.':'The server refused the activation ('+((data&&data.error)||res.status)+').');}
+  var t=String(data.token), parts=t.split('.');
+  add(parts.length===3?'ok':'bad','Token has 3 parts','lengths: '+parts.map(function(p){return p.length}).join(' / ')+' | has whitespace: '+/\s/.test(t));
+  if(parts.length!==3)return finish('The token is malformed.');
+  var header,payload,sig;
+  try{header=JSON.parse(b64uToStr(parts[0]));payload=JSON.parse(b64uToStr(parts[1]));sig=b64uToBytes(parts[2]);}catch(e){add('bad','Token cannot be decoded',String(e&&e.message||e));return finish('The token cannot be decoded.');}
+  add('..','Token header',JSON.stringify(header));
+  add(sig.length===64?'ok':'bad','Signature length is '+sig.length+' bytes','expected 64 (raw ECDSA P-256)');
+  var now=Math.floor(Date.now()/1000);
+  add(payload.deviceId===deviceId?'ok':'bad','Token is bound to this test device',payload.deviceId===deviceId?'matches':'token deviceId differs');
+  add((payload.exp>now&&payload.iat<=now+300)?'ok':'warn','Token times vs this phone clock','issued '+new Date(payload.iat*1000).toISOString()+' | expires '+new Date(payload.exp*1000).toISOString()+' | phone clock skew vs issue time: '+(now-payload.iat)+' s');
+  var valid=false;
+  try{var pub=await crypto.subtle.importKey('jwk',JWK,{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
+      valid=await crypto.subtle.verify({name:'ECDSA',hash:{name:'SHA-256'}},pub,sig,new TextEncoder().encode(parts[0]+'.'+parts[1]));}
+  catch(e){add('bad','Signature check crashed',String(e&&e.message||e));return finish('The signature check could not run on this phone.');}
+  add(valid?'ok':'bad','Signature check with the key built into the app',valid?'VALID':'INVALID');
+  finish(valid?'Everything checks out here: the server token is valid for the app\'s key. If the app still fails, the fault is inside the app on this phone.':'The token from the server does NOT match the public key built into the app. The server\'s signing key and the app\'s public key are different.');
+}
+function finish(v){var d=document.createElement('div');d.className='verdict';d.textContent='Result: '+v;out.appendChild(d);lines.push('RESULT: '+v);var c=document.getElementById('copy');c.style.display='block';}
+document.getElementById('go').addEventListener('click',function(){run().catch(function(e){add('bad','Unexpected error',String(e&&e.message||e));finish('Unexpected error.');});});
+document.getElementById('copy').addEventListener('click',function(){var txt='StayManager activation test\n'+lines.join('\n');if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){alert('Report copied');},function(){prompt('Copy this report',txt);});}else{prompt('Copy this report',txt);}});
+})();
+</script></body></html>
