@@ -25,7 +25,7 @@ button.secondary{background:transparent;color:var(--accent);border:1px solid var
 <button id="copy" class="secondary" type="button" style="display:none">Copy report</button>
 <script>
 (function(){
-var API="https://staymanager-license-server.homestaymanager.workers.dev", JWK={kty:"EC",crv:"P-256",x:"2O0fWckxh69Mk2ca1PLWBFzTrlR2GSOv32PxwOMcM4E",y:"DbZzhpTDL8eGNd1UrHPQeKl4NoyIjzivQT2QCR51Tpk"};
+var API="https://staymanager-license-server.homestaymanager.workers.dev", JWK={kty:"EC",crv:"P-256",x:"g8DbZ8uU9l8gh7DsZ6vv-yGfR5vvwr6cejm36gUnolY",y:"idh0kTdK__lGZ6lqqWVznuLZLa6lWgdQj-38EV12tm0"};
 var out=document.getElementById('out'), lines=[];
 function add(cls,title,detail){var d=document.createElement('div');d.className='row';d.innerHTML='<b class="'+cls+'"></b><span class="det"></span>';d.firstChild.textContent=(cls==='ok'?'\u2714 ':cls==='bad'?'\u2718 ':'\u2022 ')+title;d.lastChild.textContent=detail||'';out.appendChild(d);lines.push((cls==='ok'?'[OK] ':cls==='bad'?'[FAIL] ':'[..] ')+title+(detail?' - '+detail:''));}
 function b64uToBytes(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';var b=atob(s),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}

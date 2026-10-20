@@ -1,1 +1,1 @@
-{"version":"2.8.4","releaseDate":"2026-10-17","changelog":"StayManager v2.8.4: Verification of license activation results to eliminate silent failures, specific bilingual troubleshooting guidance with error reference codes, and support diagnostics tool in Pro Hub."}
+{"version":"2.8.5","releaseDate":"2026-10-20","changelog":"StayManager v2.8.5: New license signing key. Devices activated earlier must activate once more with their key and phone number. No booking data is affected."}

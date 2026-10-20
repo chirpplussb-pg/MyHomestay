@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.8.4';
+const APP_VERSION = '2.8.5';
 
 // SELLER WHATSAPP NUMBER - For Buy License inquiries (Single Source of Truth)
 const SELLER_WHATSAPP = '+60124022462';
@@ -18,8 +18,8 @@ const BUY_PAGE_URL = LICENSE_API_URL + '/buy';
 const LICENSE_PUBLIC_KEY_JWK = {
   "kty": "EC",
   "crv": "P-256",
-  "x": "2O0fWckxh69Mk2ca1PLWBFzTrlR2GSOv32PxwOMcM4E",
-  "y": "DbZzhpTDL8eGNd1UrHPQeKl4NoyIjzivQT2QCR51Tpk"
+  "x": "g8DbZ8uU9l8gh7DsZ6vv-yGfR5vvwr6cejm36gUnolY",
+  "y": "idh0kTdK__lGZ6lqqWVznuLZLa6lWgdQj-38EV12tm0"
 };
 
 let testOverridePublicKeyJwk = null;
