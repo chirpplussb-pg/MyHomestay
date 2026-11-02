@@ -1764,6 +1764,14 @@ body {
   to { opacity: 1; }
 }
 
+.modal-backdrop#monthlyInvoicesModal {
+  z-index: 1010;
+}
+
+.modal-backdrop#whatsappModal {
+  z-index: 1050;
+}
+
 .bottom-sheet {
   width: 100%;
   max-width: 480px;

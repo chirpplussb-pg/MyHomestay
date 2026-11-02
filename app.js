@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.8.5';
+const APP_VERSION = '2.8.4';
 
 // SELLER WHATSAPP NUMBER - For Buy License inquiries (Single Source of Truth)
 const SELLER_WHATSAPP = '+60124022462';
@@ -18,8 +18,8 @@ const BUY_PAGE_URL = LICENSE_API_URL + '/buy';
 const LICENSE_PUBLIC_KEY_JWK = {
   "kty": "EC",
   "crv": "P-256",
-  "x": "g8DbZ8uU9l8gh7DsZ6vv-yGfR5vvwr6cejm36gUnolY",
-  "y": "idh0kTdK__lGZ6lqqWVznuLZLa6lWgdQj-38EV12tm0"
+  "x": "2O0fWckxh69Mk2ca1PLWBFzTrlR2GSOv32PxwOMcM4E",
+  "y": "DbZzhpTDL8eGNd1UrHPQeKl4NoyIjzivQT2QCR51Tpk"
 };
 
 let testOverridePublicKeyJwk = null;
@@ -3827,7 +3827,7 @@ function setupEventListeners() {
             ? 'invoice' 
             : 'quotation';
       closeAllModals();
-      openPdfDocModal(b, docType);
+      openPdfDocModal(b, docType, appState.activeWaMonthIndex);
     } else {
       showToast(appState.settings.language === 'bm' ? 'Sila pilih tempahan terlebih dahulu.' : 'Please select a booking first.');
     }
@@ -3967,7 +3967,7 @@ function setupEventListeners() {
             ? 'invoice' 
             : 'quotation';
       closeAllModals();
-      openPdfDocModal(b, docType);
+      openPdfDocModal(b, docType, appState.activeWaMonthIndex);
       setTimeout(() => {
         downloadPdfDocument();
       }, 350);
@@ -6873,8 +6873,10 @@ function renderBookingsTab() {
   // Attach event handlers
   container.querySelectorAll('.btn-open-monthly-invoices').forEach(btn => {
     btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const bid = e.currentTarget.getAttribute('data-bid');
-      const b = appState.bookings.find(x => x.id === bid);
+      const b = appState.bookings.find(x => String(x.id) === String(bid));
       if (b) openMonthlyInvoicesModal(b);
     });
   });
@@ -6914,9 +6916,11 @@ function renderBookingsTab() {
 
   container.querySelectorAll('.btn-open-wa').forEach(btn => {
     btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const bid = e.currentTarget.getAttribute('data-bid');
       const waTemplate = e.currentTarget.getAttribute('data-wa') || 'quotation';
-      const b = appState.bookings.find(x => x.id === bid);
+      const b = appState.bookings.find(x => String(x.id) === String(bid));
       if (b) {
         // If monthly invoice template, pick first pending month
         if (b.rentalType === 'monthly' && waTemplate === 'monthly_invoice') {
@@ -9092,10 +9096,13 @@ function handleProcessDepositRefund(e) {
 // ==========================================================================
 
 function getOrInitMonthlyInvoices(booking) {
+  if (!booking) return [];
   const duration = booking.monthlyDuration || 1;
   if (!booking.monthlyInvoices || !Array.isArray(booking.monthlyInvoices) || booking.monthlyInvoices.length === 0) {
     const invoices = [];
-    const startD = new Date(booking.checkIn + 'T00:00:00');
+    const checkInStr = booking.checkIn || formatLocalDate(new Date());
+    const parsedStart = new Date(checkInStr.includes('T') ? checkInStr : checkInStr + 'T00:00:00');
+    const startD = isNaN(parsedStart.getTime()) ? new Date() : parsedStart;
     
     for (let i = 1; i <= duration; i++) {
       const curStart = new Date(startD);
@@ -9110,9 +9117,11 @@ function getOrInitMonthlyInvoices(booking) {
       // Month 1 is marked paid if booking is confirmed / checked-in or depositPaid >= monthlyRate
       const isFirstMonthPaid = (i === 1 && (booking.status === 'confirmed' || booking.status === 'checked-in' || booking.status === 'checked-out' || (booking.depositPaid && booking.depositPaid >= (booking.monthlyRate || 0))));
 
+      const bIdStr = String(booking.id || '');
+      const idShort = bIdStr.slice(-5).toUpperCase() || '10001';
       invoices.push({
         monthIndex: i,
-        invoiceNo: `INV-M${i}-${booking.id.slice(-5).toUpperCase()}`,
+        invoiceNo: `INV-M${i}-${idShort}`,
         periodStart: formatLocalDate(curStart),
         periodEnd: formatLocalDate(curEnd),
         dueDate: formatLocalDate(dueDate),
@@ -9131,13 +9140,23 @@ function getOrInitMonthlyInvoices(booking) {
 }
 
 function openMonthlyInvoicesModal(booking) {
+  if (!booking) return;
   appState.activeWaBooking = booking;
   const prop = getPropertyById(booking.propertyId);
   const isBM = appState.settings.language === 'bm';
 
-  document.getElementById('monthlyInvoicesTenantSubtitle').textContent = `${isBM ? 'Penyewa' : 'Tenant'}: ${booking.guestName} (${booking.guestPhone || '-'}) • ${prop.name}`;
-  document.getElementById('mInvRateDisplay').textContent = `${formatCurrency(booking.monthlyRate || 0)} / ${isBM ? 'bulan' : 'month'}`;
-  document.getElementById('mInvPeriodDisplay').textContent = `${booking.checkIn} → ${booking.checkOut} (${booking.monthlyDuration || 6} ${t('months')})`;
+  const tenantSubtitle = document.getElementById('monthlyInvoicesTenantSubtitle');
+  if (tenantSubtitle) {
+    tenantSubtitle.textContent = `${isBM ? 'Penyewa' : 'Tenant'}: ${booking.guestName || '-'} (${booking.guestPhone || '-'}) • ${prop.name || 'Homestay'}`;
+  }
+  const rateDisplay = document.getElementById('mInvRateDisplay');
+  if (rateDisplay) {
+    rateDisplay.textContent = `${formatCurrency(booking.monthlyRate || 0)} / ${isBM ? 'bulan' : 'month'}`;
+  }
+  const periodDisplay = document.getElementById('mInvPeriodDisplay');
+  if (periodDisplay) {
+    periodDisplay.textContent = `${booking.checkIn || '-'} → ${booking.checkOut || '-'} (${booking.monthlyDuration || 6} ${t('months')})`;
+  }
 
   const btnEditAgr = document.getElementById('btnEditTenancyAgreementFromHub');
   if (btnEditAgr) {
@@ -9164,12 +9183,18 @@ function openMonthlyInvoicesModal(booking) {
     };
   }
 
-  renderMonthlyInvoicesList(booking);
-  document.getElementById('monthlyInvoicesModal').classList.add('active');
+  try {
+    renderMonthlyInvoicesList(booking);
+  } catch (err) {
+    console.error('Error rendering monthly invoices list:', err);
+  }
+  const modal = document.getElementById('monthlyInvoicesModal');
+  if (modal) modal.classList.add('active');
 }
 
 function renderMonthlyInvoicesList(booking) {
   const container = document.getElementById('monthlyInvoicesList');
+  if (!container) return;
   container.innerHTML = '';
 
   const invoices = getOrInitMonthlyInvoices(booking);
@@ -9240,6 +9265,8 @@ function renderMonthlyInvoicesList(booking) {
   // Attach handlers
   container.querySelectorAll('.btn-send-month-inv').forEach(btn => {
     btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const mIdx = parseInt(e.currentTarget.getAttribute('data-m')) || 1;
       openWhatsAppModal(booking, 'monthly_invoice', mIdx);
     });
@@ -9247,6 +9274,8 @@ function renderMonthlyInvoicesList(booking) {
 
   container.querySelectorAll('.btn-send-month-rec').forEach(btn => {
     btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const mIdx = parseInt(e.currentTarget.getAttribute('data-m')) || 1;
       openWhatsAppModal(booking, 'monthly_rent_receipt', mIdx);
     });
@@ -9254,6 +9283,8 @@ function renderMonthlyInvoicesList(booking) {
 
   container.querySelectorAll('.btn-open-month-pdf').forEach(btn => {
     btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const mIdx = parseInt(e.currentTarget.getAttribute('data-m')) || 1;
       const inv = invoices.find(x => x.monthIndex === mIdx);
       const isPaid = inv && inv.status === 'paid';
@@ -9263,6 +9294,8 @@ function renderMonthlyInvoicesList(booking) {
 
   container.querySelectorAll('.btn-toggle-month-paid').forEach(btn => {
     btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const mIdx = parseInt(e.currentTarget.getAttribute('data-m')) || 1;
       toggleMonthlyInvoicePaid(booking.id, mIdx);
     });
@@ -9270,7 +9303,7 @@ function renderMonthlyInvoicesList(booking) {
 }
 
 function toggleMonthlyInvoicePaid(bookingId, monthIndex) {
-  const booking = appState.bookings.find(b => b.id === bookingId);
+  const booking = appState.bookings.find(b => String(b.id) === String(bookingId));
   if (!booking) return;
 
   const invoices = getOrInitMonthlyInvoices(booking);
@@ -10646,12 +10679,17 @@ function handleSaveExpense(e) {
 // ==========================================================================
 
 function openWhatsAppModal(booking, templateType = 'quotation', monthIndex = 1) {
+  if (!booking) return;
+  closeAllModals();
   appState.activeWaBooking = booking;
   appState.activeWaTemplate = templateType;
   appState.activeWaMonthIndex = monthIndex || 1;
 
   const prop = getPropertyById(booking.propertyId);
-  document.getElementById('waGuestRecipient').textContent = `${t('wa_to')}: ${booking.guestName} (${booking.guestPhone || 'No Phone Entered'})`;
+  const guestRecip = document.getElementById('waGuestRecipient');
+  if (guestRecip) {
+    guestRecip.textContent = `${t('wa_to')}: ${booking.guestName || '-'} (${booking.guestPhone || 'No Phone Entered'})`;
+  }
 
   const isMonthly = booking.rentalType === 'monthly';
 
@@ -10662,7 +10700,7 @@ function openWhatsAppModal(booking, templateType = 'quotation', monthIndex = 1) 
     if (tmpl === 'monthly_invoice' || tmpl === 'monthly_rent_receipt') {
       btn.style.display = isMonthly ? 'inline-flex' : 'none';
     } else if (tmpl === 'refund_receipt') {
-      btn.style.display = (isMonthly || booking.securityDeposit > 0) ? 'inline-flex' : 'none';
+      btn.style.display = (isMonthly || (booking.securityDeposit && booking.securityDeposit > 0)) ? 'inline-flex' : 'none';
     } else {
       btn.style.display = 'inline-flex';
     }
@@ -10700,8 +10738,13 @@ function openWhatsAppModal(booking, templateType = 'quotation', monthIndex = 1) 
     waQuotationValidityInput.value = booking.quotationValidityDays || appState.settings.quotationValidityDays || 3;
   }
 
-  renderWhatsAppPreview();
-  document.getElementById('whatsappModal').classList.add('active');
+  try {
+    renderWhatsAppPreview();
+  } catch (err) {
+    console.error('Error rendering WhatsApp preview:', err);
+  }
+  const modal = document.getElementById('whatsappModal');
+  if (modal) modal.classList.add('active');
 }
 
 function populateDispatchRecipients(selectedContactId = null, preselectedCategory = null) {
@@ -10965,6 +11008,7 @@ function handleCopyServiceDispatchText() {
 }
 
 function generateWhatsAppMessage(booking, templateType, langOverride = null) {
+  const todayStr = formatLocalDate(new Date());
   const prop = getPropertyById(booking.propertyId);
   const currency = appState.settings.currency || 'RM';
   const settings = appState.settings;
@@ -11033,8 +11077,11 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
   const extraUtility = parseFloat(document.getElementById('waInvoiceExtraInput')?.value) || 0;
   const rentAmt = booking.monthlyRate || 0;
   const totalMonthDue = rentAmt + extraUtility;
-  const invNo = `INV-M${mIndex}-${booking.id.slice(-5).toUpperCase()}`;
-  const recNo = `REC-RENT-M${mIndex}-${booking.id.slice(-5).toUpperCase()}`;
+  const bIdStr = String(booking.id || '');
+  const idShort = bIdStr.slice(-5).toUpperCase() || '10001';
+  const idQuoShort = bIdStr.slice(-6).toUpperCase() || '100001';
+  const invNo = `INV-M${mIndex}-${idShort}`;
+  const recNo = `REC-RENT-M${mIndex}-${idShort}`;
 
   // Quotation Validity Calculation
   const validityDays = parseInt(booking.quotationValidityDays) || parseInt(settings.quotationValidityDays) || 3;
@@ -11049,7 +11096,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
       case 'quotation':
         if (isMonthly) {
           msg = `📋 *SEBUT HARGA SEWAAN BULANAN - ${prop.name.toUpperCase()}*\n` +
-            `No Rujukan: QUO-M-${booking.id.slice(-6).toUpperCase()}\n\n` +
+            `No Rujukan: QUO-M-${idQuoShort}\n\n` +
             `Salam sejahtera *${booking.guestName}*, terima kasih atas pertanyaan sewaan bulanan anda! Berikut adalah perincian pakej sewaan:\n\n` +
             `${unitTitleBM}\n` +
             `📍 *Lokasi:* ${prop.address || 'Alamat Unit'}\n` +
@@ -11075,7 +11122,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
             `4. Sebut harga ini sah selama *${validityDays} hari* sehingga *${expDateStr}*. ✨🏡`;
         } else {
           msg = `📋 *SEBUT HARGA RASMI - ${prop.name.toUpperCase()}*\n` +
-            `No Rujukan: QUO-${booking.id.slice(-6).toUpperCase()}\n\n` +
+            `No Rujukan: QUO-${idQuoShort}\n\n` +
             `Salam sejahtera *${booking.guestName}*, terima kasih atas pertanyaan anda! Berikut adalah perincian harga bagi penginapan anda:\n\n` +
             `${unitTitleBM}\n` +
             `📍 *Lokasi:* ${prop.address || 'Alamat Unit'}\n` +
@@ -11100,7 +11147,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
       case 'deposit_receipt':
         if (isMonthly) {
           msg = `🧾 *RESIT BAYARAN BOOKING & DEPOSIT SEWAAN - ${prop.name.toUpperCase()}*\n` +
-            `No Resit: REC-BOOK-M-${booking.id.slice(-6).toUpperCase()}\n\n` +
+            `No Resit: REC-BOOK-M-${idQuoShort}\n\n` +
             `Salam *${booking.guestName}*, bayaran booking sewaan bulanan anda telah disahkan! 🎉\n` +
             `Unit kini berstatus *DITEMPAH & DIKUNCI* untuk kemasukan anda.\n\n` +
             `${unitTitleBM}\n` +
@@ -11118,7 +11165,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
             `🔑 *Kunci & Smart Lock PIN:* Akan diserahkan selepas baki pakej kemasukan dijelaskan sepenuhnya. Terima kasih! 🙏`;
         } else {
           msg = `🧾 *RESIT BAYARAN BOOKING & DEPOSIT - ${prop.name.toUpperCase()}*\n` +
-            `No Resit: REC-DEP-${booking.id.slice(-6).toUpperCase()}\n\n` +
+            `No Resit: REC-DEP-${idQuoShort}\n\n` +
             `Salam *${booking.guestName}*, bayaran booking dan deposit anda telah diterima! 🎉\n` +
             `Unit anda kini secara rasmi berstatus *DITEMPAH & DIKUNCI* di kalendar kami.\n\n` +
             `${unitTitleBM}\n` +
@@ -11158,7 +11205,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
 
       case 'full_receipt':
         msg = `🔑 *RESIT BAYARAN PENUH & PANDUAN MASUK - ${prop.name.toUpperCase()}*\n` +
-          `No Resit: REC-FULL-${booking.id.slice(-6).toUpperCase()}\n\n` +
+          `No Resit: REC-FULL-${idQuoShort}\n\n` +
           `Salam *${booking.guestName}*! Bayaran penuh telah disahkan dan tempahan anda kini *100% DISAHKAN*. Berikut adalah maklumat akses masuk anda:\n\n` +
           `${unitTitleBM}\n` +
           `💰 *STATUS BAYARAN: SELESAI DIBAYAR PENUH (100%) ✅*\n` +
@@ -11222,7 +11269,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
           notes: 'Deposit dipulangkan sepenuhnya.'
         };
         msg = `💰 *PENYATA PEMULANGAN DEPOSIT SEWAAN - ${prop.name.toUpperCase()}*\n` +
-          `No Rujukan: REF-${booking.id.slice(-6).toUpperCase()}\n\n` +
+          `No Rujukan: REF-${idQuoShort}\n\n` +
           tenantParticularsBM +
           `${unitTitleBM}\n` +
           `📅 *Tarikh Tamat Sewaan:* ${booking.checkOut}\n\n` +
@@ -11281,7 +11328,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
     case 'quotation':
       if (isMonthly) {
         msg = `📋 *MONTHLY TENANCY QUOTATION - ${prop.name.toUpperCase()}*\n` +
-          `Ref: QUO-M-${booking.id.slice(-6).toUpperCase()}\n\n` +
+          `Ref: QUO-M-${idQuoShort}\n\n` +
           `Hi *${booking.guestName}*, thank you for your monthly rental enquiry! Here is the tenancy move-in package breakdown:\n\n` +
           `${unitTitleEN}\n` +
           `📍 *Location:* ${prop.address || 'Standard Address'}\n` +
@@ -11307,7 +11354,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
           `4. Quotation is valid for *${validityDays} day(s)* until *${expDateStr}*. ✨🏡`;
       } else {
         msg = `📋 *OFFICIAL QUOTATION - ${prop.name.toUpperCase()}*\n` +
-          `Ref: QUO-${booking.id.slice(-6).toUpperCase()}\n\n` +
+          `Ref: QUO-${idQuoShort}\n\n` +
           `Hi *${booking.guestName}*, thank you for your enquiry! Here is the price breakdown for your stay:\n\n` +
           `${unitTitleEN}\n` +
           `📍 *Location:* ${prop.address || 'Standard Address'}\n` +
@@ -11332,7 +11379,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
     case 'deposit_receipt':
       if (isMonthly) {
         msg = `🧾 *TENANCY BOOKING & DEPOSIT RECEIPT - ${prop.name.toUpperCase()}*\n` +
-          `Receipt No: REC-BOOK-M-${booking.id.slice(-6).toUpperCase()}\n\n` +
+          `Receipt No: REC-BOOK-M-${idQuoShort}\n\n` +
           `Hi *${booking.guestName}*, your tenancy booking fee has been received! 🎉\n` +
           `The property is now officially *BOOKED & RESERVED* for your move-in.\n\n` +
           `${unitTitleEN}\n` +
@@ -11350,7 +11397,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
           `🔑 *Keys & Smart Lock PIN:* Will be released upon full settlement of the remaining move-in balance. Thank you! 🙏`;
       } else {
         msg = `🧾 *BOOKING & DEPOSIT PAYMENT RECEIPT - ${prop.name.toUpperCase()}*\n` +
-          `Receipt No: REC-DEP-${booking.id.slice(-6).toUpperCase()}\n\n` +
+          `Receipt No: REC-DEP-${idQuoShort}\n\n` +
           `Hi *${booking.guestName}*, we have received your booking fee & deposit! 🎉\n` +
           `Your unit is now officially *BOOKED & RESERVED* on our calendar.\n\n` +
           `${unitTitleEN}\n` +
@@ -11390,7 +11437,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
 
     case 'full_receipt':
       msg = `🔑 *FULL PAYMENT RECEIPT & ACCESS GUIDE - ${prop.name.toUpperCase()}*\n` +
-        `Receipt No: REC-FULL-${booking.id.slice(-6).toUpperCase()}\n\n` +
+        `Receipt No: REC-FULL-${idQuoShort}\n\n` +
         `Hi *${booking.guestName}*! Full payment has been received and your booking is *100% CONFIRMED*. Here are your self check-in access keys:\n\n` +
         `${unitTitleEN}\n` +
         `💰 *PAYMENT STATUS: PAID IN FULL (100%) ✅*\n` +
@@ -11454,7 +11501,7 @@ function generateWhatsAppMessage(booking, templateType, langOverride = null) {
         notes: 'Full deposit refunded.'
       };
       msg = `💰 *TENANCY DEPOSIT REFUND STATEMENT - ${prop.name.toUpperCase()}*\n` +
-        `Ref: REF-${booking.id.slice(-6).toUpperCase()}\n\n` +
+        `Ref: REF-${idQuoShort}\n\n` +
         tenantParticularsEN +
         `${unitTitleEN}\n` +
         `📅 *Tenancy End Date:* ${booking.checkOut}\n\n` +
@@ -17669,6 +17716,15 @@ window.formatDiagnosticsForWhatsApp = formatDiagnosticsForWhatsApp;
 window.handleContactSellerWhatsApp = handleContactSellerWhatsApp;
 window.openProSystemModal = openProSystemModal;
 
+// Monthly Invoicing Engine Exports
+window.openMonthlyInvoicesModal = openMonthlyInvoicesModal;
+window.renderMonthlyInvoicesList = renderMonthlyInvoicesList;
+window.toggleMonthlyInvoicePaid = toggleMonthlyInvoicePaid;
+window.getOrInitMonthlyInvoices = getOrInitMonthlyInvoices;
+window.openWhatsAppModal = openWhatsAppModal;
+window.openPdfDocModal = openPdfDocModal;
+window.generateWhatsAppMessage = generateWhatsAppMessage;
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     normalizePhoneNumber,
@@ -17685,6 +17741,13 @@ if (typeof module !== 'undefined' && module.exports) {
     formatDiagnosticsForWhatsApp,
     handleContactSellerWhatsApp,
     openProSystemModal,
+    openMonthlyInvoicesModal,
+    renderMonthlyInvoicesList,
+    toggleMonthlyInvoicePaid,
+    getOrInitMonthlyInvoices,
+    openWhatsAppModal,
+    openPdfDocModal,
+    generateWhatsAppMessage,
     setTestLicensePublicKey: function (jwk) {
       testOverridePublicKeyJwk = jwk;
       cachedCryptoPublicKey = null;
