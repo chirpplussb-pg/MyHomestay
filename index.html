@@ -59,6 +59,9 @@
           </div>
         </div>
         <div class="header-actions">
+          <button class="icon-btn" id="btnOpenUniversalOcr" title="Imbas Resit & Bil (OCR) / OCR Scanner" aria-label="OCR Scanner">
+            <i class="fa-solid fa-camera" style="color:var(--primary);"></i>
+          </button>
           <button class="icon-btn" id="btnOpenPromoMedia" title="Promotional Media Hub / Media Promosi" aria-label="Promotional Media Hub">
             <i class="fa-solid fa-bullhorn" style="color:var(--primary);"></i>
           </button>
@@ -187,6 +190,57 @@
           </div>
         </div>
 
+        <!-- Tenant Intelligence & Repeat Guest KPIs -->
+        <div class="card" style="margin-bottom: 16px; border: 1px solid var(--border-color); padding: 14px 16px;">
+          <div class="card-header-flex" style="margin-bottom: 12px;">
+            <div>
+              <h3 class="card-title" style="font-size: 14px;">
+                <i class="fa-solid fa-users-rays" style="color:var(--primary);"></i> 
+                <span data-i18n="tenant_lifecycle_kpis_title">Tenant Intelligence & Repeat Guests</span>
+              </h3>
+              <p class="card-subtitle" data-i18n="tenant_lifecycle_kpis_sub">Track active vs historical tenants, repeat customer retention and lifetime value</p>
+            </div>
+          </div>
+
+          <div class="dashboard-kpis" style="margin-bottom: 12px; grid-template-columns: repeat(3, 1fr);">
+            <div class="kpi-card highlight-emerald" id="kpiActiveTenantsCard">
+              <div class="kpi-icon"><i class="fa-solid fa-user-check"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-label" data-i18n="kpi_active_tenants">Active Tenants</span>
+                <h3 class="kpi-val" id="dashKpiActiveTenants">0</h3>
+              </div>
+            </div>
+            <div class="kpi-card highlight-amber" id="kpiRepeatGuestsCard">
+              <div class="kpi-icon"><i class="fa-solid fa-star"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-label" data-i18n="kpi_repeat_guests">Repeat Guests</span>
+                <h3 class="kpi-val" id="dashKpiRepeatGuests">0</h3>
+              </div>
+            </div>
+            <div class="kpi-card highlight-blue" id="kpiRepeatBookingsCard">
+              <div class="kpi-icon"><i class="fa-solid fa-repeat"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-label" data-i18n="kpi_repeat_bookings">Total Repeat Bookings</span>
+                <h3 class="kpi-val" id="dashKpiRepeatBookings">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Returning Guests Sub-Section -->
+          <div style="background:var(--bg-surface-subtle); border-radius:8px; border:1px solid var(--border-color); padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="font-size:12px; font-weight:700; color:var(--text-main);">
+                <i class="fa-solid fa-medal" style="color:#f59e0b; margin-right:4px;"></i> 
+                <span data-i18n="top_returning_guests">Top Returning Guests</span>
+              </span>
+              <span id="dashTopReturningGuestsCount" style="font-size:11px; color:var(--text-muted);">0 Guests</span>
+            </div>
+            <div id="dashTopReturningGuestsList" style="display:flex; flex-direction:column; gap:6px;">
+              <!-- Populated dynamically: top returning guests -->
+            </div>
+          </div>
+        </div>
+
         <!-- Today & Upcoming Priority Action Feed -->
         <div class="section-heading">
           <h2 class="section-title" data-i18n="today_actions">Today's Schedule & Actions</h2>
@@ -293,6 +347,13 @@
           </div>
         </div>
 
+        <!-- Booking Module Actions -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-whatsapp btn-sm" id="btnImportTenantChatBooking">
+            <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_import_tenant_chat">Import Tenant Chat</span>
+          </button>
+        </div>
+
         <div class="bookings-list" id="bookingsContainer">
           <!-- Populated dynamically -->
         </div>
@@ -331,6 +392,9 @@
         <div class="finance-period-bar">
           <select id="financeMonthSelect" class="form-select"></select>
           <select id="financeYearSelect" class="form-select"></select>
+          <button class="btn btn-outline btn-sm" id="btnScanReceiptUniversalFin" title="Imbas Bil & Resit (OCR)">
+            <i class="fa-solid fa-camera"></i> <span data-i18n="ocr_scan_btn">Scan Bill/Receipt</span>
+          </button>
           <button class="btn btn-outline btn-sm" id="btnAddExpenseBtn">
             <i class="fa-solid fa-receipt"></i> <span data-i18n="add_expense_btn">+ Expense</span>
           </button>
@@ -406,10 +470,31 @@
               <h3 class="card-title" data-i18n="team_dir_title">Maintenance Team & Suppliers</h3>
               <p class="card-subtitle" data-i18n="team_dir_subtitle">Manage cleaners, technicians, handymen & suppliers</p>
             </div>
-            <button class="btn btn-primary btn-sm" id="btnAddNewContactModal">
-              <i class="fa-solid fa-plus"></i> <span data-i18n="add_person_btn">+ Add Person</span>
-            </button>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-whatsapp btn-sm" id="btnImportTenantChatContact">
+                <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_import_tenant_chat">Import Tenant Chat</span>
+              </button>
+              <button class="btn btn-primary btn-sm" id="btnAddNewContactModal">
+                <i class="fa-solid fa-plus"></i> <span data-i18n="add_person_btn">+ Add Person</span>
+              </button>
+            </div>
           </div>
+
+          <!-- Contact Search and Status Filter Controls -->
+          <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="contactSearchInput" placeholder="Search contacts by name, phone, IC, SSM, company..." style="font-size:12px;">
+            </div>
+            <div class="filter-pills" id="contactStatusFilterPills" style="margin-bottom:4px;">
+              <button type="button" class="filter-pill active" data-contact-filter="all" data-i18n="filter_status_all">All</button>
+              <button type="button" class="filter-pill" data-contact-filter="active">🟢 Active</button>
+              <button type="button" class="filter-pill" data-contact-filter="completed">⚪ Completed</button>
+              <button type="button" class="filter-pill" data-contact-filter="prospect">🟡 Prospect</button>
+              <button type="button" class="filter-pill" data-contact-filter="blacklisted">🔴 Blacklisted</button>
+            </div>
+          </div>
+
           <div class="settings-contact-list mt-2" id="settingsContactList">
             <!-- Dynamic Contact Cards -->
           </div>
@@ -546,6 +631,31 @@
         </div>
 
 
+
+        <!-- OCR Receipt & Bill Scanner Settings -->
+        <div class="card">
+          <div class="card-header-flex mb-2">
+            <div>
+              <h3 class="card-title"><i class="fa-solid fa-camera-retro" style="color:var(--primary);"></i> <span data-i18n="ocr_settings_title">OCR Receipt & Bill Scanner</span></h3>
+              <p class="card-subtitle" data-i18n="ocr_settings_sub">Intelligent optical recognition for Malaysian bank slips (Maybank, CIMB, DuitNow) and utility bills (TNB, Water, Indah Water).</p>
+            </div>
+            <span style="background:rgba(16,185,129,0.12); color:#059669; border:1px solid #10b981; font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px;">AI Powered</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="ocr_engine_label">Recognition Engine</label>
+            <select id="settingOcrEngineSelect" class="form-select">
+              <option value="auto">⚡ Automatic (Browser On-Device / Tesseract Offline)</option>
+              <option value="gemini">✨ Google Gemini 1.5 Flash Vision (Ultra-Accurate Cloud AI)</option>
+            </select>
+            <p style="font-size:11.5px; color:var(--text-muted); margin-top:4px; margin-bottom:0;" data-i18n="ocr_engine_hint">Automatic runs on-device without internet. Gemini Flash provides high accuracy on crumpled receipts and tilted camera angles.</p>
+          </div>
+          <div class="form-group" id="settingGeminiApiKeyGroup" style="display:none;">
+            <label class="form-label" data-i18n="gemini_api_key_label">Google Gemini API Key (Optional)</label>
+            <input type="password" id="settingGeminiApiKeyInput" class="form-control" placeholder="AIzaSy...">
+            <p style="font-size:11px; color:var(--text-muted); margin-top:3px; margin-bottom:0;" data-i18n="gemini_api_hint">Free from Google AI Studio. Stored privately on your device only.</p>
+          </div>
+          <button type="button" class="btn btn-primary btn-block" id="btnSaveOcrSettings" data-i18n="btn_save_ocr">Save Scanner Preferences</button>
+        </div>
 
         <!-- User Manual & In-App Guide Card -->
         <div class="card" style="background:linear-gradient(135deg, rgba(2,132,199,0.06), rgba(99,102,241,0.06)); border:1px solid rgba(2,132,199,0.25);">
@@ -708,6 +818,42 @@
               </button>
             </div>
             <input type="hidden" id="bookingRentalType" value="daily">
+          </div>
+
+          <!-- Repeat Guest Recognition Alert Banner -->
+          <div id="repeatGuestAlertBox" style="display:none; margin-bottom:12px; background:linear-gradient(135deg, rgba(234, 179, 8, 0.12), rgba(245, 158, 11, 0.06)); border:1px solid #f59e0b; border-radius:8px; padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+              <div style="display:flex; gap:10px; align-items:flex-start;">
+                <div style="background:#f59e0b; color:#fff; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:13px;">
+                  <i class="fa-solid fa-crown"></i>
+                </div>
+                <div>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <strong style="font-size:13px; color:#b45309;" data-i18n="repeat_guest_detected">Repeat Guest Detected</strong>
+                    <span id="repeatGuestBadge" class="badge" style="background:#fef3c7; color:#92400e; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">VIP Returning</span>
+                  </div>
+                  <div style="font-size:11px; color:var(--text-main); margin-top:3px; display:flex; gap:12px; flex-wrap:wrap;">
+                    <span><i class="fa-solid fa-repeat" style="color:#d97706;"></i> <span data-i18n="lbl_prev_stays">Previous Stays:</span> <strong id="repeatGuestStayCount">0</strong></span>
+                    <span><i class="fa-regular fa-calendar-check" style="color:#d97706;"></i> <span data-i18n="lbl_last_stay">Last Stay Date:</span> <strong id="repeatGuestLastStay">-</strong></span>
+                    <span><i class="fa-solid fa-coins" style="color:#d97706;"></i> <span data-i18n="lbl_lifetime_rev">Lifetime Revenue:</span> <strong id="repeatGuestLifetimeRev">RM 0.00</strong></span>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-outline btn-xs" id="btnApplyRepeatGuestDetails" style="font-size:11px; padding:4px 8px; border-color:#d97706; color:#b45309; font-weight:700; white-space:nowrap;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_use_existing_tenant">Use Tenant Record</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Blacklist Alert Banner -->
+          <div id="blacklistedGuestAlertBox" style="display:none; margin-bottom:12px; background:rgba(239, 68, 68, 0.1); border:1px solid var(--danger); border-radius:8px; padding:10px 12px; color:var(--danger);">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <i class="fa-solid fa-triangle-exclamation" style="font-size:18px;"></i>
+              <div>
+                <strong style="font-size:12.5px;" data-i18n="blacklisted_guest_warning">⚠️ CAUTION: Blacklisted Guest Detected</strong>
+                <p style="font-size:11px; margin:2px 0 0 0;" id="blacklistedGuestReason">This guest is flagged on the blacklist.</p>
+              </div>
+            </div>
           </div>
 
           <!-- Tenant / Guest Particulars Card (A4: Three-Role Model) -->
@@ -939,6 +1085,9 @@
               <div class="calc-total-row">
                 <span data-i18n="initial_movein">Initial Move-In Total:</span>
                 <strong class="total-amount-badge" id="calcMonthlyTotalAmount">RM 0.00</strong>
+              </div>
+              <div style="font-size:11px; font-weight:700; color:var(--success-text, #166534); background:var(--success-light, #dcfce7); border:1px solid #bbf7d0; padding:4px 8px; border-radius:6px; margin-top:6px; display:flex; align-items:center; gap:5px;">
+                <i class="fa-solid fa-circle-check"></i> <span data-i18n="month_1_paid_move_in_note">Month 1 Rental Paid Via Move-In Package (Invoicing begins from Month 2)</span>
               </div>
             </div>
           </div>
@@ -1354,6 +1503,42 @@
             <label class="form-label" data-i18n="exp_desc">Description / Receipt Note</label>
             <input type="text" id="expenseDescInput" class="form-control" placeholder="e.g. Air conditioning service & gas top-up">
           </div>
+
+          <!-- Bill Slip Upload & OCR Scanner Action -->
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <label class="form-label" style="margin-bottom:0;" data-i18n="exp_receipt_bill">Bill / Receipt Slip (Optional)</label>
+              <button type="button" class="btn btn-outline btn-xs" id="btnScanExpenseReceipt" style="color:var(--primary); font-weight:700;">
+                <i class="fa-solid fa-camera"></i> <span data-i18n="ocr_scan_bill_btn">Scan Bill (OCR)</span>
+              </button>
+            </div>
+            
+            <div class="receipt-upload-dropzone" id="expenseReceiptDropzone">
+              <input type="file" id="expenseReceiptFileInput" accept="image/*,application/pdf" capture="environment" style="display:none;">
+              <div id="expenseReceiptUploadPrompt" style="text-align:center; padding:10px;">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size:22px; color:var(--primary); opacity:0.8; margin-bottom:4px; display:block;"></i>
+                <span style="font-size:12px; font-weight:700; color:var(--text-main);" data-i18n="tap_upload_bill">Tap to Snap or Upload Bill (TNB, Water, Hardware)</span>
+                <p style="font-size:10.5px; color:var(--text-muted); margin-top:2px; margin-bottom:0;">Auto-fills Amount, Date, Category & Description via OCR</p>
+              </div>
+              <div id="expenseReceiptPreviewContainer" style="display:none; padding:8px;">
+                <div class="receipt-preview-card">
+                  <img id="expenseReceiptPreviewImg" class="receipt-preview-thumbnail" src="" alt="Bill Preview">
+                  <div class="receipt-preview-info">
+                    <div style="font-size:12.5px; font-weight:700; color:var(--text-main);" id="expenseReceiptPreviewFileName">bill.jpg</div>
+                    <div style="font-size:11px; color:var(--text-muted);" id="expenseReceiptPreviewSize">Compressed</div>
+                  </div>
+                  <button type="button" class="btn btn-outline btn-xs" id="btnRemoveExpenseReceipt" style="color:var(--danger); border-color:rgba(239,68,68,0.25);">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div id="expenseOcrStatusBadge" style="display:none; margin-top:6px; font-size:11px; padding:4px 8px; border-radius:6px; background:rgba(16,185,129,0.1); color:#059669; border:1px solid #10b981;">
+              <i class="fa-solid fa-circle-check"></i> <span id="expenseOcrStatusText">Auto-filled from Bill</span>
+            </div>
+            <input type="hidden" id="expenseReceiptImageData">
+            <input type="hidden" id="expenseReceiptImageName">
+          </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline" id="btnCancelExpenseModal" data-i18n="cancel">Cancel</button>
             <button type="submit" class="btn btn-primary" data-i18n="btn_save_expense">Save Expense</button>
@@ -1492,6 +1677,7 @@
               <div class="form-group">
                 <label class="form-label required" data-i18n="contact_category_label">Service Category / Role</label>
                 <select id="contactCategorySelect" class="form-select" required>
+                  <option value="tenant" data-i18n="cat_tenant">👤 Tenant / Regular Guest</option>
                   <option value="cleaner">🧹 Cleaner / Cleaning Crew</option>
                   <option value="aircond">❄️ Aircond Specialist</option>
                   <option value="plumber">🔧 Plumber</option>
@@ -1506,6 +1692,21 @@
               <div class="form-group">
                 <label class="form-label required" data-i18n="contact_phone_label">WhatsApp Phone Number</label>
                 <input type="tel" id="contactPhoneInput" class="form-control" placeholder="e.g. +60129998877" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" data-i18n="tenant_status_label">Lifecycle Status</label>
+                <select id="contactStatusSelect" class="form-select">
+                  <option value="active">🟢 Active</option>
+                  <option value="completed">⚪ Completed</option>
+                  <option value="prospect">🟡 Prospect</option>
+                  <option value="blacklisted">🔴 Blacklisted</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">IC / Passport / SSM No.</label>
+                <input type="text" id="contactIcInput" class="form-control" placeholder="e.g. 901020-01-5678 / SSM">
               </div>
             </div>
             <div class="form-group">
@@ -1744,7 +1945,12 @@
 
           <!-- Digital Receipt Screenshot / Slip Upload -->
           <div class="form-group">
-            <label class="form-label" data-i18n="digital_receipt_slip">Digital Receipt Screenshot / Slip (Bukti Resit)</label>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <label class="form-label" style="margin-bottom:0;" data-i18n="digital_receipt_slip">Digital Receipt Screenshot / Slip (Bukti Resit)</label>
+              <button type="button" class="btn btn-outline btn-xs" id="btnScanPaymentProofOcr" style="color:var(--primary); font-weight:700;">
+                <i class="fa-solid fa-camera"></i> <span data-i18n="ocr_scan_slip_btn">Auto-Scan Slip (OCR)</span>
+              </button>
+            </div>
             <div class="receipt-upload-dropzone" id="receiptDropzone">
               <input type="file" id="paymentProofFileInput" accept="image/*,application/pdf" capture="environment" style="display:none;">
               <div id="receiptUploadPrompt" style="text-align:center; padding:12px;">
@@ -1772,6 +1978,9 @@
             </div>
             <input type="hidden" id="paymentProofImageData">
             <input type="hidden" id="paymentProofImageName">
+            <div id="paymentProofOcrStatusBadge" style="display:none; margin-top:6px; font-size:11px; padding:4px 8px; border-radius:6px; background:rgba(16,185,129,0.1); color:#059669; border:1px solid #10b981;">
+              <i class="fa-solid fa-circle-check"></i> <span id="paymentProofOcrStatusText">Auto-filled from Receipt</span>
+            </div>
           </div>
 
           <!-- Notes -->
@@ -2163,6 +2372,348 @@
             <button type="button" class="btn btn-outline btn-xs" id="btnDownloadLightboxImg">
               <i class="fa-solid fa-download"></i> <span data-i18n="download">Download Slip</span>
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14B. UNIVERSAL OCR RECEIPT & UTILITY BILL SCANNER MODAL -->
+    <div class="modal-backdrop" id="universalOcrModal" style="z-index: 10000;">
+      <div class="bottom-sheet" style="max-height: 92vh; max-width: 520px; margin: auto;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div class="wa-header-brand">
+            <i class="fa-solid fa-camera-retro" style="font-size: 24px; color: var(--primary);"></i>
+            <div>
+              <h2 class="modal-title" data-i18n="ocr_modal_title">OCR Receipt & Bill Scanner</h2>
+              <span class="modal-subtitle" data-i18n="ocr_modal_sub">Instant optical recognition for Malaysian bank slips & utility bills</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnCloseUniversalOcrModal">&times;</button>
+        </div>
+
+        <div class="modal-body" style="padding-top: 10px;">
+          <!-- OCR Source Tabs: Camera/Upload vs Paste Text -->
+          <div class="ocr-tab-bar" style="display:flex; gap:6px; margin-bottom:12px; background:var(--bg-surface-subtle); padding:4px; border-radius:8px;">
+            <button type="button" class="ocr-tab-btn active" data-tab="camera" id="ocrTabBtnCamera" style="flex:1; padding:8px 10px; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">
+              <i class="fa-solid fa-camera"></i> <span data-i18n="ocr_tab_camera">Camera / Upload Slip</span>
+            </button>
+            <button type="button" class="ocr-tab-btn" data-tab="paste" id="ocrTabBtnPaste" style="flex:1; padding:8px 10px; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">
+              <i class="fa-solid fa-paste"></i> <span data-i18n="ocr_tab_paste">Paste Text / WhatsApp</span>
+            </button>
+          </div>
+
+          <!-- PANE 1: Camera / Upload -->
+          <div id="ocrCameraPane">
+            <div class="receipt-upload-dropzone" id="universalOcrDropzone" style="padding:16px; text-align:center;">
+              <input type="file" id="universalOcrFileInput" accept="image/*,application/pdf" capture="environment" style="display:none;">
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size:32px; color:var(--primary); opacity:0.85; margin-bottom:8px; display:block;"></i>
+              <span style="font-size:13.5px; font-weight:700; color:var(--text-main);" data-i18n="tap_to_upload_receipt">Tap to Upload or Snap Receipt Slip</span>
+              <p style="font-size:11px; color:var(--text-muted); margin-top:4px; margin-bottom:0;">
+                Maybank, CIMB, Bank Islam, DuitNow, TNB & Water Bills
+              </p>
+            </div>
+
+            <div id="universalOcrPreviewContainer" style="display:none; padding:8px; margin-bottom:12px;">
+              <div class="receipt-preview-card">
+                <img id="universalOcrPreviewImg" src="" alt="OCR Preview" class="receipt-preview-thumbnail">
+                <div class="receipt-preview-info">
+                  <strong id="universalOcrPreviewFileName" style="font-size:12px; color:var(--text-main); word-break:break-all;">slip.jpg</strong>
+                  <span style="font-size:11px; color:var(--text-muted); display:block;">Compressed & Ready</span>
+                </div>
+                <button type="button" class="btn btn-outline btn-xs" id="btnRetakeUniversalOcr" style="color:var(--primary);">
+                  <i class="fa-solid fa-arrow-rotate-left"></i> Retake
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANE 2: Paste Text / WhatsApp -->
+          <div id="ocrPastePane" style="display:none;">
+            <div class="form-group">
+              <label class="form-label" style="font-size:12px;">Paste Message from Guest / WhatsApp / Bank SMS</label>
+              <textarea id="universalOcrTextInput" class="form-control" rows="4" placeholder="e.g. DuitNow Transfer to HOMESTAY RESOURCES RM 350.00 Ref: 2026110300921822 on 03 Nov 2026 14:22..."></textarea>
+              <button type="button" class="btn btn-primary btn-sm btn-block" id="btnParseUniversalOcrText" style="margin-top:6px;">
+                <i class="fa-solid fa-bolt"></i> Parse Text Immediately
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Scanning Progress Bar -->
+          <div id="universalOcrProgressBar" style="display:none; margin:12px 0; text-align:center; padding:12px; background:var(--bg-surface-subtle); border-radius:8px;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:22px; color:var(--primary); margin-bottom:6px; display:block;"></i>
+            <span id="universalOcrProgressText" style="font-size:12px; font-weight:700; color:var(--text-main);" data-i18n="ocr_processing">Scanning document with OCR...</span>
+          </div>
+
+          <!-- Parsed Result Card -->
+          <div id="universalOcrResultCard" style="display:none; margin-top:12px; background:var(--bg-surface-subtle); border:1.5px solid var(--border-color); border-radius:10px; padding:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span id="universalOcrTypeBadge" style="font-size:11px; font-weight:800; padding:3px 10px; border-radius:999px; border:1px solid transparent;">
+                💳 Bank Transfer
+              </span>
+              <span style="font-size:11px; color:#059669; font-weight:700;">
+                <i class="fa-solid fa-circle-check"></i> <span data-i18n="ocr_success">Parsed</span>
+              </span>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" style="font-size:11.5px;">Amount (RM)</label>
+                <input type="number" id="universalOcrAmountInput" class="form-control" placeholder="0.00" step="any" style="font-weight:700; font-size:15px; color:var(--success-text);">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size:11.5px;">Bank / Provider</label>
+                <input type="text" id="universalOcrBankInput" class="form-control" placeholder="Maybank, TNB, etc.">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" style="font-size:11.5px;">Reference / Account No.</label>
+                <input type="text" id="universalOcrRefInput" class="form-control" placeholder="e.g. 202611030092" style="font-family:monospace; font-weight:700;">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size:11.5px;">Date & Time</label>
+                <input type="datetime-local" id="universalOcrDateInput" class="form-control">
+              </div>
+            </div>
+
+            <!-- Booking link section (for bank transfers) -->
+            <div id="universalOcrBookingSection" style="margin-top:6px; padding-top:8px; border-top:1px dashed var(--border-color);">
+              <label class="form-label required" style="font-size:11.5px;">Link to Guest Booking</label>
+              <select id="universalOcrBookingSelect" class="form-select" style="font-size:12.5px; font-weight:600;"></select>
+            </div>
+
+            <!-- Expense link section (for utilities & expenses) -->
+            <div id="universalOcrExpenseSection" style="display:none; margin-top:6px; padding-top:8px; border-top:1px dashed var(--border-color);">
+              <div class="form-group">
+                <label class="form-label required" style="font-size:11.5px;">Homestay Unit</label>
+                <select id="universalOcrPropertySelect" class="form-select" style="font-size:12.5px;"></select>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" style="font-size:11.5px;">Category</label>
+                  <select id="universalOcrCategorySelect" class="form-select" style="font-size:12px;">
+                    <option value="utilities">⚡ Utilities (Electricity, Water, WiFi)</option>
+                    <option value="supplies">🧻 Supplies & Amenities</option>
+                    <option value="maintenance">🔧 Maintenance & Repairs</option>
+                    <option value="cleaning">🧹 Cleaning / Laundry</option>
+                    <option value="other">📦 Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-size:11.5px;">Description</label>
+                  <input type="text" id="universalOcrDescInput" class="form-control" placeholder="TNB Bill, Water Bill, etc.">
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <button type="button" class="btn btn-primary btn-block" id="btnApplyUniversalOcr" style="font-weight:700; padding:10px;">
+                <i class="fa-solid fa-circle-check"></i> Apply to Booking Payment
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-footer" style="padding-top:10px; margin-top:8px;">
+            <button type="button" class="btn btn-outline btn-block" id="btnCancelUniversalOcrModal" data-i18n="cancel">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14C. SMART WHATSAPP CHAT IMPORT MODAL -->
+    <div class="modal-backdrop" id="tenantChatImportModal" style="z-index: 10001;">
+      <div class="bottom-sheet" style="max-height: 94vh; max-width: 560px; margin: auto;">
+        <div class="sheet-handle"></div>
+        <div class="modal-header">
+          <div class="wa-header-brand">
+            <i class="fa-brands fa-whatsapp" style="font-size: 26px; color: #25D366;"></i>
+            <div>
+              <h2 class="modal-title" data-i18n="import_tenant_chat_title">Smart WhatsApp Chat Import</h2>
+              <span class="modal-subtitle" data-i18n="import_tenant_chat_sub">Paste guest WhatsApp conversation to auto-extract particulars</span>
+            </div>
+          </div>
+          <button class="modal-close" id="btnCloseTenantChatImportModal">&times;</button>
+        </div>
+
+        <div class="modal-body" style="padding-top: 10px;">
+          <!-- Destination Mode Notice & Samples -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:6px; flex-wrap:wrap;">
+            <span id="tenantChatDestinationNotice" style="font-size:11px; font-weight:700; color:var(--primary); background:var(--bg-surface-subtle); padding:3px 8px; border-radius:4px; border:1px solid var(--border-color);">Mode: Pre-filling Booking Form</span>
+            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-outline btn-xs" id="btnSampleChatBM" title="Load sample BM form">Sample BM</button>
+              <button type="button" class="btn btn-outline btn-xs" id="btnSampleChatEN" title="Load sample English tourist form">Sample EN</button>
+              <button type="button" class="btn btn-outline btn-xs" id="btnSampleChatConvo" title="Load sample conversational Rojak chat">Sample Rojak</button>
+              <button type="button" class="btn btn-outline btn-xs" id="btnSampleChatCompany" title="Load sample company booking" data-i18n="sample_company_btn"><i class="fa-solid fa-building" style="margin-right:2px;"></i> Sample Company</button>
+            </div>
+          </div>
+
+          <!-- Booking Type Selector (Individual vs Company) -->
+          <div style="margin-bottom: 8px;">
+            <div class="segmented-control" id="tenantChatBookingTypeSegmented" style="display:flex; width:100%; border:1px solid var(--border-color); border-radius:6px; overflow:hidden; background:var(--bg-surface-subtle);">
+              <button type="button" class="segment-btn active" data-chat-booking-type="individual" style="flex:1; padding:6px 10px; font-size:12px; font-weight:600; border:none; background:transparent; cursor:pointer;">
+                <i class="fa-solid fa-user" style="margin-right:4px;"></i> <span data-i18n="type_individual">Individual</span>
+              </button>
+              <button type="button" class="segment-btn" data-chat-booking-type="company" style="flex:1; padding:6px 10px; font-size:12px; font-weight:600; border:none; background:transparent; cursor:pointer;">
+                <i class="fa-solid fa-building" style="margin-right:4px;"></i> <span data-i18n="type_company">Company</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Chat Input Area -->
+          <div class="form-group" style="margin-bottom: 8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <label class="form-label" style="margin-bottom:0; font-size:12px;"><i class="fa-regular fa-comment-dots"></i> WhatsApp Conversation Text / Chat Export</label>
+              <button type="button" class="btn btn-outline btn-xs" id="btnPasteClipboardTenantChat" style="padding:2px 8px; font-size:11px;">
+                <i class="fa-solid fa-paste"></i> Paste
+              </button>
+            </div>
+            <textarea id="tenantChatInput" class="form-control" rows="5" style="font-family:monospace; font-size:12px; resize:vertical;" data-i18n-placeholder="paste_chat_placeholder" placeholder="Paste WhatsApp conversation or booking details here..."></textarea>
+          </div>
+
+          <button type="button" class="btn btn-primary btn-block" id="btnExtractTenantChat" style="margin-bottom:12px;">
+            <i class="fa-solid fa-bolt"></i> <span data-i18n="extract_chat_btn">Extract Tenant Details</span>
+          </button>
+
+          <!-- Extracted Result Card -->
+          <div id="tenantChatResultCard" style="display:none; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
+              <span style="font-weight:700; font-size:13px; color:var(--text-main);"><i class="fa-solid fa-id-card" style="color:var(--primary); margin-right:4px;"></i> Extracted Particulars</span>
+              <span id="tenantChatConfidenceBadge" class="tenant-chat-confidence-badge high"><i class="fa-solid fa-circle-check"></i> 95% High Confidence</span>
+            </div>
+
+            <!-- Individual Booking Fields -->
+            <div id="tenantChatFieldsIndividual" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+              <div class="form-group" style="grid-column: span 2; margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Full Name</label>
+                <input type="text" id="tenantChatResultName" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="Full Name">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;" data-i18n="id_number_label">IC / Identification Number</label>
+                <input type="text" id="tenantChatResultIc" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="MyKad or Passport Number">
+                <input type="hidden" id="tenantChatResultPassport">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Phone Number</label>
+                <input type="tel" id="tenantChatResultPhone" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="e.g. 012-3456789">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Email Address</label>
+                <input type="email" id="tenantChatResultEmail" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="e.g. guest@email.com">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Vehicle Plate & Model</label>
+                <input type="text" id="tenantChatResultVehicle" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="e.g. VAA 8892 (Proton X50)">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Check-In Date</label>
+                <input type="date" id="tenantChatResultCheckIn" class="form-control" style="font-size:12px; padding:6px 8px;">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Check-Out Date</label>
+                <input type="date" id="tenantChatResultCheckOut" class="form-control" style="font-size:12px; padding:6px 8px;">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Adults</label>
+                <input type="number" id="tenantChatResultAdults" class="form-control" min="1" max="50" style="font-size:12px; padding:6px 8px;" value="1">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Children</label>
+                <input type="number" id="tenantChatResultChildren" class="form-control" min="0" max="50" style="font-size:12px; padding:6px 8px;" value="0">
+              </div>
+
+              <div class="form-group" style="grid-column: span 2; margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Residential Address</label>
+                <input type="text" id="tenantChatResultAddress" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="Home Address">
+              </div>
+            </div>
+
+            <!-- Company Booking Fields -->
+            <div id="tenantChatFieldsCompany" style="display:none; grid-template-columns: 1fr 1fr; gap:8px;">
+              <div class="form-group" style="grid-column: span 2; margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;" data-i18n="company_name">Company Name</label>
+                <input type="text" id="tenantChatResultCompanyName" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="e.g. Gamuda Engineering Sdn Bhd">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;" data-i18n="ssm_reg_no">SSM Number</label>
+                <input type="text" id="tenantChatResultCompanyRegNo" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="e.g. 202101008899 / 1409123-T">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;" data-i18n="pic_name_label">PIC Name</label>
+                <input type="text" id="tenantChatResultPicName" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="Person in Charge Name">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;" data-i18n="pic_position_label">PIC Position</label>
+                <input type="text" id="tenantChatResultPicPosition" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="e.g. Project Director / HR Manager">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;" data-i18n="pic_phone_label">PIC Phone Number</label>
+                <input type="tel" id="tenantChatResultPicPhone" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="e.g. 013-9876543">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;" data-i18n="pic_email_label">PIC Email</label>
+                <input type="email" id="tenantChatResultPicEmail" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="e.g. pic@company.com">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Number of Guests</label>
+                <input type="number" id="tenantChatResultCompanyGuests" class="form-control" min="1" max="100" style="font-size:12px; padding:6px 8px;" value="1">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Check-In Date</label>
+                <input type="date" id="tenantChatResultCompanyCheckIn" class="form-control" style="font-size:12px; padding:6px 8px;">
+              </div>
+
+              <div class="form-group" style="margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;">Check-Out Date</label>
+                <input type="date" id="tenantChatResultCompanyCheckOut" class="form-control" style="font-size:12px; padding:6px 8px;">
+              </div>
+
+              <div class="form-group" style="grid-column: span 2; margin-bottom:6px;">
+                <label class="form-label" style="font-size:11px; margin-bottom:2px;" data-i18n="company_address_label">Company Address</label>
+                <input type="text" id="tenantChatResultCompanyAddress" class="form-control" style="font-size:12px; padding:6px 8px;" placeholder="Registered Business Address">
+              </div>
+            </div>
+
+            <!-- Original Chat Accordion -->
+            <details style="margin-top:10px; background:var(--bg-surface-subtle); border:1px solid var(--border-color); border-radius:6px; padding:6px 10px;">
+              <summary style="cursor:pointer; font-weight:600; font-size:11px; color:var(--text-muted);"><i class="fa-regular fa-comments"></i> <span data-i18n="view_original_chat">View Original Conversation</span></summary>
+              <pre id="tenantChatOriginalText" style="white-space:pre-wrap; font-size:11px; margin-top:6px; color:var(--text-muted); font-family:monospace; max-height:110px; overflow-y:auto;"></pre>
+            </details>
+
+            <!-- Action Buttons -->
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+              <button type="button" class="btn btn-primary btn-block" id="btnApplyChatToBooking">
+                <i class="fa-solid fa-calendar-plus"></i> <span data-i18n="create_booking_btn">Create Quotation / Booking</span>
+              </button>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn btn-outline" style="flex:1;" id="btnApplyChatToContact">
+                  <i class="fa-solid fa-user-plus"></i> <span data-i18n="save_contact_btn">Save as Contact</span>
+                </button>
+                <button type="button" class="btn btn-outline" style="flex:1;" id="btnApplyChatToBoth">
+                  <i class="fa-solid fa-layer-group"></i> <span data-i18n="create_both_btn">Create Both (Booking + Contact)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer" style="padding-top:10px; margin-top:8px;">
+            <button type="button" class="btn btn-outline btn-block" id="btnCancelTenantChatImportModal" data-i18n="cancel">Cancel</button>
           </div>
         </div>
       </div>

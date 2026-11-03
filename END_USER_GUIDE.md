@@ -5,7 +5,7 @@
 > An all-in-one, mobile-first management system for homestay hosts, apartment managers, and room rental operators.  
 > *Sistem pengurusan lengkap untuk pemilik homestay, apartmen, dan bilik sewa terus dari telefon pintar anda.*
 
-> 🗓️ **Guide version / Versi panduan:** for app **v2.8.0** — updated / dikemas kini **16 Oct 2026**
+> 🗓️ **Guide version / Versi panduan:** for app **v2.8.3 and later** — updated / dikemas kini **16 Oct 2026**
 
 ---
 
@@ -62,10 +62,11 @@ The app is a **one-time purchase with no monthly fees**. You can try it in demo 
 3. You will see a **request reference** (like `REQ-ABCD-1234`), the **amount to pay**, and our **bank transfer details**.
 4. Make the bank transfer for the exact amount. Put your **request reference** in the transfer's *payment details / recipient reference* field.
 5. Send your payment receipt using the **WhatsApp** button on the page (or message us at **+60 12-402 2462**).
-6. After we confirm your payment, we send your **license key** by WhatsApp. It looks like this: `STAY-XXXXX-XXXXX-XXXXX-XXXXX`.
+6. After we confirm your payment, we send your **license key** by WhatsApp **as its own message** (the key and nothing else), followed by a second message with the activation steps. The key looks like this: `STAY-XXXXX-XXXXX-XXXXX-XXXXX`.
 7. Keep your key private and store it safely (for example in a password manager). Please do not share it.
 
 > 💡 We confirm every payment by hand, so your key is sent after the money reaches our account.
+>
 > ⚠️ Please make sure the amount and account details are correct before sending your receipt. Activated license keys are non-refundable.
 
 #### 🇲🇾 Bahasa Melayu
@@ -74,10 +75,11 @@ The app is a **one-time purchase with no monthly fees**. You can try it in demo 
 3. Anda akan melihat **nombor rujukan permintaan** (seperti `REQ-ABCD-1234`), **jumlah bayaran**, dan **butiran akaun bank** kami.
 4. Buat pindahan bank dengan jumlah yang tepat. Masukkan **nombor rujukan** anda dalam ruangan *butiran pembayaran / rujukan penerima*.
 5. Hantar resit bayaran melalui butang **WhatsApp** pada halaman itu (atau mesej kami di **+60 12-402 2462**).
-6. Selepas bayaran disahkan, kami hantar **kunci lesen** anda melalui WhatsApp. Bentuknya: `STAY-XXXXX-XXXXX-XXXXX-XXXXX`.
+6. Selepas bayaran disahkan, kami hantar **kunci lesen** anda melalui WhatsApp **sebagai mesej tersendiri** (kunci sahaja), diikuti mesej kedua yang mengandungi langkah pengaktifan. Bentuk kunci: `STAY-XXXXX-XXXXX-XXXXX-XXXXX`.
 7. Simpan kunci anda dengan selamat (contohnya dalam pengurus kata laluan) dan jangan kongsikannya.
 
 > 💡 Setiap pembayaran disahkan secara manual, jadi kunci dihantar selepas wang diterima dalam akaun kami.
+>
 > ⚠️ Sila pastikan jumlah dan maklumat akaun adalah tepat sebelum menghantar resit. Kunci lesen yang telah diaktifkan tidak boleh dibatalkan atau dikembalikan wang.
 
 ---
@@ -88,7 +90,7 @@ The app is a **one-time purchase with no monthly fees**. You can try it in demo 
 1. Make sure your phone is **connected to the internet** (needed for activation).
 2. Open the app and go to the **Settings (⚙️)** tab (or tap the **DEMO** badge in the header).
 3. Tap **"Enter License Key"**.
-4. Type the **same WhatsApp number you used when buying**. Either `0123456789` or `+60123456789` works.
+4. Type the **same WhatsApp number you used when buying**. The app shows **"We will use: +60 12-345 6789"** under the box, so you can check it. Common ways of typing it all work (`0123456789`, `+60123456789`, `+60 12-345 6789`). **Do not add a 0 after +60.** A number from another country must be typed with its country code (for example `+65 9123 4567`), without a leading 0.
 5. Paste your **license key**.
 6. Tap **"Activate Full App"**.
 7. The header badge changes to **✨ PRO ACTIVE** and the **Pro Hub** shows your renewal date. Done!
@@ -97,10 +99,44 @@ The app is a **one-time purchase with no monthly fees**. You can try it in demo 
 1. Pastikan telefon anda **disambungkan ke internet** (diperlukan semasa pengaktifan).
 2. Buka aplikasi dan pergi ke tab **Tetapan (⚙️)** (atau tekan lencana **DEMO** di bahagian atas).
 3. Tekan **"Masukkan Kunci Lesen"**.
-4. Taip **nombor WhatsApp yang sama semasa anda membeli**. `0123456789` atau `+60123456789` kedua-duanya diterima.
+4. Taip **nombor WhatsApp yang sama semasa anda membeli**. Aplikasi memaparkan **"Kami akan gunakan: +60 12-345 6789"** di bawah kotak supaya anda boleh menyemaknya. Cara menaip yang biasa semuanya diterima (`0123456789`, `+60123456789`, `+60 12-345 6789`). **Jangan tambah 0 selepas +60.** Nombor dari negara lain mesti ditaip dengan kod negara (contohnya `+65 9123 4567`), tanpa 0 di hadapan.
 5. Tampal **kunci lesen** anda.
 6. Tekan **"Aktifkan Aplikasi Penuh"**.
 7. Lencana di bahagian atas bertukar kepada **✨ LESEN PRO AKTIF** dan **Hab Pro** memaparkan tarikh pembaharuan. Selesai!
+
+---
+
+### 📋 Copying & Pasting Your Key Correctly / Menyalin & Menampal Kunci dengan Betul
+
+#### 🇬🇧 English
+Typing a long key by hand is the most common reason for activation problems, so please **copy and paste** it instead.
+1. In WhatsApp, **press and hold the message that contains only the key**, then tap **Copy**.
+2. Open the app and go to **Enter License Key**.
+3. Tap the **Paste** button next to the key box. (Or tap inside the box, press and hold, and choose **Paste**.)
+4. Check the line **"Cleaned key:"** under the box. It should show your key like `STAY-XXXXX-XXXXX-XXXXX-XXXXX`.
+5. Check the line **"We will use:"** under the phone box, then tap **Activate Full App**.
+
+Good to know:
+* You can even paste the **whole WhatsApp message**. The app finds the key inside it.
+* Extra spaces, long dashes (–), missing hyphens or small letters are fixed automatically.
+* A real key **never contains 0, 1, I or O**. If you see those characters, something was typed wrongly.
+* If the Paste button does nothing on your phone, use press and hold in the box and choose **Paste**.
+* Please **do not retype** the key. If it still fails, message us and we will issue a new one.
+
+#### 🇲🇾 Bahasa Melayu
+Menaip kunci yang panjang secara manual adalah punca utama masalah pengaktifan, jadi sila **salin dan tampal**.
+1. Dalam WhatsApp, **tekan dan tahan mesej yang mengandungi kunci sahaja**, kemudian tekan **Copy / Salin**.
+2. Buka aplikasi dan pergi ke **Masukkan Kunci Lesen**.
+3. Tekan butang **Tampal** di sebelah kotak kunci. (Atau tekan di dalam kotak, tekan dan tahan, kemudian pilih **Tampal / Paste**.)
+4. Semak baris **"Kunci yang dibersihkan"** di bawah kotak. Ia sepatutnya memaparkan kunci anda seperti `STAY-XXXXX-XXXXX-XXXXX-XXXXX`.
+5. Semak baris **"Kami akan gunakan: …"** di bawah kotak telefon, kemudian tekan **Aktifkan Aplikasi Penuh**.
+
+Perlu diketahui:
+* Anda boleh menampal **keseluruhan mesej WhatsApp**. Aplikasi akan mencari kunci di dalamnya.
+* Ruang tambahan, sengkang panjang (–), sengkang yang tertinggal atau huruf kecil dibetulkan secara automatik.
+* Kunci sebenar **tidak pernah mengandungi 0, 1, I atau O**. Jika anda nampak aksara itu, ada yang tersilap taip.
+* Jika butang Tampal tidak berfungsi pada telefon anda, tekan dan tahan dalam kotak dan pilih **Tampal / Paste**.
+* Sila **jangan taip semula** kunci itu. Jika masih gagal, mesej kami dan kami akan keluarkan kunci baharu.
 
 ---
 
@@ -144,7 +180,8 @@ The app is a **one-time purchase with no monthly fees**. You can try it in demo 
 
 | Message / Mesej | What it means / Maksudnya | What to do / Tindakan |
 |---|---|---|
-| *Invalid license key or WhatsApp phone number* / *Kunci lesen atau nombor telefon WhatsApp tidak sah* | The key or phone number does not match | Copy and paste the key again. Use the **same number you gave when buying**. / Salin dan tampal kunci semula. Guna **nombor yang sama semasa membeli**. |
+| *Invalid license key or phone number* / *Kunci lesen atau nombor telefon tidak sah* | The key or the phone number does not match what we issued | **Paste** the key again from the key-only message (do not retype). Check the **"We will use: …"** line shows the **number you gave when buying**, with no extra 0 after +60. / **Tampal** kunci semula daripada mesej kunci sahaja (jangan taip). Semak baris **"Kami akan gunakan: …"** menunjukkan **nombor yang anda beri semasa membeli**, tanpa 0 tambahan selepas +60. |
+| The phone preview looks wrong / Paparan nombor telefon nampak salah | The number was typed with a different format or country | Malaysian numbers: type like `012-345 6789`. Other countries: start with `+` and the country code, no leading 0. / Nombor Malaysia: taip seperti `012-345 6789`. Negara lain: mulakan dengan `+` dan kod negara, tanpa 0 di hadapan. |
 | *Too many failed attempts… wait 15 minutes* / *Terlalu banyak percubaan gagal… tunggu 15 minit* | Several wrong tries in a row | Wait 15 minutes, then try again carefully. / Tunggu 15 minit, kemudian cuba semula dengan teliti. |
 | *Maximum device limit reached* / *Had maksimum peranti dicapai* | The key is already used on its maximum number of devices | Message the seller at +60 12-402 2462 to reset your device list. / Mesej penjual di +60 12-402 2462 untuk menetapkan semula senarai peranti. |
 | *This license key has been revoked* / *Kunci lesen ini telah dibatalkan* | The key is no longer valid | Contact the seller at +60 12-402 2462. / Hubungi penjual di +60 12-402 2462. |

@@ -136,7 +136,9 @@ const DEFAULT_SETTINGS = {
   bankBranch: '',
   sstRate: 0,
   quotationValidityDays: 3,
-  standardNotes: ''
+  standardNotes: '',
+  ocrEngine: 'auto',
+  geminiApiKey: ''
 };
 
 const TRANSLATIONS = {
@@ -460,6 +462,11 @@ const TRANSLATIONS = {
     pending: 'Pending',
     paid: 'Paid',
     btn_view_invoices: 'Monthly Invoices',
+    month_1_paid_move_in: 'Month 1 Rental Paid Via Move-In Package',
+    month_1_paid_move_in_note: 'Month 1 Rental Paid Via Move-In Package (Invoicing begins from Month 2)',
+    invoicing_starts_month_2: 'Invoicing begins from Month 2',
+    settled_via_move_in: 'Settled Via Move-In',
+    no_invoice_month_1: 'No Invoice Required (Month 1 Settled in Move-In Package)',
 
     // In-App User Guide
     user_guide_title: 'User Manual & Operational Guide',
@@ -581,6 +588,74 @@ const TRANSLATIONS = {
     no_receipts_recorded: 'No payment receipts recorded for this booking yet.',
     delete_receipt_confirm: 'Are you sure you want to delete this payment record and slip?',
     receipt_badge_count: 'Receipt(s)',
+
+    // OCR Receipt & Bill Scanner
+    ocr_scan_btn: 'Scan Bill / Receipt',
+    ocr_scan_slip_btn: 'Auto-Scan Slip (OCR)',
+    ocr_scan_bill_btn: 'Scan Bill (OCR)',
+    ocr_modal_title: 'OCR Receipt & Bill Scanner',
+    ocr_modal_sub: 'Instant optical recognition for Malaysian bank slips & utility bills',
+    ocr_tab_camera: 'Camera / Upload Slip',
+    ocr_tab_paste: 'Paste Text / WhatsApp',
+    ocr_detected_heading: 'Detected Information',
+    ocr_apply_booking: 'Apply to Guest Booking',
+    ocr_save_expense: 'Log as Homestay Expense',
+    ocr_processing: 'Scanning document with OCR...',
+    ocr_success: 'Document parsed successfully!',
+    ocr_settings_title: 'OCR Receipt & Bill Scanner',
+    ocr_settings_sub: 'Optical recognition engine for Malaysian bank slips and utility bills',
+    ocr_engine_label: 'Recognition Engine',
+    ocr_engine_hint: 'Automatic runs on-device without internet. Gemini Flash provides high accuracy on crumpled receipts.',
+    gemini_api_key_label: 'Google Gemini API Key (Optional)',
+    gemini_api_hint: 'Stored privately on your device. Never transmitted elsewhere.',
+    btn_save_ocr: 'Save Scanner Preferences',
+    tap_upload_bill: 'Tap to Snap or Upload Bill (TNB, Water, Supplies)',
+    exp_receipt_bill: 'Bill / Receipt Slip (Optional)',
+
+    // Smart WhatsApp Chat Import
+    cat_tenant: '👤 Tenant / Regular Guest',
+    btn_import_tenant_chat: 'Import Tenant Chat',
+    import_tenant_chat_title: 'Smart WhatsApp Chat Import',
+    import_tenant_chat_sub: 'Paste guest WhatsApp conversation to auto-extract particulars',
+    extract_chat_btn: 'Extract Tenant Details',
+    paste_chat_placeholder: 'Paste WhatsApp conversation or booking details here...',
+    view_original_chat: 'View Original Conversation',
+    create_booking_btn: 'Create Quotation / Booking',
+    save_contact_btn: 'Save as Contact',
+    create_both_btn: 'Create Both (Booking + Contact)',
+    chat_extracted_success: 'Tenant details extracted successfully!',
+    import_chat_short: 'Import Chat',
+    booking_type_label: 'Booking Type',
+    type_individual: 'Individual',
+    type_company: 'Company',
+    ssm_reg_no: 'SSM Number',
+    pic_name_label: 'PIC Name',
+    pic_position_label: 'PIC Position',
+    pic_phone_label: 'PIC Phone Number',
+    pic_email_label: 'PIC Email',
+    company_address_label: 'Company Address',
+    id_number_label: 'IC / Identification Number',
+    sample_company_btn: 'Sample Company',
+
+    // Tenant Lifecycle & Repeat Guest Recognition
+    repeat_guest_detected: 'Repeat Guest Detected',
+    kpi_active_tenants: 'Active Tenants',
+    kpi_repeat_guests: 'Repeat Guests',
+    kpi_repeat_bookings: 'Total Repeat Bookings',
+    top_returning_guests: 'Top Returning Guests',
+    tenant_lifecycle_kpis_title: 'Tenant Intelligence & Repeat Guests',
+    tenant_lifecycle_kpis_sub: 'Track active vs historical tenants, repeat customer retention and lifetime value',
+    lbl_prev_stays: 'Previous Stays',
+    lbl_last_stay: 'Last Stay Date',
+    lbl_lifetime_rev: 'Lifetime Revenue',
+    btn_use_existing_tenant: 'Use Tenant Record',
+    tenant_status_label: 'Lifecycle Status',
+    status_active: 'Active',
+    status_completed: 'Completed',
+    status_prospect: 'Prospect',
+    status_blacklisted: 'Blacklisted',
+    blacklisted_guest_warning: '⚠️ Blacklisted Guest Detected',
+    filter_status_all: 'All Statuses',
 
     // Promotional Media & Marketing Hub
     promo_hub_modal_title: 'Promotional Media & Marketing Hub',
@@ -1122,6 +1197,11 @@ const TRANSLATIONS = {
     pending: 'Belum Bayar',
     paid: 'Telah Dibayar',
     btn_view_invoices: 'Jadual Invois',
+    month_1_paid_move_in: 'Sewa Bulan 1 Telah Dibayar Melalui Pakej Kemasukan',
+    month_1_paid_move_in_note: 'Sewa Bulan 1 Telah Dibayar Melalui Pakej Kemasukan (Penjanaan Invois Bermula Bulan ke-2)',
+    invoicing_starts_month_2: 'Penjanaan invois bermula dari Bulan ke-2',
+    settled_via_move_in: 'Lunas (Pakej Kemasukan)',
+    no_invoice_month_1: 'Tiada Invois Diperlukan (Bulan 1 Telah Lunas Dalam Pakej Kemasukan)',
 
     // In-App User Guide
     user_guide_title: 'Panduan Pengguna & Manual Operasi',
@@ -1191,6 +1271,74 @@ const TRANSLATIONS = {
     no_receipts_recorded: 'Tiada resit bayaran direkodkan bagi tempahan ini lagi.',
     delete_receipt_confirm: 'Adakah anda pasti mahu memadamkan rekod bayaran dan slip ini?',
     receipt_badge_count: 'Resit',
+
+    // OCR Receipt & Bill Scanner
+    ocr_scan_btn: 'Imbas Resit / Bil',
+    ocr_scan_slip_btn: 'Imbas Resit (OCR)',
+    ocr_scan_bill_btn: 'Imbas Bil (OCR)',
+    ocr_modal_title: 'Pengimbas Resit & Bil OCR',
+    ocr_modal_sub: 'Pengecaman automatik untuk resit bank Malaysia & bil utiliti',
+    ocr_tab_camera: 'Kamera / Muat Naik Resit',
+    ocr_tab_paste: 'Tampal Mesej WhatsApp / Teks',
+    ocr_detected_heading: 'Maklumat Berjaya Dikesan',
+    ocr_apply_booking: 'Rekod ke Tempahan Tetamu',
+    ocr_save_expense: 'Rekod sebagai Perbelanjaan',
+    ocr_processing: 'Sedang mengimbas dokumen dengan OCR...',
+    ocr_success: 'Dokumen berjaya diimbas!',
+    ocr_settings_title: 'Pengimbas Resit & Bil OCR',
+    ocr_settings_sub: 'Enjin pengecaman optik untuk resit bank Malaysia dan bil utiliti',
+    ocr_engine_label: 'Enjin Pengecaman',
+    ocr_engine_hint: 'Mod Automatik berfungsi luar talian (tanpa internet). Gemini Flash memberikan ketepatan tinggi untuk resit renyuk atau condong.',
+    gemini_api_key_label: 'Kunci API Google Gemini (Pilihan)',
+    gemini_api_hint: 'Disimpan secara peribadi pada peranti anda sahaja.',
+    btn_save_ocr: 'Simpan Tetapan Pengimbas',
+    tap_upload_bill: 'Ketik untuk Tangkap atau Muat Naik Bil (TNB, Air, Barangan)',
+    exp_receipt_bill: 'Resit / Salinan Bil (Pilihan)',
+
+    // Smart WhatsApp Chat Import
+    cat_tenant: '👤 Penyewa / Tetamu Tetap',
+    btn_import_tenant_chat: 'Import Chat WhatsApp',
+    import_tenant_chat_title: 'Import Perbualan WhatsApp Pintar',
+    import_tenant_chat_sub: 'Tampal perbualan WhatsApp penyewa untuk ekstrak butiran automatik',
+    extract_chat_btn: 'Ekstrak Butiran Tetamu',
+    paste_chat_placeholder: 'Tampal mesej perbualan atau maklumat tempahan tetamu di sini...',
+    view_original_chat: 'Lihat Mesej Perbualan Asal',
+    create_booking_btn: 'Buat Sebut Harga / Tempahan',
+    save_contact_btn: 'Simpan sebagai Kenalan',
+    create_both_btn: 'Buat Kedua-duanya (Tempahan + Kenalan)',
+    chat_extracted_success: 'Butiran tetamu berjaya diekstrak!',
+    import_chat_short: 'Import Chat',
+    booking_type_label: 'Jenis Tempahan',
+    type_individual: 'Individu',
+    type_company: 'Syarikat',
+    ssm_reg_no: 'Nombor Pendaftaran SSM',
+    pic_name_label: 'Nama PIC',
+    pic_position_label: 'Jawatan PIC',
+    pic_phone_label: 'Nombor Telefon PIC',
+    pic_email_label: 'Emel PIC',
+    company_address_label: 'Alamat Syarikat',
+    id_number_label: 'No. Kad Pengenalan / Pasport',
+    sample_company_btn: 'Sampel Syarikat',
+
+    // Tenant Lifecycle & Repeat Guest Recognition
+    repeat_guest_detected: 'Tetamu Berulang Dikesan',
+    kpi_active_tenants: 'Penyewa Aktif',
+    kpi_repeat_guests: 'Tetamu Berulang',
+    kpi_repeat_bookings: 'Jumlah Tempahan Berulang',
+    top_returning_guests: 'Tetamu Paling Kerap Menginap',
+    tenant_lifecycle_kpis_title: 'Kecerdasan Penyewa & Tetamu Berulang',
+    tenant_lifecycle_kpis_sub: 'Jejak penyewa aktif vs sejarah, pengekalan tetamu setia dan nilai jangka hayat',
+    lbl_prev_stays: 'Penginapan Terdahulu',
+    lbl_last_stay: 'Tarikh Terakhir',
+    lbl_lifetime_rev: 'Hasil Terkumpul',
+    btn_use_existing_tenant: 'Gunakan Maklumat Penyewa',
+    tenant_status_label: 'Status Kitaran Hayat',
+    status_active: 'Aktif',
+    status_completed: 'Selesai',
+    status_prospect: 'Prospek',
+    status_blacklisted: 'Senarai Hitam',
+    blacklisted_guest_warning: '⚠️ Tetamu Senarai Hitam Dikesan',
+    filter_status_all: 'Semua Status',
 
     // Promotional Media & Marketing Hub
     promo_hub_modal_title: 'Hab Media Promosi & Pemasaran',
@@ -2255,23 +2403,26 @@ function migrateExistingBookingDocuments() {
         if (inv.status === 'paid' && !inv.receiptNo) {
           inv.receiptNo = `REC-M${inv.monthIndex}-${year}-${idShort}`;
         }
-        const hasMInvDoc = b.documents.some(d => d.docType === 'invoice' && d.monthIndex === inv.monthIndex);
-        if (!hasMInvDoc) {
-          b.documents.push({
-            id: `doc-inv-m${inv.monthIndex}-${b.id}`,
-            docType: 'invoice',
-            monthIndex: inv.monthIndex,
-            docNo: inv.invoiceNo,
-            baseDocNo: inv.invoiceNo,
-            revision: 0,
-            status: 'issued',
-            date: inv.periodStart,
-            amount: Number(inv.totalAmount || inv.rentAmount || 0),
-            issuedAt: inv.periodStart,
-            replacesDocNo: null,
-            replacedByDocNo: null,
-            hasBeenPrintedOrDownloaded: true
-          });
+        // Month 1 rental is settled via Move-In Package; invoice documents begin from Month 2
+        if (inv.monthIndex >= 2) {
+          const hasMInvDoc = b.documents.some(d => d.docType === 'invoice' && d.monthIndex === inv.monthIndex);
+          if (!hasMInvDoc) {
+            b.documents.push({
+              id: `doc-inv-m${inv.monthIndex}-${b.id}`,
+              docType: 'invoice',
+              monthIndex: inv.monthIndex,
+              docNo: inv.invoiceNo,
+              baseDocNo: inv.invoiceNo,
+              revision: 0,
+              status: 'issued',
+              date: inv.periodStart,
+              amount: Number(inv.totalAmount || inv.rentAmount || 0),
+              issuedAt: inv.periodStart,
+              replacesDocNo: null,
+              replacedByDocNo: null,
+              hasBeenPrintedOrDownloaded: true
+            });
+          }
         }
         if (inv.status === 'paid') {
           const hasMRecDoc = b.documents.some(d => d.docType === 'receipt' && d.monthIndex === inv.monthIndex);
@@ -3762,6 +3913,24 @@ function setupEventListeners() {
   // Tenancy Deposit Refund Form
   const refundForm = document.getElementById('depositRefundForm');
   if (refundForm) refundForm.addEventListener('submit', handleProcessDepositRefund);
+
+  // Repeat Guest Recognition Inputs
+  ['bookingGuestPhone', 'bookingGuestNric', 'bookingContactPhone', 'bookingCompanyRegNo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', checkBookingRepeatGuest);
+      el.addEventListener('change', checkBookingRepeatGuest);
+    }
+  });
+
+  const btnApplyRepeat = document.getElementById('btnApplyRepeatGuestDetails');
+  if (btnApplyRepeat) {
+    btnApplyRepeat.addEventListener('click', () => {
+      if (currentRepeatGuestStats) {
+        applyRepeatGuestDetails(currentRepeatGuestStats);
+      }
+    });
+  }
   [
     'refundRentalDepInput', 'refundUtilitiesDepInput', 'refundDeductUtilitiesInput', 'refundDeductRepairsInput'
   ].forEach(id => {
@@ -4456,6 +4625,20 @@ function setupEventListeners() {
       closeAllModals();
     }
   });
+
+  // Setup OCR Receipt & Bill Scanner Listeners
+  try {
+    setupOcrEventListeners();
+  } catch (ocrInitErr) {
+    console.warn('OCR listeners init notice:', ocrInitErr);
+  }
+
+  // Setup Smart WhatsApp Chat Import Listeners
+  try {
+    setupTenantChatEventListeners();
+  } catch (chatInitErr) {
+    console.warn('Tenant Chat Import listeners init notice:', chatInitErr);
+  }
 }
 
 function applyDepositPreset(pct, targetStatus) {
@@ -5572,6 +5755,323 @@ function isHistoricalStay(b, todayStr = formatLocalDate(new Date())) {
   return b.status === 'checked-out' || b.status === 'completed' || b.isHistorical === true || (b.checkOut && b.checkOut < todayStr && b.status !== 'cancelled' && b.status !== 'quotation');
 }
 
+function normalizeIdNumber(rawId) {
+  if (!rawId) return '';
+  return String(rawId).replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+}
+
+/**
+ * Calculates guest stay history & repeat statistics:
+ * Matches by Phone Number FIRST.
+ * Matches by Identification Number (IC / Passport / SSM) SECOND.
+ */
+function getGuestStayStats(phone, ic, currentBookingId = null) {
+  const normPhone = normalizePhoneNumber(phone);
+  const normIc = normalizeIdNumber(ic);
+
+  let matchedBookings = [];
+  let matchedContact = null;
+  let matchedBy = null;
+
+  const allBookings = Array.isArray(appState.bookings) ? appState.bookings : [];
+  const allContacts = Array.isArray(appState.contacts) ? appState.contacts : [];
+
+  // 1. Match by Phone Number first
+  if (normPhone && normPhone.length >= 6) {
+    matchedContact = allContacts.find(c => normalizePhoneNumber(c.phone) === normPhone);
+    matchedBookings = allBookings.filter(b => {
+      if (currentBookingId && String(b.id) === String(currentBookingId)) return false;
+      return normalizePhoneNumber(b.guestPhone) === normPhone || 
+             normalizePhoneNumber(b.contactPhone) === normPhone || 
+             normalizePhoneNumber(b.picPhone) === normPhone;
+    });
+
+    if (matchedContact || matchedBookings.length > 0) {
+      matchedBy = 'phone';
+    }
+  }
+
+  // 2. Match by Identification Number second (if no phone match)
+  if (!matchedBy && normIc && normIc.length >= 4) {
+    matchedContact = allContacts.find(c => normalizeIdNumber(c.ic) === normIc);
+    matchedBookings = allBookings.filter(b => {
+      if (currentBookingId && String(b.id) === String(currentBookingId)) return false;
+      return normalizeIdNumber(b.guestNric) === normIc || 
+             normalizeIdNumber(b.companyRegNo) === normIc || 
+             normalizeIdNumber(b.contactIc) === normIc || 
+             normalizeIdNumber(b.ic) === normIc;
+    });
+
+    if (matchedContact || matchedBookings.length > 0) {
+      matchedBy = 'id';
+    }
+  }
+
+  if (!matchedBy) {
+    return {
+      matched: false,
+      matchedBy: null,
+      totalStays: 0,
+      lifetimeRevenue: 0,
+      firstStayDate: null,
+      lastStayDate: null,
+      tenant: null,
+      contact: null,
+      bookings: [],
+      isBlacklisted: false
+    };
+  }
+
+  // Calculate stats from valid non-cancelled, non-quotation stays
+  const validStays = matchedBookings.filter(b => b.status !== 'cancelled' && b.status !== 'quotation');
+  
+  // Sort by checkIn date ascending
+  validStays.sort((a, b) => (a.checkIn || '').localeCompare(b.checkIn || ''));
+
+  const totalStays = validStays.length;
+  const lifetimeRevenue = validStays.reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0);
+  const firstStayDate = validStays.length > 0 ? validStays[0].checkIn : null;
+  const lastStayDate = validStays.length > 0 ? validStays[validStays.length - 1].checkIn : null;
+
+  // Latest booking record for prefilling details
+  const latestBooking = validStays.length > 0 ? validStays[validStays.length - 1] : (matchedBookings[0] || null);
+  const isBlacklisted = !!(matchedContact && matchedContact.status === 'blacklisted');
+
+  const tenantDetails = {
+    name: matchedContact?.name || latestBooking?.guestName || latestBooking?.companyName || latestBooking?.contactPerson || '',
+    phone: matchedContact?.phone || latestBooking?.guestPhone || latestBooking?.contactPhone || phone || '',
+    ic: matchedContact?.ic || latestBooking?.guestNric || latestBooking?.companyRegNo || ic || '',
+    email: matchedContact?.email || latestBooking?.guestEmail || latestBooking?.contactEmail || '',
+    address: matchedContact?.address || latestBooking?.guestAddress || latestBooking?.companyAddress || '',
+    tenantType: latestBooking?.tenantType || (matchedContact?.company ? 'company' : 'individual'),
+    companyName: latestBooking?.companyName || matchedContact?.company || '',
+    companyRegNo: latestBooking?.companyRegNo || matchedContact?.ic || '',
+    companyAddress: latestBooking?.companyAddress || matchedContact?.address || '',
+    contactPerson: latestBooking?.contactPerson || (latestBooking?.tenantType === 'company' ? latestBooking?.signatoryName : '') || '',
+    contactDesignation: latestBooking?.contactDesignation || (latestBooking?.tenantType === 'company' ? latestBooking?.signatoryDesignation : '') || '',
+    contactPhone: latestBooking?.contactPhone || matchedContact?.phone || '',
+    contactEmail: latestBooking?.contactEmail || matchedContact?.email || '',
+    status: matchedContact?.status || 'active',
+    notes: matchedContact?.notes || latestBooking?.notes || ''
+  };
+
+  return {
+    matched: true,
+    matchedBy,
+    totalStays,
+    lifetimeRevenue,
+    firstStayDate,
+    lastStayDate,
+    tenant: tenantDetails,
+    contact: matchedContact,
+    bookings: validStays,
+    isBlacklisted
+  };
+}
+
+/**
+ * Synchronizes tenant lifecycle statuses:
+ * - Active: currently has active / in-house / confirmed / ongoing tenancy
+ * - Completed: checked out (daily stay) or vacated/completed (long-term tenancy)
+ * - Prospect: inquiries / quotation only
+ * - Blacklisted: preserved, never overridden
+ */
+function syncTenantLifecycleStatus(todayStr = formatLocalDate(new Date())) {
+  if (!Array.isArray(appState.contacts)) appState.contacts = [];
+  const bookings = Array.isArray(appState.bookings) ? appState.bookings : [];
+
+  // Ensure contacts exist for all tenant bookings so they are searchable in Contacts & Reports
+  bookings.forEach(b => {
+    if (!b || b.status === 'cancelled') return;
+    const phone = b.guestPhone || b.contactPhone;
+    const ic = b.guestNric || b.companyRegNo;
+    const name = b.guestName || b.companyName || b.contactPerson;
+    if (!phone && !ic && !name) return;
+
+    const normPhone = normalizePhoneNumber(phone);
+    const normIc = normalizeIdNumber(ic);
+
+    let existingContact = appState.contacts.find(c => {
+      if (normPhone && normPhone.length >= 6 && normalizePhoneNumber(c.phone) === normPhone) return true;
+      if (normIc && normIc.length >= 4 && normalizeIdNumber(c.ic) === normIc) return true;
+      return false;
+    });
+
+    if (!existingContact) {
+      const isPast = (b.status === 'checked-out' || b.status === 'completed' || b.isHistorical === true || (b.checkOut && b.checkOut < todayStr));
+      const isQuote = (b.status === 'quotation');
+      const initialStatus = isPast ? 'completed' : (isQuote ? 'prospect' : 'active');
+      
+      appState.contacts.push({
+        id: 'c-t-' + (normPhone || normIc || (Date.now() + '-' + Math.random().toString(36).substr(2, 4))),
+        name: name || 'Tenant',
+        category: 'tenant',
+        phone: phone || '',
+        company: b.companyName || '',
+        notes: b.rentalType === 'monthly' ? 'Monthly Tenancy' : 'Daily Homestay Guest',
+        ic: ic || '',
+        status: initialStatus
+      });
+    }
+  });
+
+  // Re-evaluate lifecycle status for each contact
+  appState.contacts.forEach(c => {
+    // Blacklisted contacts are strictly preserved
+    if (c.status === 'blacklisted') return;
+
+    const normPhone = normalizePhoneNumber(c.phone);
+    const normIc = normalizeIdNumber(c.ic);
+
+    const matchingBookings = bookings.filter(b => {
+      if (b.status === 'cancelled') return false;
+      if (normPhone && normPhone.length >= 6) {
+        if (normalizePhoneNumber(b.guestPhone) === normPhone || 
+            normalizePhoneNumber(b.contactPhone) === normPhone || 
+            normalizePhoneNumber(b.picPhone) === normPhone) {
+          return true;
+        }
+      }
+      if (normIc && normIc.length >= 4) {
+        if (normalizeIdNumber(b.guestNric) === normIc || 
+            normalizeIdNumber(b.companyRegNo) === normIc || 
+            normalizeIdNumber(b.contactIc) === normIc ||
+            normalizeIdNumber(b.ic) === normIc) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    if (matchingBookings.length === 0) {
+      if (!c.status) c.status = 'active';
+      return;
+    }
+
+    // Check if any booking is currently active (Daily not checked out / not past; Monthly not completed / not vacated)
+    const hasActiveBooking = matchingBookings.some(b => {
+      if (b.status === 'quotation') return false;
+      if (b.status === 'checked-out' || b.status === 'completed' || b.isHistorical === true) return false;
+      if (b.checkOut && b.checkOut < todayStr) return false;
+      return true;
+    });
+
+    if (hasActiveBooking) {
+      c.status = 'active';
+    } else {
+      const validStays = matchingBookings.filter(b => b.status !== 'quotation');
+      if (validStays.length > 0) {
+        // Daily Checked Out -> Completed; Long-term Vacated / Completed -> Completed
+        c.status = 'completed';
+      } else {
+        c.status = 'prospect';
+      }
+    }
+  });
+
+  return appState.contacts;
+}
+
+let currentRepeatGuestStats = null;
+
+function checkBookingRepeatGuest() {
+  const isCompany = (document.getElementById('bookingTenantType')?.value === 'company');
+  const guestPhone = document.getElementById('bookingGuestPhone')?.value ? document.getElementById('bookingGuestPhone').value.trim() : '';
+  const guestNric = document.getElementById('bookingGuestNric')?.value ? document.getElementById('bookingGuestNric').value.trim() : '';
+  const contactPhone = document.getElementById('bookingContactPhone')?.value ? document.getElementById('bookingContactPhone').value.trim() : '';
+  const companyRegNo = document.getElementById('bookingCompanyRegNo')?.value ? document.getElementById('bookingCompanyRegNo').value.trim() : '';
+  const currentBookingId = document.getElementById('bookingIdInput')?.value || null;
+
+  const phone = isCompany ? (contactPhone || guestPhone) : (guestPhone || contactPhone);
+  const ic = isCompany ? (companyRegNo || guestNric) : (guestNric || companyRegNo);
+
+  const alertBox = document.getElementById('repeatGuestAlertBox');
+  const blacklistAlert = document.getElementById('blacklistedGuestAlertBox');
+  const blacklistReason = document.getElementById('blacklistedGuestReason');
+
+  if (!phone && !ic) {
+    if (alertBox) alertBox.style.display = 'none';
+    if (blacklistAlert) blacklistAlert.style.display = 'none';
+    currentRepeatGuestStats = null;
+    return null;
+  }
+
+  const stats = getGuestStayStats(phone, ic, currentBookingId);
+  currentRepeatGuestStats = stats;
+
+  // Repeat Guest Recognition Banner
+  if (alertBox) {
+    if (stats.matched && stats.totalStays > 0) {
+      alertBox.style.display = 'block';
+      const stayCountEl = document.getElementById('repeatGuestStayCount');
+      const lastStayEl = document.getElementById('repeatGuestLastStay');
+      const lifetimeRevEl = document.getElementById('repeatGuestLifetimeRev');
+      if (stayCountEl) stayCountEl.textContent = stats.totalStays;
+      if (lastStayEl) lastStayEl.textContent = stats.lastStayDate || '-';
+      if (lifetimeRevEl) lifetimeRevEl.textContent = formatCurrency(stats.lifetimeRevenue);
+    } else {
+      alertBox.style.display = 'none';
+    }
+  }
+
+  // Blacklist Alert Banner
+  if (blacklistAlert) {
+    if (stats.isBlacklisted) {
+      blacklistAlert.style.display = 'block';
+      if (blacklistReason) {
+        blacklistReason.textContent = stats.contact?.notes || (appState.settings.language === 'bm' ? 'Penyewa ini ditandakan dalam senarai hitam.' : 'This guest is flagged on the blacklist.');
+      }
+    } else {
+      blacklistAlert.style.display = 'none';
+    }
+  }
+
+  return stats;
+}
+
+function applyRepeatGuestDetails(stats) {
+  if (!stats || !stats.tenant) return;
+  const tData = stats.tenant;
+  const isCompany = (tData.tenantType === 'company');
+
+  if (typeof setBookingTenantType === 'function') {
+    setBookingTenantType(isCompany ? 'company' : 'individual');
+  }
+
+  if (isCompany) {
+    const elName = document.getElementById('bookingCompanyName');
+    if (elName && tData.companyName) elName.value = tData.companyName;
+    const elReg = document.getElementById('bookingCompanyRegNo');
+    if (elReg && tData.companyRegNo) elReg.value = tData.companyRegNo;
+    const elAddr = document.getElementById('bookingCompanyAddress');
+    if (elAddr && tData.companyAddress) elAddr.value = tData.companyAddress;
+    const elCP = document.getElementById('bookingContactPerson');
+    if (elCP && tData.contactPerson) elCP.value = tData.contactPerson;
+    const elCD = document.getElementById('bookingContactDesignation');
+    if (elCD && tData.contactDesignation) elCD.value = tData.contactDesignation;
+    const elCPH = document.getElementById('bookingContactPhone');
+    if (elCPH && tData.contactPhone) elCPH.value = tData.contactPhone;
+    const elCE = document.getElementById('bookingContactEmail');
+    if (elCE && tData.contactEmail) elCE.value = tData.contactEmail;
+  } else {
+    const elName = document.getElementById('bookingGuestName');
+    if (elName && tData.name) elName.value = tData.name;
+    const elPhone = document.getElementById('bookingGuestPhone');
+    if (elPhone && tData.phone) elPhone.value = tData.phone;
+    const elNric = document.getElementById('bookingGuestNric');
+    if (elNric && tData.ic) elNric.value = tData.ic;
+    const elEmail = document.getElementById('bookingGuestEmail');
+    if (elEmail && tData.email) elEmail.value = tData.email;
+    const elAddr = document.getElementById('bookingGuestAddress');
+    if (elAddr && tData.address) elAddr.value = tData.address;
+  }
+
+  const isBM = appState.settings.language === 'bm';
+  if (typeof showToast === 'function') {
+    showToast(isBM ? 'Rekod penyewa sedia ada telah dimasukkan!' : 'Existing tenant record applied!');
+  }
+}
+
 function getFilteredTurnovers() {
   if (appState.selectedPropertyId === 'all') return appState.turnovers;
   return appState.turnovers.filter(t => t.propertyId === appState.selectedPropertyId);
@@ -5597,6 +6097,10 @@ function formatCurrency(amount) {
 
 function renderDashboardTab() {
   const todayStr = formatLocalDate(new Date());
+
+  // Automatically sync tenant lifecycle status (Daily Checked Out -> Completed, Long-term Vacated/Completed -> Completed)
+  syncTenantLifecycleStatus(todayStr);
+
   const bookings = getFilteredBookings();
   const turnovers = getFilteredTurnovers();
 
@@ -5606,10 +6110,101 @@ function renderDashboardTab() {
   const inHouse = bookings.filter(b => b.checkIn <= todayStr && b.checkOut > todayStr && b.status !== 'cancelled' && b.status !== 'checked-out' && b.status !== 'completed' && !isCompletedTenancy(b, todayStr));
   const pendingTurnovers = turnovers.filter(t => t.status !== 'completed');
 
-  document.getElementById('kpiCheckInsCount').textContent = todayCheckIns.length;
-  document.getElementById('kpiCheckOutsCount').textContent = todayCheckOuts.length;
-  document.getElementById('kpiInHouseCount').textContent = inHouse.length;
-  document.getElementById('kpiTurnoversCount').textContent = pendingTurnovers.length;
+  const elCheckIns = document.getElementById('kpiCheckInsCount');
+  if (elCheckIns) elCheckIns.textContent = todayCheckIns.length;
+  const elCheckOuts = document.getElementById('kpiCheckOutsCount');
+  if (elCheckOuts) elCheckOuts.textContent = todayCheckOuts.length;
+  const elInHouse = document.getElementById('kpiInHouseCount');
+  if (elInHouse) elInHouse.textContent = inHouse.length;
+  const elTurnovers = document.getElementById('kpiTurnoversCount');
+  if (elTurnovers) elTurnovers.textContent = pendingTurnovers.length;
+
+  // Tenant Intelligence & Repeat Guest KPIs
+  const activeTenants = (appState.contacts || []).filter(c => (c.category === 'tenant' || !c.category) && (c.status === 'active' || !c.status));
+  const elActiveTenants = document.getElementById('dashKpiActiveTenants');
+  if (elActiveTenants) elActiveTenants.textContent = activeTenants.length;
+
+  // Repeat Guests calculation
+  const guestGroups = {};
+  const allValidStays = (appState.bookings || []).filter(b => b.status !== 'cancelled' && b.status !== 'quotation');
+  allValidStays.forEach(b => {
+    const pKey = normalizePhoneNumber(b.guestPhone || b.contactPhone);
+    const iKey = normalizeIdNumber(b.guestNric || b.companyRegNo);
+    const key = (pKey && pKey.length >= 6) 
+      ? `p:${pKey}` 
+      : ((iKey && iKey.length >= 4) ? `i:${iKey}` : `n:${(b.guestName || b.companyName || b.id).toLowerCase()}`);
+
+    if (!guestGroups[key]) {
+      guestGroups[key] = {
+        name: b.guestName || b.companyName || b.contactPerson || 'Guest',
+        phone: b.guestPhone || b.contactPhone || '',
+        ic: b.guestNric || b.companyRegNo || '',
+        totalStays: 0,
+        lifetimeRevenue: 0,
+        lastStayDate: null
+      };
+    }
+    guestGroups[key].totalStays += 1;
+    guestGroups[key].lifetimeRevenue += (Number(b.totalAmount) || 0);
+    if (!guestGroups[key].lastStayDate || (b.checkIn && b.checkIn > guestGroups[key].lastStayDate)) {
+      guestGroups[key].lastStayDate = b.checkIn;
+    }
+  });
+
+  const repeatGuests = Object.values(guestGroups).filter(g => g.totalStays >= 2);
+  const totalRepeatBookings = repeatGuests.reduce((sum, g) => sum + g.totalStays, 0);
+
+  const elRepeatGuests = document.getElementById('dashKpiRepeatGuests');
+  if (elRepeatGuests) elRepeatGuests.textContent = repeatGuests.length;
+
+  const elRepeatBookings = document.getElementById('dashKpiRepeatBookings');
+  if (elRepeatBookings) elRepeatBookings.textContent = totalRepeatBookings;
+
+  // Top Returning Guests ranking
+  repeatGuests.sort((a, b) => {
+    if (b.totalStays !== a.totalStays) return b.totalStays - a.totalStays;
+    return b.lifetimeRevenue - a.lifetimeRevenue;
+  });
+
+  const topReturningEl = document.getElementById('dashTopReturningGuestsList');
+  const topReturningCountEl = document.getElementById('dashTopReturningGuestsCount');
+  if (topReturningCountEl) {
+    topReturningCountEl.textContent = `${repeatGuests.length} ${appState.settings.language === 'bm' ? 'Tetamu' : 'Guests'}`;
+  }
+  if (topReturningEl) {
+    topReturningEl.innerHTML = '';
+    const top5 = repeatGuests.slice(0, 5);
+    if (top5.length === 0) {
+      topReturningEl.innerHTML = `
+        <div style="text-align:center; padding:10px 8px; font-size:11px; color:var(--text-muted);">
+          ${appState.settings.language === 'bm' 
+            ? 'Tiada rekod tetamu berulang lagi. Tempahan daripada tetamu setia akan dipaparkan di sini.' 
+            : 'No repeat guests recorded yet. Returning customer statistics will appear here.'}
+        </div>
+      `;
+    } else {
+      top5.forEach(g => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:var(--bg-surface); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); font-size:11.5px;';
+        item.innerHTML = `
+          <div>
+            <div style="font-weight:700; color:var(--text-main);">${escapeHtml(g.name)}</div>
+            <div style="font-size:10.5px; color:var(--text-muted);">
+              ${g.phone ? `<i class="fa-brands fa-whatsapp" style="color:var(--success);"></i> ${escapeHtml(g.phone)}` : ''} 
+              ${g.lastStayDate ? `• ${t('lbl_last_stay')}: ${g.lastStayDate}` : ''}
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <span class="badge" style="background:#fef3c7; color:#92400e; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">
+              <i class="fa-solid fa-repeat"></i> ${g.totalStays} ${appState.settings.language === 'bm' ? 'Penginapan' : 'Stays'}
+            </span>
+            <span style="font-weight:700; color:var(--primary); font-size:11.5px;">${formatCurrency(g.lifetimeRevenue)}</span>
+          </div>
+        `;
+        topReturningEl.appendChild(item);
+      });
+    }
+  }
 
   // Monthly Performance Mini Widget
   const currentMonth = new Date().getMonth();
@@ -6718,7 +7313,7 @@ function renderBookingsTab() {
             const paidCnt = invs.filter(x => x.status === 'paid').length;
             const totalCnt = invs.length;
             const allPaid = paidCnt === totalCnt;
-            return `<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:999px; background:${allPaid ? '#dcfce7; color:#166534;' : '#fef3c7; color:#92400e;'}"><i class="fa-solid fa-file-invoice-dollar"></i> ${paidCnt}/${totalCnt} ${isBM ? 'Invois' : 'Invoices'}</span>`;
+            return `<span style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:999px; background:${allPaid ? '#dcfce7; color:#166534;' : '#fef3c7; color:#92400e;'}"><i class="fa-solid fa-file-invoice-dollar"></i> ${paidCnt}/${totalCnt} ${isBM ? 'Bulan Berbayar' : 'Months Settled'}</span>`;
           })() : ''}
           <span style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:999px; ${statusBadgeColors[b.status] || ''}">${statusLabels[b.status] || b.status.toUpperCase()}</span>
         </div>
@@ -6741,6 +7336,11 @@ function renderBookingsTab() {
           </span>
         ` : ''}
       </div>
+      ${b.rentalType === 'monthly' ? `
+        <div style="font-size:11px; font-weight:700; color:#166534; background:#dcfce7; border:1px solid #bbf7d0; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:5px; margin-top:4px;">
+          <i class="fa-solid fa-circle-check"></i> ${isBM ? 'Sewa Bulan 1 Telah Dibayar Melalui Pakej Kemasukan' : 'Month 1 Rental Paid Via Move-In Package'}
+        </div>
+      ` : ''}
 
       <!-- Contextual Quick Action Workflow Bar -->
       <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;">
@@ -6922,11 +7522,11 @@ function renderBookingsTab() {
       const waTemplate = e.currentTarget.getAttribute('data-wa') || 'quotation';
       const b = appState.bookings.find(x => String(x.id) === String(bid));
       if (b) {
-        // If monthly invoice template, pick first pending month
+        // If monthly invoice template, pick first pending month >= 2 (invoicing begins from Month 2)
         if (b.rentalType === 'monthly' && waTemplate === 'monthly_invoice') {
           const invs = getOrInitMonthlyInvoices(b);
-          const firstPending = invs.find(x => x.status === 'pending');
-          const mIdx = firstPending ? firstPending.monthIndex : 1;
+          const pendingInvs = invs.filter(x => x.monthIndex >= 2 && x.status === 'pending');
+          const mIdx = pendingInvs.length > 0 ? pendingInvs[0].monthIndex : 2;
           openWhatsAppModal(b, waTemplate, mIdx);
         } else {
           openWhatsAppModal(b, waTemplate);
@@ -7518,6 +8118,8 @@ function escapeHtml(str) {
 function getContactCategoryBadge(cat) {
   const isBM = appState.settings.language === 'bm';
   switch (cat) {
+    case 'tenant':
+      return { label: isBM ? '👤 Penyewa / Tetamu' : '👤 Tenant / Guest', class: 'cat-tenant badge-tenant' };
     case 'cleaner':
       return { label: isBM ? '🧹 Tukang Cuci' : '🧹 Cleaner', class: 'cat-cleaner' };
     case 'aircond':
@@ -7539,21 +8141,74 @@ function getContactCategoryBadge(cat) {
   }
 }
 
+let currentContactStatusFilter = 'all';
+let currentContactSearchQuery = '';
+
 function renderSettingsContactList() {
   const container = document.getElementById('settingsContactList');
   if (!container) return;
   container.innerHTML = '';
 
   const isBM = appState.settings.language === 'bm';
-  const contacts = appState.contacts || [];
+
+  // Wire search and status filter pill listeners once
+  const searchInput = document.getElementById('contactSearchInput');
+  if (searchInput && !searchInput.dataset.listenerAttached) {
+    searchInput.dataset.listenerAttached = 'true';
+    searchInput.addEventListener('input', (e) => {
+      currentContactSearchQuery = e.target.value.toLowerCase().trim();
+      renderSettingsContactList();
+    });
+  }
+
+  const pillsContainer = document.getElementById('contactStatusFilterPills');
+  if (pillsContainer && !pillsContainer.dataset.listenerAttached) {
+    pillsContainer.dataset.listenerAttached = 'true';
+    pillsContainer.querySelectorAll('.filter-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        pillsContainer.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentContactStatusFilter = pill.getAttribute('data-contact-filter') || 'all';
+        renderSettingsContactList();
+      });
+    });
+  }
+
+  let contacts = appState.contacts || [];
+
+  // Filter by Lifecycle Status
+  if (currentContactStatusFilter !== 'all') {
+    contacts = contacts.filter(c => (c.status || 'active') === currentContactStatusFilter);
+  }
+
+  // Filter by Search Query
+  if (currentContactSearchQuery) {
+    const q = currentContactSearchQuery;
+    contacts = contacts.filter(c => {
+      return (c.name && c.name.toLowerCase().includes(q)) ||
+             (c.phone && c.phone.includes(q)) ||
+             (c.ic && c.ic.toLowerCase().includes(q)) ||
+             (c.company && c.company.toLowerCase().includes(q)) ||
+             (c.notes && c.notes.toLowerCase().includes(q));
+    });
+  }
 
   if (contacts.length === 0) {
+    const isFiltered = (currentContactStatusFilter !== 'all' || !!currentContactSearchQuery);
     container.innerHTML = `
       <div style="text-align:center; padding:24px 16px; background:var(--bg-surface-subtle); border-radius:var(--radius-md); border:1px dashed var(--border-color);">
         <i class="fa-solid fa-users-gear" style="font-size:28px; color:var(--text-muted); margin-bottom:8px;"></i>
-        <p style="font-size:13px; font-weight:700; color:var(--text-main); margin-bottom:4px;">${isBM ? 'Tiada kenalan / pembekal disimpan lagi' : 'No team members or suppliers added yet'}</p>
-        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">${isBM ? 'Simpan tukang cuci, juruteknik aircond, tukang paip dan pembekal untuk notis kerja pantas 1-klik WhatsApp.' : 'Save cleaners, aircond techs, plumbers & supply vendors for 1-click WhatsApp alerts.'}</p>
-        <button class="btn btn-primary btn-sm" id="btnSettingsAddFirstContact"><i class="fa-solid fa-plus"></i> ${isBM ? 'Tambah Kenalan Pertama' : 'Add First Contact'}</button>
+        <p style="font-size:13px; font-weight:700; color:var(--text-main); margin-bottom:4px;">${
+          isFiltered 
+            ? (isBM ? 'Tiada kenalan sepadan dengan carian / penapis' : 'No contacts matching filter / search')
+            : (isBM ? 'Tiada kenalan / pembekal disimpan lagi' : 'No team members or suppliers added yet')
+        }</p>
+        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">${
+          isFiltered
+            ? (isBM ? 'Cuba tukar kata kunci carian atau pilih tab status "Semua Status".' : 'Try modifying your search query or switch back to "All Statuses".')
+            : (isBM ? 'Simpan penyewa, tukang cuci, juruteknik aircond, tukang paip dan pembekal untuk notis pantas.' : 'Save tenants, cleaners, aircond techs, plumbers & supply vendors for quick alerts.')
+        }</p>
+        ${!isFiltered ? `<button class="btn btn-primary btn-sm" id="btnSettingsAddFirstContact"><i class="fa-solid fa-plus"></i> ${isBM ? 'Tambah Kenalan Pertama' : 'Add First Contact'}</button>` : ''}
       </div>
     `;
     const addFirst = document.getElementById('btnSettingsAddFirstContact');
@@ -7567,11 +8222,41 @@ function renderSettingsContactList() {
     const badgeInfo = getContactCategoryBadge(contact.category);
     const cleanPhone = (contact.phone || '').replace(/[^0-9]/g, '');
 
+    // Status Badge
+    const status = contact.status || 'active';
+    let statusBadgeHtml = '';
+    if (status === 'active') {
+      statusBadgeHtml = `<span class="badge-status-active"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ${t('status_active')}</span>`;
+    } else if (status === 'completed') {
+      statusBadgeHtml = `<span class="badge-status-completed"><i class="fa-solid fa-circle-check" style="font-size:7px;"></i> ${t('status_completed')}</span>`;
+    } else if (status === 'prospect') {
+      statusBadgeHtml = `<span class="badge-status-prospect"><i class="fa-solid fa-clock" style="font-size:7px;"></i> ${t('status_prospect')}</span>`;
+    } else if (status === 'blacklisted') {
+      statusBadgeHtml = `<span class="badge-status-blacklisted"><i class="fa-solid fa-ban" style="font-size:7px;"></i> ${t('status_blacklisted')}</span>`;
+    }
+
+    // Tenant Lifecycle Metrics (stays, revenue, last stay)
+    const stats = getGuestStayStats(contact.phone, contact.ic);
+    let metricsHtml = '';
+    if (contact.category === 'tenant' || stats.totalStays > 0) {
+      metricsHtml = `
+        <div class="tenant-lifecycle-metrics">
+          <span class="tenant-metric-pill" title="Total stays"><i class="fa-solid fa-repeat"></i> ${t('lbl_prev_stays')}: <strong>${stats.totalStays}</strong></span>
+          <span class="tenant-metric-pill" title="Lifetime revenue"><i class="fa-solid fa-coins"></i> ${t('lbl_lifetime_rev')}: <strong>${formatCurrency(stats.lifetimeRevenue)}</strong></span>
+          ${stats.lastStayDate ? `<span class="tenant-metric-pill" title="Last stay"><i class="fa-regular fa-calendar-check"></i> ${t('lbl_last_stay')}: <strong>${stats.lastStayDate}</strong></span>` : ''}
+        </div>
+      `;
+    }
+
     card.innerHTML = `
       <div class="contact-card-header">
         <div>
-          <div class="contact-card-title">${escapeHtml(contact.name)}</div>
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <div class="contact-card-title">${escapeHtml(contact.name)}</div>
+            ${statusBadgeHtml}
+          </div>
           ${contact.company ? `<div class="contact-company-text"><i class="fa-solid fa-briefcase"></i> ${escapeHtml(contact.company)}</div>` : ''}
+          ${contact.ic ? `<div style="font-size:11px; color:var(--text-muted); margin-top:2px;"><i class="fa-regular fa-id-card"></i> ${escapeHtml(contact.ic)}</div>` : ''}
         </div>
         <span class="contact-category-badge ${badgeInfo.class}">
           ${badgeInfo.label}
@@ -7583,6 +8268,7 @@ function renderSettingsContactList() {
           <i class="fa-brands fa-whatsapp" style="color:var(--success);"></i> ${escapeHtml(contact.phone)}
         </a>
         ${contact.notes ? `<div class="contact-notes-text">${escapeHtml(contact.notes)}</div>` : ''}
+        ${metricsHtml}
       </div>
 
       <div class="contact-card-actions">
@@ -7627,7 +8313,7 @@ function renderSettingsContactList() {
   });
 }
 
-function openContactModal(contactId = null) {
+function openContactModal(contactId = null, prefillContact = null) {
   const isBM = appState.settings.language === 'bm';
   const modal = document.getElementById('contactModal');
   const title = document.getElementById('contactModalTitle');
@@ -7637,6 +8323,8 @@ function openContactModal(contactId = null) {
   const phoneInput = document.getElementById('contactPhoneInput');
   const compInput = document.getElementById('contactCompanyInput');
   const notesInput = document.getElementById('contactNotesInput');
+  const statusSelect = document.getElementById('contactStatusSelect');
+  const icInput = document.getElementById('contactIcInput');
 
   if (contactId) {
     const contact = (appState.contacts || []).find(c => c.id === contactId);
@@ -7648,15 +8336,19 @@ function openContactModal(contactId = null) {
       if (phoneInput) phoneInput.value = contact.phone || '';
       if (compInput) compInput.value = contact.company || '';
       if (notesInput) notesInput.value = contact.notes || '';
+      if (statusSelect) statusSelect.value = contact.status || 'active';
+      if (icInput) icInput.value = contact.ic || '';
     }
   } else {
     if (title) title.textContent = isBM ? 'Tambah Pasukan / Pembekal' : 'Add Team Member / Supplier';
     if (idInput) idInput.value = '';
-    if (nameInput) nameInput.value = '';
-    if (catSelect) catSelect.value = 'cleaner';
-    if (phoneInput) phoneInput.value = '';
-    if (compInput) compInput.value = '';
-    if (notesInput) notesInput.value = '';
+    if (nameInput) nameInput.value = prefillContact ? (prefillContact.name || '') : '';
+    if (catSelect) catSelect.value = prefillContact ? (prefillContact.category || 'tenant') : 'cleaner';
+    if (phoneInput) phoneInput.value = prefillContact ? (prefillContact.phone || '') : '';
+    if (compInput) compInput.value = prefillContact ? (prefillContact.company || '') : '';
+    if (notesInput) notesInput.value = prefillContact ? (prefillContact.notes || '') : '';
+    if (statusSelect) statusSelect.value = prefillContact ? (prefillContact.status || 'active') : 'active';
+    if (icInput) icInput.value = prefillContact ? (prefillContact.ic || '') : '';
   }
 
   if (modal) modal.classList.add('active');
@@ -7670,6 +8362,8 @@ function handleSaveContact(e) {
   const phone = document.getElementById('contactPhoneInput').value.trim();
   const company = document.getElementById('contactCompanyInput').value.trim();
   const notes = document.getElementById('contactNotesInput').value.trim();
+  const status = document.getElementById('contactStatusSelect') ? document.getElementById('contactStatusSelect').value : 'active';
+  const ic = document.getElementById('contactIcInput') ? document.getElementById('contactIcInput').value.trim() : '';
 
   if (!name || !phone) {
     alert(appState.settings.language === 'bm' ? 'Sila masukkan nama dan nombor WhatsApp.' : 'Please enter contact name and WhatsApp phone number.');
@@ -7688,7 +8382,9 @@ function handleSaveContact(e) {
         category,
         phone,
         company,
-        notes
+        notes,
+        status,
+        ic
       };
     }
   } else {
@@ -7699,7 +8395,9 @@ function handleSaveContact(e) {
       category,
       phone,
       company,
-      notes
+      notes,
+      status,
+      ic
     };
     appState.contacts.push(newContact);
   }
@@ -8239,6 +8937,9 @@ function setBookingTenantType(type) {
 
   const rentalType = document.getElementById('bookingRentalType')?.value || 'daily';
   applyTenantFormVisibility(rentalType, targetType);
+  if (typeof checkBookingRepeatGuest === 'function') {
+    checkBookingRepeatGuest();
+  }
 }
 
 function setBookingFormRentalType(type) {
@@ -8330,7 +9031,7 @@ function setBookingFormRentalType(type) {
   applyTenantFormVisibility(type, currentTenantType);
 }
 
-function openBookingModal(existingBooking = null, prefillDate = null, prefillPropertyId = null) {
+function openBookingModal(existingBooking = null, prefillDate = null, prefillPropertyId = null, prefillData = null) {
   if (appState.properties.length === 0) {
     alert(appState.settings.language === 'bm' 
       ? 'Sila tambah sekurang-kurangnya satu unit homestay atau bilik sebelum membuat tempahan.' 
@@ -8577,10 +9278,71 @@ function openBookingModal(existingBooking = null, prefillDate = null, prefillPro
     if (qGroup) {
       qGroup.style.display = 'block';
     }
+
+    if (prefillData) {
+      if (prefillData.tenantType) {
+        setBookingTenantType(prefillData.tenantType);
+      }
+      if (prefillData.companyName) {
+        const el = document.getElementById('bookingCompanyName');
+        if (el) el.value = prefillData.companyName;
+      }
+      if (prefillData.companyRegNo) {
+        const el = document.getElementById('bookingCompanyRegNo');
+        if (el) el.value = prefillData.companyRegNo;
+      }
+      if (prefillData.companyAddress) {
+        const el = document.getElementById('bookingCompanyAddress');
+        if (el) el.value = prefillData.companyAddress;
+      }
+      if (prefillData.contactPerson) {
+        const el = document.getElementById('bookingContactPerson');
+        if (el) el.value = prefillData.contactPerson;
+      }
+      if (prefillData.contactDesignation) {
+        const el = document.getElementById('bookingContactDesignation');
+        if (el) el.value = prefillData.contactDesignation;
+      }
+      if (prefillData.contactPhone) {
+        const el = document.getElementById('bookingContactPhone');
+        if (el) el.value = prefillData.contactPhone;
+      }
+      if (prefillData.contactEmail) {
+        const el = document.getElementById('bookingContactEmail');
+        if (el) el.value = prefillData.contactEmail;
+      }
+      if (prefillData.guestName) document.getElementById('bookingGuestName').value = prefillData.guestName;
+      if (prefillData.guestPhone) document.getElementById('bookingGuestPhone').value = prefillData.guestPhone;
+      if (prefillData.guestNric) document.getElementById('bookingGuestNric').value = prefillData.guestNric;
+      if (prefillData.guestEmail) document.getElementById('bookingGuestEmail').value = prefillData.guestEmail;
+      if (prefillData.guestAddress) document.getElementById('bookingGuestAddress').value = prefillData.guestAddress;
+      if (prefillData.checkIn) document.getElementById('bookingCheckIn').value = prefillData.checkIn;
+      if (prefillData.checkOut) document.getElementById('bookingCheckOut').value = prefillData.checkOut;
+      if (prefillData.guestCount) {
+        document.getElementById('bookingGuestCount').value = prefillData.guestCount;
+        const occEl = document.getElementById('bookingOccupantsCount');
+        if (occEl) occEl.value = prefillData.guestCount;
+      }
+      if (prefillData.occupantsNotes) {
+        const occNotesEl = document.getElementById('bookingOccupantsNotes');
+        if (occNotesEl) occNotesEl.value = prefillData.occupantsNotes;
+      }
+      if (prefillData.notes) {
+        const notesEl = document.getElementById('bookingNotes');
+        if (notesEl) notesEl.value = prefillData.notes;
+      }
+      if (prefillData.channel) {
+        const chEl = document.getElementById('bookingChannel');
+        if (chEl) chEl.value = prefillData.channel;
+      }
+    }
   }
 
   updateBookingModalPricing();
   checkBookingModalOverlap();
+  if (typeof checkBookingRepeatGuest === 'function') {
+    checkBookingRepeatGuest();
+  }
   document.getElementById('bookingModal').classList.add('active');
 }
 
@@ -8996,6 +9758,10 @@ function handleSaveBooking(e) {
     });
   }
 
+  if (typeof syncTenantLifecycleStatus === 'function') {
+    syncTenantLifecycleStatus();
+  }
+
   saveToStorage();
   closeAllModals();
   renderApp();
@@ -9097,7 +9863,13 @@ function handleProcessDepositRefund(e) {
 
 function getOrInitMonthlyInvoices(booking) {
   if (!booking) return [];
+  // Enhancement applies ONLY to Long-Term Tenancy bookings (Daily stays return empty array)
+  if (booking.rentalType !== 'monthly') return [];
+
   const duration = booking.monthlyDuration || 1;
+  const bIdStr = String(booking.id || '');
+  const idShort = bIdStr.slice(-5).toUpperCase() || '10001';
+
   if (!booking.monthlyInvoices || !Array.isArray(booking.monthlyInvoices) || booking.monthlyInvoices.length === 0) {
     const invoices = [];
     const checkInStr = booking.checkIn || formatLocalDate(new Date());
@@ -9114,11 +9886,9 @@ function getOrInitMonthlyInvoices(booking) {
       const dueDate = new Date(curStart);
       dueDate.setDate(dueDate.getDate() + 6); // 7th day of cycle
 
-      // Month 1 is marked paid if booking is confirmed / checked-in or depositPaid >= monthlyRate
-      const isFirstMonthPaid = (i === 1 && (booking.status === 'confirmed' || booking.status === 'checked-in' || booking.status === 'checked-out' || (booking.depositPaid && booking.depositPaid >= (booking.monthlyRate || 0))));
+      // In long-term tenancy, Month 1 Advance Rental is collected upfront in the move-in package
+      const isFirstMonth = (i === 1);
 
-      const bIdStr = String(booking.id || '');
-      const idShort = bIdStr.slice(-5).toUpperCase() || '10001';
       invoices.push({
         monthIndex: i,
         invoiceNo: `INV-M${i}-${idShort}`,
@@ -9128,13 +9898,45 @@ function getOrInitMonthlyInvoices(booking) {
         rentAmount: booking.monthlyRate || 0,
         utilityCharges: 0,
         totalAmount: booking.monthlyRate || 0,
-        status: isFirstMonthPaid ? 'paid' : 'pending',
-        paidAt: isFirstMonthPaid ? (booking.createdAt || new Date().toISOString()) : null,
-        notes: isFirstMonthPaid ? 'Settled in move-in package' : ''
+        // Month 1 rental settled via Move-In Package; no Month 1 invoice required
+        status: isFirstMonth ? 'paid' : 'pending',
+        settledViaMoveIn: isFirstMonth,
+        noInvoiceRequired: isFirstMonth,
+        paidAt: isFirstMonth ? (booking.createdAt || new Date().toISOString()) : null,
+        notes: isFirstMonth ? 'Month 1 Rental Paid Via Move-In Package' : ''
       });
     }
     booking.monthlyInvoices = invoices;
-    saveToStorage();
+    if (typeof saveToStorage === 'function') saveToStorage();
+  } else {
+    // Backward compatibility: upgrade existing monthly bookings to ensure Month 1 is settled via move-in
+    const m1 = booking.monthlyInvoices.find(x => x.monthIndex === 1);
+    if (m1) {
+      let needsSave = false;
+      if (m1.status !== 'paid') {
+        m1.status = 'paid';
+        needsSave = true;
+      }
+      if (!m1.settledViaMoveIn) {
+        m1.settledViaMoveIn = true;
+        needsSave = true;
+      }
+      if (m1.noInvoiceRequired !== true) {
+        m1.noInvoiceRequired = true;
+        needsSave = true;
+      }
+      if (!m1.notes || m1.notes.includes('Settled in move-in package') || m1.notes === '') {
+        m1.notes = 'Month 1 Rental Paid Via Move-In Package';
+        needsSave = true;
+      }
+      if (!m1.paidAt) {
+        m1.paidAt = booking.createdAt || new Date().toISOString();
+        needsSave = true;
+      }
+      if (needsSave && typeof saveToStorage === 'function') {
+        saveToStorage();
+      }
+    }
   }
   return booking.monthlyInvoices;
 }
@@ -9210,6 +10012,7 @@ function renderMonthlyInvoicesList(booking) {
   }
 
   invoices.forEach(inv => {
+    const isFirstMonth = inv.monthIndex === 1;
     const isPaid = inv.status === 'paid';
     const card = document.createElement('div');
     card.className = 'card';
@@ -9226,12 +10029,17 @@ function renderMonthlyInvoicesList(booking) {
             ${isBM ? `Bulan ke-${inv.monthIndex}` : `Month ${inv.monthIndex}`} (${inv.periodStart} → ${inv.periodEnd})
           </strong>
           <p style="font-size:11px; color:var(--text-muted); margin-top:2px; margin-bottom:0;">
-            No: <code style="font-weight:700; color:var(--primary);">${inv.invoiceNo}</code> • ${isBM ? 'Tarikh Akhir' : 'Due'}: <strong>${inv.dueDate}</strong>
-            ${inv.paidAt ? ` • <span style="color:var(--success);">Paid: ${inv.paidAt.split('T')[0]}</span>` : ''}
+            ${isFirstMonth ? `
+              <span style="font-weight:700; color:var(--success-text, #166534);"><i class="fa-solid fa-circle-check"></i> ${isBM ? 'Sewa Bulan 1 Telah Dibayar Melalui Pakej Kemasukan' : 'Month 1 Rental Paid Via Move-In Package'}</span>
+              <span style="color:var(--text-muted); font-size:10.5px; display:block; margin-top:2px;">${isBM ? 'Invois bermula dari Bulan ke-2 • Tiada invois diperlukan' : 'Invoicing begins from Month 2 • No invoice required'}</span>
+            ` : `
+              No: <code style="font-weight:700; color:var(--primary);">${inv.invoiceNo}</code> • ${isBM ? 'Tarikh Akhir' : 'Due'}: <strong>${inv.dueDate}</strong>
+              ${inv.paidAt ? ` • <span style="color:var(--success);">Paid: ${inv.paidAt.split('T')[0]}</span>` : ''}
+            `}
           </p>
         </div>
-        <span style="font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px; ${isPaid ? 'background:var(--success-light);color:var(--success-text);' : 'background:var(--warning-light);color:var(--warning-text);'}">
-          ${isPaid ? (isBM ? 'DIBAYAR' : 'PAID') : (isBM ? 'BELUM BAYAR' : 'PENDING')}
+        <span style="font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px; ${isFirstMonth ? 'background:#dcfce7;color:#166534;' : (isPaid ? 'background:var(--success-light);color:var(--success-text);' : 'background:var(--warning-light);color:var(--warning-text);')}">
+          ${isFirstMonth ? (isBM ? 'LUNAS (PAKEJ KEMASUKAN)' : 'SETTLED VIA MOVE-IN') : (isPaid ? (isBM ? 'DIBAYAR' : 'PAID') : (isBM ? 'BELUM BAYAR' : 'PENDING'))}
         </span>
       </div>
 
@@ -9239,10 +10047,16 @@ function renderMonthlyInvoicesList(booking) {
         <div style="font-size:12px; font-weight:800; color:var(--primary);">
           ${formatCurrency(inv.totalAmount || inv.rentAmount)}
         </div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          <button class="btn btn-whatsapp btn-xs btn-send-month-inv" data-m="${inv.monthIndex}">
-            <i class="fa-brands fa-whatsapp"></i> ${isBM ? 'Invois' : 'Invoice'}
-          </button>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          ${!isFirstMonth ? `
+            <button class="btn btn-whatsapp btn-xs btn-send-month-inv" data-m="${inv.monthIndex}">
+              <i class="fa-brands fa-whatsapp"></i> ${isBM ? 'Invois' : 'Invoice'}
+            </button>
+          ` : `
+            <span style="font-size:10.5px; font-weight:600; color:var(--text-muted); padding:3px 6px; display:inline-flex; align-items:center; gap:4px;">
+              <i class="fa-solid fa-ban" style="color:var(--text-muted);"></i> ${isBM ? 'Tiada Invois (Bulan 1)' : 'No Invoice (Month 1)'}
+            </span>
+          `}
           ${isPaid ? `
             <button class="btn btn-whatsapp btn-xs btn-send-month-rec" data-m="${inv.monthIndex}" title="${isBM ? 'Hantar Resit Bayaran' : 'Send Payment Receipt'}">
               <i class="fa-solid fa-receipt"></i> ${isBM ? 'Resit' : 'Receipt'}
@@ -9251,10 +10065,16 @@ function renderMonthlyInvoicesList(booking) {
           <button class="btn btn-outline btn-xs btn-open-month-pdf" data-m="${inv.monthIndex}" title="${isBM ? 'Jana / Cetak Fail PDF Rasmi' : 'Generate / Print Official PDF'}">
             <i class="fa-solid fa-file-pdf" style="color:var(--danger, #dc2626);"></i> PDF
           </button>
-          <button class="btn btn-outline btn-xs btn-toggle-month-paid" data-m="${inv.monthIndex}">
-            <i class="fa-solid fa-${isPaid ? 'rotate-left' : 'check'}" style="color:${isPaid ? 'var(--warning)' : 'var(--success)'};"></i>
-            ${isPaid ? (isBM ? 'Batal Tanda' : 'Unmark') : (isBM ? 'Tanda Bayar' : 'Mark Paid')}
-          </button>
+          ${!isFirstMonth ? `
+            <button class="btn btn-outline btn-xs btn-toggle-month-paid" data-m="${inv.monthIndex}">
+              <i class="fa-solid fa-${isPaid ? 'rotate-left' : 'check'}" style="color:${isPaid ? 'var(--warning)' : 'var(--success)'};"></i>
+              ${isPaid ? (isBM ? 'Batal Tanda' : 'Unmark') : (isBM ? 'Tanda Bayar' : 'Mark Paid')}
+            </button>
+          ` : `
+            <span style="font-size:10.5px; font-weight:700; color:#166534; background:#dcfce7; padding:2px 8px; border-radius:4px; display:inline-flex; align-items:center; gap:4px;">
+              <i class="fa-solid fa-lock"></i> ${isBM ? 'Pakej Kemasukan' : 'Move-In Package'}
+            </span>
+          `}
         </div>
       </div>
     `;
@@ -9311,6 +10131,12 @@ function toggleMonthlyInvoicePaid(bookingId, monthIndex) {
   if (!inv) return;
 
   const isBM = appState.settings.language === 'bm';
+
+  // Month 1 rental is collected upfront in the move-in package and cannot be marked pending
+  if (monthIndex === 1) {
+    showToast(isBM ? 'Sewa Bulan 1 telah diselesaikan melalui Pakej Kemasukan.' : 'Month 1 rental is settled via the Move-In Package.');
+    return;
+  }
 
   if (inv.status === 'paid') {
     inv.status = 'pending';
@@ -10630,27 +11456,99 @@ function handleSaveProperty(e) {
 }
 
 // ==========================================================================
+// ==========================================================================
 // 13. EXPENSE MODAL LOGIC
 // ==========================================================================
 
-function openExpenseModal() {
+function openExpenseModal(prefillData = null) {
   const form = document.getElementById('expenseForm');
-  form.reset();
+  if (form && typeof form.reset === 'function') form.reset();
 
   const propSelect = document.getElementById('expensePropertySelect');
-  propSelect.innerHTML = '';
-  appState.properties.forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.id;
-    opt.textContent = p.name;
-    propSelect.appendChild(opt);
-  });
+  if (propSelect) {
+    propSelect.innerHTML = '';
+    appState.properties.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      propSelect.appendChild(opt);
+    });
+  }
 
-  document.getElementById('expenseDateInput').value = formatLocalDate(new Date());
-  document.getElementById('expenseModal').classList.add('active');
+  const receiptFileInput = document.getElementById('expenseReceiptFileInput');
+  if (receiptFileInput) receiptFileInput.value = '';
+  const receiptDataInput = document.getElementById('expenseReceiptImageData');
+  if (receiptDataInput) receiptDataInput.value = '';
+  const receiptNameInput = document.getElementById('expenseReceiptImageName');
+  if (receiptNameInput) receiptNameInput.value = '';
+  const uploadPrompt = document.getElementById('expenseReceiptUploadPrompt');
+  if (uploadPrompt) uploadPrompt.style.display = 'block';
+  const previewContainer = document.getElementById('expenseReceiptPreviewContainer');
+  if (previewContainer) previewContainer.style.display = 'none';
+  const ocrStatus = document.getElementById('expenseOcrStatusBadge');
+  if (ocrStatus) ocrStatus.style.display = 'none';
+
+  if (prefillData) {
+    if (prefillData.propertyId && propSelect) propSelect.value = prefillData.propertyId;
+    if (prefillData.amount) document.getElementById('expenseAmountInput').value = prefillData.amount;
+    if (prefillData.date) document.getElementById('expenseDateInput').value = prefillData.date;
+    if (prefillData.category) document.getElementById('expenseCategorySelect').value = prefillData.category;
+    if (prefillData.description) document.getElementById('expenseDescInput').value = prefillData.description;
+    if (prefillData.receiptImageData) {
+      if (receiptDataInput) receiptDataInput.value = prefillData.receiptImageData;
+      if (receiptNameInput) receiptNameInput.value = prefillData.receiptImageName || 'bill.jpg';
+      const previewImg = document.getElementById('expenseReceiptPreviewImg');
+      if (previewImg) previewImg.src = prefillData.receiptImageData;
+      if (uploadPrompt) uploadPrompt.style.display = 'none';
+      if (previewContainer) previewContainer.style.display = 'block';
+    }
+    if (prefillData.ocrNotice && ocrStatus) {
+      ocrStatus.style.display = 'block';
+      const ocrText = document.getElementById('expenseOcrStatusText');
+      if (ocrText) ocrText.textContent = prefillData.ocrNotice;
+    }
+  } else {
+    const dateInput = document.getElementById('expenseDateInput');
+    if (dateInput) dateInput.value = formatLocalDate(new Date());
+  }
+
+  const modal = document.getElementById('expenseModal');
+  if (modal) modal.classList.add('active');
 }
 
-function handleSaveExpense(e) {
+function handleExpenseReceiptFileSelected(file) {
+  if (!file) return;
+  const isBM = appState.settings.language === 'bm';
+  showToast(isBM ? 'Memampatkan salinan bil...' : 'Compressing bill slip...');
+
+  compressReceiptImage(file, 900, 900, 0.78)
+    .then(result => {
+      document.getElementById('expenseReceiptImageData').value = result.dataUrl;
+      document.getElementById('expenseReceiptImageName').value = result.fileName;
+
+      const previewImg = document.getElementById('expenseReceiptPreviewImg');
+      if (result.isPdf) {
+        previewImg.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23ef4444%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-size=%2218%22 font-weight=%22bold%22 text-anchor=%22middle%22 fill=%22%23ffffff%22%3EPDF%3C/text%3E%3C/svg%3E';
+      } else {
+        previewImg.src = result.dataUrl;
+      }
+
+      document.getElementById('expenseReceiptPreviewFileName').textContent = result.fileName;
+      const sizeKb = Math.round(result.sizeBytes / 1024);
+      document.getElementById('expenseReceiptPreviewSize').textContent = `${sizeKb} KB (Compressed)`;
+
+      document.getElementById('expenseReceiptUploadPrompt').style.display = 'none';
+      document.getElementById('expenseReceiptPreviewContainer').style.display = 'block';
+
+      // Auto-scan the bill!
+      scanExpenseSlipOcr(result.dataUrl);
+    })
+    .catch(err => {
+      alert('Error reading bill file: ' + err.message);
+    });
+}
+
+async function handleSaveExpense(e) {
   e.preventDefault();
 
   const propertyId = document.getElementById('expensePropertySelect').value;
@@ -10659,19 +11557,1955 @@ function handleSaveExpense(e) {
   const category = document.getElementById('expenseCategorySelect').value;
   const description = document.getElementById('expenseDescInput').value.trim();
 
+  const receiptImageData = document.getElementById('expenseReceiptImageData')?.value || null;
+  const receiptImageName = document.getElementById('expenseReceiptImageName')?.value || null;
+
+  const expId = `exp-${Date.now()}`;
+  let receiptImageId = null;
+
+  if (receiptImageData && receiptImageData.startsWith('data:image')) {
+    receiptImageId = `img-exp-${expId}`;
+    try {
+      if (typeof saveImageToDB === 'function') {
+        await saveImageToDB(receiptImageId, receiptImageData);
+      }
+    } catch (imgErr) {
+      console.warn('Could not save expense image to IndexedDB:', imgErr);
+    }
+  }
+
   appState.expenses.push({
-    id: `exp-${Date.now()}`,
+    id: expId,
     propertyId,
     amount,
     date,
     category,
-    description: description || category.toUpperCase()
+    description: description || category.toUpperCase(),
+    receiptImageId,
+    receiptFileName: receiptImageName
   });
 
   saveToStorage();
   closeAllModals();
   if (appState.activeTab === 'finances') renderFinancesTab();
-  showToast('Expense logged successfully!');
+  const isBM = appState.settings.language === 'bm';
+  showToast(isBM ? 'Perbelanjaan berjaya direkodkan!' : 'Expense logged successfully!');
+}
+
+// ==========================================================================
+// 13B. MALAYSIAN OCR RECEIPT & UTILITY BILL SCANNER ENGINE
+// ==========================================================================
+
+let activeUniversalOcrResult = null;
+let activeUniversalOcrImageData = null;
+
+function preprocessReceiptImageForOCR(canvasOrImage) {
+  try {
+    const canvas = document.createElement('canvas');
+    let width = canvasOrImage.width || canvasOrImage.videoWidth || 1200;
+    let height = canvasOrImage.height || canvasOrImage.videoHeight || 1600;
+
+    if (width > 1600) {
+      height = Math.round((height * 1600) / width);
+      width = 1600;
+    } else if (width < 900 && width > 0) {
+      height = Math.round((height * 1200) / width);
+      width = 1200;
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(canvasOrImage, 0, 0, width, height);
+
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const d = imgData.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      const highContrast = gray > 140 ? Math.min(255, gray * 1.15) : Math.max(0, gray * 0.85);
+      d[i] = highContrast;
+      d[i + 1] = highContrast;
+      d[i + 2] = highContrast;
+    }
+    ctx.putImageData(imgData, 0, 0);
+    return canvas;
+  } catch (e) {
+    return canvasOrImage;
+  }
+}
+
+function parseReceiptText(rawText) {
+  if (!rawText || typeof rawText !== 'string') {
+    return {
+      documentType: 'unknown',
+      confidence: 0,
+      rawText: rawText || ''
+    };
+  }
+
+  const text = rawText.trim();
+
+  const result = {
+    documentType: 'unknown', // 'bank_transfer' | 'utility_bill' | 'general_expense'
+    bankName: null,
+    amount: null,
+    referenceNo: null,
+    dateTime: null,
+    dateOnly: null,
+    timeOnly: null,
+    accountNo: null,
+    recipient: null,
+    sender: null,
+    billCategory: 'other', // 'utilities' | 'supplies' | 'maintenance' | 'cleaning' | 'other'
+    suggestedDescription: '',
+    confidence: 0,
+    rawText: text
+  };
+
+  // 1. BANK / PAYMENT CHANNEL DETECTION
+  const bankPatterns = [
+    { name: 'Maybank', regex: /\b(maybank|mae\b|m2u\b|malayan banking)\b/i },
+    { name: 'CIMB', regex: /\b(cimb|octo\b)\b/i },
+    { name: 'Bank Islam', regex: /\b(bank islam|bimb\b)\b/i },
+    { name: 'Public Bank', regex: /\b(public bank|pbe\b|pbebank)\b/i },
+    { name: 'RHB', regex: /\b(rhb\b|rhb now)\b/i },
+    { name: 'Hong Leong', regex: /\b(hong leong|hlb\b)\b/i },
+    { name: 'AmBank', regex: /\b(ambank|amonline)\b/i },
+    { name: 'Bank Muamalat', regex: /\b(muamalat)\b/i },
+    { name: 'Agrobank', regex: /\b(agrobank|agro bank)\b/i },
+    { name: 'Affin Bank', regex: /\b(affin|affinonline)\b/i },
+    { name: 'Alliance Bank', regex: /\b(alliance bank)\b/i },
+    { name: 'Touch \'n Go eWallet', regex: /\b(touch\s*['’]?n\s*go|tng\b|tng ewallet|tng digital)\b/i },
+    { name: 'ShopeePay', regex: /\b(shopeepay|shopee pay)\b/i },
+    { name: 'GrabPay', regex: /\b(grabpay|grab pay)\b/i },
+    { name: 'DuitNow Transfer', regex: /\b(duitnow|duit now)\b/i }
+  ];
+
+  for (const b of bankPatterns) {
+    if (b.regex.test(text)) {
+      result.bankName = b.name;
+      break;
+    }
+  }
+
+  // 2. UTILITY & EXPENSE PROVIDER DETECTION
+  const isTNB = /\b(tenaga nasional|tnb\b|bil elektrik|electricity bill)\b/i.test(text);
+  const isWater = /\b(air selangor|syabas|pba\b|bekalan air|ranhill saj|saj\b|samb\b|sesb\b|laku\b|water bill|bil air)\b/i.test(text);
+  const isSewerage = /\b(indah water|iwk\b|pembentungan)\b/i.test(text);
+  const isTelecom = /\b(unifi|telekom malaysia|\btm\b|maxis|celcom|digi\b|celcomdigi|time dotcom|time internet|wifi bill|internet bill)\b/i.test(text);
+  const isSupplies = /\b(mr\.?\s*d\.?i\.?y|lotus|mydin|econsave|99\s*speedmart|speedmart|supermarket|groceries|hardware|stationery)\b/i.test(text);
+  const isMaintenance = /\b(aircond?|service|servis|repair|pembaikan|plumbing|paip|wiring|bocor|cat\b|tukang)\b/i.test(text);
+  const isCleaning = /\b(cleaning|dobi|laundry|cucian|kemas|cleaner|sabun|detergent)\b/i.test(text);
+
+  if (isTNB) {
+    result.documentType = 'utility_bill';
+    result.billCategory = 'utilities';
+    result.suggestedDescription = 'TNB Electricity Bill';
+  } else if (isWater) {
+    result.documentType = 'utility_bill';
+    result.billCategory = 'utilities';
+    result.suggestedDescription = 'Water Utility Bill';
+  } else if (isSewerage) {
+    result.documentType = 'utility_bill';
+    result.billCategory = 'utilities';
+    result.suggestedDescription = 'Indah Water (IWK) Sewerage Bill';
+  } else if (isTelecom) {
+    result.documentType = 'utility_bill';
+    result.billCategory = 'utilities';
+    result.suggestedDescription = 'WiFi / Internet Bill';
+  } else if (isSupplies) {
+    result.documentType = 'general_expense';
+    result.billCategory = 'supplies';
+    result.suggestedDescription = 'Homestay Supplies & Amenities';
+  } else if (isMaintenance) {
+    result.documentType = 'general_expense';
+    result.billCategory = 'maintenance';
+    result.suggestedDescription = 'Maintenance & Repairs';
+  } else if (isCleaning) {
+    result.documentType = 'general_expense';
+    result.billCategory = 'cleaning';
+    result.suggestedDescription = 'Cleaning & Laundry';
+  } else if (result.bankName || /\b(transfer|successful|berjaya|pindahan|bayaran|receipt|resit|reference|rujukan)\b/i.test(text)) {
+    result.documentType = 'bank_transfer';
+    if (!result.bankName && /\b(duitnow)\b/i.test(text)) {
+      result.bankName = 'DuitNow Transfer';
+    }
+  }
+
+  // 3. ACCOUNT NUMBER EXTRACTION (especially for utility bills)
+  const accMatch = text.match(/(?:No\.?\s*Akaun|Account\s*(?:No\.?|Number|#)|No\s*Pelanggan|Bill\s*Acc(?:ount)?)\s*[:#=]?\s*([0-9\s-]{7,24})/i);
+  if (accMatch) {
+    const cleanAcc = accMatch[1].replace(/[\s-]/g, '');
+    if (cleanAcc.length >= 7) {
+      result.accountNo = cleanAcc;
+      if (result.suggestedDescription && !result.suggestedDescription.includes('Acc:')) {
+        result.suggestedDescription += ` (Acc: ${cleanAcc})`;
+      }
+    }
+  }
+
+  // 4. REFERENCE / TRANSACTION ID EXTRACTION
+  const refMatches = [
+    /(?:Reference\s*(?:ID|No\.?|Number|#)?|Rujukan(?:\s*(?:Transaksi|Ref))?|Ref(?:\s*(?:No\.?|ID|#))?|Transaction\s*(?:ID|No\.?|Ref|Number)|Trans\s*ID)\s*[:#=]?\s*([A-Za-z0-9_-]{6,35})/i,
+    /(?:DuitNow\s*(?:Ref|Reference|ID)?)\s*[:#=]?\s*([A-Za-z0-9_-]{6,35})/i,
+    /\b(20[2-3][0-9]{11,18})\b/
+  ];
+
+  for (const rx of refMatches) {
+    const match = text.match(rx);
+    if (match && match[1]) {
+      const val = match[1].trim();
+      if (!/^(successful|berjaya|failed|gagal|pending|amount|total|tarikh|date)$/i.test(val)) {
+        result.referenceNo = val;
+        break;
+      }
+    }
+  }
+
+  // 5. AMOUNT DETECTION
+  const amountPatterns = [
+    /(?:Jumlah\s*(?:Perlu\s*Dibayar|Kena\s*Dibayar|Bayaran|Bersih|Keseluruhan|Pindahan)?|Total\s*(?:Amount\s*Due|Due|Paid|Amount)?|Amount(?:\s*Paid)?|Amaun)\s*[:=]?\s*(?:RM|MYR)?\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})|[0-9]+(?:\.[0-9]{2}))/i,
+    /(?:RM|MYR)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})|[0-9]+(?:\.[0-9]{2}))/i,
+    /(?:Total|Jumlah|Amount)\s*[:=]?\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})|[0-9]+(?:\.[0-9]{2}))/i
+  ];
+
+  for (const rx of amountPatterns) {
+    const match = text.match(rx);
+    if (match && match[1]) {
+      const cleanNum = parseFloat(match[1].replace(/,/g, ''));
+      if (!isNaN(cleanNum) && cleanNum > 0 && cleanNum < 1000000) {
+        result.amount = cleanNum;
+        break;
+      }
+    }
+  }
+
+  // 6. DATE & TIME EXTRACTION
+  let detectedDate = null;
+  let detectedTime = null;
+
+  const monNames = {
+    jan: '01', januari: '01', january: '01',
+    feb: '02', februari: '02', february: '02',
+    mar: '03', mac: '03', march: '03',
+    apr: '04', april: '04',
+    may: '05', mei: '05',
+    jun: '06', june: '06',
+    jul: '07', july: '07', julai: '07',
+    aug: '08', ogos: '08', august: '08',
+    sep: '09', sept: '09', september: '09',
+    oct: '10', okt: '10', oktober: '10', october: '10',
+    nov: '11', november: '11',
+    dec: '12', dis: '12', disember: '12', december: '12'
+  };
+
+  const textDateMatch = text.match(/\b([0-3]?[0-9])\s+([A-Za-z]{3,9})\s+(20[2-3][0-9])\b/);
+  if (textDateMatch) {
+    const d = textDateMatch[1].padStart(2, '0');
+    const mStr = textDateMatch[2].toLowerCase();
+    const y = textDateMatch[3];
+    const m = monNames[mStr];
+    if (m) {
+      detectedDate = `${y}-${m}-${d}`;
+    }
+  }
+
+  if (!detectedDate) {
+    const numDateMatch = text.match(/\b([0-3]?[0-9])[\/\-]([0-1]?[0-9])[\/\-](20[2-3][0-9])\b/);
+    if (numDateMatch) {
+      const d = numDateMatch[1].padStart(2, '0');
+      const m = numDateMatch[2].padStart(2, '0');
+      const y = numDateMatch[3];
+      detectedDate = `${y}-${m}-${d}`;
+    }
+  }
+
+  if (!detectedDate) {
+    const isoDateMatch = text.match(/\b(20[2-3][0-9])-([0-1][0-9])-([0-3][0-9])\b/);
+    if (isoDateMatch) {
+      detectedDate = `${isoDateMatch[1]}-${isoDateMatch[2]}-${isoDateMatch[3]}`;
+    }
+  }
+
+  const timeMatch = text.match(/\b([0-2]?[0-9]):([0-5][0-9])(?::([0-5][0-9]))?\s*(am|pm|p\.m\.|a\.m\.)?\b/i);
+  if (timeMatch) {
+    let hh = parseInt(timeMatch[1], 10);
+    const mm = timeMatch[2];
+    const meridiem = timeMatch[4] ? timeMatch[4].toLowerCase().replace(/\./g, '') : null;
+    if (meridiem === 'pm' && hh < 12) hh += 12;
+    if (meridiem === 'am' && hh === 12) hh = 0;
+    detectedTime = `${String(hh).padStart(2, '0')}:${mm}`;
+  }
+
+  if (detectedDate) {
+    result.dateOnly = detectedDate;
+    result.timeOnly = detectedTime || '12:00';
+    result.dateTime = `${detectedDate}T${result.timeOnly}`;
+  } else {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    const hh = String(today.getHours()).padStart(2, '0');
+    const mm = String(today.getMinutes()).padStart(2, '0');
+    result.dateOnly = `${y}-${m}-${d}`;
+    result.timeOnly = `${hh}:${mm}`;
+    result.dateTime = `${y}-${m}-${d}T${hh}:${mm}`;
+  }
+
+  // 7. RECIPIENT & SENDER DETECTION
+  const recipMatch = text.match(/(?:To|Penerima|Recipient|Paid\s*to|Beneficiary)\s*[:=]?\s*([A-Za-z0-9\s&.,'’-]{3,40})/i);
+  if (recipMatch) {
+    result.recipient = recipMatch[1].trim().replace(/\n.*$/, '');
+  }
+
+  const senderMatch = text.match(/(?:From|Daripada|Sender|Penyumbang)\s*[:=]?\s*([A-Za-z0-9\s&.,'’-]{3,40})/i);
+  if (senderMatch) {
+    result.sender = senderMatch[1].trim().replace(/\n.*$/, '');
+  }
+
+  // 8. CONFIDENCE SCORE CALCULATION
+  let score = 0;
+  if (result.amount !== null) score += 40;
+  if (result.referenceNo !== null) score += 25;
+  if (result.bankName !== null) score += 20;
+  if (result.documentType === 'utility_bill') score += 25;
+  if (detectedDate !== null) score += 15;
+  result.confidence = Math.min(100, score);
+
+  return result;
+}
+
+async function extractTextFromImage(fileOrDataUrl, options = {}) {
+  let dataUrl = typeof fileOrDataUrl === 'string' ? fileOrDataUrl : null;
+  if (!dataUrl && fileOrDataUrl && typeof FileReader !== 'undefined') {
+    dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(fileOrDataUrl);
+    });
+  }
+
+  const apiKey = appState.settings.geminiApiKey;
+  const preferredEngine = appState.settings.ocrEngine || 'auto';
+
+  // 1. Google Gemini 1.5 Flash Vision (if key configured and online)
+  if (apiKey && preferredEngine !== 'tesseract' && typeof fetch !== 'undefined') {
+    try {
+      const base64Data = dataUrl ? dataUrl.replace(/^data:image\/[a-zA-Z]+;base64,/, '') : '';
+      if (base64Data) {
+        const prompt = `You are an expert Malaysian receipt and bill scanner. Analyze this document.
+Extract:
+1. documentType ('bank_transfer' | 'utility_bill' | 'general_expense')
+2. bankName (e.g. Maybank, CIMB, Bank Islam, Public Bank, RHB, Touch 'n Go eWallet, DuitNow)
+3. amount (number in RM, e.g. 350.00)
+4. referenceNo (transaction ref or DuitNow ID)
+5. dateTime (YYYY-MM-DDTHH:mm)
+6. accountNo (for utility bills like TNB, Air Selangor, Indah Water)
+7. billCategory ('utilities' | 'supplies' | 'maintenance' | 'cleaning' | 'other')
+8. suggestedDescription (e.g. 'TNB Electricity Bill', 'Air Selangor Water Bill')
+Return ONLY a valid JSON object matching these keys.`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
+              ]
+            }]
+          })
+        });
+
+        if (response.ok) {
+          const resJson = await response.json();
+          const candidate = resJson.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (candidate) {
+            const cleanJsonStr = candidate.replace(/```json/g, '').replace(/```/g, '').trim();
+            const parsedAi = JSON.parse(cleanJsonStr);
+            if (parsedAi && (parsedAi.amount || parsedAi.bankName || parsedAi.referenceNo)) {
+              return {
+                documentType: parsedAi.documentType || 'bank_transfer',
+                bankName: parsedAi.bankName || null,
+                amount: parseFloat(parsedAi.amount) || null,
+                referenceNo: parsedAi.referenceNo || null,
+                dateTime: parsedAi.dateTime || formatLocalDate(new Date()) + 'T12:00',
+                dateOnly: parsedAi.dateTime ? parsedAi.dateTime.split('T')[0] : formatLocalDate(new Date()),
+                timeOnly: parsedAi.dateTime ? parsedAi.dateTime.split('T')[1] : '12:00',
+                accountNo: parsedAi.accountNo || null,
+                billCategory: parsedAi.billCategory || 'utilities',
+                suggestedDescription: parsedAi.suggestedDescription || 'AI Scanned Document',
+                confidence: 98,
+                rawText: candidate
+              };
+            }
+          }
+        }
+      }
+    } catch (aiErr) {
+      console.warn('[OCR Engine] Gemini Vision notice, falling back to local OCR:', aiErr);
+    }
+  }
+
+  // 2. Native Web Shape Detection API (window.TextDetector)
+  if (typeof window !== 'undefined' && 'TextDetector' in window && dataUrl) {
+    try {
+      const img = new Image();
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = dataUrl; });
+      const processedCanvas = preprocessReceiptImageForOCR(img);
+      const detector = new window.TextDetector();
+      const detected = await detector.detect(processedCanvas);
+      if (detected && detected.length > 0) {
+        const rawText = detected.map(b => b.rawValue).join('\n');
+        return parseReceiptText(rawText);
+      }
+    } catch (tdErr) {
+      console.warn('[OCR Engine] Native TextDetector notice:', tdErr);
+    }
+  }
+
+  // 3. Tesseract.js (On-Device WebAssembly)
+  if (typeof window !== 'undefined' && dataUrl) {
+    try {
+      if (!window.Tesseract && typeof document !== 'undefined') {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+          script.onload = resolve;
+          script.onerror = () => resolve(false);
+          document.head.appendChild(script);
+        });
+      }
+
+      if (window.Tesseract) {
+        const img = new Image();
+        await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = dataUrl; });
+        const processedCanvas = preprocessReceiptImageForOCR(img);
+        const { data } = await window.Tesseract.recognize(processedCanvas, 'eng');
+        if (data && data.text) {
+          return parseReceiptText(data.text);
+        }
+      }
+    } catch (tessErr) {
+      console.warn('[OCR Engine] Tesseract recognition notice:', tessErr);
+    }
+  }
+
+  return parseReceiptText(typeof fileOrDataUrl === 'string' && !fileOrDataUrl.startsWith('data:') ? fileOrDataUrl : '');
+}
+
+async function scanPaymentProofSlipOcr(dataUrl = null) {
+  const isBM = appState.settings.language === 'bm';
+  const imgData = dataUrl || document.getElementById('paymentProofImageData')?.value;
+  if (!imgData) {
+    alert(isBM ? 'Sila muat naik atau tangkap gambar resit terlebih dahulu.' : 'Please upload or capture a receipt slip first.');
+    return;
+  }
+
+  const badge = document.getElementById('paymentProofOcrStatusBadge');
+  const badgeText = document.getElementById('paymentProofOcrStatusText');
+  if (badge && badgeText) {
+    badge.style.display = 'block';
+    badge.style.background = 'rgba(2, 132, 199, 0.1)';
+    badge.style.color = 'var(--primary)';
+    badge.style.borderColor = 'var(--primary)';
+    badgeText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${isBM ? 'Menganalisis resit dengan OCR...' : 'Scanning slip with OCR...'}`;
+  }
+
+  try {
+    const ocrResult = await extractTextFromImage(imgData);
+    if (!ocrResult || (!ocrResult.amount && !ocrResult.referenceNo && !ocrResult.bankName)) {
+      if (badge && badgeText) {
+        badge.style.display = 'block';
+        badge.style.background = 'rgba(245, 158, 11, 0.1)';
+        badge.style.color = '#b45309';
+        badge.style.borderColor = '#f59e0b';
+        badgeText.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${isBM ? 'OCR: Sesetengah butiran tidak jelas. Sila sahkan manual.' : 'OCR: Text unclear. Please verify fields manually.'}`;
+      }
+      return;
+    }
+
+    if (ocrResult.amount && ocrResult.amount > 0) {
+      document.getElementById('paymentProofAmountInput').value = ocrResult.amount;
+    }
+    if (ocrResult.referenceNo) {
+      document.getElementById('paymentProofRefInput').value = ocrResult.referenceNo;
+    }
+    if (ocrResult.bankName) {
+      document.getElementById('paymentProofBankInput').value = ocrResult.bankName;
+      document.querySelectorAll('#paymentProofBankPills .bank-pill').forEach(pill => {
+        pill.classList.toggle('active', pill.getAttribute('data-bank').toLowerCase() === ocrResult.bankName.toLowerCase());
+      });
+    }
+    if (ocrResult.dateTime) {
+      document.getElementById('paymentProofDateTimeInput').value = ocrResult.dateTime;
+    }
+
+    if (badge && badgeText) {
+      badge.style.display = 'block';
+      badge.style.background = 'rgba(16, 185, 129, 0.1)';
+      badge.style.color = '#059669';
+      badge.style.borderColor = '#10b981';
+      const summaryParts = [];
+      if (ocrResult.bankName) summaryParts.push(ocrResult.bankName);
+      if (ocrResult.amount) summaryParts.push(`RM ${ocrResult.amount.toFixed(2)}`);
+      if (ocrResult.referenceNo) summaryParts.push(`Ref: ${ocrResult.referenceNo}`);
+      badgeText.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${isBM ? 'Auto-isi berjaya' : 'Auto-filled'}: ${summaryParts.join(' • ')}`;
+    }
+
+    showToast(isBM ? '✨ Resit berjaya diimbas & diisi automatik!' : '✨ Receipt scanned & auto-filled!');
+  } catch (err) {
+    console.warn('OCR Scan notice:', err);
+    if (badge && badgeText) {
+      badge.style.display = 'block';
+      badge.style.background = 'rgba(239, 68, 68, 0.1)';
+      badge.style.color = 'var(--danger)';
+      badge.style.borderColor = 'var(--danger)';
+      badgeText.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> OCR: ${err.message || 'Scan error'}`;
+    }
+  }
+}
+
+async function scanExpenseSlipOcr(dataUrl = null) {
+  const isBM = appState.settings.language === 'bm';
+  const imgData = dataUrl || document.getElementById('expenseReceiptImageData')?.value;
+  if (!imgData) {
+    alert(isBM ? 'Sila muat naik atau tangkap gambar bil terlebih dahulu.' : 'Please upload or capture a bill first.');
+    return;
+  }
+
+  const badge = document.getElementById('expenseOcrStatusBadge');
+  const badgeText = document.getElementById('expenseOcrStatusText');
+  if (badge && badgeText) {
+    badge.style.display = 'block';
+    badge.style.background = 'rgba(2, 132, 199, 0.1)';
+    badge.style.color = 'var(--primary)';
+    badge.style.borderColor = 'var(--primary)';
+    badgeText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${isBM ? 'Menganalisis bil dengan OCR...' : 'Scanning bill with OCR...'}`;
+  }
+
+  try {
+    const ocrResult = await extractTextFromImage(imgData);
+    if (!ocrResult || (!ocrResult.amount && !ocrResult.billCategory)) {
+      if (badge && badgeText) {
+        badge.style.display = 'block';
+        badge.style.background = 'rgba(245, 158, 11, 0.1)';
+        badge.style.color = '#b45309';
+        badge.style.borderColor = '#f59e0b';
+        badgeText.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${isBM ? 'OCR: Maklumat bil tidak jelas. Sila isi manual.' : 'OCR: Bill unclear. Please enter manually.'}`;
+      }
+      return;
+    }
+
+    if (ocrResult.amount && ocrResult.amount > 0) {
+      document.getElementById('expenseAmountInput').value = ocrResult.amount;
+    }
+    if (ocrResult.dateOnly) {
+      document.getElementById('expenseDateInput').value = ocrResult.dateOnly;
+    }
+    if (ocrResult.billCategory) {
+      document.getElementById('expenseCategorySelect').value = ocrResult.billCategory;
+    }
+    if (ocrResult.suggestedDescription) {
+      document.getElementById('expenseDescInput').value = ocrResult.suggestedDescription;
+    }
+
+    if (badge && badgeText) {
+      badge.style.display = 'block';
+      badge.style.background = 'rgba(16, 185, 129, 0.1)';
+      badge.style.color = '#059669';
+      badge.style.borderColor = '#10b981';
+      const summaryParts = [];
+      if (ocrResult.suggestedDescription) summaryParts.push(ocrResult.suggestedDescription);
+      if (ocrResult.amount) summaryParts.push(`RM ${ocrResult.amount.toFixed(2)}`);
+      badgeText.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${isBM ? 'Auto-isi bil berjaya' : 'Auto-filled'}: ${summaryParts.join(' • ')}`;
+    }
+
+    showToast(isBM ? '✨ Bil berjaya diimbas & diisi!' : '✨ Bill scanned & auto-filled!');
+  } catch (err) {
+    console.warn('OCR Expense Notice:', err);
+    if (badge && badgeText) {
+      badge.style.display = 'block';
+      badge.style.background = 'rgba(239, 68, 68, 0.1)';
+      badge.style.color = 'var(--danger)';
+      badge.style.borderColor = 'var(--danger)';
+      badgeText.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> OCR: ${err.message || 'Scan error'}`;
+    }
+  }
+}
+
+function openUniversalOcrModal(preselectedBooking = null, preselectedProperty = null) {
+  closeAllModals();
+  activeUniversalOcrResult = null;
+  activeUniversalOcrImageData = null;
+
+  const modal = document.getElementById('universalOcrModal');
+  if (!modal) return;
+
+  const fileInput = document.getElementById('universalOcrFileInput');
+  if (fileInput) fileInput.value = '';
+  const textInput = document.getElementById('universalOcrTextInput');
+  if (textInput) textInput.value = '';
+
+  const dropzone = document.getElementById('universalOcrDropzone');
+  if (dropzone) dropzone.style.display = 'block';
+  const preview = document.getElementById('universalOcrPreviewContainer');
+  if (preview) preview.style.display = 'none';
+  const resultCard = document.getElementById('universalOcrResultCard');
+  if (resultCard) resultCard.style.display = 'none';
+  const progBar = document.getElementById('universalOcrProgressBar');
+  if (progBar) progBar.style.display = 'none';
+
+  const bSelect = document.getElementById('universalOcrBookingSelect');
+  if (bSelect) {
+    bSelect.innerHTML = '';
+    const activeBookings = [...appState.bookings]
+      .filter(b => b.status !== 'cancelled')
+      .sort((a, b) => new Date(b.checkIn) - new Date(a.checkIn));
+
+    activeBookings.forEach(b => {
+      const p = getPropertyById(b.propertyId);
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = `${b.guestName} (${p ? p.name : '-'}) • ${b.checkIn}`;
+      if (preselectedBooking && b.id === preselectedBooking.id) opt.selected = true;
+      bSelect.appendChild(opt);
+    });
+  }
+
+  const pSelect = document.getElementById('universalOcrPropertySelect');
+  if (pSelect) {
+    pSelect.innerHTML = '';
+    appState.properties.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      if (preselectedProperty && p.id === preselectedProperty.id) opt.selected = true;
+      pSelect.appendChild(opt);
+    });
+  }
+
+  switchUniversalOcrTab('camera');
+  modal.classList.add('active');
+}
+
+function closeUniversalOcrModal() {
+  const modal = document.getElementById('universalOcrModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function switchUniversalOcrTab(tabName) {
+  document.querySelectorAll('.ocr-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
+  });
+  const cameraPane = document.getElementById('ocrCameraPane');
+  const pastePane = document.getElementById('ocrPastePane');
+  if (cameraPane) cameraPane.style.display = tabName === 'camera' ? 'block' : 'none';
+  if (pastePane) pastePane.style.display = tabName === 'paste' ? 'block' : 'none';
+}
+
+function handleUniversalOcrFileSelected(file) {
+  if (!file) return;
+  const isBM = appState.settings.language === 'bm';
+
+  const prog = document.getElementById('universalOcrProgressBar');
+  const progText = document.getElementById('universalOcrProgressText');
+  if (prog) prog.style.display = 'block';
+  if (progText) progText.textContent = isBM ? 'Memampatkan gambar...' : 'Compressing image...';
+
+  compressReceiptImage(file, 900, 900, 0.78)
+    .then(async (result) => {
+      activeUniversalOcrImageData = result.dataUrl;
+
+      const dropzone = document.getElementById('universalOcrDropzone');
+      if (dropzone) dropzone.style.display = 'none';
+      const previewCard = document.getElementById('universalOcrPreviewContainer');
+      if (previewCard) previewCard.style.display = 'block';
+      const prevImg = document.getElementById('universalOcrPreviewImg');
+      if (prevImg) prevImg.src = result.dataUrl;
+      const prevName = document.getElementById('universalOcrPreviewFileName');
+      if (prevName) prevName.textContent = result.fileName;
+
+      if (progText) progText.textContent = isBM ? 'Mengekstrak teks dengan OCR...' : 'Extracting text with OCR...';
+
+      const parsed = await extractTextFromImage(result.dataUrl);
+      if (prog) prog.style.display = 'none';
+      displayUniversalOcrResult(parsed);
+    })
+    .catch(err => {
+      if (prog) prog.style.display = 'none';
+      alert('Error reading receipt file: ' + err.message);
+    });
+}
+
+function handleUniversalOcrTextParse() {
+  const text = document.getElementById('universalOcrTextInput')?.value?.trim();
+  const isBM = appState.settings.language === 'bm';
+  if (!text) {
+    alert(isBM ? 'Sila tampal teks mesej resit WhatsApp terlebih dahulu.' : 'Please paste the WhatsApp receipt text first.');
+    return;
+  }
+
+  const parsed = parseReceiptText(text);
+  displayUniversalOcrResult(parsed);
+}
+
+function displayUniversalOcrResult(res) {
+  if (!res) return;
+  activeUniversalOcrResult = res;
+  const isBM = appState.settings.language === 'bm';
+
+  const card = document.getElementById('universalOcrResultCard');
+  if (!card) return;
+  card.style.display = 'block';
+
+  const badgeEl = document.getElementById('universalOcrTypeBadge');
+  if (badgeEl) {
+    if (res.documentType === 'bank_transfer') {
+      badgeEl.textContent = isBM ? '💳 Resit Pindahan Bank' : '💳 Bank Transfer Slip';
+      badgeEl.style.background = 'rgba(16, 185, 129, 0.15)';
+      badgeEl.style.color = '#059669';
+      badgeEl.style.borderColor = '#10b981';
+    } else if (res.documentType === 'utility_bill') {
+      badgeEl.textContent = isBM ? '⚡ Bil Utiliti (Elektrik / Air / WiFi)' : '⚡ Utility Bill (Electric / Water / WiFi)';
+      badgeEl.style.background = 'rgba(245, 158, 11, 0.15)';
+      badgeEl.style.color = '#b45309';
+      badgeEl.style.borderColor = '#f59e0b';
+    } else {
+      badgeEl.textContent = isBM ? '🧾 Resit Perbelanjaan Homestay' : '🧾 Homestay Expense Receipt';
+      badgeEl.style.background = 'rgba(139, 92, 246, 0.15)';
+      badgeEl.style.color = '#6d28d9';
+      badgeEl.style.borderColor = '#8b5cf6';
+    }
+  }
+
+  const amtInput = document.getElementById('universalOcrAmountInput');
+  if (amtInput) amtInput.value = res.amount || '';
+  const bankInput = document.getElementById('universalOcrBankInput');
+  if (bankInput) bankInput.value = res.bankName || (res.documentType === 'bank_transfer' ? 'Maybank' : '');
+  const refInput = document.getElementById('universalOcrRefInput');
+  if (refInput) refInput.value = res.referenceNo || res.accountNo || '';
+  const dateInput = document.getElementById('universalOcrDateInput');
+  if (dateInput) dateInput.value = res.dateTime || formatLocalDate(new Date()) + 'T12:00';
+
+  const bookingSec = document.getElementById('universalOcrBookingSection');
+  const expenseSec = document.getElementById('universalOcrExpenseSection');
+  const applyBtn = document.getElementById('btnApplyUniversalOcr');
+
+  if (res.documentType === 'bank_transfer') {
+    if (bookingSec) bookingSec.style.display = 'block';
+    if (expenseSec) expenseSec.style.display = 'none';
+    if (applyBtn) applyBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${isBM ? 'Rekod ke Bayaran Tempahan' : 'Save to Booking Payment'}`;
+  } else {
+    if (bookingSec) bookingSec.style.display = 'none';
+    if (expenseSec) expenseSec.style.display = 'block';
+    const catSelect = document.getElementById('universalOcrCategorySelect');
+    if (catSelect && res.billCategory) {
+      catSelect.value = res.billCategory;
+    }
+    const descInput = document.getElementById('universalOcrDescInput');
+    if (descInput) descInput.value = res.suggestedDescription || '';
+    if (applyBtn) applyBtn.innerHTML = `<i class="fa-solid fa-receipt"></i> ${isBM ? 'Rekod sebagai Perbelanjaan' : 'Log as Homestay Expense'}`;
+  }
+
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function handleApplyUniversalOcr() {
+  if (!activeUniversalOcrResult) return;
+  const isBM = appState.settings.language === 'bm';
+
+  const amount = parseFloat(document.getElementById('universalOcrAmountInput')?.value) || activeUniversalOcrResult.amount || 0;
+  const bankName = document.getElementById('universalOcrBankInput')?.value?.trim() || activeUniversalOcrResult.bankName || 'Bank Transfer';
+  const refNo = document.getElementById('universalOcrRefInput')?.value?.trim() || activeUniversalOcrResult.referenceNo || '';
+  const dt = document.getElementById('universalOcrDateInput')?.value || activeUniversalOcrResult.dateTime || formatLocalDate(new Date()) + 'T12:00';
+
+  if (activeUniversalOcrResult.documentType === 'bank_transfer') {
+    const bookingId = document.getElementById('universalOcrBookingSelect')?.value;
+    const booking = appState.bookings.find(b => b.id === bookingId);
+    if (!booking) {
+      alert(isBM ? 'Sila pilih tempahan tetamu untuk direkodkan bayaran.' : 'Please select a booking to link payment.');
+      return;
+    }
+
+    closeUniversalOcrModal();
+    openPaymentProofModal(booking, 'balance', null, amount);
+
+    document.getElementById('paymentProofAmountInput').value = amount;
+    document.getElementById('paymentProofBankInput').value = bankName;
+    document.getElementById('paymentProofRefInput').value = refNo;
+    document.getElementById('paymentProofDateTimeInput').value = dt;
+
+    if (activeUniversalOcrImageData) {
+      document.getElementById('paymentProofImageData').value = activeUniversalOcrImageData;
+      document.getElementById('paymentProofImageName').value = 'scanned_receipt.jpg';
+      const prevImg = document.getElementById('receiptPreviewImg');
+      if (prevImg) prevImg.src = activeUniversalOcrImageData;
+      document.getElementById('receiptUploadPrompt').style.display = 'none';
+      document.getElementById('receiptPreviewContainer').style.display = 'block';
+    }
+
+    const badge = document.getElementById('paymentProofOcrStatusBadge');
+    const badgeText = document.getElementById('paymentProofOcrStatusText');
+    if (badge && badgeText) {
+      badge.style.display = 'block';
+      badge.style.background = 'rgba(16, 185, 129, 0.1)';
+      badge.style.color = '#059669';
+      badge.style.borderColor = '#10b981';
+      badgeText.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${isBM ? 'Auto-isi dari Pengimbas' : 'Auto-filled from Scanner'}: ${bankName} • RM ${amount.toFixed(2)}`;
+    }
+  } else {
+    const propertyId = document.getElementById('universalOcrPropertySelect')?.value;
+    const category = document.getElementById('universalOcrCategorySelect')?.value || activeUniversalOcrResult.billCategory || 'utilities';
+    const description = document.getElementById('universalOcrDescInput')?.value?.trim() || activeUniversalOcrResult.suggestedDescription || 'Utility Bill';
+
+    closeUniversalOcrModal();
+    openExpenseModal({
+      propertyId,
+      amount,
+      date: dt.split('T')[0],
+      category,
+      description,
+      receiptImageData: activeUniversalOcrImageData,
+      receiptImageName: 'scanned_bill.jpg',
+      ocrNotice: `${isBM ? 'Auto-isi dari Pengimbas' : 'Auto-filled from Scanner'}: ${description} • RM ${amount.toFixed(2)}`
+    });
+  }
+}
+
+function handleSaveOcrSettings() {
+  const engine = document.getElementById('settingOcrEngineSelect')?.value || 'auto';
+  const apiKey = document.getElementById('settingGeminiApiKeyInput')?.value?.trim() || '';
+
+  appState.settings.ocrEngine = engine;
+  appState.settings.geminiApiKey = apiKey;
+  saveToStorage();
+
+  const isBM = appState.settings.language === 'bm';
+  showToast(isBM ? 'Tetapan pengimbas OCR berjaya disimpan!' : 'OCR scanner preferences saved!');
+}
+
+function setupOcrEventListeners() {
+  document.getElementById('btnOpenUniversalOcr')?.addEventListener('click', () => openUniversalOcrModal());
+  document.getElementById('btnScanReceiptUniversalFin')?.addEventListener('click', () => openUniversalOcrModal());
+  document.getElementById('btnCloseUniversalOcrModal')?.addEventListener('click', closeUniversalOcrModal);
+  document.getElementById('btnCancelUniversalOcrModal')?.addEventListener('click', closeUniversalOcrModal);
+
+  document.querySelectorAll('.ocr-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchUniversalOcrTab(btn.getAttribute('data-tab'));
+    });
+  });
+
+  const uDropzone = document.getElementById('universalOcrDropzone');
+  const uFileInput = document.getElementById('universalOcrFileInput');
+  if (uDropzone && uFileInput) {
+    uDropzone.addEventListener('click', () => uFileInput.click());
+    uFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleUniversalOcrFileSelected(e.target.files[0]);
+      }
+    });
+  }
+
+  document.getElementById('btnParseUniversalOcrText')?.addEventListener('click', handleUniversalOcrTextParse);
+  document.getElementById('btnApplyUniversalOcr')?.addEventListener('click', handleApplyUniversalOcr);
+
+  document.getElementById('btnRetakeUniversalOcr')?.addEventListener('click', () => {
+    const dropzone = document.getElementById('universalOcrDropzone');
+    if (dropzone) dropzone.style.display = 'block';
+    const preview = document.getElementById('universalOcrPreviewContainer');
+    if (preview) preview.style.display = 'none';
+    const resCard = document.getElementById('universalOcrResultCard');
+    if (resCard) resCard.style.display = 'none';
+    const fileInput = document.getElementById('universalOcrFileInput');
+    if (fileInput) fileInput.value = '';
+    activeUniversalOcrImageData = null;
+    activeUniversalOcrResult = null;
+  });
+
+  document.getElementById('btnScanPaymentProofOcr')?.addEventListener('click', () => scanPaymentProofSlipOcr());
+  document.getElementById('btnScanExpenseReceipt')?.addEventListener('click', () => {
+    document.getElementById('expenseReceiptFileInput')?.click();
+  });
+
+  const expDropzone = document.getElementById('expenseReceiptDropzone');
+  const expFileInput = document.getElementById('expenseReceiptFileInput');
+  if (expDropzone && expFileInput) {
+    expDropzone.addEventListener('click', (e) => {
+      if (e.target.closest('#btnRemoveExpenseReceipt')) return;
+      expFileInput.click();
+    });
+    expFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleExpenseReceiptFileSelected(e.target.files[0]);
+      }
+    });
+  }
+
+  document.getElementById('btnRemoveExpenseReceipt')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const dataInput = document.getElementById('expenseReceiptImageData');
+    if (dataInput) dataInput.value = '';
+    const nameInput = document.getElementById('expenseReceiptImageName');
+    if (nameInput) nameInput.value = '';
+    const fileInp = document.getElementById('expenseReceiptFileInput');
+    if (fileInp) fileInp.value = '';
+    const prevImg = document.getElementById('expenseReceiptPreviewImg');
+    if (prevImg) prevImg.src = '';
+    const uploadPrompt = document.getElementById('expenseReceiptUploadPrompt');
+    if (uploadPrompt) uploadPrompt.style.display = 'block';
+    const prevCont = document.getElementById('expenseReceiptPreviewContainer');
+    if (prevCont) prevCont.style.display = 'none';
+    const badge = document.getElementById('expenseOcrStatusBadge');
+    if (badge) badge.style.display = 'none';
+  });
+
+  document.getElementById('settingOcrEngineSelect')?.addEventListener('change', (e) => {
+    const keyGrp = document.getElementById('settingGeminiApiKeyGroup');
+    if (keyGrp) keyGrp.style.display = e.target.value === 'gemini' ? 'block' : 'none';
+  });
+  document.getElementById('btnSaveOcrSettings')?.addEventListener('click', handleSaveOcrSettings);
+}
+
+// ==========================================================================
+// 13C. SMART WHATSAPP CHAT IMPORT & TENANT EXTRACTION ENGINE
+// ==========================================================================
+
+let activeTenantChatDestination = 'booking';
+let activeTenantChatExtracted = null;
+let activeTenantChatBookingType = 'individual';
+
+function setTenantChatBookingType(type) {
+  activeTenantChatBookingType = type === 'company' ? 'company' : 'individual';
+
+  // Update segmented control buttons UI
+  document.querySelectorAll('#tenantChatBookingTypeSegmented .segment-btn').forEach(btn => {
+    const btnType = btn.getAttribute('data-chat-booking-type');
+    btn.classList.toggle('active', btnType === activeTenantChatBookingType);
+  });
+
+  // Toggle field sections in result card
+  const indFields = document.getElementById('tenantChatFieldsIndividual');
+  const compFields = document.getElementById('tenantChatFieldsCompany');
+  if (indFields) indFields.style.display = activeTenantChatBookingType === 'individual' ? 'grid' : 'none';
+  if (compFields) compFields.style.display = activeTenantChatBookingType === 'company' ? 'grid' : 'none';
+
+  // Sync common values between forms if user switches
+  if (activeTenantChatBookingType === 'company') {
+    const checkIn = document.getElementById('tenantChatResultCheckIn')?.value;
+    const checkOut = document.getElementById('tenantChatResultCheckOut')?.value;
+    const compIn = document.getElementById('tenantChatResultCompanyCheckIn');
+    const compOut = document.getElementById('tenantChatResultCompanyCheckOut');
+    if (checkIn && compIn && !compIn.value) compIn.value = checkIn;
+    if (checkOut && compOut && !compOut.value) compOut.value = checkOut;
+
+    const adults = parseInt(document.getElementById('tenantChatResultAdults')?.value, 10) || 1;
+    const kids = parseInt(document.getElementById('tenantChatResultChildren')?.value, 10) || 0;
+    const compGuests = document.getElementById('tenantChatResultCompanyGuests');
+    if (compGuests && (!compGuests.value || compGuests.value === '1')) compGuests.value = adults + kids;
+  } else {
+    const compIn = document.getElementById('tenantChatResultCompanyCheckIn')?.value;
+    const compOut = document.getElementById('tenantChatResultCompanyCheckOut')?.value;
+    const indIn = document.getElementById('tenantChatResultCheckIn');
+    const indOut = document.getElementById('tenantChatResultCheckOut');
+    if (compIn && indIn && !indIn.value) indIn.value = compIn;
+    if (compOut && indOut && !indOut.value) indOut.value = compOut;
+  }
+}
+
+function parseTenantChat(rawChat, options = {}) {
+  if (!rawChat || typeof rawChat !== 'string') {
+    return {
+      bookingType: options.bookingType || 'individual',
+      name: '',
+      phone: '',
+      ic: '',
+      passport: '',
+      email: '',
+      vehicle: '',
+      adults: 1,
+      children: 0,
+      guestCount: 1,
+      checkIn: '',
+      checkOut: '',
+      address: '',
+      companyName: '',
+      companyRegNo: '',
+      picName: '',
+      contactPerson: '',
+      picPosition: '',
+      contactDesignation: '',
+      picPhone: '',
+      contactPhone: '',
+      picEmail: '',
+      contactEmail: '',
+      companyAddress: '',
+      companyIndicators: [],
+      confidence: 0,
+      fieldConfidence: {},
+      originalChat: rawChat || ''
+    };
+  }
+
+  const text = rawChat.trim();
+  const lines = text.split(/[\r\n]+/);
+
+  const result = {
+    bookingType: 'individual',
+    name: '',
+    phone: '',
+    ic: '',
+    passport: '',
+    email: '',
+    vehicle: '',
+    adults: 0,
+    children: 0,
+    guestCount: 0,
+    checkIn: '',
+    checkOut: '',
+    address: '',
+    companyName: '',
+    companyRegNo: '',
+    picName: '',
+    contactPerson: '',
+    picPosition: '',
+    contactDesignation: '',
+    picPhone: '',
+    contactPhone: '',
+    picEmail: '',
+    contactEmail: '',
+    companyAddress: '',
+    companyIndicators: [],
+    confidence: 0,
+    fieldConfidence: {},
+    originalChat: text
+  };
+
+  // Helper to remove WhatsApp timestamp/sender prefixes
+  const cleanLine = (str) => {
+    return str
+      .replace(/^\[[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:,\s*[0-9\/\-\.]*)?\]\s*[^:]*:\s*/i, '')
+      .replace(/^[0-9\/\-\.]*,\s*[0-9]{1,2}:[0-9]{2}\s*(?:AM|PM|am|pm)?\s*-\s*[^:]*:\s*/i, '')
+      .trim();
+  };
+
+  const cleanedText = lines.map(cleanLine).join('\n');
+
+  // Detect company indicators (Sdn Bhd, SSM, Enterprise, Holdings, Resources, Industries, Manufacturing, PIC)
+  const detectedCompanyIndicators = [];
+  if (/\b(?:sdn\.?\s*bhd\.?|sendirian\s*berhad)\b/i.test(cleanedText)) detectedCompanyIndicators.push('Sdn Bhd');
+  if (/\b(?:ssm|suruhanjaya\s*syarikat\s*malaysia|roc|rob|co\.?\s*reg|company\s*reg|registration\s*no)\b/i.test(cleanedText)) detectedCompanyIndicators.push('SSM');
+  if (/\benterprise\b/i.test(cleanedText)) detectedCompanyIndicators.push('Enterprise');
+  if (/\bholdings?\b/i.test(cleanedText)) detectedCompanyIndicators.push('Holdings');
+  if (/\bresources?\b/i.test(cleanedText)) detectedCompanyIndicators.push('Resources');
+  if (/\bindustries?\b/i.test(cleanedText)) detectedCompanyIndicators.push('Industries');
+  if (/\bmanufacturing\b/i.test(cleanedText)) detectedCompanyIndicators.push('Manufacturing');
+  if (/\b(?:pic|person\s*in\s*charge|pegawai\s*dihubungi|contact\s*person)\b/i.test(cleanedText)) detectedCompanyIndicators.push('PIC');
+
+  result.companyIndicators = detectedCompanyIndicators;
+
+  // Determine booking type: explicit option takes priority, otherwise auto-detected from indicators
+  let bookingType = 'individual';
+  if (options.bookingType === 'company' || options.bookingType === 'individual') {
+    bookingType = options.bookingType;
+  } else if (detectedCompanyIndicators.length > 0) {
+    bookingType = 'company';
+  }
+  result.bookingType = bookingType;
+
+  // 1. PHONE NUMBER
+  const phoneLabelMatch = cleanedText.match(/(?:Phone|No\.?\s*Tel(?:efon)?|No\.?\s*Phone|Tel|Mobile|WhatsApp|Contact|Hp|Wasap)\s*[:=]?\s*(\+?[0-9\s-]{9,20})/i);
+  if (phoneLabelMatch) {
+    const rawDigits = phoneLabelMatch[1].replace(/[\s-]/g, '');
+    if (rawDigits.length >= 9) {
+      result.phone = phoneLabelMatch[1].trim();
+      result.fieldConfidence.phone = 'high';
+    }
+  }
+
+  // Fallback: Malaysian mobile numbers (+601x or 01x)
+  if (!result.phone) {
+    const phoneRegex = /\b(\+?60[\s-]?1[0-9][\s-]?[0-9]{3,4}[\s-]?[0-9]{4}|01[0-9][\s-]?[0-9]{3,4}[\s-]?[0-9]{4})\b/;
+    const phoneMatch = cleanedText.match(phoneRegex);
+    if (phoneMatch) {
+      result.phone = phoneMatch[1].trim();
+      result.fieldConfidence.phone = 'medium';
+    }
+  }
+
+  // Fallback 2: WhatsApp chat sender phone header
+  if (!result.phone) {
+    const waSenderMatch = rawChat.match(/[-–]\s*(\+?[0-9\s-]{9,20})\s*:/);
+    if (waSenderMatch) {
+      const digits = waSenderMatch[1].replace(/[\s-]/g, '');
+      if (digits.length >= 9) {
+        result.phone = waSenderMatch[1].trim();
+        result.fieldConfidence.phone = 'medium';
+      }
+    }
+  }
+
+  // 2. MALAYSIAN IC (MyKad)
+  const icLabelMatch = cleanedText.match(/(?:No\.?\s*(?:K\/?P|Kad\s*Pengenalan|IC|MyKad)|NRIC|IC\s*(?:No\.?)?)\s*[:=]?\s*([0-9]{6}[-\s]?[0-9]{2}[-\s]?[0-9]{4}|[0-9]{12})/i);
+  if (icLabelMatch) {
+    const rawIc = icLabelMatch[1].replace(/[\s-]/g, '');
+    if (rawIc.length === 12) {
+      result.ic = `${rawIc.slice(0, 6)}-${rawIc.slice(6, 8)}-${rawIc.slice(8, 12)}`;
+      result.fieldConfidence.ic = 'high';
+    }
+  }
+
+  if (!result.ic) {
+    const icPattern = /\b([0-9]{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01])[-][0-9]{2}[-][0-9]{4})\b/;
+    const icMatch = cleanedText.match(icPattern);
+    if (icMatch) {
+      result.ic = icMatch[1];
+      result.fieldConfidence.ic = 'medium';
+    }
+  }
+
+  // 3. PASSPORT NUMBER
+  const passLabelMatch = cleanedText.match(/(?:Passport(?:\s*(?:No\.?|Number))?|No\.?\s*Pasport)\s*[:=]?\s*([A-Za-z][0-9A-Za-z]{6,12})/i);
+  if (passLabelMatch) {
+    result.passport = passLabelMatch[1].trim().toUpperCase();
+    result.fieldConfidence.passport = 'high';
+  }
+
+  // Constraint 7: For foreign guests, Passport Number populates the Identification Number (IC) field
+  if (!result.ic && result.passport) {
+    result.ic = result.passport;
+    if (!result.fieldConfidence.ic) {
+      result.fieldConfidence.ic = result.fieldConfidence.passport || 'high';
+    }
+  }
+
+  // 4. EMAIL ADDRESS
+  const emailMatch = cleanedText.match(/\b([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})\b/);
+  if (emailMatch) {
+    result.email = emailMatch[1].trim().toLowerCase();
+    result.fieldConfidence.email = 'high';
+  }
+
+  // 5. VEHICLE / CAR PLATE
+  const vehicleLabelMatch = cleanedText.match(/(?:No\.?\s*Plat(?:\s*(?:Kereta|Kenderaan))?|No\.?\s*(?:Kereta|Kenderaan)|Vehicle(?:\s*(?:No\.?|Plate))?|Car(?:\s*(?:Plate|No\.?))?|Plat(?:\s*(?:No\.?|Kereta|Kenderaan))?|Plate\s*No\.?|No\.?\s*Pendaftaran)\s*[:=]?\s*([^\n\r,;]{3,45})/i);
+  if (vehicleLabelMatch) {
+    let vVal = vehicleLabelMatch[1].trim();
+    vVal = vVal.replace(/^(?:kereta|car|kenderaan|plat|plate)\s*[:=]?\s*/i, '').trim();
+    if (!/^(tiada|none|na|nil|tak ada)$/i.test(vVal)) {
+      result.vehicle = vVal;
+      result.fieldConfidence.vehicle = 'high';
+    }
+  }
+
+  if (!result.vehicle) {
+    const convoVehicleMatch = cleanedText.match(/(?:kereta|car|kete|plat|plate)\s+([A-Za-z0-9\s]{3,20}\b[A-Za-z]{1,3}\s*[0-9]{1,4}\s*[A-Za-z]?)/i);
+    if (convoVehicleMatch) {
+      result.vehicle = convoVehicleMatch[1].trim();
+      result.fieldConfidence.vehicle = 'medium';
+    } else {
+      const plateRegex = /\b([A-Z]{1,3}\s*[0-9]{1,4}\s*[A-Z]?)\b/;
+      const potentialPlates = cleanedText.match(new RegExp(plateRegex, 'g'));
+      if (potentialPlates) {
+        for (const p of potentialPlates) {
+          const cleanP = p.trim();
+          if (!/^(RM|MYR|AM|PM|IC|SSM|NO|KL|PASSPORT|CHECK|BILL)$/i.test(cleanP) && /\d/.test(cleanP)) {
+            result.vehicle = cleanP;
+            result.fieldConfidence.vehicle = 'low';
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // 6. NAME EXTRACTION
+  const nameLabelMatch = cleanedText.match(/(?:Nama(?:\s*(?:Penuh|Pelanggan|Tetamu|Penyewa|saya))?|Full\s*Name|Name|Guest\s*Name|Tenant\s*Name)\s*[:=]?\s*([^\n\r,;:]{2,50})/i);
+  if (nameLabelMatch) {
+    let cand = nameLabelMatch[1].trim().replace(/\s{2,}/g, ' ');
+    cand = cand.replace(/^(?:saya|adalah|is)\s+/i, '').trim();
+    if (cand.length >= 3 && !/^(saya|awak|tuan|puan|homestay|villa)$/i.test(cand)) {
+      result.name = cand;
+      result.fieldConfidence.name = 'high';
+    }
+  }
+
+  if (!result.name) {
+    const convoNameMatch = cleanedText.match(/(?:Nama\s*saya|My\s*name\s*is|I\s*am|Saya)\s+([A-Za-z\s'’@\/.]{3,40})/i);
+    if (convoNameMatch) {
+      const cand = convoNameMatch[1].trim().replace(/\s+(nak|ingin|mahu|book|tempah|tanya|berminat).*$/i, '').trim();
+      if (cand.length >= 3 && !/\b(nak|tanya|book|homestay)\b/i.test(cand)) {
+        result.name = cand;
+        result.fieldConfidence.name = 'medium';
+      }
+    }
+  }
+
+  // 7. OCCUPANTS: ADULTS, CHILDREN & TOTAL GUESTS
+  const adultsMatch = cleanedText.match(/(?:([0-9]{1,2})\s*(?:Adults?|Dewasa|Pax\s*Dewasa|Orang\s*Dewasa)|(?:Adults?|Dewasa)\s*[:=]?\s*([0-9]{1,2}))/i);
+  if (adultsMatch) {
+    result.adults = parseInt(adultsMatch[1] || adultsMatch[2], 10);
+    result.fieldConfidence.adults = 'high';
+  }
+
+  const childrenMatch = cleanedText.match(/(?:([0-9]{1,2})\s*(?:Children|Child|Kids?|Kanak[-\s]?kanak|Kanak2|Budak)|(?:Children|Child|Kids?|Kanak[-\s]?kanak)\s*[:=]?\s*([0-9]{1,2}))/i);
+  if (childrenMatch) {
+    result.children = parseInt(childrenMatch[1] || childrenMatch[2], 10);
+    result.fieldConfidence.children = 'high';
+  }
+
+  const totalPaxMatch = cleanedText.match(/(?:([0-9]{1,2})\s*(?:Pax|Guests?|Orang|Tetamu|Penghuni)|(?:Pax|Guests?|Tetamu|Occupants?|Number\s*of\s*Guests?|Bilangan\s*(?:Tetamu|Pax))\s*[:=]?\s*([0-9]{1,2}))/i);
+  if (totalPaxMatch) {
+    const total = parseInt(totalPaxMatch[1] || totalPaxMatch[2], 10);
+    if (!result.adults && !result.children) {
+      result.adults = total;
+      result.guestCount = total;
+      result.fieldConfidence.adults = 'medium';
+    } else if (total > 0 && !result.guestCount) {
+      result.guestCount = total;
+    }
+  }
+
+  if (result.adults || result.children) {
+    result.guestCount = (result.adults || 0) + (result.children || 0);
+  } else if (!result.guestCount) {
+    result.adults = 1;
+    result.guestCount = 1;
+  }
+
+  // 8. CHECK-IN & CHECK-OUT DATES
+  const monNames = {
+    jan: '01', januari: '01', january: '01',
+    feb: '02', februari: '02', february: '02',
+    mar: '03', mac: '03', march: '03',
+    apr: '04', april: '04',
+    may: '05', mei: '05',
+    jun: '06', june: '06',
+    jul: '07', july: '07', julai: '07',
+    aug: '08', ogos: '08', august: '08',
+    sep: '09', sept: '09', september: '09',
+    oct: '10', okt: '10', oktober: '10', october: '10',
+    nov: '11', november: '11',
+    dec: '12', dis: '12', disember: '12', december: '12'
+  };
+
+  const parseDateStr = (str) => {
+    if (!str) return null;
+    const s = str.trim();
+    const isoM = s.match(/\b(20[2-3][0-9])-([0-1][0-9])-([0-3][0-9])\b/);
+    if (isoM) return `${isoM[1]}-${isoM[2]}-${isoM[3]}`;
+
+    const dmyM = s.match(/\b([0-3]?[0-9])[\/\-]([0-1]?[0-9])[\/\-](20[2-3][0-9])\b/);
+    if (dmyM) return `${dmyM[3]}-${dmyM[2].padStart(2, '0')}-${dmyM[1].padStart(2, '0')}`;
+
+    const dmyShort = s.match(/\b([0-3]?[0-9])[\/\-]([0-1]?[0-9])[\/\-]([2-3][0-9])\b/);
+    if (dmyShort) return `20${dmyShort[3]}-${dmyShort[2].padStart(2, '0')}-${dmyShort[1].padStart(2, '0')}`;
+
+    const textM = s.match(/\b([0-3]?[0-9])\s+([A-Za-z]{3,9})\s+(20[2-3][0-9])\b/);
+    if (textM) {
+      const mNum = monNames[textM[2].toLowerCase()];
+      if (mNum) return `${textM[3]}-${mNum}-${textM[1].padStart(2, '0')}`;
+    }
+
+    return null;
+  };
+
+  const inMatch = cleanedText.match(/(?:Tarikh\s*(?:Masuk|Daftar\s*Masuk|Check[-\s]?in)|Check[-\s]?in(?:\s*Date)?|Masuk|Arrival)\s*[:=]?\s*([^\n\r,;]{5,30})/i);
+  if (inMatch) {
+    const d = parseDateStr(inMatch[1]);
+    if (d) {
+      result.checkIn = d;
+      result.fieldConfidence.checkIn = 'high';
+    }
+  }
+
+  const outMatch = cleanedText.match(/(?:Tarikh\s*(?:Keluar|Daftar\s*Keluar|Check[-\s]?out)|Check[-\s]?out(?:\s*Date)?|Keluar|Departure)\s*[:=]?\s*([^\n\r,;]{5,30})/i);
+  if (outMatch) {
+    const d = parseDateStr(outMatch[1]);
+    if (d) {
+      result.checkOut = d;
+      result.fieldConfidence.checkOut = 'high';
+    }
+  }
+
+  if (!result.checkIn || !result.checkOut) {
+    const dayToDayMatch = cleanedText.match(/\b([0-3]?[0-9])\s*(?:to|hingga|-|sampai)\s*([0-3]?[0-9])\s+([A-Za-z]{3,9})\s+(20[2-3][0-9])\b/i);
+    if (dayToDayMatch) {
+      const d1 = dayToDayMatch[1].padStart(2, '0');
+      const d2 = dayToDayMatch[2].padStart(2, '0');
+      const mNum = monNames[dayToDayMatch[3].toLowerCase()];
+      const y = dayToDayMatch[4];
+      if (mNum) {
+        result.checkIn = `${y}-${mNum}-${d1}`;
+        result.checkOut = `${y}-${mNum}-${d2}`;
+        result.fieldConfidence.checkIn = 'high';
+        result.fieldConfidence.checkOut = 'high';
+      }
+    }
+  }
+
+  if (!result.checkIn || !result.checkOut) {
+    const numRangeMatch = cleanedText.match(/\b([0-3]?[0-9][\/\-][0-1]?[0-9][\/\-](?:20)?[2-3][0-9])\s*(?:to|hingga|-|sampai)\s*([0-3]?[0-9][\/\-][0-1]?[0-9][\/\-](?:20)?[2-3][0-9])\b/i);
+    if (numRangeMatch) {
+      const d1 = parseDateStr(numRangeMatch[1]);
+      const d2 = parseDateStr(numRangeMatch[2]);
+      if (d1 && d2) {
+        result.checkIn = d1;
+        result.checkOut = d2;
+        result.fieldConfidence.checkIn = 'medium';
+        result.fieldConfidence.checkOut = 'medium';
+      }
+    }
+  }
+
+  // 9. ADDRESS EXTRACTION (Residential)
+  const addrMatch = cleanedText.match(/(?:Alamat(?:\s*(?:Kediaman|Rumah|Penuh))?|Address|Home\s*Address|Residential\s*Address|Add)\s*[:=]?\s*([^\n\r]{8,150})/i);
+  if (addrMatch) {
+    const rawAddr = addrMatch[1].trim();
+    if (rawAddr.length >= 8 && !/^(tiada|none|na|nil)$/i.test(rawAddr)) {
+      result.address = rawAddr;
+      result.fieldConfidence.address = 'high';
+    }
+  }
+
+  // 10. COMPANY SPECIFIC EXTRACTIONS
+  // Company Name
+  const compNameMatch = cleanedText.match(/(?:Company(?:\s*Name)?|Nama\s*Syarikat|Syarikat|Organisasi|Organization|Majikan|Employer)\s*[:=]?\s*([^\n\r]{2,80})/i);
+  if (compNameMatch) {
+    result.companyName = compNameMatch[1].trim();
+    result.fieldConfidence.companyName = 'high';
+  } else if (detectedCompanyIndicators.length > 0 || bookingType === 'company') {
+    const compLineMatch = cleanedText.match(/\b([A-Za-z0-9&.,\s'-]+(?:\s+(?:Sdn\.?\s*Bhd\.?|Sendirian\s*Berhad|Enterprise|Holdings?|Resources?|Industries?|Manufacturing|LLP|Plt|Bhd\.?)))\b/i);
+    if (compLineMatch) {
+      let cand = compLineMatch[1].trim().replace(/^[^a-zA-Z0-9]+/, '');
+      result.companyName = cand;
+      result.fieldConfidence.companyName = 'medium';
+    }
+  }
+
+  // SSM Registration Number
+  const ssmLabelMatch = cleanedText.match(/(?:No\.?\s*(?:Pendaftaran\s*Syarikat|SSM|ROC|ROB)|SSM(?:\s*(?:No\.?|Number|Reg(?:istration)?))?|Co\.?\s*Reg(?:\s*No\.?)?|Company\s*(?:Reg(?:istration)?(?:\s*No\.?)?|Number)|Business\s*Reg(?:\s*No\.?)?)\s*[:=]?\s*([^\n\r,;]{3,40})/i);
+  if (ssmLabelMatch) {
+    result.companyRegNo = ssmLabelMatch[1].trim();
+    result.fieldConfidence.companyRegNo = 'high';
+  } else {
+    const ssmPatternMatch = cleanedText.match(/\b(20[0-2][0-9]{9}(?:\s*\([0-9]{6,7}-[A-Z]\))?|[0-9]{5,7}-[A-Za-z])\b/);
+    if (ssmPatternMatch) {
+      result.companyRegNo = ssmPatternMatch[1].trim();
+      result.fieldConfidence.companyRegNo = 'medium';
+    }
+  }
+
+  // PIC Name
+  const picNameMatch = cleanedText.match(/(?:Nama\s*PIC|PIC(?:\s*Name)?|Person\s*in\s*Charge|Pegawai\s*(?:Dihubungi|Bertanggungjawab)|Contact\s*Person)\s*[:=]?\s*([^\n\r,;:]{2,60})/i);
+  if (picNameMatch) {
+    let cand = picNameMatch[1].trim().replace(/\s{2,}/g, ' ');
+    result.picName = cand;
+    result.contactPerson = cand;
+    result.fieldConfidence.picName = 'high';
+  } else if (bookingType === 'company' && result.name && result.name !== result.companyName) {
+    result.picName = result.name;
+    result.contactPerson = result.name;
+    result.fieldConfidence.picName = result.fieldConfidence.name || 'medium';
+  }
+
+  // PIC Position / Designation
+  const picPosMatch = cleanedText.match(/(?:PIC\s*(?:Position|Designation|Jawatan)|Jawatan(?:\s*PIC)?|Position|Designation|Title)\s*[:=]?\s*([^\n\r,;]{2,50})/i);
+  if (picPosMatch) {
+    result.picPosition = picPosMatch[1].trim();
+    result.contactDesignation = result.picPosition;
+    result.fieldConfidence.picPosition = 'high';
+  }
+
+  // PIC Phone
+  const picPhoneMatch = cleanedText.match(/(?:PIC\s*(?:Phone|Tel(?:efon)?|Mobile|Contact|No\.?)|No\.?\s*Tel(?:efon)?\s*PIC)\s*[:=]?\s*(\+?[0-9 -]{9,20})/i);
+  if (picPhoneMatch) {
+    result.picPhone = picPhoneMatch[1].trim();
+    result.contactPhone = result.picPhone;
+    result.fieldConfidence.picPhone = 'high';
+  } else if (bookingType === 'company' && result.phone) {
+    result.picPhone = result.phone;
+    result.contactPhone = result.phone;
+    result.fieldConfidence.picPhone = result.fieldConfidence.phone || 'medium';
+  }
+
+  // PIC Email
+  const picEmailMatch = cleanedText.match(/(?:PIC\s*Email|Email\s*PIC)\s*[:=]?\s*([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/i);
+  if (picEmailMatch) {
+    result.picEmail = picEmailMatch[1].trim().toLowerCase();
+    result.contactEmail = result.picEmail;
+    result.fieldConfidence.picEmail = 'high';
+  } else if (bookingType === 'company' && result.email) {
+    result.picEmail = result.email;
+    result.contactEmail = result.email;
+    result.fieldConfidence.picEmail = result.fieldConfidence.email || 'medium';
+  }
+
+  // Company Address
+  const compAddrMatch = cleanedText.match(/(?:Company\s*Address|Alamat\s*Syarikat|Office\s*Address|Business\s*Address|Alamat\s*Pejabat)\s*[:=]?\s*([^\n\r]{8,150})/i);
+  if (compAddrMatch) {
+    result.companyAddress = compAddrMatch[1].trim();
+    result.fieldConfidence.companyAddress = 'high';
+  } else if (bookingType === 'company' && result.address) {
+    result.companyAddress = result.address;
+    result.fieldConfidence.companyAddress = result.fieldConfidence.address || 'medium';
+  }
+
+  // Ensure Role Aliases
+  result.contactPerson = result.picName || '';
+  result.contactDesignation = result.picPosition || '';
+  result.contactPhone = result.picPhone || result.phone || '';
+  result.contactEmail = result.picEmail || result.email || '';
+
+  if (bookingType === 'company') {
+    if (!result.name && result.picName) result.name = result.picName;
+    if (!result.phone && result.picPhone) result.phone = result.picPhone;
+    if (!result.email && result.picEmail) result.email = result.picEmail;
+    if (!result.address && result.companyAddress) result.address = result.companyAddress;
+  }
+
+  // 11. CONFIDENCE SCORE (0-100)
+  let score = 0;
+  if (result.bookingType === 'company') {
+    if (result.companyName) score += 25;
+    if (result.companyRegNo) score += 15;
+    if (result.picName) score += 15;
+    if (result.picPhone || result.phone) score += 20;
+    if (result.checkIn && result.checkOut) score += 15;
+    else if (result.checkIn || result.checkOut) score += 8;
+    if (result.picEmail || result.email) score += 5;
+    if (result.companyAddress || result.address) score += 5;
+  } else {
+    if (result.name) score += 20;
+    if (result.phone) score += 20;
+    if (result.ic || result.passport) score += 15;
+    if (result.checkIn && result.checkOut) score += 20;
+    else if (result.checkIn || result.checkOut) score += 10;
+    if (result.vehicle) score += 10;
+    if (result.email) score += 5;
+    if (result.adults > 0) score += 5;
+    if (result.address) score += 5;
+  }
+
+  result.confidence = Math.min(100, score);
+  return result;
+}
+
+// Future Gemini AI-enhanced extraction mode structure
+async function extractTenantChatViaGemini(chatText, apiKey) {
+  if (!apiKey || !chatText) return null;
+  const prompt = `You are an AI assistant for a Malaysian homestay and property management system.
+Extract the guest/tenant booking particulars from this WhatsApp conversation transcript or message.
+Return ONLY a valid JSON object matching these exact keys:
+{
+  "bookingType": "individual" or "company",
+  "name": string (full name of tenant/guest or PIC, e.g. "Mohd Hafiz bin Abdullah"),
+  "phone": string (Malaysian or international phone number, e.g. "019-3829102" or "+601128919201"),
+  "ic": string (12-digit Malaysian MyKad in format "YYMMDD-PB-####", or passport number if foreigner),
+  "passport": string (passport number or empty if none),
+  "email": string (email address or empty if none),
+  "vehicle": string (vehicle license plate number and model, e.g. "VAA 8892 (Proton X50)"),
+  "adults": number (number of adults, default 1),
+  "children": number (number of children, default 0),
+  "checkIn": string (check-in date in YYYY-MM-DD format or empty),
+  "checkOut": string (check-out date in YYYY-MM-DD format or empty),
+  "address": string (full residential or company address or empty),
+  "companyName": string (company name if corporate booking, e.g. "Gamuda Engineering Sdn Bhd"),
+  "companyRegNo": string (SSM registration number or empty),
+  "picName": string (person in charge name or empty),
+  "picPosition": string (person in charge job title or designation),
+  "picPhone": string (contact number of PIC),
+  "picEmail": string (email of PIC)
+}
+Conversation text:
+${chatText}`;
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }]
+      })
+    });
+    if (response.ok) {
+      const resJson = await response.json();
+      const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (rawText) {
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          const bType = parsed.bookingType === 'company' ? 'company' : (parsed.companyName ? 'company' : 'individual');
+          return {
+            bookingType: bType,
+            name: parsed.name || parsed.picName || '',
+            phone: parsed.phone || parsed.picPhone || '',
+            ic: parsed.ic || parsed.passport || '',
+            passport: parsed.passport || '',
+            email: parsed.email || parsed.picEmail || '',
+            vehicle: parsed.vehicle || '',
+            adults: typeof parsed.adults === 'number' ? parsed.adults : 1,
+            children: typeof parsed.children === 'number' ? parsed.children : 0,
+            guestCount: (parsed.adults || 1) + (parsed.children || 0),
+            checkIn: parsed.checkIn || '',
+            checkOut: parsed.checkOut || '',
+            address: parsed.address || '',
+            companyName: parsed.companyName || '',
+            companyRegNo: parsed.companyRegNo || '',
+            picName: parsed.picName || parsed.name || '',
+            contactPerson: parsed.picName || parsed.name || '',
+            picPosition: parsed.picPosition || '',
+            contactDesignation: parsed.picPosition || '',
+            picPhone: parsed.picPhone || parsed.phone || '',
+            contactPhone: parsed.picPhone || parsed.phone || '',
+            picEmail: parsed.picEmail || parsed.email || '',
+            contactEmail: parsed.picEmail || parsed.email || '',
+            companyAddress: parsed.companyAddress || parsed.address || '',
+            companyIndicators: bType === 'company' ? ['Gemini AI'] : [],
+            confidence: 98,
+            fieldConfidence: {
+              name: parsed.name ? 'high' : 'low',
+              phone: parsed.phone ? 'high' : 'low',
+              ic: parsed.ic ? 'high' : 'low',
+              passport: parsed.passport ? 'high' : 'low',
+              vehicle: parsed.vehicle ? 'high' : 'low',
+              checkIn: parsed.checkIn ? 'high' : 'low',
+              checkOut: parsed.checkOut ? 'high' : 'low',
+              companyName: parsed.companyName ? 'high' : 'low',
+              companyRegNo: parsed.companyRegNo ? 'high' : 'low'
+            },
+            originalChat: chatText,
+            engine: 'gemini'
+          };
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Gemini chat extraction notice:', err);
+  }
+  return null;
+}
+
+async function extractTenantChat(rawChat, options = {}) {
+  const mode = options.mode || appState?.settings?.ocrEngine || 'auto';
+  const apiKey = options.apiKey || appState?.settings?.geminiApiKey;
+
+  if ((mode === 'gemini' || mode === 'auto') && apiKey) {
+    const geminiResult = await extractTenantChatViaGemini(rawChat, apiKey);
+    if (geminiResult && (geminiResult.name || geminiResult.phone || geminiResult.companyName)) {
+      return geminiResult;
+    }
+  }
+
+  // Pure client-side offline parser
+  const offlineResult = parseTenantChat(rawChat, options);
+  offlineResult.engine = 'offline';
+  return offlineResult;
+}
+
+function openTenantChatImportModal(destination = 'booking') {
+  activeTenantChatDestination = destination;
+  activeTenantChatExtracted = null;
+  setTenantChatBookingType('individual');
+
+  const isBM = appState.settings.language === 'bm';
+  const noticeEl = document.getElementById('tenantChatDestinationNotice');
+  if (noticeEl) {
+    noticeEl.textContent = destination === 'contact'
+      ? (isBM ? 'Mod: Menyimpan ke Direktori Kenalan' : 'Mode: Saving to Contacts Directory')
+      : (isBM ? 'Mod: Mengisi Borang Tempahan' : 'Mode: Pre-filling Booking Form');
+  }
+
+  const resCard = document.getElementById('tenantChatResultCard');
+  if (resCard) resCard.style.display = 'none';
+
+  const modal = document.getElementById('tenantChatImportModal');
+  if (modal) modal.classList.add('active');
+}
+
+function closeTenantChatImportModal() {
+  const modal = document.getElementById('tenantChatImportModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function insertSampleTenantChat(type) {
+  const input = document.getElementById('tenantChatInput');
+  if (!input) return;
+
+  if (type === 'bm') {
+    setTenantChatBookingType('individual');
+    input.value = `Nama: Mohd Hafiz bin Abdullah\nNo Tel: 019-3829102\nIC: 880415-08-5431\nEmail: hafiz.abd@gmail.com\nNo Plat Kereta: VAA 8892 (Proton X50)\nBilangan Tetamu: 4 Dewasa, 2 Kanak-kanak\nTarikh Masuk: 15/12/2026\nTarikh Keluar: 17/12/2026\nAlamat: No 25 Jalan Melor 3, Taman Melor, 43000 Kajang, Selangor`;
+  } else if (type === 'en') {
+    setTenantChatBookingType('individual');
+    input.value = `Name: Johnathan David Smith\nPassport: A12893456\nMobile: +601128919201\nEmail: jdsmith@outlook.com\nCheck-in: 2026-12-20\nCheck-out: 2026-12-24\nGuests: 2 adults and 1 child\nCar: WRA 1234\nHome address: 42 Elm Street, Melbourne VIC 3000, Australia`;
+  } else if (type === 'convo') {
+    setTenantChatBookingType('individual');
+    input.value = `[10:15, 03/11/2026] Guest: Salam tuan, nak tanya homestay Villa Pantai available tak 5 to 7 Dec 2026?\n[10:18, 03/11/2026] Host: Salam encik, available. Berapa orang ya?\n[10:20, 03/11/2026] Guest: Kami 3 dewasa 2 kanak2. Boleh book terus?\nNama saya Siti Nurhaliza binti Ramli\nNo phone 0124567890\nIC: 920314025678\nKereta Honda City plate WYY 9821\nEmail: siti.ramli@yahoo.com\nAlamat di No 14, Lorong Sentosa 2, Bayan Lepas, 11900 Pulau Pinang`;
+  } else if (type === 'company') {
+    setTenantChatBookingType('company');
+    input.value = `Company Name: Gamuda Engineering Sdn Bhd\nSSM: 202101008899 (1409123-T)\nPIC Name: Ts. Ir. Azman bin Mokhtar\nPIC Position: Senior Project Director\nPIC Phone: 013-9876543\nPIC Email: azman.mokhtar@gamuda.com.my\nCompany Address: Menara Gamuda, PJ Trade Centre, No. 8 Jalan PJU 8/8A, Bandar Damansara Perdana, 47820 Petaling Jaya, Selangor\nNumber of Guests: 6\nCheck-In Date: 2026-12-01\nCheck-Out Date: 2026-12-05`;
+  }
+}
+
+async function handleTenantChatParse() {
+  const input = document.getElementById('tenantChatInput');
+  const chatText = input ? input.value.trim() : '';
+  const isBM = appState.settings.language === 'bm';
+
+  if (!chatText) {
+    alert(isBM ? 'Sila tampal mesej WhatsApp tetamu terlebih dahulu.' : 'Please paste the guest WhatsApp message first.');
+    return;
+  }
+
+  const result = await extractTenantChat(chatText, { bookingType: activeTenantChatBookingType });
+  displayTenantChatResult(result);
+}
+
+function displayTenantChatResult(res) {
+  if (!res) return;
+  activeTenantChatExtracted = res;
+  const isBM = appState.settings.language === 'bm';
+
+  const resCard = document.getElementById('tenantChatResultCard');
+  if (!resCard) return;
+  resCard.style.display = 'block';
+
+  // Sync booking type
+  const targetType = res.bookingType === 'company' ? 'company' : 'individual';
+  setTenantChatBookingType(targetType);
+
+  // Confidence Badge
+  const badge = document.getElementById('tenantChatConfidenceBadge');
+  if (badge) {
+    const conf = res.confidence || 0;
+    let badgeClass = 'high';
+    let label = `${conf}% ${isBM ? 'Ketepatan Tinggi' : 'High Confidence'}`;
+    if (conf < 50) {
+      badgeClass = 'low';
+      label = `${conf}% ${isBM ? 'Perlu Pengesahan' : 'Review Needed'}`;
+    } else if (conf < 80) {
+      badgeClass = 'medium';
+      label = `${conf}% ${isBM ? 'Ketepatan Sederhana' : 'Medium Confidence'}`;
+    }
+    badge.className = `tenant-chat-confidence-badge ${badgeClass}`;
+    badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${label}`;
+  }
+
+  // Editable Input Fields
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val !== undefined && val !== null ? val : '';
+  };
+
+  // Populate Individual Fields
+  setVal('tenantChatResultName', res.name);
+  setVal('tenantChatResultPhone', res.phone);
+  setVal('tenantChatResultIc', res.ic || res.passport);
+  setVal('tenantChatResultPassport', res.passport);
+  setVal('tenantChatResultEmail', res.email);
+  setVal('tenantChatResultVehicle', res.vehicle);
+  setVal('tenantChatResultAdults', res.adults || 1);
+  setVal('tenantChatResultChildren', res.children || 0);
+  setVal('tenantChatResultCheckIn', res.checkIn);
+  setVal('tenantChatResultCheckOut', res.checkOut);
+  setVal('tenantChatResultAddress', res.address);
+
+  // Populate Company Fields
+  setVal('tenantChatResultCompanyName', res.companyName);
+  setVal('tenantChatResultCompanyRegNo', res.companyRegNo);
+  setVal('tenantChatResultPicName', res.picName || res.contactPerson || res.name);
+  setVal('tenantChatResultPicPosition', res.picPosition || res.contactDesignation);
+  setVal('tenantChatResultPicPhone', res.picPhone || res.contactPhone || res.phone);
+  setVal('tenantChatResultPicEmail', res.picEmail || res.contactEmail || res.email);
+  setVal('tenantChatResultCompanyAddress', res.companyAddress || res.address);
+  setVal('tenantChatResultCompanyGuests', res.guestCount || (res.adults || 1) + (res.children || 0));
+  setVal('tenantChatResultCompanyCheckIn', res.checkIn);
+  setVal('tenantChatResultCompanyCheckOut', res.checkOut);
+
+  // Original Conversation Accordion
+  const origText = document.getElementById('tenantChatOriginalText');
+  if (origText) origText.textContent = res.originalChat || '';
+
+  showToast(t('chat_extracted_success'));
+}
+
+function getEditedTenantChatData() {
+  const getVal = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  };
+
+  const bookingType = activeTenantChatBookingType || 'individual';
+  const originalChat = activeTenantChatExtracted?.originalChat || document.getElementById('tenantChatInput')?.value || '';
+
+  if (bookingType === 'company') {
+    const guestCount = parseInt(getVal('tenantChatResultCompanyGuests'), 10) || 1;
+    return {
+      bookingType: 'company',
+      companyName: getVal('tenantChatResultCompanyName'),
+      companyRegNo: getVal('tenantChatResultCompanyRegNo'),
+      picName: getVal('tenantChatResultPicName'),
+      contactPerson: getVal('tenantChatResultPicName'),
+      picPosition: getVal('tenantChatResultPicPosition'),
+      contactDesignation: getVal('tenantChatResultPicPosition'),
+      picPhone: getVal('tenantChatResultPicPhone'),
+      contactPhone: getVal('tenantChatResultPicPhone'),
+      picEmail: getVal('tenantChatResultPicEmail'),
+      contactEmail: getVal('tenantChatResultPicEmail'),
+      companyAddress: getVal('tenantChatResultCompanyAddress'),
+      guestCount: guestCount,
+      adults: guestCount,
+      children: 0,
+      checkIn: getVal('tenantChatResultCompanyCheckIn'),
+      checkOut: getVal('tenantChatResultCompanyCheckOut'),
+      name: getVal('tenantChatResultPicName') || getVal('tenantChatResultCompanyName'),
+      phone: getVal('tenantChatResultPicPhone'),
+      email: getVal('tenantChatResultPicEmail'),
+      address: getVal('tenantChatResultCompanyAddress'),
+      ic: '',
+      passport: '',
+      vehicle: '',
+      originalChat: originalChat
+    };
+  }
+
+  const adults = parseInt(getVal('tenantChatResultAdults'), 10) || 1;
+  const children = parseInt(getVal('tenantChatResultChildren'), 10) || 0;
+  const icVal = getVal('tenantChatResultIc');
+  const passVal = getVal('tenantChatResultPassport') || icVal;
+
+  return {
+    bookingType: 'individual',
+    name: getVal('tenantChatResultName'),
+    phone: getVal('tenantChatResultPhone'),
+    ic: icVal,
+    passport: passVal,
+    email: getVal('tenantChatResultEmail'),
+    vehicle: getVal('tenantChatResultVehicle'),
+    adults: adults,
+    children: children,
+    guestCount: adults + children,
+    checkIn: getVal('tenantChatResultCheckIn'),
+    checkOut: getVal('tenantChatResultCheckOut'),
+    address: getVal('tenantChatResultAddress'),
+    companyName: '',
+    companyRegNo: '',
+    picName: '',
+    contactPerson: '',
+    picPosition: '',
+    contactDesignation: '',
+    picPhone: '',
+    contactPhone: '',
+    picEmail: '',
+    contactEmail: '',
+    companyAddress: '',
+    originalChat: originalChat
+  };
+}
+
+function handleApplyChatToBooking() {
+  const data = getEditedTenantChatData();
+  const isBM = appState.settings.language === 'bm';
+  const todayStr = formatLocalDate(new Date());
+
+  if (data.bookingType === 'company') {
+    let notes = `[WhatsApp Chat Import - ${todayStr}]`;
+    notes += `\n[Company Booking] ${data.companyName || ''}`;
+    if (data.companyRegNo) notes += ` (SSM: ${data.companyRegNo})`;
+    if (data.picName) notes += `\nPIC: ${data.picName}`;
+    if (data.picPosition) notes += ` (${data.picPosition})`;
+    if (data.picPhone) notes += ` • Tel: ${data.picPhone}`;
+    if (data.picEmail) notes += ` • Email: ${data.picEmail}`;
+    if (data.originalChat) notes += `\n\n--- ${isBM ? 'Mesej Perbualan Asal' : 'Original Conversation'} ---\n${data.originalChat}`;
+
+    closeTenantChatImportModal();
+
+    openBookingModal(null, data.checkIn || null, null, {
+      tenantType: 'company',
+      companyName: data.companyName,
+      companyRegNo: data.companyRegNo,
+      companyAddress: data.companyAddress,
+      contactPerson: data.picName,
+      contactDesignation: data.picPosition,
+      contactPhone: data.picPhone,
+      contactEmail: data.picEmail,
+      guestName: data.companyName || data.picName,
+      guestPhone: data.picPhone,
+      guestEmail: data.picEmail,
+      guestAddress: data.companyAddress,
+      checkIn: data.checkIn,
+      checkOut: data.checkOut,
+      guestCount: data.guestCount,
+      occupantsNotes: `${data.guestCount} ${isBM ? 'Tetamu Syarikat' : 'Company Guests'}`,
+      notes: notes,
+      channel: 'whatsapp'
+    });
+  } else {
+    // Build occupants notes string
+    const occParts = [];
+    if (data.adults) occParts.push(`${data.adults} ${isBM ? 'Dewasa' : 'Adults'}`);
+    if (data.children) occParts.push(`${data.children} ${isBM ? 'Kanak-kanak' : 'Children'}`);
+    if (data.vehicle) occParts.push(`${isBM ? 'Plat Kereta' : 'Vehicle'}: ${data.vehicle}`);
+    const occupantsNotes = occParts.join(' • ');
+
+    let notes = `[WhatsApp Chat Import - ${todayStr}]`;
+    if (data.vehicle) notes += `\nVehicle / Kenderaan: ${data.vehicle}`;
+    if (data.originalChat) notes += `\n\n--- ${isBM ? 'Mesej Perbualan Asal' : 'Original Conversation'} ---\n${data.originalChat}`;
+
+    closeTenantChatImportModal();
+
+    openBookingModal(null, data.checkIn || null, null, {
+      tenantType: 'individual',
+      guestName: data.name,
+      guestPhone: data.phone,
+      guestNric: data.ic || data.passport,
+      guestEmail: data.email,
+      guestAddress: data.address,
+      checkIn: data.checkIn,
+      checkOut: data.checkOut,
+      guestCount: data.guestCount,
+      occupantsNotes: occupantsNotes,
+      notes: notes,
+      channel: 'whatsapp'
+    });
+  }
+
+  showToast(isBM ? 'Butiran tempahan telah diisi ke dalam Borang Tempahan!' : 'Booking details pre-filled into Booking Form!');
+}
+
+function handleApplyChatToContact() {
+  const data = getEditedTenantChatData();
+  const isBM = appState.settings.language === 'bm';
+
+  if (!Array.isArray(appState.contacts)) {
+    appState.contacts = [];
+  }
+
+  if (data.bookingType === 'company') {
+    if (!data.companyName && !data.picName && !data.picPhone) {
+      alert(isBM ? 'Sila pastikan sekurang-kurangnya nama syarikat atau nombor telefon PIC diekstrak.' : 'Please ensure at least a company name or PIC phone is extracted.');
+      return;
+    }
+
+    const noteLines = [];
+    noteLines.push(isBM ? 'Penyewa Syarikat (Korporat)' : 'Company Tenant (Corporate)');
+    if (data.companyRegNo) noteLines.push(`SSM: ${data.companyRegNo}`);
+    if (data.picName) noteLines.push(`PIC: ${data.picName}${data.picPosition ? ' (' + data.picPosition + ')' : ''}`);
+    if (data.picPhone) noteLines.push(`PIC Tel: ${data.picPhone}`);
+    if (data.picEmail) noteLines.push(`PIC Email: ${data.picEmail}`);
+    if (data.companyAddress) noteLines.push(`Alamat: ${data.companyAddress}`);
+    if (data.originalChat) {
+      noteLines.push(`\n--- ${isBM ? 'Mesej Perbualan Asal' : 'Original Conversation'} ---\n${data.originalChat}`);
+    }
+
+    const newContact = {
+      id: 'c-' + Date.now(),
+      name: data.companyName || data.picName || (isBM ? 'Syarikat WhatsApp' : 'WhatsApp Company'),
+      category: 'tenant',
+      phone: data.picPhone || data.phone || '',
+      email: data.picEmail || data.email || '',
+      company: data.companyName || '',
+      notes: noteLines.join('\n'),
+      ic: data.companyRegNo || '',
+      vehicle: '',
+      address: data.companyAddress || '',
+      originalChatText: data.originalChat
+    };
+
+    appState.contacts.unshift(newContact);
+    saveToStorage();
+    renderSettingsContactList();
+    closeTenantChatImportModal();
+
+    showToast(isBM ? `Kenalan ${newContact.name} berjaya disimpan ke direktori!` : `Contact ${newContact.name} saved to directory!`);
+  } else {
+    if (!data.name && !data.phone) {
+      alert(isBM ? 'Sila pastikan sekurang-kurangnya nama atau nombor telefon diekstrak.' : 'Please ensure at least a name or phone number is extracted.');
+      return;
+    }
+
+    const noteLines = [];
+    noteLines.push(isBM ? 'Penyewa / Tetamu Tetap' : 'Tenant / Regular Guest');
+    if (data.ic) noteLines.push(`IC: ${data.ic}`);
+    if (data.passport && data.passport !== data.ic) noteLines.push(`Passport: ${data.passport}`);
+    if (data.vehicle) noteLines.push(`Plat: ${data.vehicle}`);
+    if (data.address) noteLines.push(`Alamat: ${data.address}`);
+    if (data.originalChat) {
+      noteLines.push(`\n--- ${isBM ? 'Mesej Perbualan Asal' : 'Original Conversation'} ---\n${data.originalChat}`);
+    }
+
+    const newContact = {
+      id: 'c-' + Date.now(),
+      name: data.name || (isBM ? 'Tetamu WhatsApp' : 'WhatsApp Guest'),
+      category: 'tenant',
+      phone: data.phone || '',
+      email: data.email || '',
+      company: '',
+      notes: noteLines.join('\n'),
+      ic: data.ic || data.passport || '',
+      vehicle: data.vehicle || '',
+      address: data.address || '',
+      originalChatText: data.originalChat
+    };
+
+    appState.contacts.unshift(newContact);
+    saveToStorage();
+    renderSettingsContactList();
+    closeTenantChatImportModal();
+
+    showToast(isBM ? `Kenalan ${newContact.name} berjaya disimpan ke direktori!` : `Contact ${newContact.name} saved to directory!`);
+  }
+}
+
+function handleApplyChatToBoth() {
+  handleApplyChatToContact();
+  handleApplyChatToBooking();
+}
+
+function setupTenantChatEventListeners() {
+  document.getElementById('btnImportTenantChatBooking')?.addEventListener('click', () => openTenantChatImportModal('booking'));
+  document.getElementById('btnImportTenantChatContact')?.addEventListener('click', () => openTenantChatImportModal('contact'));
+  document.getElementById('btnCloseTenantChatImportModal')?.addEventListener('click', closeTenantChatImportModal);
+  document.getElementById('btnCancelTenantChatImportModal')?.addEventListener('click', closeTenantChatImportModal);
+
+  document.getElementById('btnSampleChatBM')?.addEventListener('click', () => insertSampleTenantChat('bm'));
+  document.getElementById('btnSampleChatEN')?.addEventListener('click', () => insertSampleTenantChat('en'));
+  document.getElementById('btnSampleChatConvo')?.addEventListener('click', () => insertSampleTenantChat('convo'));
+  document.getElementById('btnSampleChatCompany')?.addEventListener('click', () => insertSampleTenantChat('company'));
+
+  document.querySelectorAll('#tenantChatBookingTypeSegmented .segment-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetType = btn.getAttribute('data-chat-booking-type') || 'individual';
+      setTenantChatBookingType(targetType);
+    });
+  });
+
+  document.getElementById('btnPasteClipboardTenantChat')?.addEventListener('click', async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        const input = document.getElementById('tenantChatInput');
+        if (input && text) {
+          input.value = text;
+          showToast(appState.settings.language === 'bm' ? 'Teks perbualan ditampal!' : 'Conversation pasted!');
+        }
+      } else {
+        alert(appState.settings.language === 'bm' ? 'Sila gunakan Ctrl+V untuk menampal teks.' : 'Please use Ctrl+V to paste text.');
+      }
+    } catch (err) {
+      alert(appState.settings.language === 'bm' ? 'Sila gunakan Ctrl+V untuk menampal teks.' : 'Please use Ctrl+V to paste text.');
+    }
+  });
+
+  document.getElementById('btnExtractTenantChat')?.addEventListener('click', handleTenantChatParse);
+  document.getElementById('btnApplyChatToBooking')?.addEventListener('click', handleApplyChatToBooking);
+  document.getElementById('btnApplyChatToContact')?.addEventListener('click', handleApplyChatToContact);
+  document.getElementById('btnApplyChatToBoth')?.addEventListener('click', handleApplyChatToBoth);
 }
 
 // ==========================================================================
@@ -10681,17 +13515,26 @@ function handleSaveExpense(e) {
 function openWhatsAppModal(booking, templateType = 'quotation', monthIndex = 1) {
   if (!booking) return;
   closeAllModals();
+
+  const isMonthly = booking.rentalType === 'monthly';
+
+  // For monthly tenancies, Month 1 is settled via Move-In Package; invoice generation begins from Month 2
+  let targetMonthIndex = monthIndex || 1;
+  if (isMonthly && templateType === 'monthly_invoice' && targetMonthIndex === 1) {
+    const invs = getOrInitMonthlyInvoices(booking);
+    const pendingInv = invs.find(x => x.monthIndex >= 2 && x.status === 'pending');
+    targetMonthIndex = pendingInv ? pendingInv.monthIndex : 2;
+  }
+
   appState.activeWaBooking = booking;
   appState.activeWaTemplate = templateType;
-  appState.activeWaMonthIndex = monthIndex || 1;
+  appState.activeWaMonthIndex = targetMonthIndex;
 
   const prop = getPropertyById(booking.propertyId);
   const guestRecip = document.getElementById('waGuestRecipient');
   if (guestRecip) {
     guestRecip.textContent = `${t('wa_to')}: ${booking.guestName || '-'} (${booking.guestPhone || 'No Phone Entered'})`;
   }
-
-  const isMonthly = booking.rentalType === 'monthly';
 
   // Toggle visible tabs based on rental type
   document.querySelectorAll('.wa-tab-btn').forEach(btn => {
@@ -10719,7 +13562,16 @@ function openWhatsAppModal(booking, templateType = 'quotation', monthIndex = 1) 
         const opt = document.createElement('option');
         opt.value = inv.monthIndex;
         const isBM = appState.settings.language === 'bm';
-        opt.textContent = `${isBM ? 'Bulan ke-' : 'Month '}${inv.monthIndex} (${inv.periodStart} → ${inv.periodEnd}) [${inv.status === 'paid' ? (isBM ? 'DIBAYAR' : 'PAID') : (isBM ? 'BELUM' : 'DUE')}]`;
+        if (inv.monthIndex === 1) {
+          if (templateType === 'monthly_invoice') {
+            opt.textContent = `${isBM ? 'Bulan ke-1' : 'Month 1'} (${inv.periodStart} → ${inv.periodEnd}) [${isBM ? 'LUNAS PAKEJ KEMASUKAN - TIADA INVOIS' : 'PAID VIA MOVE-IN - NO INVOICE'}]`;
+            opt.disabled = true;
+          } else {
+            opt.textContent = `${isBM ? 'Bulan ke-1' : 'Month 1'} (${inv.periodStart} → ${inv.periodEnd}) [${isBM ? 'LUNAS PAKEJ KEMASUKAN' : 'PAID VIA MOVE-IN'}]`;
+          }
+        } else {
+          opt.textContent = `${isBM ? 'Bulan ke-' : 'Month '}${inv.monthIndex} (${inv.periodStart} → ${inv.periodEnd}) [${inv.status === 'paid' ? (isBM ? 'DIBAYAR' : 'PAID') : (isBM ? 'BELUM' : 'DUE')}]`;
+        }
         if (inv.monthIndex === appState.activeWaMonthIndex) opt.selected = true;
         monthSelect.appendChild(opt);
       });
@@ -12007,7 +14859,7 @@ function openPdfDocModal(booking, defaultDocType = 'quotation', monthIndex = nul
   if (monthIndex) {
     const invs = getOrInitMonthlyInvoices(booking);
     const targetInv = invs.find(x => x.monthIndex === parseInt(monthIndex));
-    if (targetInv && targetInv.status === 'paid' && defaultDocType !== 'invoice') {
+    if (parseInt(monthIndex) === 1 || (targetInv && targetInv.status === 'paid' && defaultDocType !== 'invoice')) {
       defaultDocType = 'receipt';
     } else {
       defaultDocType = 'invoice';
@@ -12055,9 +14907,15 @@ function openPdfDocModal(booking, defaultDocType = 'quotation', monthIndex = nul
         const opt = document.createElement('option');
         opt.value = inv.monthIndex;
         const isPaid = inv.status === 'paid';
-        opt.textContent = appState.activePdfLang === 'bm'
-          ? `📅 Invois Bulan ke-${inv.monthIndex} (${inv.periodStart} → ${inv.periodEnd}) [${isPaid ? 'DIBAYAR' : 'BELUM'}]`
-          : `📅 Month ${inv.monthIndex} Invoice (${inv.periodStart} → ${inv.periodEnd}) [${isPaid ? 'PAID' : 'DUE'}]`;
+        if (inv.monthIndex === 1) {
+          opt.textContent = appState.activePdfLang === 'bm'
+            ? `📅 Bulan ke-1 (${inv.periodStart} → ${inv.periodEnd}) [LUNAS PAKEJ KEMASUKAN]`
+            : `📅 Month 1 (${inv.periodStart} → ${inv.periodEnd}) [SETTLED VIA MOVE-IN]`;
+        } else {
+          opt.textContent = appState.activePdfLang === 'bm'
+            ? `📅 Invois Bulan ke-${inv.monthIndex} (${inv.periodStart} → ${inv.periodEnd}) [${isPaid ? 'DIBAYAR' : 'BELUM'}]`
+            : `📅 Month ${inv.monthIndex} Invoice (${inv.periodStart} → ${inv.periodEnd}) [${isPaid ? 'PAID' : 'DUE'}]`;
+        }
         scopeSelect.appendChild(opt);
       });
 
@@ -12096,8 +14954,12 @@ function openPdfDocModal(booking, defaultDocType = 'quotation', monthIndex = nul
           if (utilityWrap) utilityWrap.style.display = 'block';
           const targetInv = invs.find(x => x.monthIndex === appState.activePdfMonthIndex);
           if (utilityInput && targetInv) utilityInput.value = targetInv.utilityCharges || 0;
+          if (appState.activePdfMonthIndex === 1 && appState.activePdfDocType === 'invoice') {
+            setPdfDocType('receipt');
+            return;
+          }
           if (appState.activePdfDocType === 'quotation') {
-            setPdfDocType('invoice');
+            setPdfDocType(appState.activePdfMonthIndex === 1 ? 'receipt' : 'invoice');
             return;
           }
         }
@@ -12984,6 +15846,7 @@ function updatePdfDocView() {
           <td style="padding:8px 8px;">
             <strong style="color:#0f172a; display:block;">${lang === 'bm' ? `Sewa Bulanan (Bulan ke-${currentMonthInv.monthIndex})` : `Monthly Rental (Month ${currentMonthInv.monthIndex})`}</strong>
             <span style="font-size:10.5px; color:#64748b;">${lang === 'bm' ? `Kitaran sewaan dari ${currentMonthInv.periodStart} hingga ${currentMonthInv.periodEnd}` : `Rental billing period from ${currentMonthInv.periodStart} to ${currentMonthInv.periodEnd}`}</span>
+            ${currentMonthInv.monthIndex === 1 ? `<div style="font-size:10.5px; font-weight:700; color:#166534; background:#dcfce7; padding:2px 6px; border-radius:4px; display:inline-block; margin-top:3px;"><i class="fa-solid fa-circle-check"></i> ${lang === 'bm' ? 'Sewa Bulan 1 Telah Dibayar Melalui Pakej Kemasukan' : 'Month 1 Rental Paid Via Move-In Package'}</div>` : ''}
           </td>
           <td style="padding:8px 8px; text-align:center; font-weight:700;">1.00 ${lang === 'bm' ? 'Bulan' : 'Mth'}</td>
           <td style="padding:8px 8px; text-align:right;">${Number(currentMonthInv.rentAmount || mRate).toFixed(2)}</td>
@@ -17725,9 +20588,31 @@ window.openWhatsAppModal = openWhatsAppModal;
 window.openPdfDocModal = openPdfDocModal;
 window.generateWhatsAppMessage = generateWhatsAppMessage;
 
+if (typeof window !== 'undefined') {
+  window.parseReceiptText = parseReceiptText;
+  window.extractTextFromImage = extractTextFromImage;
+  window.openUniversalOcrModal = openUniversalOcrModal;
+  window.scanPaymentProofSlipOcr = scanPaymentProofSlipOcr;
+  window.scanExpenseSlipOcr = scanExpenseSlipOcr;
+  window.openExpenseModal = openExpenseModal;
+  window.parseTenantChat = parseTenantChat;
+  window.extractTenantChat = extractTenantChat;
+  window.openTenantChatImportModal = openTenantChatImportModal;
+  window.closeTenantChatImportModal = closeTenantChatImportModal;
+  window.setTenantChatBookingType = setTenantChatBookingType;
+  window.normalizeIdNumber = normalizeIdNumber;
+  window.getGuestStayStats = getGuestStayStats;
+  window.syncTenantLifecycleStatus = syncTenantLifecycleStatus;
+  window.checkBookingRepeatGuest = checkBookingRepeatGuest;
+  window.applyRepeatGuestDetails = applyRepeatGuestDetails;
+  window.renderSettingsContactList = renderSettingsContactList;
+  window.renderDashboardTab = renderDashboardTab;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     normalizePhoneNumber,
+    normalizeIdNumber,
     normalizeLicensePhone,
     formatDisplayLicensePhone,
     extractLicenseKey,
@@ -17748,6 +20633,25 @@ if (typeof module !== 'undefined' && module.exports) {
     openWhatsAppModal,
     openPdfDocModal,
     generateWhatsAppMessage,
+    parseReceiptText,
+    extractTextFromImage,
+    openUniversalOcrModal,
+    scanPaymentProofSlipOcr,
+    scanExpenseSlipOcr,
+    openExpenseModal,
+    parseTenantChat,
+    extractTenantChat,
+    openTenantChatImportModal,
+    closeTenantChatImportModal,
+    setTenantChatBookingType,
+    getGuestStayStats,
+    syncTenantLifecycleStatus,
+    checkBookingRepeatGuest,
+    applyRepeatGuestDetails,
+    renderSettingsContactList,
+    renderDashboardTab,
+    openBookingModal,
+    openContactModal,
     setTestLicensePublicKey: function (jwk) {
       testOverridePublicKeyJwk = jwk;
       cachedCryptoPublicKey = null;
