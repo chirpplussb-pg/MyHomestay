@@ -5,7 +5,7 @@
 > An all-in-one, mobile-first management system for homestay hosts, apartment managers, and room rental operators.  
 > *Sistem pengurusan lengkap untuk pemilik homestay, apartmen, dan bilik sewa terus dari telefon pintar anda.*
 
-> 🗓️ **Guide version / Versi panduan:** for app **v2.8.3 and later** — updated / dikemas kini **16 Oct 2026**
+> 🗓️ **Guide version / Versi panduan:** for app **v2.8.4 and later** — updated / dikemas kini **November 2026**
 
 ---
 
@@ -26,6 +26,9 @@
 12. [Zero-Data-Loss Updates & Backups / Kemas Kini Tanpa Hilang Data](#12-zero-data-loss-updates--backups--kemas-kini-tanpa-hilang-data)
 13. [Promotional Media & Marketing Hub / Hab Media Promosi & Pemasaran](#13-promotional-media--marketing-hub--hab-media-promosi--pemasaran)
 14. [1-Click Cache Purge & Force Reload / Butang 1-Sentuhan Bersihkan Cache Sistem](#14-1-click-cache-purge--force-reload--butang-1-sentuhan-bersihkan-cache-sistem)
+15. [Smart WhatsApp Chat Import (Individual & Company) / Import Mesej WhatsApp Pintar (Individu & Syarikat)](#15-smart-whatsapp-chat-import-individual--company--import-mesej-whatsapp-pintar-individu--syarikat)
+16. [Tenant Lifecycle Management & Repeat Guest Recognition / Pengurusan Kitaran Hayat Penyewa & Pengecaman Tetamu Berulang](#16-tenant-lifecycle-management--repeat-guest-recognition--pengurusan-kitaran-hayat-penyewa--pengecaman-tetamu-berulang)
+17. [Malaysian OCR Receipt & Utility Bill Scanner / Pengimbas Resit Bank & Bil Utiliti Malaysia (OCR)](#17-malaysian-ocr-receipt--utility-bill-scanner--pengimbas-resit-bank--bil-utiliti-malaysia-ocr)
 
 ---
 
@@ -609,5 +612,148 @@ Aplikasi PWA moden menyimpan fail dalam memori pelayar untuk membolehkan penggun
     3. Memuat turun kod versi terkini (versi terkini).
     4. Memuat semula skrin secara serta-merta.
   * **Jaminan Sifar Kehilangan Data**: Semua rekod homestay, tempahan, resit bayaran, dan tetapan bank dalam `localStorage` anda adalah **100% selamat dan tidak akan dipadamkan**.
+
+---
+
+## 15. Smart WhatsApp Chat Import (Individual & Company) / Import Mesej WhatsApp Pintar (Individu & Syarikat)
+
+### 🇬🇧 English: Smart WhatsApp Chat Import
+* **What is it?** An automated chat parser that reads unstructured WhatsApp messages from prospective guests and corporate clients, extracting booking dates, guest counts, and full particulars in 1 tap without manual typing.
+* **Dual Booking Modes (Individual vs Company)**:
+  * **Individual Booking**:
+    * Extracts: Full Name, IC / Passport Number, Phone Number, Email, Address, Number of Guests, Check-In Date, Check-Out Date.
+    * Foreign Tourist Passports: Automatically maps Passport Number into the standard Identification Number field without requiring separate inputs.
+  * **Company Booking**:
+    * Automatically triggered when indicators such as `Sdn Bhd`, `SSM`, `Enterprise`, `Holdings`, `Resources`, `Industries`, `Manufacturing`, or `PIC` are detected.
+    * Extracts: Company Name, SSM Registration Number, PIC Name, PIC Designation, PIC Phone, PIC Email, Company Address, Number of Guests, Check-In Date, Check-Out Date.
+    * Occupant names are omitted per corporate booking standards.
+* **How to Use**:
+  1. Open the **Bookings tab**.
+  2. Tap the green **`Import Tenant Chat`** button.
+  3. Paste the WhatsApp text message into the text box.
+  4. Select or confirm **Individual** or **Company** mode.
+  5. Review the extracted fields and confidence score badge (0%–100%).
+  6. Tap **"Create Booking"** to open the Booking Modal with all fields pre-filled, or tap **"Save to Contacts"** to store the contact record.
+
+---
+
+### 🇲🇾 Bahasa Melayu: Import Mesej WhatsApp Pintar
+* **Apakah fungsi ini?** Enjin pembaca mesej WhatsApp yang mengekstrak maklumat tempahan pelanggan atau syarikat secara automatik tanpa perlu menaip satu per satu.
+* **Dua Mod Tempahan (Individu vs Syarikat)**:
+  * **Tempahan Individu**:
+    * Mengekstrak: Nama Penuh, No. IC / Pasport, No. Telefon, Emel, Alamat, Bilangan Tetamu, Tarikh Masuk (Check-In), Tarikh Keluar (Check-Out).
+    * Tetamu Antarabangsa: No. Pasport disatukan secara automatik ke dalam ruangan No. Pengenalan tanpa borang berasingan.
+  * **Tempahan Syarikat**:
+    * Dikesan secara automatik apabila terdapat perkataan syarikat seperti `Sdn Bhd`, `SSM`, `Enterprise`, `Holdings`, `Resources`, `Industries`, `Manufacturing`, atau `PIC`.
+    * Mengekstrak: Nama Syarikat, No. Pendaftaran SSM, Nama PIC, Jawatan PIC, No. Telefon PIC, Emel PIC, Alamat Syarikat, Bilangan Tetamu, Tarikh Masuk, Tarikh Keluar.
+    * Senarai nama penghuni tidak diwajibkan untuk tempahan korporat.
+* **Cara Penggunaan**:
+  1. Buka tab **Tempahan (Bookings)**.
+  2. Tekan butang hijau **`Import Mesej WhatsApp`**.
+  3. Salin (copy) dan tampal (paste) perbualan WhatsApp pelanggan.
+  4. Pilih atau semak mod **Individu** atau **Syarikat**.
+  5. Semak maklumat yang diekstrak dan skor keyakinan sistem (0%–100%).
+  6. Tekan **"Cipta Tempahan"** untuk membuka borang tempahan yang siap diisi, atau tekan **"Simpan ke Kenalan"**.
+
+---
+
+## 16. Tenant Lifecycle Management & Repeat Guest Recognition / Pengurusan Kitaran Hayat Penyewa & Pengecaman Tetamu Berulang
+
+### 🇬🇧 English: Tenant Lifecycle & Repeat Guest Recognition
+* **What is it?** A smart tenant relationship and retention engine that manages guest lifecycles from initial inquiry to repeat stays, while keeping your daily dashboard clean and organized.
+* **Tenant Lifecycle Statuses**:
+  * 🟢 **Active**: Current in-house tenant or future confirmed booking.
+  * ⚪ **Completed**: Past guest who has checked out or completed their long-term tenancy.
+  * 🟡 **Prospect**: Inquiries and quotations that have not yet confirmed.
+  * 🔴 **Blacklisted**: Flagged tenants with behavioral issues, damages, or unpaid balances.
+* **Automatic Status Transitions**:
+  * **Daily Stays**: When marked `Checked Out` (or past checkout date), status transitions automatically to **Completed**.
+  * **Monthly Tenancies**: When marked `Vacated / Completed`, status transitions automatically to **Completed**.
+* **Clean & Focused Dashboard**:
+  * The main operational dashboard displays **Active tenants only**. Historical and completed tenants are excluded from daily check-in/out and in-house counts to prevent clutter.
+  * All historical records remain **100% searchable** in Contacts and Reports.
+* **Searching Contacts Directory**:
+  * Go to **Settings > Maintenance Team & Suppliers Directory**.
+  * Use the **Search Box** to search across name, phone, IC/SSM, company, or notes.
+  * Use the **Status Filter Pills** (`All`, `🟢 Active`, `⚪ Completed`, `🟡 Prospect`, `🔴 Blacklisted`) to isolate any group in 1 tap.
+* **Repeat Guest Recognition**:
+  * When entering a new booking, typing the guest's phone number or IC triggers instant recognition:
+    1. **Matches by Phone Number first**.
+    2. **Matches by Identification Number second** (IC / Passport / SSM).
+  * Automatically tracks and displays:
+    * **First Stay Date**
+    * **Last Stay Date**
+    * **Total Stays**
+    * **Lifetime Revenue**
+  * **VIP Repeat Guest Alert Banner**: Displays immediately at the top of the booking form showing previous stays and lifetime revenue, with a **"Use Tenant Record"** button for 1-tap auto-fill.
+  * **Blacklisted Guest Alert**: Warns the host immediately if a blacklisted phone or IC is entered.
+* **Dashboard Intelligence KPIs**:
+  * **Active Tenants**: Total number of currently active guests and tenancies.
+  * **Repeat Guests**: Total unique returning customers (≥ 2 stays).
+  * **Total Repeat Bookings**: Total volume of bookings made by repeat guests.
+  * **Top Returning Guests**: Live leaderboard ranking your most loyal customers by stay frequency and lifetime spend.
+
+---
+
+### 🇲🇾 Bahasa Melayu: Pengurusan Kitaran Hayat & Pengecaman Tetamu Berulang
+* **Apakah fungsi ini?** Sistem pintar yang menjejak kitaran pelanggan dari fasa pertanyaan sehingga menjadi tetamu setia, di samping memastikan dashboard utama kekal kemas tanpa data lapuk.
+* **Status Kitaran Hayat Penyewa**:
+  * 🟢 **Aktif (Active)**: Penyewa semasa yang sedang menginap atau tempahan masa depan yang telah disahkan.
+  * ⚪ **Selesai (Completed)**: Tetamu yang telah mendaftar keluar (checked out) atau tamat tempoh sewaan bulanan.
+  * 🟡 **Prospek (Prospect)**: Pelanggan yang meminta sebut harga (quotation) atau bertanyakan tarikh.
+  * 🔴 **Senarai Hitam (Blacklisted)**: Pelanggan bermasalah, merosakkan harta benda, atau ingkar bayaran.
+* **Pertukaran Status Automatik**:
+  * **Tempahan Harian**: Apabila ditanda `Daftar Keluar (Checked Out)`, status bertukar secara automatik ke **Selesai (Completed)**.
+  * **Sewaan Bulanan**: Apabila ditanda `Selesai / Tamat Sewaan (Vacated)`, status bertukar secara automatik ke **Selesai (Completed)**.
+* **Dashboard Kemas & Fokus**:
+  * Dashboard utama hanya memaparkan **Penyewa Aktif**. Rekod lama disembunyikan daripada senarai harian agar skrin tidak berselerak.
+  * Rekod sejarah penyewa tetap **100% boleh dicari** pada bila-bila masa di Direktori Kenalan dan Laporan.
+* **Mencari & Menapis Direktori Kenalan**:
+  * Buka **Tetapan > Direktori Pasukan & Pembekal**.
+  * Gunakan **Ruangan Carian** untuk mencari nama, telefon, no. IC/SSM, syarikat, atau nota.
+  * Gunakan **Butang Penapis Status** (`Semua`, `🟢 Aktif`, `⚪ Selesai`, `🟡 Prospek`, `🔴 Senarai Hitam`).
+* **Pengecaman Tetamu Berulang (Repeat Guests)**:
+  * Semasa mencipta tempahan baru, masukkan no. telefon atau no. pengenalan:
+    1. **Carian berasaskan No. Telefon diutamakan dahulu**.
+    2. **Carian berasaskan No. IC / Pasport / SSM dibuat kedua**.
+  * Sistem menjejak metrik pelanggan:
+    * **Tarikh Penginapan Pertama**
+    * **Tarikh Penginapan Terakhir**
+    * **Jumlah Penginapan (Total Stays)**
+    * **Hasil Terkumpul (Lifetime Revenue)**
+  * **Banner VIP Tetamu Berulang**: Muncul serta-merta di atas borang tempahan memaparkan jumlah penginapan dan hasil terkumpul bersama butang **"Gunakan Maklumat Penyewa"** untuk mengisi borang dalam 1 sentuhan.
+  * **Amaran Senarai Hitam**: Memberi amaran merah serta-merta jika no. telefon atau IC tetamu senarai hitam dimasukkan.
+* **KPI Kecerdasan Dashboard**:
+  * **Penyewa Aktif**: Jumlah penyewa yang sedang menginap atau mempunyai kontrak aktif.
+  * **Tetamu Berulang**: Jumlah individu pelanggan setia yang pernah menginap 2 kali atau lebih.
+  * **Jumlah Tempahan Berulang**: Jumlah keseluruhan tempahan yang disumbangkan oleh tetamu setia.
+  * **Tetamu Paling Kerap Menginap**: Carta ranking pelanggan setia terbaik berdasarkan kekerapan menginap dan nilai perbelanjaan.
+
+---
+
+## 17. Malaysian OCR Receipt & Utility Bill Scanner / Pengimbas Resit Bank & Bil Utiliti Malaysia (OCR)
+
+### 🇬🇧 English: Malaysian OCR Scanner
+* **What is it?** An on-device optical character recognition (OCR) scanner designed specifically for Malaysian payment receipts and utility bills.
+* **Supported Bank Receipts**: Maybank / MAE DuitNow, CIMB OCTO, Bank Islam, Public Bank (PBe), RHB Now, and Touch 'n Go eWallet.
+* **Supported Utility Bills**: Tenaga Nasional Berhad (TNB), Air Selangor, Indah Water Konsortium (IWK), and Unifi / TM broadband.
+* **How to Use**:
+  1. Go to **Finances > Add Expense** or **Scan Receipt / Bill (OCR)**.
+  2. Upload or take a photo of the bank transfer slip or utility bill.
+  3. The scanner automatically reads the Date, Total Amount (RM), Reference Number, and Provider.
+  4. Automatically attaches the compressed image proof into your records without taking up phone storage.
+
+---
+
+### 🇲🇾 Bahasa Melayu: Pengimbas Resit & Bil Utiliti Malaysia (OCR)
+* **Apakah fungsi ini?** Pengimbas optik (OCR) terus dari telefon pintar yang direka khas untuk resit perbankan dan bil utiliti Malaysia.
+* **Resit Bank Yang Disokong**: Maybank / MAE DuitNow, CIMB OCTO, Bank Islam, Public Bank (PBe), RHB Now, dan Touch 'n Go eWallet.
+* **Bil Utiliti Yang Disokong**: Tenaga Nasional Berhad (TNB), Air Selangor, Indah Water Konsortium (IWK), dan Unifi / TM.
+* **Cara Penggunaan**:
+  1. Buka tab **Kewangan > Tambah Perbelanjaan** atau **Imbas Resit / Bil (OCR)**.
+  2. Muat naik atau tangkap gambar resit pemindahan bank atau bil utiliti.
+  3. Sistem mengekstrak Tarikh, Jumlah Bayaran (RM), No. Rujukan dan Pembekal secara automatik.
+  4. Menyimpan salinan bukti resit termampat terus ke dalam sistem secara luar talian.
+
 
 
