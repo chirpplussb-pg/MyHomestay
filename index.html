@@ -6,13 +6,16 @@
   <meta name="theme-color" content="#0284c7">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="StayManager">
-  <title>Homestay Manager - Smart Property & Booking Hub</title>
+  <meta name="apple-mobile-web-app-title" content="MyHomestay">
+  <title>MyHomestay - Smart Property & Booking Hub</title>
   
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css?v=2.8.5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,10 +54,11 @@
       <div class="header-top">
         <div class="brand">
           <div class="brand-icon">
-            <i class="fa-solid fa-house-chimney"></i>
+            <img src="logo.png" alt="MyHomestay" class="brand-logo-img" id="appHeaderLogoImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+            <i class="fa-solid fa-house-chimney" style="display:none;"></i>
           </div>
           <div class="brand-text">
-            <h1 class="brand-title" id="appBusinessName">StayManager</h1>
+            <h1 class="brand-title" id="appBusinessName">MyHomestay</h1>
             <span class="brand-subtitle" id="currentDateStr">Today</span>
           </div>
         </div>
@@ -516,6 +520,15 @@
         <!-- General App Settings -->
         <div class="card">
           <h3 class="card-title mb-3" data-i18n="app_pref_title">App Preferences & Seller Info</h3>
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; padding:10px 12px; background:var(--bg-surface-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md);">
+            <div style="width:52px; height:52px; border-radius:10px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.12); flex-shrink:0;">
+              <img src="logo.png" alt="MyHomestay Logo" style="width:100%; height:100%; object-fit:cover; display:block;">
+            </div>
+            <div>
+              <div style="font-size:13.5px; font-weight:800; color:var(--text-main);">MyHomestay Official Brand & Icon</div>
+              <div style="font-size:11px; color:var(--text-muted);">Logo rasmi perniagaan & ikon aplikasi dipasang untuk PWA, dokumen PDF & laman web.</div>
+            </div>
+          </div>
           <div class="form-group">
             <label class="form-label" data-i18n="business_name_label">Business / Brand Name</label>
             <input type="text" id="settingBusinessNameInput" class="form-control" placeholder="e.g. Cozy Stay Management">
@@ -3103,18 +3116,12 @@
             <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:16px; border-bottom:2px solid #ea580c; gap:16px;">
               <!-- Left: Logo & Company Particulars -->
               <div style="display:flex; gap:14px; align-items:flex-start;">
-                <!-- 3D Geometric Logo matching sample -->
-                <div style="width:52px; height:52px; flex-shrink:0;">
-                  <svg width="52" height="52" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="50,10 88,32 50,54 12,32" fill="#ea580c"/>
-                    <polygon points="12,32 50,54 50,92 12,70" fill="#0f172a"/>
-                    <polygon points="88,32 50,54 50,92 88,70" fill="#334155"/>
-                    <text x="31" y="66" fill="#ffffff" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="20" text-anchor="middle">H</text>
-                    <text x="69" y="66" fill="#ffffff" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="20" text-anchor="middle">M</text>
-                  </svg>
+                <!-- MyHomestay Official Logo -->
+                <div style="width:52px; height:52px; flex-shrink:0; border-radius:10px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.12);">
+                  <img src="logo.png" alt="MyHomestay Logo" style="width:100%; height:100%; object-fit:cover; display:block;">
                 </div>
                 <div>
-                  <h2 id="pdfHostBizName" style="font-size:22px; font-weight:900; color:#ea580c; margin:0; line-height:1.2; letter-spacing:-0.3px;">MY HOMESTAY</h2>
+                  <h2 id="pdfHostBizName" style="font-size:22px; font-weight:900; color:#ea580c; margin:0; line-height:1.2; letter-spacing:-0.3px;">MYHOMESTAY</h2>
                   <div id="pdfHostAddress" style="font-size:11px; color:#475569; margin:2px 0 4px 0; max-width:320px; line-height:1.4;">Premis Homestay & Perkhidmatan Penginapan</div>
                   <div style="font-size:11px; color:#334155; line-height:1.5;">
                     <div id="pdfHostPhoneRow" style="display:none;"><strong style="color:#0f172a;">Phone:</strong> <span id="pdfHostPhone">-</span></div>

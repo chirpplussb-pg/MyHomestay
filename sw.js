@@ -7,7 +7,13 @@ const ASSETS_TO_CACHE = [
   './app.js',
   './html2pdf.bundle.min.js',
   './manifest.json',
-  './version.json'
+  './version.json',
+  './logo.png',
+  './icon-192.png',
+  './icon-512.png',
+  './apple-touch-icon.png',
+  './favicon.png',
+  './favicon-32x32.png'
 ];
 
 // Install: Cache critical assets and FORCE immediate activation without waiting

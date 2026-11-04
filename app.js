@@ -120,7 +120,7 @@ const DEFAULT_PROMO_MEDIA = [
 
 
 const DEFAULT_SETTINGS = {
-  businessName: 'My Homestay',
+  businessName: 'MyHomestay',
   businessSsm: '',
   businessAddress: '',
   businessEmail: '',
@@ -2022,8 +2022,21 @@ async function initApp() {
     appState.isLicensed = true;
     appState.proHubState = navigator.onLine ? 'ACTIVE' : 'OFFLINE';
 
-    // If online, perform silent activation with current deviceId to obtain a fresh ECDSA token
-    const targetPhone = appState.settings?.ownerPhone || '60124022462';
+    // Extract registered phone from token payload or persistent storage if available
+    let tokenPhone = null;
+    try {
+      const rawTok = localStorage.getItem(STORAGE_KEYS.TOKEN);
+      if (rawTok && rawTok.includes('.')) {
+        const pStr = base64UrlToString(rawTok.split('.')[1]);
+        const pObj = JSON.parse(pStr);
+        if (pObj && pObj.phone) tokenPhone = pObj.phone;
+      }
+    } catch (_) {}
+
+    const targetPhone = appState.settings?.ownerPhone
+      || localStorage.getItem('staymanager_license_phone')
+      || tokenPhone
+      || '60124022462';
     if (navigator.onLine && typeof activateWithServer === 'function') {
       activateWithServer(recoveredKey, targetPhone).then(() => {
         console.log('[License Engine] Pro license successfully refreshed with master server.');
@@ -5358,7 +5371,8 @@ async function activateWithServer(rawKey, rawPhone) {
   const evalResult = await evaluateLicenseState();
   if (evalResult && evalResult.isLicensed === true) {
     localStorage.setItem('staymanager_license_key', cleanKey);
-    localStorage.setItem('staymanager_license_v2', JSON.stringify({ key: cleanKey, isLicensed: true, activatedAt: new Date().toISOString() }));
+    localStorage.setItem('staymanager_license_phone', cleanPhone);
+    localStorage.setItem('staymanager_license_v2', JSON.stringify({ key: cleanKey, phone: cleanPhone, isLicensed: true, activatedAt: new Date().toISOString() }));
     appState.licenseKey = cleanKey;
     saveToStorage();
   }
@@ -7969,7 +7983,7 @@ function renderFinancesTab() {
 // ==========================================================================
 
 function renderSettingsTab() {
-  document.getElementById('settingBusinessNameInput').value = appState.settings.businessName || 'My Homestay';
+  document.getElementById('settingBusinessNameInput').value = appState.settings.businessName || 'MyHomestay';
   const ssmInput = document.getElementById('settingBusinessSsmInput');
   if (ssmInput) ssmInput.value = appState.settings.businessSsm || '';
   const ownerLegalNameInput = document.getElementById('settingOwnerLegalNameInput');
@@ -8477,7 +8491,7 @@ function handleSavePreferences() {
   const newOwnerPhone = document.getElementById('settingOwnerPhoneInput') ? document.getElementById('settingOwnerPhoneInput').value.trim() : appState.settings.ownerPhone;
   const oldOwnerPhone = appState.settings.ownerPhone;
 
-  appState.settings.businessName = document.getElementById('settingBusinessNameInput').value || 'My Homestay';
+  appState.settings.businessName = document.getElementById('settingBusinessNameInput').value || 'MyHomestay';
   appState.settings.businessSsm = document.getElementById('settingBusinessSsmInput') ? document.getElementById('settingBusinessSsmInput').value.trim() : (appState.settings.businessSsm || '');
   appState.settings.ownerLegalName = document.getElementById('settingOwnerLegalNameInput') ? document.getElementById('settingOwnerLegalNameInput').value.trim() : (appState.settings.ownerLegalName || '');
   appState.settings.ownerIc = document.getElementById('settingOwnerIcInput') ? document.getElementById('settingOwnerIcInput').value.trim() : (appState.settings.ownerIc || '');
