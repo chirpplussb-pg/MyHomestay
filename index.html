@@ -14,7 +14,7 @@
   <meta http-equiv="Expires" content="0">
   
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=2.8.4">
+  <link rel="stylesheet" href="styles.css?v=2.8.5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -677,7 +677,7 @@
               <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> <span data-i18n="app_version_title">App Version & Updates</span></h3>
               <p class="card-subtitle" data-i18n="app_version_sub">Update to the latest version anytime without losing your homestay or booking data.</p>
             </div>
-            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.8.4</span>
+            <span id="appCurrentVersionBadge" style="background:var(--bg-surface-subtle); border:1px solid var(--border-color); font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; color:var(--text-main);">v2.8.5</span>
           </div>
 
           <div style="background:var(--bg-surface-subtle); padding:10px 12px; border-radius:var(--radius-sm); border-left:3px solid var(--success); margin-bottom:12px;">
@@ -862,14 +862,19 @@
               <div style="font-size:12px; font-weight:800; color:var(--text-main); display:flex; align-items:center; gap:6px;">
                 <i class="fa-solid fa-id-card" style="color:var(--primary);"></i> <span data-i18n="tenant_particulars_title">Tenant & Guest Particulars / Butiran Tetamu</span>
               </div>
-              <!-- Tenant Category Switcher: Individual vs Company -->
-              <div class="segmented-control" id="tenantTypeSegmented" style="font-size:11px; max-width:210px; margin:0;">
-                <button type="button" class="segment-btn active" data-tenant-type="individual">
-                  <i class="fa-solid fa-user"></i> <span data-i18n="tenant_individual">Individual</span>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <button type="button" class="btn btn-whatsapp btn-xs" id="btnBookingModalImportChat" style="padding:4px 9px; font-size:11px; font-weight:700; border-radius:6px; display:inline-flex; align-items:center; gap:5px;">
+                  <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_import_tenant_chat">Import Tenant Chat</span>
                 </button>
-                <button type="button" class="segment-btn" data-tenant-type="company">
-                  <i class="fa-solid fa-building"></i> <span data-i18n="tenant_company">Company</span>
-                </button>
+                <!-- Tenant Category Switcher: Individual vs Company -->
+                <div class="segmented-control" id="tenantTypeSegmented" style="font-size:11px; max-width:210px; margin:0;">
+                  <button type="button" class="segment-btn active" data-tenant-type="individual">
+                    <i class="fa-solid fa-user"></i> <span data-i18n="tenant_individual">Individual</span>
+                  </button>
+                  <button type="button" class="segment-btn" data-tenant-type="company">
+                    <i class="fa-solid fa-building"></i> <span data-i18n="tenant_company">Company</span>
+                  </button>
+                </div>
               </div>
               <input type="hidden" id="bookingTenantType" value="individual">
             </div>
@@ -2296,7 +2301,7 @@
             </div>
             <div style="text-align:right;">
               <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">App Version</div>
-              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.8.4</div>
+              <div style="font-size:13px; font-weight:800; color:var(--text-main);" id="proModalVersionText">v2.8.5</div>
             </div>
           </div>
 
@@ -3953,6 +3958,6 @@
       document.head.appendChild(s);
     }
   </script>
-  <script src="app.js?v=2.8.4"></script>
+  <script src="app.js?v=2.8.5"></script>
 </body>
 </html>

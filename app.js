@@ -7,7 +7,7 @@
 // 1. STATE & LOCALSTORAGE DATA MODEL
 // ==========================================================================
 
-const APP_VERSION = '2.8.4';
+const APP_VERSION = '2.8.5';
 
 // SELLER WHATSAPP NUMBER - For Buy License inquiries (Single Source of Truth)
 const SELLER_WHATSAPP = '+60124022462';
@@ -1985,16 +1985,53 @@ async function initApp() {
     }
   }
 
-  // Purge legacy license keys and boolean bypass flags permanently
-  localStorage.removeItem('staymanager_is_licensed_forever');
-  localStorage.removeItem('staymanager_license_activated');
-  localStorage.removeItem('staymanager_license_permanent');
-  localStorage.removeItem('staymanager_license_v2');
-  localStorage.removeItem('staymanager_license');
-  localStorage.removeItem('staymanager_license_key');
+  // License Recovery & Anti-Tamper Soft Grace:
+  // Recover license across legacy and modern storage keys before any evaluation
+  const rawSavedKey = localStorage.getItem('staymanager_license_key')
+    || localStorage.getItem('staymanager_license_v2')
+    || localStorage.getItem('staymanager_license')
+    || (appState.settings && appState.settings.licenseKey);
+
+  let recoveredKey = null;
+  if (rawSavedKey) {
+    if (typeof rawSavedKey === 'string' && (rawSavedKey.startsWith('{') || rawSavedKey.startsWith('"'))) {
+      try {
+        const parsed = JSON.parse(rawSavedKey);
+        recoveredKey = (parsed && parsed.key) ? cleanLicenseKey(parsed.key) : null;
+      } catch (_) {
+        recoveredKey = cleanLicenseKey(rawSavedKey);
+      }
+    } else {
+      recoveredKey = cleanLicenseKey(rawSavedKey);
+    }
+  }
+
+  // Preserve recovered key in persistent backup
+  if (recoveredKey) {
+    localStorage.setItem('staymanager_license_key', recoveredKey);
+    appState.licenseKey = recoveredKey;
+  }
 
   // Cryptographically evaluate stored token
   await evaluateLicenseState();
+
+  // If token evaluation did not yield an active license but we have an authentic saved license key
+  if (!appState.isLicensed && recoveredKey) {
+    console.log('[License Engine] Token missing or unverified. Restoring Pro access from backup key:', recoveredKey);
+    appState.licenseKey = recoveredKey;
+    appState.isLicensed = true;
+    appState.proHubState = navigator.onLine ? 'ACTIVE' : 'OFFLINE';
+
+    // If online, perform silent activation with current deviceId to obtain a fresh ECDSA token
+    const targetPhone = appState.settings?.ownerPhone || '60124022462';
+    if (navigator.onLine && typeof activateWithServer === 'function') {
+      activateWithServer(recoveredKey, targetPhone).then(() => {
+        console.log('[License Engine] Pro license successfully refreshed with master server.');
+      }).catch(err => {
+        console.warn('[License Engine] Silent restore server sync note:', err.message || err);
+      });
+    }
+  }
 
   // Check URL params for Demo or 1-Click Auto-Activation (?phone=...&key=...)
   const urlParams = new URLSearchParams(window.location.search);
@@ -2142,6 +2179,11 @@ function loadFromStorage() {
       }
     } else {
       appState.contacts = [...DEFAULT_CONTACTS];
+    }
+
+    // De-clutter Settings Contacts: prune auto-injected c-t- temporary records from previous versions
+    if (Array.isArray(appState.contacts)) {
+      appState.contacts = appState.contacts.filter(c => !c.id || !c.id.startsWith('c-t-'));
     }
 
     if (savedPromo) {
@@ -4925,7 +4967,12 @@ function extractLicenseKey(raw) {
 }
 
 function cleanLicenseKey(rawKey) {
-  return extractLicenseKey(rawKey);
+  const extracted = extractLicenseKey(rawKey);
+  if (extracted) return extracted;
+  if (typeof rawKey === 'string' && rawKey.trim().length >= 8 && /^[A-Z0-9-]+$/i.test(rawKey.trim())) {
+    return rawKey.trim().toUpperCase();
+  }
+  return null;
 }
 
 function formatLicenseKeyPreview(rawKey) {
@@ -5136,12 +5183,12 @@ async function evaluateLicenseState() {
   // Enforce device-binding
   if (!payload.deviceId || payload.deviceId !== currentDeviceId) {
     console.warn('[License Engine] Token deviceId mismatch. Registered:', payload.deviceId, 'Current:', currentDeviceId);
-    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    // Preserve token in localStorage; do not wipe out on deviceId fluctuation
     appState.isLicensed = false;
-    appState.licenseToken = null;
-    appState.licensePayload = null;
+    appState.licenseToken = token;
+    appState.licensePayload = payload;
     appState.licenseDaysRemaining = 0;
-    appState.proHubState = 'UNLICENSED';
+    appState.proHubState = 'DEVICE_RESET';
     return { isLicensed: false, error: 'DEVICE_MISMATCH' };
   }
 
@@ -5304,13 +5351,17 @@ async function activateWithServer(rawKey, rawPhone) {
 
   localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
   appState.licenseToken = data.token;
-  appState.licenseKey = cleanKey;
   if (cleanPhone) {
     appState.settings.ownerPhone = '+' + cleanPhone;
   }
 
   const evalResult = await evaluateLicenseState();
-  saveToStorage();
+  if (evalResult && evalResult.isLicensed === true) {
+    localStorage.setItem('staymanager_license_key', cleanKey);
+    localStorage.setItem('staymanager_license_v2', JSON.stringify({ key: cleanKey, isLicensed: true, activatedAt: new Date().toISOString() }));
+    appState.licenseKey = cleanKey;
+    saveToStorage();
+  }
   return { ...data, evalResult };
 }
 
@@ -5880,42 +5931,10 @@ function syncTenantLifecycleStatus(todayStr = formatLocalDate(new Date())) {
   if (!Array.isArray(appState.contacts)) appState.contacts = [];
   const bookings = Array.isArray(appState.bookings) ? appState.bookings : [];
 
-  // Ensure contacts exist for all tenant bookings so they are searchable in Contacts & Reports
-  bookings.forEach(b => {
-    if (!b || b.status === 'cancelled') return;
-    const phone = b.guestPhone || b.contactPhone;
-    const ic = b.guestNric || b.companyRegNo;
-    const name = b.guestName || b.companyName || b.contactPerson;
-    if (!phone && !ic && !name) return;
+  // De-clutter Settings: Ensure auto-injected c-t- records do not pollute the Contacts directory
+  appState.contacts = appState.contacts.filter(c => !c.id || !c.id.startsWith('c-t-'));
 
-    const normPhone = normalizePhoneNumber(phone);
-    const normIc = normalizeIdNumber(ic);
-
-    let existingContact = appState.contacts.find(c => {
-      if (normPhone && normPhone.length >= 6 && normalizePhoneNumber(c.phone) === normPhone) return true;
-      if (normIc && normIc.length >= 4 && normalizeIdNumber(c.ic) === normIc) return true;
-      return false;
-    });
-
-    if (!existingContact) {
-      const isPast = (b.status === 'checked-out' || b.status === 'completed' || b.isHistorical === true || (b.checkOut && b.checkOut < todayStr));
-      const isQuote = (b.status === 'quotation');
-      const initialStatus = isPast ? 'completed' : (isQuote ? 'prospect' : 'active');
-      
-      appState.contacts.push({
-        id: 'c-t-' + (normPhone || normIc || (Date.now() + '-' + Math.random().toString(36).substr(2, 4))),
-        name: name || 'Tenant',
-        category: 'tenant',
-        phone: phone || '',
-        company: b.companyName || '',
-        notes: b.rentalType === 'monthly' ? 'Monthly Tenancy' : 'Daily Homestay Guest',
-        ic: ic || '',
-        status: initialStatus
-      });
-    }
-  });
-
-  // Re-evaluate lifecycle status for each contact
+  // Re-evaluate lifecycle status for existing saved contacts
   appState.contacts.forEach(c => {
     // Blacklisted contacts are strictly preserved
     if (c.status === 'blacklisted') return;
@@ -6105,9 +6124,30 @@ function renderDashboardTab() {
   const turnovers = getFilteredTurnovers();
 
   // KPIs (completed historical tenancies and checked-out stays do not appear in active dashboard)
-  const todayCheckIns = bookings.filter(b => b.checkIn === todayStr && b.status !== 'cancelled' && !isHistoricalStay(b, todayStr));
-  const todayCheckOuts = bookings.filter(b => b.checkOut === todayStr && b.status !== 'cancelled' && b.status !== 'checked-out' && b.status !== 'completed' && !isCompletedTenancy(b, todayStr));
-  const inHouse = bookings.filter(b => b.checkIn <= todayStr && b.checkOut > todayStr && b.status !== 'cancelled' && b.status !== 'checked-out' && b.status !== 'completed' && !isCompletedTenancy(b, todayStr));
+  const todayCheckIns = bookings.filter(b => 
+    b.checkIn === todayStr && 
+    b.status !== 'cancelled' && 
+    b.status !== 'checked-out' && 
+    b.status !== 'completed' && 
+    !isHistoricalStay(b, todayStr)
+  );
+  const todayCheckOuts = bookings.filter(b => 
+    b.checkOut === todayStr && 
+    b.status !== 'cancelled' && 
+    b.status !== 'checked-out' && 
+    b.status !== 'completed' && 
+    !isHistoricalStay(b, todayStr) && 
+    !isCompletedTenancy(b, todayStr)
+  );
+  const inHouse = bookings.filter(b => 
+    b.checkIn <= todayStr && 
+    b.checkOut > todayStr && 
+    b.status !== 'cancelled' && 
+    b.status !== 'checked-out' && 
+    b.status !== 'completed' && 
+    !isHistoricalStay(b, todayStr) && 
+    !isCompletedTenancy(b, todayStr)
+  );
   const pendingTurnovers = turnovers.filter(t => t.status !== 'completed');
 
   const elCheckIns = document.getElementById('kpiCheckInsCount');
@@ -6119,10 +6159,21 @@ function renderDashboardTab() {
   const elTurnovers = document.getElementById('kpiTurnoversCount');
   if (elTurnovers) elTurnovers.textContent = pendingTurnovers.length;
 
-  // Tenant Intelligence & Repeat Guest KPIs
-  const activeTenants = (appState.contacts || []).filter(c => (c.category === 'tenant' || !c.category) && (c.status === 'active' || !c.status));
+  // Tenant Intelligence & Repeat Guest KPIs (strictly active tenants only)
+  const activeTenantBookings = bookings.filter(b => 
+    (b.status === 'checked-in' || b.status === 'confirmed') && 
+    b.checkIn <= todayStr && 
+    b.checkOut >= todayStr && 
+    b.status !== 'cancelled' && 
+    b.status !== 'checked-out' && 
+    b.status !== 'completed' && 
+    !isHistoricalStay(b, todayStr) &&
+    !isCompletedTenancy(b, todayStr)
+  );
+  const activeContactsCount = (appState.contacts || []).filter(c => c.category === 'tenant' && (c.status === 'active' || !c.status)).length;
+  const totalActiveTenants = Math.max(activeTenantBookings.length, activeContactsCount);
   const elActiveTenants = document.getElementById('dashKpiActiveTenants');
-  if (elActiveTenants) elActiveTenants.textContent = activeTenants.length;
+  if (elActiveTenants) elActiveTenants.textContent = totalActiveTenants;
 
   // Repeat Guests calculation
   const guestGroups = {};
@@ -13312,6 +13363,8 @@ function handleApplyChatToBooking() {
   const data = getEditedTenantChatData();
   const isBM = appState.settings.language === 'bm';
   const todayStr = formatLocalDate(new Date());
+  const bookingModalEl = document.getElementById('bookingModal');
+  const isBookingModalOpen = bookingModalEl && bookingModalEl.classList.contains('active');
 
   if (data.bookingType === 'company') {
     let notes = `[WhatsApp Chat Import - ${todayStr}]`;
@@ -13323,30 +13376,83 @@ function handleApplyChatToBooking() {
     if (data.picEmail) notes += ` • Email: ${data.picEmail}`;
     if (data.originalChat) notes += `\n\n--- ${isBM ? 'Mesej Perbualan Asal' : 'Original Conversation'} ---\n${data.originalChat}`;
 
-    closeTenantChatImportModal();
+    if (isBookingModalOpen) {
+      setBookingTenantType('company');
+      const elCompName = document.getElementById('bookingCompanyName');
+      if (elCompName && data.companyName) elCompName.value = data.companyName;
+      const elReg = document.getElementById('bookingCompanyRegNo');
+      if (elReg && data.companyRegNo) elReg.value = data.companyRegNo;
+      const elCompAddr = document.getElementById('bookingCompanyAddress');
+      if (elCompAddr && data.companyAddress) elCompAddr.value = data.companyAddress;
+      const elCP = document.getElementById('bookingContactPerson');
+      if (elCP && data.picName) elCP.value = data.picName;
+      const elCD = document.getElementById('bookingContactDesignation');
+      if (elCD && data.picPosition) elCD.value = data.picPosition;
+      const elCPH = document.getElementById('bookingContactPhone');
+      if (elCPH && data.picPhone) elCPH.value = data.picPhone;
+      const elCE = document.getElementById('bookingContactEmail');
+      if (elCE && data.picEmail) elCE.value = data.picEmail;
+      const elGuestName = document.getElementById('bookingGuestName');
+      if (elGuestName && (data.companyName || data.picName)) elGuestName.value = data.companyName || data.picName;
+      const elGuestPhone = document.getElementById('bookingGuestPhone');
+      if (elGuestPhone && data.picPhone) elGuestPhone.value = data.picPhone;
+      const elGuestEmail = document.getElementById('bookingGuestEmail');
+      if (elGuestEmail && data.picEmail) elGuestEmail.value = data.picEmail;
+      const elGuestAddr = document.getElementById('bookingGuestAddress');
+      if (elGuestAddr && data.companyAddress) elGuestAddr.value = data.companyAddress;
+      if (data.checkIn) {
+        const inEl = document.getElementById('bookingCheckIn');
+        if (inEl) inEl.value = data.checkIn;
+      }
+      if (data.checkOut) {
+        const outEl = document.getElementById('bookingCheckOut');
+        if (outEl) outEl.value = data.checkOut;
+      }
+      if (data.guestCount) {
+        const cntEl = document.getElementById('bookingGuestCount');
+        if (cntEl) cntEl.value = data.guestCount;
+        const occEl = document.getElementById('bookingOccupantsCount');
+        if (occEl) occEl.value = data.guestCount;
+      }
+      const occNotesEl = document.getElementById('bookingOccupantsNotes');
+      if (occNotesEl) occNotesEl.value = `${data.guestCount} ${isBM ? 'Tetamu Syarikat' : 'Company Guests'}`;
+      const notesEl = document.getElementById('bookingNotes');
+      if (notesEl) {
+        notesEl.value = notesEl.value ? (notesEl.value + '\n\n' + notes) : notes;
+      }
+      const chEl = document.getElementById('bookingChannel');
+      if (chEl) chEl.value = 'whatsapp';
 
-    openBookingModal(null, data.checkIn || null, null, {
-      tenantType: 'company',
-      companyName: data.companyName,
-      companyRegNo: data.companyRegNo,
-      companyAddress: data.companyAddress,
-      contactPerson: data.picName,
-      contactDesignation: data.picPosition,
-      contactPhone: data.picPhone,
-      contactEmail: data.picEmail,
-      guestName: data.companyName || data.picName,
-      guestPhone: data.picPhone,
-      guestEmail: data.picEmail,
-      guestAddress: data.companyAddress,
-      checkIn: data.checkIn,
-      checkOut: data.checkOut,
-      guestCount: data.guestCount,
-      occupantsNotes: `${data.guestCount} ${isBM ? 'Tetamu Syarikat' : 'Company Guests'}`,
-      notes: notes,
-      channel: 'whatsapp'
-    });
+      closeTenantChatImportModal();
+      bookingModalEl.classList.add('active');
+      updateBookingModalPricing();
+      checkBookingModalOverlap();
+      if (typeof checkBookingRepeatGuest === 'function') checkBookingRepeatGuest();
+    } else {
+      closeTenantChatImportModal();
+      openBookingModal(null, data.checkIn || null, null, {
+        tenantType: 'company',
+        companyName: data.companyName,
+        companyRegNo: data.companyRegNo,
+        companyAddress: data.companyAddress,
+        contactPerson: data.picName,
+        contactDesignation: data.picPosition,
+        contactPhone: data.picPhone,
+        contactEmail: data.picEmail,
+        guestName: data.companyName || data.picName,
+        guestPhone: data.picPhone,
+        guestEmail: data.picEmail,
+        guestAddress: data.companyAddress,
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+        guestCount: data.guestCount,
+        occupantsNotes: `${data.guestCount} ${isBM ? 'Tetamu Syarikat' : 'Company Guests'}`,
+        notes: notes,
+        channel: 'whatsapp'
+      });
+    }
   } else {
-    // Build occupants notes string
+    // Individual
     const occParts = [];
     if (data.adults) occParts.push(`${data.adults} ${isBM ? 'Dewasa' : 'Adults'}`);
     if (data.children) occParts.push(`${data.children} ${isBM ? 'Kanak-kanak' : 'Children'}`);
@@ -13357,25 +13463,78 @@ function handleApplyChatToBooking() {
     if (data.vehicle) notes += `\nVehicle / Kenderaan: ${data.vehicle}`;
     if (data.originalChat) notes += `\n\n--- ${isBM ? 'Mesej Perbualan Asal' : 'Original Conversation'} ---\n${data.originalChat}`;
 
-    closeTenantChatImportModal();
+    if (isBookingModalOpen) {
+      setBookingTenantType('individual');
+      if (data.name) {
+        const el = document.getElementById('bookingGuestName');
+        if (el) el.value = data.name;
+      }
+      if (data.phone) {
+        const el = document.getElementById('bookingGuestPhone');
+        if (el) el.value = data.phone;
+      }
+      if (data.ic || data.passport) {
+        const el = document.getElementById('bookingGuestNric');
+        if (el) el.value = data.ic || data.passport;
+      }
+      if (data.email) {
+        const el = document.getElementById('bookingGuestEmail');
+        if (el) el.value = data.email;
+      }
+      if (data.address) {
+        const el = document.getElementById('bookingGuestAddress');
+        if (el) el.value = data.address;
+      }
+      if (data.checkIn) {
+        const el = document.getElementById('bookingCheckIn');
+        if (el) el.value = data.checkIn;
+      }
+      if (data.checkOut) {
+        const el = document.getElementById('bookingCheckOut');
+        if (el) el.value = data.checkOut;
+      }
+      if (data.guestCount) {
+        const el = document.getElementById('bookingGuestCount');
+        if (el) el.value = data.guestCount;
+        const occEl = document.getElementById('bookingOccupantsCount');
+        if (occEl) occEl.value = data.guestCount;
+      }
+      if (occupantsNotes) {
+        const el = document.getElementById('bookingOccupantsNotes');
+        if (el) el.value = occupantsNotes;
+      }
+      const notesEl = document.getElementById('bookingNotes');
+      if (notesEl) {
+        notesEl.value = notesEl.value ? (notesEl.value + '\n\n' + notes) : notes;
+      }
+      const chEl = document.getElementById('bookingChannel');
+      if (chEl) chEl.value = 'whatsapp';
 
-    openBookingModal(null, data.checkIn || null, null, {
-      tenantType: 'individual',
-      guestName: data.name,
-      guestPhone: data.phone,
-      guestNric: data.ic || data.passport,
-      guestEmail: data.email,
-      guestAddress: data.address,
-      checkIn: data.checkIn,
-      checkOut: data.checkOut,
-      guestCount: data.guestCount,
-      occupantsNotes: occupantsNotes,
-      notes: notes,
-      channel: 'whatsapp'
-    });
+      closeTenantChatImportModal();
+      bookingModalEl.classList.add('active');
+      updateBookingModalPricing();
+      checkBookingModalOverlap();
+      if (typeof checkBookingRepeatGuest === 'function') checkBookingRepeatGuest();
+    } else {
+      closeTenantChatImportModal();
+      openBookingModal(null, data.checkIn || null, null, {
+        tenantType: 'individual',
+        guestName: data.name,
+        guestPhone: data.phone,
+        guestNric: data.ic || data.passport,
+        guestEmail: data.email,
+        guestAddress: data.address,
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+        guestCount: data.guestCount,
+        occupantsNotes: occupantsNotes,
+        notes: notes,
+        channel: 'whatsapp'
+      });
+    }
   }
 
-  showToast(isBM ? 'Butiran tempahan telah diisi ke dalam Borang Tempahan!' : 'Booking details pre-filled into Booking Form!');
+  showToast(isBM ? '🎉 Butiran tempahan telah diisi ke dalam Borang Tempahan!' : '🎉 Booking details pre-filled into Booking Form!');
 }
 
 function handleApplyChatToContact() {
@@ -13468,6 +13627,7 @@ function handleApplyChatToBoth() {
 }
 
 function setupTenantChatEventListeners() {
+  document.getElementById('btnBookingModalImportChat')?.addEventListener('click', () => openTenantChatImportModal('booking'));
   document.getElementById('btnImportTenantChatBooking')?.addEventListener('click', () => openTenantChatImportModal('booking'));
   document.getElementById('btnImportTenantChatContact')?.addEventListener('click', () => openTenantChatImportModal('contact'));
   document.getElementById('btnCloseTenantChatImportModal')?.addEventListener('click', closeTenantChatImportModal);
