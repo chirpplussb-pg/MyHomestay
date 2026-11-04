@@ -353,7 +353,7 @@
 
         <!-- Booking Module Actions -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-whatsapp btn-sm" id="btnImportTenantChatBooking">
+          <button type="button" class="btn btn-whatsapp btn-sm" id="btnImportTenantChatBooking" onclick="openTenantChatImportModal('booking')">
             <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_import_tenant_chat">Import Tenant Chat</span>
           </button>
         </div>
@@ -475,7 +475,7 @@
               <p class="card-subtitle" data-i18n="team_dir_subtitle">Manage cleaners, technicians, handymen & suppliers</p>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn btn-whatsapp btn-sm" id="btnImportTenantChatContact">
+              <button type="button" class="btn btn-whatsapp btn-sm" id="btnImportTenantChatContact" onclick="openTenantChatImportModal('contact')">
                 <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_import_tenant_chat">Import Tenant Chat</span>
               </button>
               <button class="btn btn-primary btn-sm" id="btnAddNewContactModal">
@@ -876,7 +876,7 @@
                 <i class="fa-solid fa-id-card" style="color:var(--primary);"></i> <span data-i18n="tenant_particulars_title">Tenant & Guest Particulars / Butiran Tetamu</span>
               </div>
               <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                <button type="button" class="btn btn-whatsapp btn-xs" id="btnBookingModalImportChat" style="padding:4px 9px; font-size:11px; font-weight:700; border-radius:6px; display:inline-flex; align-items:center; gap:5px;">
+                <button type="button" class="btn btn-whatsapp btn-xs" id="btnBookingModalImportChat" onclick="openTenantChatImportModal('booking')" style="padding:4px 9px; font-size:11px; font-weight:700; border-radius:6px; display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
                   <i class="fa-brands fa-whatsapp"></i> <span data-i18n="btn_import_tenant_chat">Import Tenant Chat</span>
                 </button>
                 <!-- Tenant Category Switcher: Individual vs Company -->
@@ -2552,7 +2552,7 @@
               <span class="modal-subtitle" data-i18n="import_tenant_chat_sub">Paste guest WhatsApp conversation to auto-extract particulars</span>
             </div>
           </div>
-          <button class="modal-close" id="btnCloseTenantChatImportModal">&times;</button>
+          <button class="modal-close" id="btnCloseTenantChatImportModal" onclick="closeTenantChatImportModal()">&times;</button>
         </div>
 
         <div class="modal-body" style="padding-top: 10px;">
@@ -2731,7 +2731,7 @@
           </div>
 
           <div class="modal-footer" style="padding-top:10px; margin-top:8px;">
-            <button type="button" class="btn btn-outline btn-block" id="btnCancelTenantChatImportModal" data-i18n="cancel">Cancel</button>
+            <button type="button" class="btn btn-outline btn-block" id="btnCancelTenantChatImportModal" onclick="closeTenantChatImportModal()" data-i18n="cancel">Cancel</button>
           </div>
         </div>
       </div>

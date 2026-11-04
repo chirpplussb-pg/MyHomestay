@@ -1782,6 +1782,14 @@ body {
   z-index: 1050;
 }
 
+.modal-backdrop#tenantChatImportModal {
+  z-index: 10001 !important;
+}
+
+.modal-backdrop#tenantChatImportModal.active {
+  display: flex !important;
+}
+
 .bottom-sheet {
   width: 100%;
   max-width: 480px;

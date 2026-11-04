@@ -3656,6 +3656,15 @@ function setupEventListeners() {
       openAgreementModal(b, 'preview');
       return;
     }
+
+    const importChatBtn = e.target.closest('#btnBookingModalImportChat, #btnImportTenantChatBooking, #btnImportTenantChatContact');
+    if (importChatBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dest = importChatBtn.id === 'btnImportTenantChatContact' ? 'contact' : 'booking';
+      openTenantChatImportModal(dest);
+      return;
+    }
   });
 
   // Header quick buttons
@@ -13238,28 +13247,43 @@ async function extractTenantChat(rawChat, options = {}) {
 }
 
 function openTenantChatImportModal(destination = 'booking') {
-  activeTenantChatDestination = destination;
-  activeTenantChatExtracted = null;
-  setTenantChatBookingType('individual');
+  try {
+    activeTenantChatDestination = destination;
+    activeTenantChatExtracted = null;
+    if (typeof setTenantChatBookingType === 'function') {
+      setTenantChatBookingType('individual');
+    }
 
-  const isBM = appState.settings.language === 'bm';
-  const noticeEl = document.getElementById('tenantChatDestinationNotice');
-  if (noticeEl) {
-    noticeEl.textContent = destination === 'contact'
-      ? (isBM ? 'Mod: Menyimpan ke Direktori Kenalan' : 'Mode: Saving to Contacts Directory')
-      : (isBM ? 'Mod: Mengisi Borang Tempahan' : 'Mode: Pre-filling Booking Form');
+    const isBM = appState?.settings?.language === 'bm';
+    const noticeEl = document.getElementById('tenantChatDestinationNotice');
+    if (noticeEl) {
+      noticeEl.textContent = destination === 'contact'
+        ? (isBM ? 'Mod: Menyimpan ke Direktori Kenalan' : 'Mode: Saving to Contacts Directory')
+        : (isBM ? 'Mod: Mengisi Borang Tempahan' : 'Mode: Pre-filling Booking Form');
+    }
+
+    const resCard = document.getElementById('tenantChatResultCard');
+    if (resCard) resCard.style.display = 'none';
+
+    const input = document.getElementById('tenantChatInput');
+    if (input) input.value = '';
+  } catch (err) {
+    console.warn('[Tenant Chat] Pre-open notice:', err);
   }
 
-  const resCard = document.getElementById('tenantChatResultCard');
-  if (resCard) resCard.style.display = 'none';
-
   const modal = document.getElementById('tenantChatImportModal');
-  if (modal) modal.classList.add('active');
+  if (modal) {
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+  }
 }
 
 function closeTenantChatImportModal() {
   const modal = document.getElementById('tenantChatImportModal');
-  if (modal) modal.classList.remove('active');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
 }
 
 function insertSampleTenantChat(type) {
