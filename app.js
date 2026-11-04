@@ -15,14 +15,24 @@ const SELLER_WHATSAPP = '+60124022462';
 // CLOUDFLARE WORKER LICENSE SERVER CONFIGURATION (Public Key Only)
 const LICENSE_API_URL = 'https://staymanager-license-server.homestaymanager.workers.dev';
 const BUY_PAGE_URL = LICENSE_API_URL + '/buy';
+
+// Active Cloudflare Worker ECDSA P-256 Public Key (Current Production)
 const LICENSE_PUBLIC_KEY_JWK = {
+  "kty": "EC",
+  "crv": "P-256",
+  "x": "g8DbZ8uU9l8gh7DsZ6vv-yGfR5vvwr6cejm36gUnolY",
+  "y": "idh0kTdK__lGZ6lqqWVznuLZLa6lWgdQj-38EV12tm0"
+};
+
+// Alternative & Legacy Authorized Deployment ECDSA Public Keys
+const LICENSE_PUBLIC_KEY_JWK_ALT1 = {
   "kty": "EC",
   "crv": "P-256",
   "x": "2O0fWckxh69Mk2ca1PLWBFzTrlR2GSOv32PxwOMcM4E",
   "y": "DbZzhpTDL8eGNd1UrHPQeKl4NoyIjzivQT2QCR51Tpk"
 };
 
-const LICENSE_PUBLIC_KEY_JWK_ALT = {
+const LICENSE_PUBLIC_KEY_JWK_ALT2 = {
   "kty": "EC",
   "crv": "P-256",
   "x": "gdT7uzsZ9IoEDX0eYqHXggAMVEtb2lMNyvXSWF7tMms",
@@ -31,7 +41,8 @@ const LICENSE_PUBLIC_KEY_JWK_ALT = {
 
 const LICENSE_PUBLIC_KEYS = [
   LICENSE_PUBLIC_KEY_JWK,
-  LICENSE_PUBLIC_KEY_JWK_ALT
+  LICENSE_PUBLIC_KEY_JWK_ALT1,
+  LICENSE_PUBLIC_KEY_JWK_ALT2
 ];
 
 let testOverridePublicKeyJwk = null;
@@ -5166,7 +5177,18 @@ async function verifyLicenseToken(token) {
 
     const keysToTry = testOverridePublicKeyJwk
       ? [testOverridePublicKeyJwk]
-      : (Array.isArray(LICENSE_PUBLIC_KEYS) && LICENSE_PUBLIC_KEYS.length > 0 ? LICENSE_PUBLIC_KEYS : [LICENSE_PUBLIC_KEY_JWK]);
+      : (Array.isArray(LICENSE_PUBLIC_KEYS) && LICENSE_PUBLIC_KEYS.length > 0 ? [...LICENSE_PUBLIC_KEYS] : [LICENSE_PUBLIC_KEY_JWK]);
+
+    // Include dynamically learned server public key if cached in localStorage
+    try {
+      const cachedKeyStr = (typeof localStorage !== 'undefined') ? localStorage.getItem('staymanager_server_pubkey') : null;
+      if (cachedKeyStr) {
+        const parsedServerKey = JSON.parse(cachedKeyStr);
+        if (parsedServerKey && parsedServerKey.kty === 'EC' && parsedServerKey.x && parsedServerKey.y) {
+          keysToTry.unshift(parsedServerKey);
+        }
+      }
+    } catch (_) {}
 
     let lastError = 'Invalid cryptographic signature';
 
@@ -5395,6 +5417,13 @@ async function activateWithServer(rawKey, rawPhone) {
     const err = new Error(data.message || 'Activation failed');
     err.code = data.error || 'SERVER_ERROR';
     throw err;
+  }
+
+  // Cache server public key if returned in response for seamless offline verification
+  if (data.publicKey && data.publicKey.kty === 'EC' && data.publicKey.x && data.publicKey.y) {
+    try {
+      localStorage.setItem('staymanager_server_pubkey', JSON.stringify(data.publicKey));
+    } catch (_) {}
   }
 
   localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
