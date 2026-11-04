@@ -22,6 +22,18 @@ const LICENSE_PUBLIC_KEY_JWK = {
   "y": "DbZzhpTDL8eGNd1UrHPQeKl4NoyIjzivQT2QCR51Tpk"
 };
 
+const LICENSE_PUBLIC_KEY_JWK_ALT = {
+  "kty": "EC",
+  "crv": "P-256",
+  "x": "gdT7uzsZ9IoEDX0eYqHXggAMVEtb2lMNyvXSWF7tMms",
+  "y": "Uf6BaO6ysqZ4SZ8aeoMU7sYEgKNkWe_HobHmLy__dSk"
+};
+
+const LICENSE_PUBLIC_KEYS = [
+  LICENSE_PUBLIC_KEY_JWK,
+  LICENSE_PUBLIC_KEY_JWK_ALT
+];
+
 let testOverridePublicKeyJwk = null;
 
 const STORAGE_KEYS = {
@@ -5148,20 +5160,43 @@ async function verifyLicenseToken(token) {
   const signatureBytes = base64UrlToArrayBuffer(encodedSignature);
 
   try {
-    const publicKey = await getCryptoPublicKey();
-    const isValid = await window.crypto.subtle.verify(
-      { name: 'ECDSA', hash: { name: 'SHA-256' } },
-      publicKey,
-      signatureBytes,
-      new TextEncoder().encode(dataToVerify)
-    );
-
-    if (!isValid) {
-      return { valid: false, error: 'Invalid cryptographic signature' };
+    if (!window.crypto || !window.crypto.subtle) {
+      throw new Error('WebCrypto subtle is not supported in this environment');
     }
 
-    const payload = JSON.parse(base64UrlToString(encodedPayload));
-    return { valid: true, payload };
+    const keysToTry = testOverridePublicKeyJwk
+      ? [testOverridePublicKeyJwk]
+      : (Array.isArray(LICENSE_PUBLIC_KEYS) && LICENSE_PUBLIC_KEYS.length > 0 ? LICENSE_PUBLIC_KEYS : [LICENSE_PUBLIC_KEY_JWK]);
+
+    let lastError = 'Invalid cryptographic signature';
+
+    for (const keyJwk of keysToTry) {
+      try {
+        const publicKey = await window.crypto.subtle.importKey(
+          'jwk',
+          keyJwk,
+          { name: 'ECDSA', namedCurve: 'P-256' },
+          false,
+          ['verify']
+        );
+
+        const isValid = await window.crypto.subtle.verify(
+          { name: 'ECDSA', hash: { name: 'SHA-256' } },
+          publicKey,
+          signatureBytes,
+          new TextEncoder().encode(dataToVerify)
+        );
+
+        if (isValid) {
+          const payload = JSON.parse(base64UrlToString(encodedPayload));
+          return { valid: true, payload };
+        }
+      } catch (keyErr) {
+        lastError = keyErr.message || lastError;
+      }
+    }
+
+    return { valid: false, error: lastError };
   } catch (err) {
     return { valid: false, error: err.message || 'Verification failed' };
   }
